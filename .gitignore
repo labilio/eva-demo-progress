@@ -3,6 +3,7 @@
 !README.md
 !vercel.json
 !.vercelignore
+!index.html
 !prototypes/
 prototypes/*
 !prototypes/eva demo 0903 -v3.html
