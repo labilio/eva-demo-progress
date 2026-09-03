@@ -1,0 +1,9 @@
+*
+!.gitignore
+!README.md
+!vercel.json
+!prototypes/
+prototypes/*
+!prototypes/eva demo 0903 -v3.html
+.vercel/
+
