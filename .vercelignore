@@ -1,7 +1,8 @@
-*
-!.vercelignore
-!README.md
-!vercel.json
-!prototypes/
+artifacts/
+docs/
+tmp/
+AGENTS.md
+.git/
+.env*
 prototypes/*
 !prototypes/eva demo 0903 -v3.html
