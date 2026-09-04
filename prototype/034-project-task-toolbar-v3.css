@@ -1,0 +1,68 @@
+
+  /* 项目任务页：只整理工具栏层级与间距，不改动现有颜色。 */
+  .loop-page__toolbar:has(.eva-task-view-switcher) {
+    min-height: 32px;
+    gap: 0;
+    padding: 2px 0 4px;
+  }
+
+  .eva-task-view-switcher {
+    box-sizing: border-box;
+    min-height: 32px;
+    flex: 0 0 auto;
+    margin-right: 6px;
+    padding: 3px;
+    border-radius: 8px;
+  }
+
+  .eva-task-view-switcher .loop-seg__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 72px;
+    height: 26px;
+    padding: 0 12px;
+    gap: 6px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 26px;
+    white-space: nowrap;
+  }
+
+  .eva-task-view-switcher .loop-seg__btn svg,
+  .loop-page__toolbar:has(.eva-task-view-switcher) .loop-toolbtn svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+  }
+
+  .loop-page__toolbar:has(.eva-task-view-switcher) .loop-toolbtn {
+    box-sizing: border-box;
+    height: 32px;
+    padding: 0 12px;
+    gap: 6px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 30px;
+  }
+
+  .loop-page__toolbar:has(.eva-task-view-switcher) > button:last-child {
+    min-height: 32px;
+  }
+
+  @media (max-width: 880px) {
+    .loop-page__toolbar:has(.eva-task-view-switcher) {
+      flex-wrap: wrap;
+      row-gap: 8px;
+    }
+
+    .loop-page__toolbar:has(.eva-task-view-switcher) .loop-page__spacer {
+      min-width: 16px;
+    }
+
+    .eva-task-view-switcher .loop-seg__btn {
+      min-width: 64px;
+      padding-inline: 10px;
+    }
+  }

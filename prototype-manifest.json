@@ -1,0 +1,368 @@
+{
+  "source": "eva demo 0904 -v1.html",
+  "sourceRevision": "830514a43343613c06e0e04893949e15faa20b11",
+  "sourceCanonicalSha256": "7da8a98c593e34d1ce70b395efecc5ca52b4ac9215ea60fb7b587800ee71517f",
+  "sourceCanonicalBytes": 22454723,
+  "blocks": [
+    {
+      "order": 0,
+      "tag": "script",
+      "name": "shell-seed",
+      "file": "prototype/000-shell-seed.js",
+      "bytes": 1708,
+      "role": "prototype"
+    },
+    {
+      "order": 1,
+      "tag": "script",
+      "name": "colleague-portrait",
+      "file": "prototype/001-colleague-portrait.js",
+      "bytes": 23871,
+      "role": "prototype"
+    },
+    {
+      "order": 2,
+      "tag": "script",
+      "name": "current-user-portrait",
+      "file": "prototype/002-current-user-portrait.js",
+      "bytes": 30407,
+      "role": "prototype"
+    },
+    {
+      "order": 3,
+      "tag": "script",
+      "name": "my-assistant-identity",
+      "file": "prototype/003-my-assistant-identity.js",
+      "bytes": 472,
+      "role": "prototype"
+    },
+    {
+      "order": 4,
+      "tag": "script",
+      "name": "project-registry",
+      "file": "prototype/004-project-registry.js",
+      "bytes": 1595,
+      "role": "prototype"
+    },
+    {
+      "order": 5,
+      "tag": "script",
+      "name": "script-5",
+      "file": "prototype/005-script-5.js",
+      "bytes": 315,
+      "role": "prototype"
+    },
+    {
+      "order": 6,
+      "tag": "style",
+      "name": "style-6",
+      "file": "prototype/006-style-6.css",
+      "bytes": 169,
+      "role": "prototype"
+    },
+    {
+      "order": 7,
+      "tag": "script",
+      "name": "eva-app-module-source",
+      "file": "vendor/eva-legacy-runtime.js",
+      "bytes": 18633547,
+      "role": "vendor"
+    },
+    {
+      "order": 8,
+      "tag": "style",
+      "name": "semi-card-official",
+      "file": "prototype/008-semi-card-official.css",
+      "bytes": 1502,
+      "role": "prototype"
+    },
+    {
+      "order": 9,
+      "tag": "script",
+      "name": "drive-demo-seed",
+      "file": "prototype/009-drive-demo-seed.js",
+      "bytes": 85366,
+      "role": "prototype"
+    },
+    {
+      "order": 10,
+      "tag": "style",
+      "name": "style-10",
+      "file": "vendor/eva-legacy.css",
+      "bytes": 3200669,
+      "role": "vendor"
+    },
+    {
+      "order": 11,
+      "tag": "script",
+      "name": "script-11",
+      "file": "prototype/011-script-11.js",
+      "bytes": 5813,
+      "role": "prototype"
+    },
+    {
+      "order": 12,
+      "tag": "style",
+      "name": "mode-layer",
+      "file": "prototype/012-mode-layer.css",
+      "bytes": 21429,
+      "role": "prototype"
+    },
+    {
+      "order": 13,
+      "tag": "script",
+      "name": "jdenticon",
+      "file": "prototype/013-jdenticon.js",
+      "bytes": 9377,
+      "role": "prototype"
+    },
+    {
+      "order": 14,
+      "tag": "script",
+      "name": "avatar",
+      "file": "prototype/014-avatar.js",
+      "bytes": 3809,
+      "role": "prototype"
+    },
+    {
+      "order": 15,
+      "tag": "script",
+      "name": "file-message",
+      "file": "prototype/015-file-message.js",
+      "bytes": 2501,
+      "role": "prototype"
+    },
+    {
+      "order": 16,
+      "tag": "style",
+      "name": "message-hierarchy",
+      "file": "prototype/016-message-hierarchy.css",
+      "bytes": 82494,
+      "role": "prototype"
+    },
+    {
+      "order": 17,
+      "tag": "style",
+      "name": "im-shell",
+      "file": "prototype/017-im-shell.css",
+      "bytes": 11776,
+      "role": "prototype"
+    },
+    {
+      "order": 18,
+      "tag": "style",
+      "name": "eva-release-meta-style",
+      "file": "prototype/018-eva-release-meta-style.css",
+      "bytes": 136,
+      "role": "prototype"
+    },
+    {
+      "order": 19,
+      "tag": "script",
+      "name": "script-19",
+      "file": "prototype/019-script-19.js",
+      "bytes": 206,
+      "role": "prototype"
+    },
+    {
+      "order": 20,
+      "tag": "script",
+      "name": "mode-layer",
+      "file": "prototype/020-mode-layer.js",
+      "bytes": 34822,
+      "role": "prototype"
+    },
+    {
+      "order": 21,
+      "tag": "script",
+      "name": "message-hierarchy",
+      "file": "prototype/021-message-hierarchy.js",
+      "bytes": 81374,
+      "role": "prototype"
+    },
+    {
+      "order": 22,
+      "tag": "style",
+      "name": "demo-0902-v2",
+      "file": "prototype/022-demo-0902-v2.css",
+      "bytes": 10162,
+      "role": "prototype"
+    },
+    {
+      "order": 23,
+      "tag": "script",
+      "name": "demo-0902-v2",
+      "file": "prototype/023-demo-0902-v2.js",
+      "bytes": 17431,
+      "role": "prototype"
+    },
+    {
+      "order": 24,
+      "tag": "style",
+      "name": "demo-0902-v2-pages",
+      "file": "prototype/024-demo-0902-v2-pages.css",
+      "bytes": 9983,
+      "role": "prototype"
+    },
+    {
+      "order": 25,
+      "tag": "script",
+      "name": "demo-0902-v2-pages",
+      "file": "prototype/025-demo-0902-v2-pages.js",
+      "bytes": 16936,
+      "role": "prototype"
+    },
+    {
+      "order": 26,
+      "tag": "style",
+      "name": "connection-center-v2",
+      "file": "prototype/026-connection-center-v2.css",
+      "bytes": 5029,
+      "role": "prototype"
+    },
+    {
+      "order": 27,
+      "tag": "script",
+      "name": "connection-center-v2-legacy",
+      "file": null,
+      "bytes": 7676,
+      "role": "inline-data"
+    },
+    {
+      "order": 28,
+      "tag": "style",
+      "name": "connection-center-functional-v2",
+      "file": "prototype/028-connection-center-functional-v2.css",
+      "bytes": 6123,
+      "role": "prototype"
+    },
+    {
+      "order": 29,
+      "tag": "script",
+      "name": "connection-center-v2-functional",
+      "file": "prototype/029-connection-center-v2-functional.js",
+      "bytes": 23221,
+      "role": "prototype"
+    },
+    {
+      "order": 30,
+      "tag": "style",
+      "name": "expert-center-v1",
+      "file": "prototype/030-expert-center-v1.css",
+      "bytes": 533,
+      "role": "prototype"
+    },
+    {
+      "order": 31,
+      "tag": "style",
+      "name": "shared-automation-v2",
+      "file": "prototype/031-shared-automation-v2.css",
+      "bytes": 5915,
+      "role": "prototype"
+    },
+    {
+      "order": 32,
+      "tag": "style",
+      "name": "contacts-redesign-v2",
+      "file": "prototype/032-contacts-redesign-v2.css",
+      "bytes": 9748,
+      "role": "prototype"
+    },
+    {
+      "order": 33,
+      "tag": "script",
+      "name": "contacts-redesign-v2",
+      "file": "prototype/033-contacts-redesign-v2.js",
+      "bytes": 9981,
+      "role": "prototype"
+    },
+    {
+      "order": 34,
+      "tag": "style",
+      "name": "project-task-toolbar-v3",
+      "file": "prototype/034-project-task-toolbar-v3.css",
+      "bytes": 1602,
+      "role": "prototype"
+    },
+    {
+      "order": 35,
+      "tag": "style",
+      "name": "project-switcher-semi-v3",
+      "file": "prototype/035-project-switcher-semi-v3.css",
+      "bytes": 1326,
+      "role": "prototype"
+    },
+    {
+      "order": 36,
+      "tag": "style",
+      "name": "project-directory-v3",
+      "file": "prototype/036-project-directory-v3.css",
+      "bytes": 5731,
+      "role": "prototype"
+    },
+    {
+      "order": 37,
+      "tag": "style",
+      "name": "context-task-popover-v5",
+      "file": "prototype/037-context-task-popover-v5.css",
+      "bytes": 11840,
+      "role": "prototype"
+    },
+    {
+      "order": 38,
+      "tag": "script",
+      "name": "context-task-popover-v5",
+      "file": "prototype/038-context-task-popover-v5.js",
+      "bytes": 30790,
+      "role": "prototype"
+    },
+    {
+      "order": 39,
+      "tag": "style",
+      "name": "team-message-project-recent",
+      "file": "prototype/039-team-message-project-recent.css",
+      "bytes": 7225,
+      "role": "prototype"
+    },
+    {
+      "order": 40,
+      "tag": "script",
+      "name": "team-message-project-recent",
+      "file": "prototype/040-team-message-project-recent.js",
+      "bytes": 6424,
+      "role": "prototype"
+    },
+    {
+      "order": 41,
+      "tag": "style",
+      "name": "personal-conversation-columns",
+      "file": "prototype/041-personal-conversation-columns.css",
+      "bytes": 9901,
+      "role": "prototype"
+    },
+    {
+      "order": 42,
+      "tag": "script",
+      "name": "personal-conversation-columns",
+      "file": "prototype/042-personal-conversation-columns.js",
+      "bytes": 8933,
+      "role": "prototype"
+    },
+    {
+      "order": 43,
+      "tag": "style",
+      "name": "final-layout-convergence",
+      "file": "prototype/043-final-layout-convergence.css",
+      "bytes": 18546,
+      "role": "prototype"
+    },
+    {
+      "order": 44,
+      "tag": "script",
+      "name": "final-layout-convergence",
+      "file": "prototype/044-final-layout-convergence.js",
+      "bytes": 15836,
+      "role": "prototype"
+    }
+  ]
+}

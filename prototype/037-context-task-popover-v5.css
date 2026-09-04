@@ -1,0 +1,457 @@
+
+  body.eva-message-hierarchy-ready :is(.eva-msg, .eva-channel-surface[data-eva-channel-surface="project"]) .ch-main__col {
+    position: relative;
+  }
+
+  body.eva-message-hierarchy-ready :is(.eva-msg, .eva-channel-surface[data-eva-channel-surface="project"]) .ch-head .ops {
+    overflow: visible;
+  }
+
+  body.eva-message-hierarchy-ready :is(.eva-msg, .eva-channel-surface[data-eva-channel-surface="project"]) .eva-context-task-button {
+    position: relative;
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--semi-color-text-2, #8a8f99);
+    cursor: pointer;
+  }
+
+  body.eva-message-hierarchy-ready :is(.eva-msg, .eva-channel-surface[data-eva-channel-surface="project"]) .eva-context-task-button:hover,
+  body.eva-message-hierarchy-ready :is(.eva-msg, .eva-channel-surface[data-eva-channel-surface="project"]) .eva-context-task-button[aria-expanded="true"] {
+    background: var(--semi-color-fill-0, #f2f3f5);
+    color: var(--semi-color-text-0, #1f2329);
+  }
+
+  body.eva-message-hierarchy-ready :is(.eva-msg, .eva-channel-surface[data-eva-channel-surface="project"]) .eva-context-task-button:focus-visible {
+    outline: 2px solid var(--eva-context-task-accent, #4f6bed);
+    outline-offset: 2px;
+  }
+
+  .eva-context-task-button svg,
+  .eva-context-task-popover svg,
+  .eva-context-task-modal svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .eva-context-task-button__count {
+    position: absolute;
+    top: 2px;
+    right: 1px;
+    display: grid;
+    min-width: 14px;
+    height: 14px;
+    box-sizing: border-box;
+    place-items: center;
+    padding: 0 3px;
+    border: 2px solid var(--semi-color-bg-0, #fff);
+    border-radius: 999px;
+    background: var(--eva-context-task-accent, #4f6bed);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 10px;
+  }
+
+  .eva-context-task-popover {
+    position: static;
+    display: flex;
+    width: 320px;
+    height: 100%;
+    max-height: none;
+    box-sizing: border-box;
+    flex: 0 0 320px;
+    flex-direction: column;
+    overflow: hidden;
+    border: 0;
+    border-left: 1px solid var(--semi-color-border, #ebedf0);
+    border-radius: 0;
+    background: var(--semi-color-bg-0, #fff);
+    box-shadow: none;
+    color: var(--semi-color-text-0, #1f2329);
+  }
+
+  .eva-context-task-popover[hidden] {
+    display: none;
+  }
+
+  .eva-context-task-popover > .wk-thread-panel-header,
+  body.eva-message-hierarchy-ready :is(.eva-msg, .eva-channel-surface[data-eva-channel-surface="project"]) .ch-right-panel--wkthread > .wk-thread-panel-header {
+    box-sizing: border-box;
+    height: 49px;
+    min-height: 49px;
+    flex: 0 0 49px;
+    padding: 0 10px 0 16px;
+  }
+
+  .eva-context-task-popover__create {
+    display: flex;
+    width: auto;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 12px 16px 0;
+    padding: 8px 0;
+    border: 1px dashed color-mix(in srgb, var(--eva-context-task-accent, #4f6bed) 12%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--eva-context-task-accent, #4f6bed) 3%, transparent);
+    color: var(--eva-context-task-accent, #4f6bed);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 19.5px;
+    cursor: pointer;
+  }
+
+  .eva-context-task-popover__create:hover,
+  .eva-context-task-popover__create[aria-expanded="true"] {
+    background: color-mix(in srgb, var(--eva-context-task-accent, #4f6bed) 8%, transparent);
+    color: var(--eva-context-task-accent, #4f6bed);
+  }
+
+  .eva-context-task-popover__create svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .eva-context-task-popover__header {
+    display: flex;
+    min-height: 62px;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px 0 16px;
+    border-bottom: 1px solid var(--semi-color-border, #e5e6eb);
+  }
+
+  .eva-context-task-popover__heading {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .eva-context-task-popover__heading strong,
+  .eva-context-task-popover__heading span {
+    display: block;
+  }
+
+  .eva-context-task-popover__heading strong {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 21px;
+  }
+
+  .eva-context-task-popover__heading span {
+    overflow: hidden;
+    margin-top: 1px;
+    color: var(--semi-color-text-2, #8a8f99);
+    font-size: 11px;
+    line-height: 17px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eva-context-task-popover__close {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--semi-color-text-2, #8a8f99);
+    cursor: pointer;
+  }
+
+  .eva-context-task-popover__close:hover {
+    background: var(--semi-color-fill-0, #f2f3f5);
+    color: var(--semi-color-text-0, #1f2329);
+  }
+
+  .eva-context-task-popover__body {
+    overflow: auto;
+    flex: 1;
+    padding: 8px;
+  }
+
+  .eva-context-task-modal .wk-thread-modal-content {
+    width: 360px;
+  }
+
+  .eva-context-task-modal .wk-thread-modal-close {
+    border: 0;
+    background: transparent;
+    font: inherit;
+  }
+
+  .eva-context-task-modal .wk-thread-create-form__label + .wk-thread-create-form__input-row {
+    margin-top: 8px;
+  }
+
+  .eva-context-task-modal .eva-context-task-modal__secondary-label {
+    display: block;
+    margin-top: 14px;
+  }
+
+  .eva-context-task-modal .wk-thread-create-form__input {
+    font-family: inherit;
+  }
+
+  .eva-context-task-modal__context {
+    overflow: hidden;
+    color: var(--semi-color-text-2, #8a8f99);
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eva-context-task-modal__assignee {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: var(--semi-color-fill-0, #f7f8fa);
+  }
+
+  .eva-context-task-modal__assignee-avatar {
+    display: grid;
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--eva-context-task-surface, #eef2ff);
+    color: var(--eva-context-task-accent, #4f6bed);
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .eva-context-task-modal__assignee-copy {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .eva-context-task-modal__assignee-copy strong,
+  .eva-context-task-modal__assignee-copy span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eva-context-task-modal__assignee-copy strong {
+    color: var(--semi-color-text-0, #1f2329);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 17px;
+  }
+
+  .eva-context-task-modal__assignee-copy span {
+    color: var(--semi-color-text-2, #8a8f99);
+    font-size: 10px;
+    line-height: 15px;
+  }
+
+  .eva-context-task-popover__item {
+    display: grid;
+    box-sizing: border-box;
+    width: 100%;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .eva-context-task-popover__item + .eva-context-task-popover__item {
+    border-top: 1px solid var(--semi-color-border, #edf0f2);
+    border-radius: 0;
+  }
+
+  .eva-context-task-popover__item:hover {
+    background: var(--semi-color-fill-0, #f7f8fa);
+  }
+
+  .eva-context-task-popover__item:focus-visible {
+    outline: 2px solid var(--eva-context-task-accent, #4f6bed);
+    outline-offset: -2px;
+  }
+
+  .eva-context-task-popover__item-icon {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: var(--eva-context-task-surface, #eef2ff);
+    color: var(--eva-context-task-accent, #4f6bed);
+  }
+
+  .eva-context-task-popover__item-main {
+    min-width: 0;
+  }
+
+  .eva-context-task-popover__item-title {
+    display: flex;
+    min-width: 0;
+    align-items: baseline;
+    gap: 7px;
+  }
+
+  .eva-context-task-popover__item-title strong {
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eva-context-task-popover__item-title span {
+    flex: none;
+    color: var(--semi-color-text-2, #8a8f99);
+    font-size: 10px;
+  }
+
+  .eva-context-task-popover__item p {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 3px 0 7px;
+    color: var(--semi-color-text-1, #4e5969);
+    font-size: 11px;
+    line-height: 17px;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .eva-context-task-popover__meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--semi-color-text-2, #8a8f99);
+    font-size: 10px;
+    line-height: 16px;
+  }
+
+  .eva-context-task-popover__assignee-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--eva-context-task-accent, #4f6bed);
+  }
+
+  .eva-context-task-popover__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .eva-context-task-popover__status::before {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #8a8f99;
+    content: '';
+  }
+
+  .eva-context-task-popover__status--in_progress::before { background: #4f6bed; }
+  .eva-context-task-popover__status--in_review::before { background: #9b51e0; }
+  .eva-context-task-popover__status--blocked::before { background: #f04f4f; }
+
+  .eva-context-task-popover__empty {
+    display: grid;
+    min-height: 174px;
+    place-items: center;
+    padding: 22px;
+    color: var(--semi-color-text-2, #8a8f99);
+    text-align: center;
+  }
+
+  .eva-context-task-popover__empty > div {
+    display: grid;
+    justify-items: center;
+    gap: 7px;
+  }
+
+  .eva-context-task-popover__empty svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .eva-context-task-popover__empty strong {
+    color: var(--semi-color-text-1, #4e5969);
+    font-size: 13px;
+  }
+
+  .eva-context-task-popover__empty span {
+    font-size: 11px;
+  }
+
+  .loop-card__project.eva-loop-card__conversation {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .loop-card__project.eva-loop-card__conversation::before {
+    color: var(--semi-color-text-2, #8a8f99);
+    content: '#';
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .eva-task-conversation-prop .eva-task-conversation-link {
+    min-width: 0;
+    max-width: 100%;
+    color: var(--semi-color-text-0, #1f2329);
+  }
+
+  .eva-task-conversation-prop .eva-task-conversation-link::before {
+    flex: none;
+    color: var(--semi-color-text-2, #8a8f99);
+    content: '#';
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .eva-task-conversation-prop .eva-task-conversation-link > span {
+    overflow: hidden;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eva-task-conversation-prop .eva-task-conversation-link.is-empty {
+    color: var(--semi-color-text-2, #8a8f99);
+    cursor: default;
+  }
+
+  .eva-task-conversation-prop .eva-task-conversation-link.is-empty::before {
+    content: '';
+  }
+

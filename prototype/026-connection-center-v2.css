@@ -1,0 +1,182 @@
+
+  .eva-merged-nav-hidden { display: none !important; }
+
+  .eva-connection-center {
+    position: fixed;
+    z-index: 285;
+    top: var(--topbar-height, 2.6rem);
+    right: 0;
+    bottom: 0;
+    left: var(--eva-drive-left, 260px);
+    overflow: auto;
+    background: #fff;
+    color: #1f2329;
+  }
+
+  .eva-connection-center[hidden] { display: none; }
+
+  .eva-connection-center-native-host { height: 100%; overflow: auto; background: #fff; }
+  .eva-connection-center.eva-connection-center--native {
+    position: relative;
+    z-index: auto;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    min-height: 100%;
+    overflow: visible;
+  }
+
+  .eva-connection-center__head {
+    display: flex;
+    min-height: 68px;
+    align-items: center;
+    gap: 16px;
+    padding: 0 26px;
+    border-bottom: 1px solid #e5e6eb;
+  }
+
+  .eva-connection-center__head h1 {
+    margin: 0;
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .eva-connection-center__head p {
+    margin: 0;
+    color: #7b828b;
+    font-size: 13px;
+  }
+
+  .eva-connection-center__body { padding: 24px 30px 34px; }
+
+  .eva-connection-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid #e5e6eb;
+  }
+
+  .eva-connection-tab {
+    position: relative;
+    display: inline-flex;
+    min-width: 96px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 16px 13px;
+    border: 0;
+    background: transparent;
+    color: #646a73;
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .eva-connection-tab:hover { color: #302447; }
+  .eva-connection-tab.is-active { color: #5b2da6; font-weight: 600; }
+  .eva-connection-tab.is-active::after {
+    position: absolute;
+    right: 12px;
+    bottom: -1px;
+    left: 12px;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: #6f3eb8;
+    content: '';
+  }
+
+  .eva-connection-tab__count {
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #f0ecf8;
+    color: #7043ae;
+    font-size: 11px;
+    line-height: 18px;
+  }
+
+  .eva-connection-panel { padding-top: 22px; }
+  .eva-connection-panel[hidden] { display: none; }
+
+  .eva-connection-panel__top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 17px;
+  }
+
+  .eva-connection-panel__top h2 { margin: 0 0 4px; font-size: 16px; }
+  .eva-connection-panel__top p { margin: 0; color: #7b828b; font-size: 13px; }
+
+  .eva-connection-search {
+    display: flex;
+    width: 260px;
+    height: 36px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 1px solid #dfe1e6;
+    border-radius: 8px;
+    color: #8b929b;
+    font-size: 13px;
+  }
+
+  .eva-connection-search svg,
+  .eva-connection-card svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .eva-connection-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(230px, 1fr));
+    gap: 14px;
+  }
+
+  .eva-connection-card {
+    display: flex;
+    min-height: 160px;
+    flex-direction: column;
+    padding: 17px;
+    border: 1px solid #e1e3e6;
+    border-radius: 13px;
+    background: #fff;
+  }
+
+  .eva-connection-card:hover {
+    border-color: #c9b8e4;
+    box-shadow: 0 3px 12px rgba(51, 38, 76, .06);
+  }
+
+  .eva-connection-card__head { display: flex; align-items: center; gap: 11px; }
+  .eva-connection-card__icon {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    place-items: center;
+    border-radius: 10px;
+    background: #f0ebf8;
+    color: #6f3eb8;
+  }
+  .eva-connection-card__title { min-width: 0; }
+  .eva-connection-card__title strong { display: block; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+  .eva-connection-card__title span { display: block; margin-top: 3px; color: #8a919a; font-size: 12px; }
+  .eva-connection-card__desc { flex: 1; margin: 14px 0; color: #5f666f; font-size: 13px; line-height: 20px; }
+  .eva-connection-card__foot { display: flex; align-items: center; padding-top: 12px; border-top: 1px solid #eef0f2; color: #858c95; font-size: 12px; }
+  .eva-connection-card__status { margin-left: auto; padding: 2px 8px; border-radius: 6px; background: #e9f7ee; color: #27804d; }
+  .eva-connection-card__status--off { background: #f1f2f4; color: #747b84; }
+  .eva-connection-card__action { margin-left: auto; padding: 4px 9px; border: 1px solid #dfe1e6; border-radius: 6px; background: #fff; color: #4e3a70; font: inherit; font-size: 12px; cursor: pointer; }
+  .eva-connection-card__action:hover { background: #f4f1f8; }
+
+  #eva-connection-center-nav.is-active { background: #e2e3e5; color: #1f2329; }
+
+  @media (max-width: 1100px) {
+    .eva-connection-grid { grid-template-columns: repeat(2, minmax(230px, 1fr)); }
+  }

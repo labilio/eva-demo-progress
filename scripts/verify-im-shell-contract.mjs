@@ -1,6 +1,6 @@
-import fs from 'node:fs';
+import { readActiveSource } from './lib/read-active-source.mjs';
 
-const source = fs.readFileSync('index.html', 'utf8');
+const source = readActiveSource();
 const failures = [];
 
 function requireMatch(pattern, message) {

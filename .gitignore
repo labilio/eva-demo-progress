@@ -5,19 +5,27 @@
 !vercel.json
 !.vercelignore
 !index.html
+!package.json
+!prototype-manifest.json
+!migration/
+!migration/**
+!prototype/
+!prototype/**
+!vendor/
+!vendor/**
+!tools/
+!tools/**
+!tests/
+!tests/**
 !scripts/
-scripts/*
-!scripts/verify-project-contract.mjs
-!scripts/verify-sidebar-selection-contract.mjs
-!scripts/verify-im-shell-contract.mjs
-!scripts/verify-message-routing-contract.mjs
-!scripts/verify-single-file-runtime.mjs
+!scripts/**
 !docs/
 docs/*
 !docs/项目与群聊成员体系.md
-!prototypes/
-prototypes/*
-!prototypes/eva demo 0904 -v1.html
+!docs/superpowers/
+!docs/superpowers/**
+build/*
+!build/.gitkeep
 .vercel/
 
 

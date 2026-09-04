@@ -12,7 +12,9 @@
 
 ## 当前工作稿
 
-- 当前唯一评审与修改入口为 `prototypes/eva demo 0904 -v1.html`。该文件是可独立打开的自包含工作稿；`index.html` 是同步入口，每轮修改后必须确认两者内容完全一致。更早日期或更低版本仅作历史参考，不再承接现行改动。
+- 当前唯一页面入口为 `index.html`，业务模块位于 `prototype/`，加载顺序由 `prototype-manifest.json` 声明。不得恢复 22MB 自包含 HTML，也不得保留第二份同步入口。
+- `vendor/eva-legacy-runtime.js` 只是从历史 Demo 抽出的迁移依赖，不是 Eva 产品或设计参照。AionUI 与新 Eva 没有产品关系；新增能力不得照搬或参照 AionUI，后续应按专项计划逐步移除该依赖。
+- 本地预览必须通过 `npm start` 使用 HTTP，不以 `file://` 作为运行合同。
 - `prototypes/eva-个人协作双模式-消息层级方案-工作稿.html` 及 `artifacts/source/build-message-hierarchy.mjs` 属于旧消息层级构建链，不再作为现行工作稿或修改入口，也不得用于覆盖当前工作稿。
 - `prototypes/eva-个人协作双模式-消息层级方案-9.2-v1.html` 是 2026-09-02 确认的评审快照，不得直接修改或由拼接脚本覆盖。
 - `prototypes/eva-个人协作双模式-方案A.html` 是受保护的参照副本，不得直接修改。

@@ -1,0 +1,125 @@
+
+  .eva-personal-feature-page,
+  .eva-project-detail-page {
+    position: fixed;
+    z-index: 280;
+    top: var(--topbar-height, 2.6rem);
+    right: 0;
+    bottom: 0;
+    left: var(--eva-drive-left, 260px);
+    overflow: auto;
+    background: #fff;
+    color: #1f2329;
+  }
+
+  .eva-personal-feature-page[hidden],
+  .eva-project-detail-page[hidden] { display: none; }
+
+  .eva-feature-head {
+    display: flex;
+    min-height: 64px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid #e5e6eb;
+  }
+
+  .eva-feature-head h1 { margin: 0; font-size: 20px; line-height: 28px; }
+  .eva-feature-body { padding: 26px 32px 32px; }
+  .eva-feature-intro { margin: 0 0 24px; color: #646a73; font-size: 14px; }
+  .eva-feature-actions { display: flex; align-items: center; gap: 10px; }
+  .eva-ui-btn {
+    display: inline-flex; height: 34px; align-items: center; justify-content: center; gap: 7px;
+    padding: 0 14px; border: 1px solid #dfe1e6; border-radius: 7px; background: #fff;
+    color: #2f3337; font: inherit; cursor: pointer;
+  }
+  .eva-ui-btn:hover { background: #f4f5f6; }
+  .eva-ui-btn--primary { border-color: #6f16e8; background: #7417f2; color: #fff; }
+  .eva-ui-btn--primary:hover { background: #6510da; }
+  .eva-ui-btn svg, .eva-feature-page svg, .eva-project-detail-page svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .eva-board-topline { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+  .eva-board-topline .eva-feature-intro { margin: 0; }
+  .eva-board-stats { display: grid; grid-template-columns: repeat(5, minmax(150px, 1fr)); gap: 14px; margin: 20px 0; }
+  .eva-board-stat { min-height: 92px; padding: 18px 20px; border: 1px solid #e3e5e8; border-radius: 16px; background: #f5f6f7; }
+  .eva-board-stat span { display: flex; align-items: center; gap: 8px; color: #737a84; font-size: 13px; }
+  .eva-board-stat strong { display: block; margin-top: 12px; font-size: 25px; line-height: 30px; }
+  .eva-board-filter { padding: 16px; border: 1px solid #e2e4e7; border-radius: 16px; background: #f4f5f7; }
+  .eva-board-filter__row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 12px; }
+  .eva-faux-field { display: flex; height: 38px; align-items: center; gap: 9px; padding: 0 13px; border: 1px solid #e1e3e6; border-radius: 10px; background: #fff; color: #30343a; font-size: 13px; }
+  .eva-faux-field--muted { color: #8b929b; }
+  .eva-board-check { display: flex; align-items: center; gap: 8px; margin-top: 13px; color: #646a73; font-size: 13px; }
+  .eva-board-check input { width: 15px; height: 15px; }
+  .eva-board-scroll { overflow-x: auto; padding: 18px 0 8px; }
+  .eva-board-columns { display: grid; min-width: 1500px; grid-template-columns: repeat(5, 300px); gap: 14px; }
+  .eva-board-column { min-height: 500px; padding: 14px; border: 1px solid #e2e4e7; border-radius: 15px; background: #fff; }
+  .eva-board-column--todo { border-color: #98dcfb; background: #f4fbff; }
+  .eva-board-column--planned { border-color: #d8b6ff; background: #fbf7ff; }
+  .eva-board-column--ready { border-color: #98e8c4; background: #f4fff9; }
+  .eva-board-column__head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+  .eva-board-column__dot { width: 10px; height: 10px; border-radius: 50%; background: #9da6b2; }
+  .eva-board-column--todo .eva-board-column__dot { background: #2ea7e8; }
+  .eva-board-column--planned .eva-board-column__dot { background: #8b18ef; }
+  .eva-board-column--ready .eva-board-column__dot { background: #18b978; }
+  .eva-board-column__count { margin-left: auto; padding: 1px 8px; border-radius: 7px; background: #f0f1f2; color: #858c95; font-size: 12px; }
+  .eva-board-column__empty { display: grid; min-height: 450px; margin-top: 12px; place-items: center; border: 1px dashed #e1e4e8; border-radius: 12px; color: #8d949d; font-size: 13px; }
+
+  .eva-auto-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+  .eva-auto-tabs { display: flex; gap: 24px; border-bottom: 1px solid #e5e6eb; }
+  .eva-auto-tab { position: relative; padding: 0 10px 13px; border: 0; background: transparent; color: #646a73; font: inherit; font-weight: 600; cursor: pointer; }
+  .eva-auto-tab.is-active { color: #1f2329; }
+  .eva-auto-tab.is-active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: #7417f2; content: ''; }
+  .eva-auto-count { margin-left: 5px; padding: 1px 7px; border-radius: 999px; background: #f0f1f2; color: #747b84; font-size: 12px; }
+  .eva-auto-task-grid { display: grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 14px; margin-top: 20px; max-width: 1000px; }
+  .eva-auto-task { padding: 17px 18px; border: 1px solid #dfe2e6; border-radius: 13px; background: #fff; }
+  .eva-auto-task__top { display: flex; align-items: center; gap: 10px; }
+  .eva-auto-task__top strong { font-size: 15px; }
+  .eva-auto-task__spacer { flex: 1; }
+  .eva-auto-switch { position: relative; width: 34px; height: 19px; padding: 0; border: 0; border-radius: 999px; background: #ccd1d7; cursor: pointer; }
+  .eva-auto-switch::after { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; content: ''; transition: transform .15s; }
+  .eva-auto-switch[aria-checked='true'] { background: #7417f2; }
+  .eva-auto-switch[aria-checked='true']::after { transform: translateX(15px); }
+  .eva-auto-more { padding: 0; border: 0; background: transparent; color: #8c939c; font-size: 20px; cursor: pointer; }
+  .eva-auto-task__desc { height: 42px; overflow: hidden; margin: 12px 0; color: #646a73; font-size: 13px; line-height: 21px; }
+  .eva-auto-task__meta { display: flex; align-items: center; gap: 6px; color: #7b828b; font-size: 12px; }
+  .eva-auto-status { margin-left: auto; padding: 2px 9px; border-radius: 999px; background: #f2f3f5; color: #7a818a; }
+  .eva-auto-template-title { display: flex; align-items: center; gap: 12px; margin: 36px 0 16px; color: #646a73; font-size: 13px; }
+  .eva-auto-template-title::after { height: 1px; flex: 1; background: #e5e6eb; content: ''; }
+  .eva-auto-template-grid { display: grid; grid-template-columns: repeat(3, minmax(240px, 1fr)); gap: 14px; }
+  .eva-auto-template { display: grid; grid-template-columns: 42px 1fr; gap: 12px; min-height: 112px; padding: 16px; border: 1px solid #e1e3e6; border-radius: 13px; background: #fff; text-align: left; cursor: pointer; }
+  .eva-auto-template:hover { border-color: #b7a2db; box-shadow: 0 2px 10px rgba(45,35,70,.06); }
+  .eva-auto-template__icon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 9px; background: #f3f4f6; color: #747b86; }
+  .eva-auto-template strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .eva-auto-template p { margin: 0; color: #646a73; font-size: 12px; line-height: 19px; }
+  .eva-auto-template time { display: flex; align-items: center; gap: 5px; margin-top: 7px; color: #8a919a; font-size: 12px; }
+  .eva-auto-history { display: grid; min-height: 280px; place-items: center; color: #8a919a; }
+
+  .collab-space-card .name,
+  .eva-organization-project-card .name { display: flex; align-items: center; gap: 8px; }
+  .collab-space-card { transition: border-color .16s ease, box-shadow .16s ease; }
+  .collab-space-card .collab-space-ic { background: var(--semi-color-fill-0, #f2f3f5); color: var(--semi-color-text-2, #4c4f56); transition: background-color .16s ease, color .16s ease; }
+  .collab-space-card:hover,
+  .collab-space-card:focus-visible { border-color: color-mix(in srgb, var(--eva-project-color, #86909c) 34%, #dfe1e6); box-shadow: 0 5px 16px color-mix(in srgb, var(--eva-project-color, #86909c) 10%, transparent); }
+  .eva-official-badge { display: inline-flex; align-items: center; padding: 1px 7px; border: 1px solid #e2e0fa; border-radius: 999px; background: #f1f0ff; color: #6862be; font-size: 11px; font-weight: 500; }
+  body.eva-official-project-open .collab-frame .ch-cat-gear { display: none !important; }
+  .eva-project-tag { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 999px; background: #eee7ff; color: #6d2bd1; font-size: 11px; font-weight: 500; }
+  .eva-project-tag--org { background: #e8f5ef; color: #18764d; }
+  .eva-project-detail-page { padding: 0; }
+  .eva-project-detail-head { display: flex; height: 62px; align-items: center; padding: 0 24px; border-bottom: 1px solid #e5e6eb; }
+  .eva-project-detail-head h1 { margin: 0; font-size: 18px; }
+  .eva-project-detail-head .eva-project-tag { margin-left: 10px; }
+  @media (prefers-reduced-motion: reduce) { .collab-space-card { transition: none; } }
+  .eva-project-tabs { display: flex; align-items: center; gap: 4px; padding: 10px 22px 0; border-bottom: 1px solid #e5e6eb; }
+  .eva-project-tab { padding: 9px 13px 11px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #646a73; font: inherit; cursor: pointer; }
+  .eva-project-tab.is-active { border-bottom-color: #7417f2; color: #1f2329; font-weight: 600; }
+  .eva-project-detail-body { padding: 24px; }
+  .eva-project-detail-note { margin: 0 0 18px; color: #646a73; font-size: 13px; }
+  .eva-project-groups { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 14px; max-width: 980px; }
+  .eva-project-group-card { padding: 16px; border: 1px solid #e1e3e6; border-radius: 12px; background: #fff; }
+  .eva-project-group-card strong { display: block; margin-bottom: 7px; }
+  .eva-project-group-card span { color: #737a84; font-size: 12px; }
+
+  @media (max-width: 1100px) {
+    .eva-board-stats { grid-template-columns: repeat(3, minmax(140px, 1fr)); }
+    .eva-auto-template-grid { grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+  }

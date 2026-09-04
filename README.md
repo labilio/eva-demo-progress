@@ -4,9 +4,12 @@ Eva 桌面端交互原型的在线进度预览。
 
 ## 当前入口
 
-- 现行自包含工作稿：`prototypes/eva demo 0904 -v1.html`
-- Vercel 发布入口：`index.html`
-- 两个文件必须保持字节一致，可运行 `node scripts/verify-project-contract.mjs` 检查。
+- 唯一页面入口：`index.html`
+- 可维护业务模块：`prototype/`
+- 暂存的旧运行时依赖：`vendor/`（后续逐步替换，不作为产品实现参照）
+- 模块加载顺序：`prototype-manifest.json`
+
+本地使用 `npm start` 后访问 `http://127.0.0.1:4173`。拆分版依赖 HTTP 加载，不再支持直接双击 `file://`；线上仍由 GitHub `main` 自动发布到 Vercel。
 
 ## 发布流程
 
@@ -26,3 +29,4 @@ GitHub `main` 是唯一生产发布入口：本地修改经明确授权 commit �
 - 团队 IM 入口共享一套 `EvaIMConversation`/Octo-Web IM 内核，只替换数据和入口配置。
 - Eva 页面外壳及通用界面优先使用既有封装或 Semi UI，不重造成熟 IM 组件。
 - 图标使用 Lucide；相同语义允许并应复用同一图标，不设“每个图标只能出现一次”的限制。
+- AionUI 仅是历史 Demo 的临时运行时依赖，与 Eva 的产品定位、设计和功能没有关系；新增功能不得参考 AionUI。

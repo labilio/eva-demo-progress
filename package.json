@@ -3,9 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "split": "node tools/split-standalone.mjs \"prototypes/eva demo 0904 -v1.html\" build/modular",
+    "start": "node tools/serve.mjs",
     "check:baseline": "node scripts/contracts/verify-baseline.mjs",
-    "check:manifest": "node tools/check-manifest.mjs build/modular/prototype-manifest.json",
+    "check:manifest": "node tools/check-manifest.mjs prototype-manifest.json",
+    "check:project": "node scripts/verify-project-contract.mjs",
     "test": "node --test tests/*.test.mjs"
   }
 }

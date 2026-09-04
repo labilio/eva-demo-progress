@@ -1,0 +1,51 @@
+
+  .eva-project-switcher-anchor {
+    display: inline-flex;
+    flex: none;
+  }
+
+  body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab-sp-chip.eva-project-switcher {
+    width: auto;
+    max-width: 176px;
+    min-height: 32px;
+    margin-bottom: 2px;
+    padding: 0 10px;
+    gap: 7px;
+    border-radius: 7px;
+    background: var(--semi-color-fill-0, #f7f8fa);
+    color: var(--semi-color-text-0, #1c1f23);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+
+  body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab-sp-chip.eva-project-switcher:hover {
+    background: var(--semi-color-fill-1, #f2f3f5);
+  }
+
+  .collab-sp-chip.eva-project-switcher .nm {
+    display: block;
+    overflow: hidden;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .collab-sp-chip.eva-project-switcher .eva-project-switcher__icon {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    color: var(--semi-color-text-2, #6b7075);
+  }
+
+  .collab-sp-chip.eva-project-switcher .eva-project-switcher__chevron {
+    width: 13px;
+    height: 13px;
+    flex: none;
+    color: var(--semi-color-text-2, #6b7075);
+  }
+
+  .eva-project-switcher-menu {
+    min-width: 176px;
+  }

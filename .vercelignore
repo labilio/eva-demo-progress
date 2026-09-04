@@ -1,3 +1,6 @@
 *
 !index.html
+!prototype-manifest.json
+!prototype/**
+!vendor/**
 !vercel.json

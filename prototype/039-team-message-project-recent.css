@@ -1,0 +1,244 @@
+
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] {
+    display: flex;
+    margin: 0;
+    padding: 0 14px 10px;
+    background: #f6f7f8;
+  }
+
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    height: 38px;
+    padding: 3px;
+    border-radius: 999px;
+    background: #e9e9eb;
+  }
+
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn {
+    min-height: 32px;
+    justify-content: center;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: transparent;
+    color: #6b7078;
+    font-weight: 400;
+  }
+
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn:hover {
+    background: rgb(255 255 255 / 56%);
+  }
+
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn--active,
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn--active:hover {
+    background: #fff;
+    color: #1f2329;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgb(31 35 41 / 14%);
+  }
+
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn:focus-visible {
+    outline: 2px solid #4d7f93;
+    outline-offset: 1px;
+  }
+
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__badge {
+    display: none;
+  }
+
+  body.eva-message-hierarchy-ready .eva-msg.eva-team-message-view--recent .ch-list__scroll > :not(.eva-project-recent-list) {
+    display: none !important;
+  }
+
+  body.eva-message-hierarchy-ready .eva-msg.eva-team-message-view--project .ch-list__scroll > .eva-created-group-section,
+  body.eva-message-hierarchy-ready .eva-msg.eva-team-message-view--project .ch-list__scroll > .eva-dm-scope {
+    display: none !important;
+  }
+
+  .eva-project-recent-list {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 8px 12px;
+  }
+
+  body.eva-message-hierarchy-ready .eva-msg.eva-team-message-view--recent .eva-project-recent-list {
+    display: flex;
+  }
+
+  .eva-project-recent-list__intro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 2px 8px;
+  }
+
+  .eva-project-recent-list__intro > span { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+  .eva-project-recent-list__intro strong { color: #1f2329; font-size: 13px; font-weight: 600; }
+  .eva-project-recent-list__intro small { color: #8f959e; font-size: 11px; }
+  .eva-project-recent-list__create {
+    display: inline-flex;
+    height: 30px;
+    flex: none;
+    align-items: center;
+    gap: 5px;
+    padding: 0 10px;
+    border: 1px solid #d9dce1;
+    border-radius: 8px;
+    background: #fff;
+    color: #1f2329;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .eva-project-recent-list__create:hover { background: #f1f2f4; }
+  .eva-project-recent-list__create:focus-visible { outline: 2px solid #4d7f93; outline-offset: 1px; }
+
+  .eva-project-recent-item {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    grid-template-rows: 20px 18px;
+    column-gap: 10px;
+    width: 100%;
+    min-height: 58px;
+    padding: 9px 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-text-1, #1d2129);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .eva-project-recent-item:hover,
+  .eva-project-recent-item[aria-current="true"] {
+    background: var(--color-fill-1, #e5e6eb);
+  }
+
+  .eva-project-recent-item:focus-visible {
+    outline: 2px solid rgb(var(--primary-6, 105, 92, 255));
+    outline-offset: -2px;
+  }
+
+  .eva-project-recent-item__avatar {
+    position: relative;
+    grid-row: 1 / span 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--eva-recent-surface, #eceef1);
+    color: var(--eva-recent-accent, #59636d);
+  }
+
+  .eva-project-recent-item__avatar > svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .eva-project-recent-item__thread-icon {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border: 2px solid #f6f7f8;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--color-text-2, #4e5969);
+  }
+
+  .eva-project-recent-item__thread-icon svg {
+    width: 10px;
+    height: 10px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .eva-project-recent-item__name {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eva-project-recent-item__parent {
+    display: block;
+    margin-bottom: -2px;
+    overflow: hidden;
+    color: var(--color-text-3, #86909c);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eva-project-recent-item--thread {
+    grid-template-rows: 14px 20px 18px;
+    min-height: 68px;
+  }
+
+  .eva-project-recent-item--thread .eva-project-recent-item__avatar {
+    grid-row: 1 / span 3;
+    margin-top: 7px;
+  }
+
+  .eva-project-recent-item--thread .eva-project-recent-item__parent {
+    grid-column: 2;
+  }
+
+  .eva-project-recent-item--thread .eva-project-recent-item__name {
+    grid-column: 2;
+  }
+
+  .eva-project-recent-item__time {
+    padding-left: 8px;
+    color: var(--color-text-3, #86909c);
+    font-size: 11px;
+    line-height: 20px;
+    white-space: nowrap;
+  }
+
+  .eva-project-recent-item--thread .eva-project-recent-item__time {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .eva-project-recent-item__preview {
+    grid-column: 2 / 4;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--color-text-2, #4e5969);
+    font-size: 12px;
+    line-height: 18px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eva-project-recent-item--thread .eva-project-recent-item__preview {
+    grid-row: 3;
+  }
+  .eva-showcase-task__link { display: block; margin-top: 6px; color: #6f55d9; font-size: 12px; text-decoration: none; }
+  .eva-showcase-task__link:hover { text-decoration: underline; }
+  .eva-recent-member-summary { margin-left: 8px; padding: 2px 7px; border: 1px solid #e0e3e7; border-radius: 5px; background: #f6f7f8; color: #7c838d; font-size: 11px; font-weight: 400; white-space: nowrap; }
