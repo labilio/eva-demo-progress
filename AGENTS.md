@@ -13,12 +13,22 @@
 ## 当前工作稿
 
 - 当前唯一页面入口为 `index.html`，业务模块位于 `prototype/`，加载顺序由 `prototype-manifest.json` 声明。不得恢复 22MB 自包含 HTML，也不得保留第二份同步入口。
+- 项目仓库为 `https://github.com/labilio/eva-demo-progress`；线上评审入口为 `https://eva-demo-progress.vercel.app/`。本地在仓库根目录运行 `npm start`，默认访问 `http://127.0.0.1:4173/`。
+- GitHub、Vercel 和本地不再维护三份页面：三者使用同一套模块化源码。GitHub `main` 是 Vercel 生产发布的唯一来源；本地工作区通常更新在前，但只有 push 到 `main` 后才会触发线上更新。
 - `vendor/eva-legacy-runtime.js` 只是从历史 Demo 抽出的迁移依赖，不是 Eva 产品或设计参照。AionUI 与新 Eva 没有产品关系；新增能力不得照搬或参照 AionUI，后续应按专项计划逐步移除该依赖。
 - 本地预览必须通过 `npm start` 使用 HTTP，不以 `file://` 作为运行合同。
 - `prototypes/eva-个人协作双模式-消息层级方案-工作稿.html` 及 `artifacts/source/build-message-hierarchy.mjs` 属于旧消息层级构建链，不再作为现行工作稿或修改入口，也不得用于覆盖当前工作稿。
 - `prototypes/eva-个人协作双模式-消息层级方案-9.2-v1.html` 是 2026-09-02 确认的评审快照，不得直接修改或由拼接脚本覆盖。
 - `prototypes/eva-个人协作双模式-方案A.html` 是受保护的参照副本，不得直接修改。
 - 项目群聊的现行结构只允许为“大群 → 可选子区”。不得重新引入项目内分类数据、分类标题、分类下拉、管理分组入口，或通过 CSS 隐藏这些旧结构。
+
+## 客户设计规范
+
+- 客户提供的设计规范源为 `gds-for-ai2.0.zip`（Eva GDS for AI 2.0）。它是个人 Eva 桌面体验的设计依据；AionUI、旧 Demo 和常见 AI 聊天产品都不能替代该规范。
+- GDS 的核心工程材料包括 `design.md`、`tokens.dtcg.json`、`tokens.json`、`components.json`、`validate.mjs` 以及 `assets/reference/` 六个状态参考图。实施相关页面前必须同时核对规范、语义 token、组件合同和对应状态截图，不能只看一张图近似手搓。
+- 当前 GDS 已验证的基准是 1200 × 800 桌面视口；个人 Eva 常规态使用 260/940 骨架、776 px 居中主列，主色为 `#1563EB`，圆角按 8/12/16/20 分级。生成中与完成态属于同一任务生命周期，不得拆成彼此无关的平行页面。
+- GDS 的适用范围是个人 Eva 体验。团队 IM 仍以 Octo-Web 成熟 IM 能力为标准；Eva 自有且需长期维护的通用界面优先复用现有封装或 Semi UI。三者边界不得混淆。
+- GDS 原始归档尚未作为可修改源码使用；合入仓库时应完整保留原始规范与参考资产，并将具体实现通过语义 token/组件适配层接入，不把原始色值散落到业务 CSS。
 
 ## IM 内核与图标规范
 
@@ -45,3 +55,11 @@
 - 任何进度汇报都必须区分四种状态：`本地已修改`、`GitHub main 已推送`、`Vercel 已部署`、`浏览器已验收`。后一状态不能由前一状态推导，必须分别有 Git、Vercel 和浏览器证据。
 - push 后等待 Vercel 自动部署，确认部署对应目标 commit，再进行线上浏览器检查。页面显示旧内容时先核对 commit、部署状态、缓存和页面“最近更新时间”，不得通过额外手动部署掩盖发布链路问题。
 - 每轮交付至少运行 `node scripts/verify-project-contract.mjs` 和与本次修改相关的专项检查；若声称视觉或交互已完成，还必须提供目标版本的浏览器实测证据。
+
+## 云端批注与评审
+
+- 原型批注是独立评审工具层，不是 Eva 产品 UI。源码位于 `review/`，数据库迁移位于 `supabase/migrations/`；不得把批注列表塞进 Eva 页面布局，也不得劫持 Eva 原有“反馈问题”入口。
+- 页面右上角的轻量“批注”入口只负责打开覆盖式侧栏；侧栏默认隐藏、不得挤压或改写 Eva 布局。批注按当前 hash 页面归类，但不是按访问者隔离。
+- 所有同事访问同一 Vercel 站点时，读写的是同一个 Supabase 项目 `eva-demo-comments`，因此能看到同一页面下的共享批注。姓名必填，姓名只用于评审署名，不等同于账号体系。
+- 前端只能使用 Supabase publishable key；禁止把 secret/service-role key 写入浏览器代码。公开表必须启用 RLS，匿名访问仅允许 `SELECT` 和受约束的 `INSERT`，不得给客户端更新或删除权限。
+- 批注改动必须验证：入口默认收起、侧栏覆盖而不占位、提交后可见、刷新后仍可读取、不同页面筛选正确；联调产生的测试批注在验证后清理。

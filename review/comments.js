@@ -41,7 +41,8 @@ function toast(message) {
 function ensureUI() {
   if (document.querySelector('.eva-review-panel')) return;
   document.body.insertAdjacentHTML('beforeend', `
-    <aside class="eva-review-panel" hidden aria-label="原型批注">
+    <button type="button" class="eva-review-launcher" data-review-launcher aria-expanded="false" aria-controls="eva-review-panel">批注</button>
+    <aside id="eva-review-panel" class="eva-review-panel" hidden aria-label="原型批注">
       <header class="eva-review-head"><strong>Comments</strong><span class="eva-review-mode">云端共享</span><button class="eva-review-button" data-review-add>添加批注</button><button class="eva-review-close" data-review-close aria-label="关闭">×</button></header>
       <div class="eva-review-list"></div>
     </aside>
@@ -55,7 +56,8 @@ function ensureUI() {
     </div>`);
   const savedName = localStorage.getItem('eva-review-author') || '';
   document.querySelector('.eva-review-card [name=author]').value = savedName;
-  document.querySelector('[data-review-close]').onclick = () => document.querySelector('.eva-review-panel').hidden = true;
+  document.querySelector('[data-review-launcher]').onclick = openPanel;
+  document.querySelector('[data-review-close]').onclick = closePanel;
   document.querySelector('[data-review-add]').onclick = startPicking;
   document.querySelector('[data-review-cancel]').onclick = closeDialog;
   document.querySelector('.eva-review-card').onsubmit = submitComment;
@@ -80,7 +82,20 @@ function renderList() {
   });
 }
 
-function openPanel() { ensureUI(); document.querySelector('.eva-review-panel').hidden = false; refresh(); }
+function openPanel() {
+  ensureUI();
+  document.querySelector('.eva-review-panel').hidden = false;
+  const launcher = document.querySelector('[data-review-launcher]');
+  launcher.hidden = true;
+  launcher.setAttribute('aria-expanded', 'true');
+  refresh();
+}
+function closePanel() {
+  document.querySelector('.eva-review-panel').hidden = true;
+  const launcher = document.querySelector('[data-review-launcher]');
+  launcher.hidden = false;
+  launcher.setAttribute('aria-expanded', 'false');
+}
 function startPicking() { state.picking = true; document.body.classList.add('eva-review-picking'); toast('点击页面中需要批注的位置'); }
 function openDialog(target) {
   state.target = target; const quote = quoteOf(target);
@@ -103,8 +118,6 @@ async function submitComment(event) {
 document.addEventListener('click', event => {
   if (event.target.closest('.eva-review-panel,.eva-review-dialog')) return;
   if (state.picking) { event.preventDefault(); event.stopPropagation(); state.picking=false; document.body.classList.remove('eva-review-picking'); openDialog(event.target); return; }
-  const label = event.target.closest('button,[role=button]')?.textContent?.trim();
-  if (label === '反馈问题') { event.preventDefault(); event.stopPropagation(); openPanel(); }
 }, true);
 window.addEventListener('hashchange', () => { if (!document.querySelector('.eva-review-panel')?.hidden) refresh(); });
 ensureUI();
