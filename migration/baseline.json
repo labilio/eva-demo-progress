@@ -1,0 +1,17 @@
+{
+  "sourceRevision": "830514a43343613c06e0e04893949e15faa20b11",
+  "migrationBaseRevision": "eb9431cf663ba088b702222870a895625c0e1d3a",
+  "entries": [
+    "index.html",
+    "prototypes/eva demo 0904 -v1.html"
+  ],
+  "canonicalSha256": "7da8a98c593e34d1ce70b395efecc5ca52b4ac9215ea60fb7b587800ee71517f",
+  "canonicalBytes": 22454723,
+  "requiredMarkers": [
+    "整理今天的工作重点",
+    "EVA + OCTO",
+    "evaMessageMode",
+    "EvaIMConversation",
+    "最近更新："
+  ]
+}
