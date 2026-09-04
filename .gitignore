@@ -12,6 +12,9 @@ scripts/*
 !scripts/verify-im-shell-contract.mjs
 !scripts/verify-message-routing-contract.mjs
 !scripts/verify-single-file-runtime.mjs
+!docs/
+docs/*
+!docs/项目与群聊成员体系.md
 !prototypes/
 prototypes/*
 !prototypes/eva demo 0904 -v1.html
