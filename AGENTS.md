@@ -27,6 +27,15 @@
 - 所有应用图标继续使用既有 Lucide 组件与语义。Lucide 图标允许重复使用：同一语义应优先复用同一图标，不同语义只在确实会造成识别混淆时调整；禁止把“每个图标只能出现一次”当作规则。
 - 禁止手写 SVG、Unicode 图形或临时 CSS 图形替代已有 Lucide 图标。若当前 bundle 没有所需导出，使用项目既有的 `createLucideIcon` 和 Lucide 官方节点定义创建组件，并保留标准 Lucide 类名、尺寸和 `currentColor` 行为。
 
+## UI 状态归属与迁移规则
+
+- 新增或修改 UI 状态前，必须明确三个信息：唯一所有者、可推导的数据源、组件切换时的重置边界。能够从路由或业务数据推导的视觉状态，不得再保存第二份 DOM、`window` 全局变量或 `body` class 状态。
+- 一级导航的唯一权威源是 URL／路由。选中态只能从当前路由推导；禁止通过“先点击另一个导航，再用覆盖层改结果”、手动互斥 `aria-current` 或捕获阶段拦截点击来模拟导航。
+- 团队 IM 的入口模式由 `evaMessageMode` 决定，会话内容由 `messageSource(evaMessageMode)` 提供，并统一交给 `ChannelsView`。模式变化必须通过组件身份或公共状态控制器重置内部会话状态，不得让上一模式的选中会话残留到下一模式。
+- DOM 增强脚本只能补充 React 未承载的独立 Demo 表面，不得把 DOM、MutationObserver、定时器或自定义事件作为 React 页面主状态。不得在一级导航或统一 IM 上新增捕获监听与 `stopImmediatePropagation()` 旁路。
+- 迁移只有在旧入口、旧数据副本、旧 CSS 状态选择器和旧事件控制器一并删除后才算完成；“已经没有调用方”不是保留平行实现的理由。
+- 涉及导航、路由或 IM 数据源的改动，交付前必须运行语义合同检查及最终生成 ES 模块语法检查。检查应验证状态归属和禁止的旁路模式，不使用脱离业务域的全局数量阈值代替架构判断。
+
 ## Git、发布与验收状态
 
 - 本项目生产发布链路固定为：本地修改 → 在用户明确授权后 commit → push 到 GitHub `main` → Vercel 自动部署。禁止默认执行 `vercel deploy`；只有用户明确要求临时 Preview Deployment 或排查 Vercel CLI 时才允许手动部署。

@@ -11,9 +11,9 @@ function forbidMatch(pattern, message) {
   if (pattern.test(source)) failures.push(message);
 }
 
-requireMatch(
-  /body\.eva-my-avatar-open \.eva-msg\s*\{[^}]*height:\s*auto[^}]*display:\s*flex[^}]*flex-direction:\s*column/s,
-  'My AI overlay does not preserve the shared full-height IM flex shell',
+forbidMatch(
+  /body\.eva-my-avatar-open \.eva-msg\s*\{/s,
+  'My AI still overlays a second positioned IM shell',
 );
 
 requireMatch(
