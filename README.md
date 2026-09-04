@@ -1,3 +1,28 @@
 # Eva Demo
 
 Eva 桌面端交互原型的在线进度预览。
+
+## 当前入口
+
+- 现行自包含工作稿：`prototypes/eva demo 0904 -v1.html`
+- Vercel 发布入口：`index.html`
+- 两个文件必须保持字节一致，可运行 `node scripts/verify-project-contract.mjs` 检查。
+
+## 发布流程
+
+GitHub `main` 是唯一生产发布入口：本地修改经明确授权 commit 并 push 后，由 Vercel 自动部署。日常更新不运行 `vercel deploy`；该命令只用于用户明确要求的临时预览或 CLI 排障。
+
+发布前后必须分别确认状态，不能把它们混称为“已经上线”：
+
+1. **本地已修改**：工作区文件已更新，尚未代表 GitHub 或线上发生变化。
+2. **GitHub main 已推送**：目标 commit 已到远端 `main`，尚未代表 Vercel 构建完成。
+3. **Vercel 已部署**：生产部署成功且对应目标 commit，尚未代表页面交互已经人工检查。
+4. **浏览器已验收**：等待自动部署生效后，在目标线上地址逐入口验证，并核对页面最近更新时间。
+
+用户未授权 commit/push 时，工作停留在“本地已修改”。部署失败或浏览器未检查时，必须如实停留在相应状态。
+
+## 实施边界
+
+- 团队 IM 入口共享一套 `EvaIMConversation`/Octo-Web IM 内核，只替换数据和入口配置。
+- Eva 页面外壳及通用界面优先使用既有封装或 Semi UI，不重造成熟 IM 组件。
+- 图标使用 Lucide；相同语义允许并应复用同一图标，不设“每个图标只能出现一次”的限制。

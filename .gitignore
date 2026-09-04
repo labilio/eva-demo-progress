@@ -1,12 +1,16 @@
 *
 !.gitignore
+!AGENTS.md
 !README.md
 !vercel.json
 !.vercelignore
 !index.html
+!scripts/
+scripts/*
+!scripts/verify-project-contract.mjs
 !prototypes/
 prototypes/*
-!prototypes/eva demo 0903 -v3.html
+!prototypes/eva demo 0904 -v1.html
 .vercel/
 
 
