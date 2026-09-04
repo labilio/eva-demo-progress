@@ -69,7 +69,7 @@
     if (/(^|:)(u-wangyilin|u-current-user(?:-[a-z-]+)?|王宜林)$/.test(stableId) && root.__EVA_CURRENT_USER_PORTRAIT) {
       return root.__EVA_CURRENT_USER_PORTRAIT;
     }
-    if (/(^|:)(EVA 官方|Eva 同学|我的分身（Eva 同学）)$/.test(stableId) && root.__EVA_COLLEAGUE_PORTRAIT) {
+    if (/(^|:)(b-wangyilin|b-pilot|EVA 官方|Eva 同学|我的分身（Eva 同学）)$/.test(stableId) && root.__EVA_COLLEAGUE_PORTRAIT) {
       return root.__EVA_COLLEAGUE_PORTRAIT;
     }
     var key = 'person:' + stableId;

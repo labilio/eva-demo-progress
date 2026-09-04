@@ -69,7 +69,8 @@
   }
 
   function isCollaborationMode() {
-    return /^#\/(collab|messages)(?:[/?]|$)/.test(String(location.hash || ''));
+    var hash = String(location.hash || '');
+    return /^#\/(collab|messages)(?:[/?]|$)/.test(hash) && !/[?&]evaIM=my-ai/.test(hash);
   }
 
   function memberRows(members, kind) {
