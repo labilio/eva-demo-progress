@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
+import './verify-sidebar-selection-contract.mjs';
 
 const currentPrototype = 'prototypes/eva demo 0904 -v1.html';
 const entryFile = 'index.html';
@@ -29,6 +30,7 @@ for (const trackedPath of [
   '!README.md',
   '!index.html',
   '!scripts/verify-project-contract.mjs',
+  '!scripts/verify-sidebar-selection-contract.mjs',
   `!${currentPrototype}`,
 ]) {
   if (!gitignore.split('\n').includes(trackedPath)) {

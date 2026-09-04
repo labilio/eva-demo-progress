@@ -8,6 +8,8 @@
 !scripts/
 scripts/*
 !scripts/verify-project-contract.mjs
+!scripts/verify-sidebar-selection-contract.mjs
+!scripts/verify-im-shell-contract.mjs
 !prototypes/
 prototypes/*
 !prototypes/eva demo 0904 -v1.html
