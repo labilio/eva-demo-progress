@@ -13,6 +13,8 @@
 !prototype/**
 !vendor/
 !vendor/**
+!review/
+!review/**
 !tools/
 !tools/**
 !tests/

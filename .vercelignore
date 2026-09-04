@@ -3,4 +3,5 @@
 !prototype-manifest.json
 !prototype/**
 !vendor/**
+!review/**
 !vercel.json

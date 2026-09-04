@@ -363,6 +363,30 @@
       "file": "prototype/044-final-layout-convergence.js",
       "bytes": 15836,
       "role": "prototype"
+    },
+    {
+      "order": 45,
+      "tag": "style",
+      "name": "review-comments",
+      "file": "review/comments.css",
+      "bytes": 0,
+      "role": "review"
+    },
+    {
+      "order": 46,
+      "tag": "script",
+      "name": "review-comments-store",
+      "file": "review/comments-store.mjs",
+      "bytes": 0,
+      "role": "review-module"
+    },
+    {
+      "order": 47,
+      "tag": "script",
+      "name": "review-comments",
+      "file": "review/comments.js",
+      "bytes": 0,
+      "role": "review-module"
     }
   ]
 }

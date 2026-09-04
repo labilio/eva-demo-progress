@@ -18,7 +18,7 @@ const vercelIgnore = read('.vercelignore').replace(/\r\n/g, '\n').trim();
 let manifest = { blocks: [] };
 try { manifest = JSON.parse(manifestText); } catch { fail('prototype-manifest.json is invalid JSON'); }
 
-for (const trackedPath of ['!index.html', '!prototype-manifest.json', '!prototype/**', '!vendor/**', '!scripts/**', '!tools/**', '!tests/**']) {
+for (const trackedPath of ['!index.html', '!prototype-manifest.json', '!prototype/**', '!vendor/**', '!review/**', '!scripts/**', '!tools/**', '!tests/**']) {
   if (!gitignore.split('\n').includes(trackedPath)) fail(`.gitignore does not expose ${trackedPath}`);
 }
 
@@ -36,7 +36,7 @@ for (const forbidden of ['EvaCtxIcon=', 'evaMenuIcons={']) {
   }
 }
 
-const expectedVercelIgnore = '*\n!index.html\n!prototype-manifest.json\n!prototype/**\n!vendor/**\n!vercel.json';
+const expectedVercelIgnore = '*\n!index.html\n!prototype-manifest.json\n!prototype/**\n!vendor/**\n!review/**\n!vercel.json';
 if (vercelIgnore !== expectedVercelIgnore) fail('.vercelignore does not publish the complete modular runtime');
 if (entry.length > 100_000) fail(`index.html is too large (${entry.length} characters)`);
 if (!manifest.blocks?.some(block => block.file === 'vendor/eva-legacy-runtime.js')) fail('manifest does not declare the transitional legacy runtime');
