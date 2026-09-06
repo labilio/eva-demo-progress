@@ -37,7 +37,7 @@
           ],
           [
             'ISSUES_BY_SPACE={[SPACE_DATA_KEY]:MOCK_ISSUES}',
-            'ISSUES_BY_SPACE={prod:window.__EVA_SUPPLY_CHAIN_DEMO.issues,"drive-design":window.__EVA_DRIVE_DEMO.issues},evaUpsertContextTask=window.__evaUpsertContextTask=(rt,ct)=>{const ut=ISSUES_BY_SPACE[rt]??(ISSUES_BY_SPACE[rt]=[]),pt=ut.findIndex(mt=>mt.identifier===ct.identifier);pt>=0?ut[pt]={...ut[pt],...ct}:ut.push(ct)}'
+            'ISSUES_BY_SPACE={prod:window.__EVA_SUPPLY_CHAIN_DEMO.issues,"drive-design":window.__EVA_DRIVE_DEMO.issues}'
           ],
           [
             'CANDIDATES=[...AGENTS.map(rt=>({id:rt.id,type:"agent",name:rt.name})),...SQUADS.map(rt=>({id:rt.id,type:"squad",name:rt.name})),...MEMBERS.map(rt=>({id:rt.user_id,type:"member",name:rt.name??rt.user_id,octo_uid:rt.octo_uid}))]',
@@ -89,7 +89,7 @@
           ],
           [
             'function CollabPage(){const[rt,ct]=reactExports.useState(()=>loadSpaces()),[ut,pt]=reactExports.useState(null),mt=rt.find(gt=>gt.id===ut)??null;return',
-            'function CollabPage(){const[rt,ct]=reactExports.useState(()=>loadSpaces()),[ut,pt]=reactExports.useState(null),mt=rt.find(gt=>gt.id===ut)??null;reactExports.useEffect(()=>{const gt=()=>{WKApp$1.routeRight.popAll(),pt(null)};return window.addEventListener("eva:open-project-directory",gt),()=>window.removeEventListener("eva:open-project-directory",gt)},[]);return'
+            'function CollabPage(){const evaProjectLocation=useLocation(),evaProjectNavigate=useNavigate(),evaRouteMemberStore=evaMembers().store;reactExports.useSyncExternalStore(evaRouteMemberStore.subscribe,evaRouteMemberStore.getSnapshot);const[rt,ct]=reactExports.useState(()=>loadSpaces()),ut=new URLSearchParams(evaProjectLocation.search).get("evaProject"),pt=id=>evaProjectNavigate(id?"/collab?evaProject="+encodeURIComponent(id):"/collab"),mt=rt.find(gt=>gt.id===ut&&evaRouteMemberStore.canRead(gt.id,evaRouteMemberStore.snapshot().actorId))??null;reactExports.useEffect(()=>{const gt=()=>{WKApp$1.routeRight.popAll(),pt(null)};return window.addEventListener("eva:open-project-directory",gt),()=>window.removeEventListener("eva:open-project-directory",gt)},[evaProjectNavigate]);return'
           ],
           [
             'if(Array.isArray(ct)&&ct.length){const ut=new Set(ct.map(pt=>pt.id));return[...ct,...DEFAULTS.filter(pt=>!ut.has(pt.id))]}',
@@ -179,27 +179,35 @@
     source=root.__evaCut(source,'async function demoFileUrl(rt){const ct=cache.get(rt);','async function demoFileUrl(rt){const evaSample=window.__EVA_FILE_SAMPLE_URLS?.[rt];if(evaSample)return evaSample;const ct=cache.get(rt);','演示文件静态内容');
     const infoStart=source.indexOf('function GeneralTab('),infoEnd=source.indexOf('function WebhooksTab(',infoStart);
     if(infoStart<0||infoEnd<infoStart)throw new Error('项目信息组件边界不匹配');
-    source=root.__evaCut(source,source.slice(infoStart,infoEnd),String.raw`function evaSaveProjectInfo(id,{name,goal}){
+    source=root.__evaCut(source,source.slice(infoStart,infoEnd),String.raw`function evaProjectIssuePrefix(project){
+      if(project.issue_prefix)return project.issue_prefix;
+      const existing=(ISSUES_BY_SPACE[project.id]||[]).find(issue=>/^[A-Z][A-Z0-9]*-\d+$/.test(issue.identifier||''));
+      return existing?existing.identifier.slice(0,existing.identifier.lastIndexOf('-')):'P'+Array.from(project.id).map(c=>c.charCodeAt(0).toString(16)).join('').toUpperCase();
+    }
+    function evaSaveProjectInfo(id,{name,goal,issuePrefix}){
       const store=evaMembers().store,actor=store.snapshot().actorId;
       if(!store.manager(id,actor))throw new Error('仅项目负责人或管理员可修改');
-      name=name.trim();goal=goal.trim();
+      const projects=loadSpaces(),project=projects.find(p=>p.id===id);if(!project)throw new Error('项目不存在');
+      name=name.trim();goal=goal.trim();issuePrefix=(issuePrefix??evaProjectIssuePrefix(project)).trim().toUpperCase();
       if(!name||name.length>50)throw new Error('项目名称须为 1–50 个字符');
       if(goal.length>2000)throw new Error('共同目标最多 2000 个字符');
-      const projects=loadSpaces();if(!projects.some(p=>p.id===id))throw new Error('项目不存在');
-      const next=projects.map(p=>p.id===id?{...p,name,short:name.slice(0,1),desc:goal}:p);
+      if(!/^[A-Z][A-Z0-9]*$/.test(issuePrefix))throw new Error('任务前缀须以英文字母开头，仅包含字母和数字');
+      if(projects.some(p=>p.id!==id&&(evaProjectIssuePrefix(p)===issuePrefix||(ISSUES_BY_SPACE[p.id]||[]).some(issue=>String(issue.identifier||'').startsWith(issuePrefix+'-')))))throw new Error('该任务前缀已被其他项目使用');
+      const next=projects.map(p=>p.id===id?{...p,name,short:name.slice(0,1),desc:goal,issue_prefix:issuePrefix}:p);
       localStorage.setItem(KEY,JSON.stringify(next));
       store.renameProject(id,actor,name);
       return next;
     }
     function GeneralTab({workspace:project,onUpdated}){
       const store=evaMembers().store,revision=reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot),actor=store.snapshot().actorId;
-      const [name,setName]=reactExports.useState(project.name),[goal,setGoal]=reactExports.useState(project.desc||''),[error,setError]=reactExports.useState(''),[saved,setSaved]=reactExports.useState(false);
+      const [name,setName]=reactExports.useState(project.name),[goal,setGoal]=reactExports.useState(project.desc||''),[issuePrefix,setIssuePrefix]=reactExports.useState(evaProjectIssuePrefix(project)),[error,setError]=reactExports.useState(''),[saved,setSaved]=reactExports.useState(false);
       reactExports.useEffect(()=>setSaved(false),[project.id,actor]);
-      reactExports.useEffect(()=>{setName(project.name);setGoal(project.desc||'');setError('');},[project.id,project.name,project.desc,actor]);
-      const editable=store.manager(project.id,actor),changed=name.trim()!==project.name||goal.trim()!==(project.desc||'');
-      const save=()=>{try{const next=evaSaveProjectInfo(project.id,{name,goal});onUpdated?.(next);setError('');setSaved(true);}catch(e){setError(e.message||'保存失败，请重试');}};
+      reactExports.useEffect(()=>{setName(project.name);setGoal(project.desc||'');setIssuePrefix(evaProjectIssuePrefix(project));setError('');},[project.id,project.name,project.desc,project.issue_prefix,actor]);
+      const editable=store.manager(project.id,actor),changed=name.trim()!==project.name||goal.trim()!==(project.desc||'')||issuePrefix.trim().toUpperCase()!==evaProjectIssuePrefix(project);
+      const save=()=>{try{const next=evaSaveProjectInfo(project.id,{name,goal,issuePrefix});onUpdated?.(next);setError('');setSaved(true);}catch(e){setError(e.message||'保存失败，请重试');}};
       return React.createElement('div',{className:'eva-project-info'},
         React.createElement('div',{className:'eva-project-info-field'},React.createElement('label',{htmlFor:'eva-project-name'},'项目名称'),React.createElement(ForwardInput,{id:'eva-project-name','aria-label':'项目名称',value:name,maxLength:50,disabled:!editable,onChange:value=>{setName(value);setSaved(false);}})),
+        React.createElement('div',{className:'eva-project-info-field'},React.createElement('label',{htmlFor:'eva-project-issue-prefix'},'任务前缀'),React.createElement(ForwardInput,{id:'eva-project-issue-prefix','aria-label':'任务前缀',value:issuePrefix,disabled:!editable,placeholder:'例如 SC',onChange:value=>{setIssuePrefix(value.toUpperCase());setSaved(false);}}),React.createElement('p',{className:'eva-members-muted'},'完整任务编号由前缀和数字组成，例如 SC-101。Bot / CLI 按完整编号查找任务；修改前缀只影响新任务，已有编号保留。')),
         React.createElement('div',{className:'eva-project-info-field'},React.createElement('label',{htmlFor:'eva-project-goal'},'共同目标'),React.createElement('textarea',{id:'eva-project-goal','aria-label':'共同目标',value:goal,maxLength:2000,rows:6,disabled:!editable,placeholder:'说明大家为什么协作，以及希望共同达成什么结果',onChange:e=>{setGoal(e.target.value);setSaved(false);}}),React.createElement('p',{className:'eva-members-muted'},'帮助项目成员和 AI 理解协作背景与预期成果。')),
         error&&React.createElement('p',{role:'alert',className:'eva-members-error'},error),
         saved&&React.createElement('p',{role:'status',className:'eva-members-muted'},'项目信息已保存'),
@@ -211,6 +219,40 @@
     source=root.__evaCut(source,'space:mt,spaces:rt,onSwitch:gt=>pt(gt)','space:mt,spaces:rt,onSwitch:gt=>pt(gt),onProjectUpdated:ct','项目列表刷新');
     source=root.__evaCut(source,'[pt,xt,rt.id,evaProjectMemberRevision]','[pt,xt,rt,evaProjectMemberRevision,evaProjectUpdated]','项目信息更新刷新内容');
     source=root.__evaCut(source,'name:"团队文件功能设计",short:"团",desc:(St.desc||"").replaceAll("云盘","团队文件")','name:St.name,short:St.short,desc:St.desc||""','保留用户修改的项目名称与目标');
+    source=root.__evaCut(source,'createIssue=rt=>{const ut={...MOCK_ISSUES[0],...rt,id:`mock-${Date.now().toString(36)}`,identifier:`WS-${issuesOf().length+1}`};return issuesOf().push(ut),Promise.resolve(ut)}',String.raw`createIssue=rt=>{
+      const pid=rt.workspace_id||currentSpaceId(),project=loadSpaces().find(p=>p.id===pid),store=evaMembers().store,snapshot=store.snapshot(),scope=snapshot.projects[pid];
+      if(!project||!scope||!store.canRead(pid,snapshot.actorId))return Promise.reject(new Error("请先进入已加入的项目"));
+      if(!String(rt.title||"").trim())return Promise.reject(new Error("请填写任务名称"));
+      const allowed=[...scope.humans.map(p=>p.id),...(scope.cloneIds||[]),...(scope.employeeIds||[]),store.projectAgent(pid)?.id];
+      if(rt.assignee_id&&!allowed.includes(rt.assignee_id))return Promise.reject(new Error("负责人已不在本项目，请重新选择"));
+      if(rt.reviewer_id&&!scope.humans.some(p=>p.id===rt.reviewer_id))return Promise.reject(new Error("验收人已不在本项目，请重新选择"));
+      const list=ISSUES_BY_SPACE[pid]||(ISSUES_BY_SPACE[pid]=[]);
+      if(rt.parent_issue_id&&!list.some(i=>i.id===rt.parent_issue_id))return Promise.reject(new Error("父任务不属于当前项目"));
+      const prefix=evaProjectIssuePrefix(project),number=1+Math.max(0,...list.map(i=>{const match=String(i.identifier||"").match(/-(\d+)$/);return match?Number(match[1]):Number(i.number)||0;})),now=new Date().toISOString(),creator=store.person(snapshot.actorId),attachments=(rt.attachment_ids||[]).map(id=>evaLoopTaskAttachments.get(id)).filter(Boolean),attachmentText=attachments.length?"\n\n## 参考附件\n"+attachments.map(a=>"- ["+a.name.replace(/[\[\]]/g,"")+"]("+a.url+")").join("\n"):"";
+      const isHuman=scope.humans.some(p=>p.id===rt.assignee_id),assignee=rt.assignee_id?(isHuman?store.person(rt.assignee_id):(scope.cloneIds||[]).includes(rt.assignee_id)?store.clone(rt.assignee_id):(scope.employeeIds||[]).includes(rt.assignee_id)?store.employee(rt.assignee_id):store.projectAgent(pid)):null;
+      const ut={...rt,id:"issue-"+pid+"-"+prefix+"-"+number,title:rt.title.trim(),description:(rt.description||"")+attachmentText,workspace_id:pid,project_id:pid==='prod'?'p-supply':null,project_name:project.name,number,identifier:prefix+"-"+number,status:rt.status||"todo",priority:rt.priority||"none",assignee_id:rt.assignee_id||null,assignee_type:assignee?(isHuman?"member":"agent"):null,assignee_name:assignee?.name||null,creator_id:snapshot.actorId,creator_name:creator?.name||"",creator_avatar:creator?.avatar||window.__EVA_CURRENT_USER_PORTRAIT,created_at:now,updated_at:now,position:list.length+1,attachments};
+      list.push(ut);return Promise.resolve(ut);
+    }`,'项目任务完整编号');
+    const evaCreateStart=source.indexOf('function CreateIssueModal('),evaCreateEnd=source.indexOf('const{Text:Text$c}=Typography;',evaCreateStart);
+    if(evaCreateStart<0||evaCreateEnd<evaCreateStart)throw new Error('新建 Loop 任务组件边界不匹配');
+    source=root.__evaCut(source,source.slice(evaCreateStart,evaCreateEnd),String.raw`const evaLoopTaskAttachments=new Map();
+    function CreateIssueModal(props){
+      const store=evaMembers().store;reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot);
+      const project=loadSpaces().find(p=>p.id===(props.projectId||currentSpaceId()));
+      return window.EvaLoopTaskCreateUI.render(props,{React:reactExports,Modal,Button,Input:ForwardInput,TextArea,Select,icons:{X,Paperclip:Paperclip$3,Trash2},members:store,HumanIdentity:evaMembers().ui.HumanIdentity,project,getPrefix:()=>project?evaProjectIssuePrefix(project):'',createIssue:payload=>props.canCreate&&!props.canCreate()?Promise.reject(new Error('已失去当前会话或项目的访问权限')):createIssue(payload),uploadAttachment:file=>{
+        if(!file||file.size>20*1024*1024)return Promise.reject(new Error('单个附件不能超过 20 MB'));
+        const record={id:'task-file:'+crypto.randomUUID(),name:file.name,size:file.size,mime_type:file.type,url:URL.createObjectURL(file)};evaLoopTaskAttachments.set(record.id,record);return Promise.resolve(record);
+      },listLabels,attachLabel});
+    }`,'项目 Loop 任务完整创建表单');
+    source=root.__evaCut(source,'const evaProjectMemberStore=evaMembers().store,evaProjectMemberRevision=', 'const evaTaskLocation=useLocation();reactExports.useEffect(()=>{if(new URLSearchParams(evaTaskLocation.search).get("evaTab")==="tasks"){WKApp$1.routeRight.popAll();mt("tasks");}},[rt.id,evaTaskLocation.key]);const evaProjectMemberStore=evaMembers().store,evaProjectMemberRevision=', '项目 Loop 路由标签');
+    source=root.__evaCut(source,'getIssue=rt=>Promise.resolve(issuesOf().find(ct=>ct.id===rt)??MOCK_ISSUES[0])','getIssue=rt=>{const issue=issuesOf().find(ct=>ct.id===rt||ct.identifier===rt);return issue?Promise.resolve(issue):Promise.reject(new Error("当前项目找不到任务："+rt))}','按完整任务编号查找');
+    source=root.__evaCut(source,'listRuns=()=>Promise.resolve([{id:"run-supply-1-1"','listRuns=rt=>Promise.resolve((rt&&issuesOf().some(issue=>issue.id===rt)?[{id:"run-supply-1-1"','运行历史要求当前项目任务');
+    source=root.__evaCut(source,'trigger_summary:"@提及后完成间接采购需求归集"}]),listRunMessages=', 'trigger_summary:"@提及后完成间接采购需求归集"}]:[]).filter(run=>run.issue_id===rt)),listRunMessages=', '运行历史按任务隔离');
+    source=root.__evaCut(source,'Promise.all([getIssue(rt),listComments(rt),listRuns()])','Promise.all([getIssue(rt),listComments(rt),listRuns(rt)])','任务详情传入运行任务ID');
+    source=root.__evaCut(source,'Pa=()=>listRuns().then(mr)','Pa=()=>listRuns(rt).then(mr)','刷新运行历史传入任务ID');
+    source=root.__evaCut(source,'listComments=rt=>{const ct=', 'listComments=rt=>{if(!rt||!issuesOf().some(issue=>issue.id===rt))return Promise.resolve([]);const ct=', '评论限制当前项目任务');
+    source=root.__evaCut(source,'listChildren=rt=>Promise.resolve(issuesOf().filter(ct=>ct.parent_issue_id===rt))','listChildren=rt=>Promise.resolve(rt&&issuesOf().some(issue=>issue.id===rt)?issuesOf().filter(ct=>ct.parent_issue_id===rt):[])','子任务限制当前项目父任务');
+    source=root.__evaCut(source,'listTimeline().then(no=>{Wi()&&sr(no)})','listTimeline(rt).then(no=>{Wi()&&sr(no)})','任务动态明确任务ID');
     return source;
   });
 })(window);

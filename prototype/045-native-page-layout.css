@@ -11,8 +11,7 @@
 .eva-native-page-host > .eva-drive,
 body.eva-message-hierarchy-ready .eva-native-page-host > .eva-contacts,
 .eva-native-page-host > .eva-personal-feature-page,
-.eva-native-page-host > .eva-personal-chat-surface,
-.eva-native-page-host > .eva-digital-employee-page {
+.eva-native-page-host > .eva-personal-chat-surface {
   position: relative;
   z-index: auto;
   inset: auto;
@@ -26,8 +25,7 @@ body.eva-message-hierarchy-ready .eva-native-page-host > .eva-contacts,
   grid-template-columns: minmax(0, 1fr);
 }
 
-.eva-native-page-host > .eva-personal-feature-page,
-.eva-native-page-host > .eva-digital-employee-page {
+.eva-native-page-host > .eva-personal-feature-page {
   overflow: auto;
 }
 

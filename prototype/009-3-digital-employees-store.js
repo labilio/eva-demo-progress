@@ -1,0 +1,93 @@
+(function(root){
+  'use strict';
+  const seed=root.__EVA_DIGITAL_EMPLOYEES_DATA, key='eva:digital-employees:v1';
+  let saved;try{saved=JSON.parse(root.localStorage.getItem(key));}catch{}
+  let state={agents:seed.agents, drafts:{}, chats:{}, teamIds:[],...saved};
+  // Remove the retired employee from existing local demo state as well as the seed.
+  state.agents=state.agents.filter(a=>a.id!=='s_AS00139');
+  state.teamIds=state.teamIds.filter(id=>id!=='s_AS00139');
+  delete state.chats.s_AS00139;
+  try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}
+  let revision=0;const listeners=new Set();
+  const publish=()=>{revision++;try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}listeners.forEach(fn=>fn());};
+  const get=id=>state.agents.find(a=>a.id===id);
+  const now=()=>new Date().toISOString();
+  const titleOf=messages=>String(messages.find(m=>m.sender?.uid==='u-wangyilin'&&m.text)?.text||'新对话').trim().slice(0,32);
+  // Preserve the old employee conversation as one stable session before any reads.
+  Object.entries(state.chats).forEach(([id,chat])=>{
+    if(!Array.isArray(chat.sessions))state.chats[id]={sessions:[{...chat,id:'digital-session:'+id+':legacy',title:titleOf(chat.messages||[]),updatedAt:chat.updatedAt||now(),pinned:false,messages:chat.messages||[],draft:chat.draft||''}]};
+  });
+  const list=id=>state.chats[id]?.sessions||[];
+  const latest=id=>[...list(id)].reverse().sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))[0];
+  const readSession=(id,sessionId)=>sessionId?list(id).find(s=>s.id===sessionId):latest(id);
+  const newSession=id=>{
+    if(!get(id))throw new Error('数字员工不存在');
+    const session={id:'digital-session:'+id+':'+root.crypto.randomUUID(),title:'新对话',updatedAt:now(),pinned:false,messages:[],draft:''};
+    state.chats[id]||={sessions:[]};state.chats[id].sessions.push(session);return session;
+  };
+  const writable=(id,sessionId)=>{
+    const session=readSession(id,sessionId);
+    if(session)return session;
+    if(sessionId)throw new Error('会话已删除');
+    return newSession(id);
+  };
+  const setSessionDraft=(id,sessionId,draft)=>{writable(id,sessionId).draft=draft;publish();};
+  const sendSession=(id,sessionId,text)=>{
+    const a=get(id);if(!a)throw new Error('数字员工不存在');if(!text.trim())return false;
+    const session=writable(id,sessionId),time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    if(!session.messages.some(m=>m.sender?.uid==='u-wangyilin'))session.title=text.trim().slice(0,32);
+    session.messages.push({kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time,text},{kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time,text:a.presence==='offline'?'【原型】已排队，待数字员工上线后处理。':'【原型】已收到请求，后续由 '+a.name+' 的服务处理。当前未调用真实服务。'});
+    session.draft='';session.updatedAt=now();publish();return true;
+  };
+  const appearance=a=>({name:a.name,sourceName:'Eva',logo:root.__EVA_COLLEAGUE_PORTRAIT,ownerName:a.ownership==='personal'?(a.creatorName||'王宜林'):'吉利汽车集团',ownerAvatar:a.ownership==='personal'?root.__EVA_CURRENT_USER_PORTRAIT:'prototype/assets/project-agent-bot.svg'});
+  // One-time additive demo migration; never overwrite edits or restore deleted sessions.
+  if(!state.professionalDemoV1){
+    Object.entries(seed.demoConversations||{}).forEach(([id,stories])=>{
+      const a=get(id);if(!a)return;
+      state.chats[id]||={sessions:[]};
+      const room=Math.max(0,3-state.chats[id].sessions.length);
+      stories.slice(0,room).forEach(([title,question,answer],index)=>{
+        const sessionId='digital-session:'+id+':professional-v1:'+index;
+        if(state.chats[id].sessions.some(s=>s.id===sessionId))return;
+        state.chats[id].sessions.push({id:sessionId,title,updatedAt:'2026-09-06T'+String(9+index).padStart(2,'0')+':10:00Z',pinned:false,draft:'',messages:[
+          {kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time:'17:00',text:question},
+          {kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time:'17:01',text:answer}
+        ]});
+      });
+      if(!state.teamIds.includes(id))state.teamIds.push(id);
+    });
+    state.professionalDemoV1=true;publish();
+  }
+  if(!state.compactDemoV1){Object.values(state.chats).forEach(chat=>chat.sessions.forEach(session=>session.messages.forEach(m=>{if(m.sender?.ai&&Object.hasOwn(seed.compactCopy||{},m.text))m.text=seed.compactCopy[m.text];})));state.compactDemoV1=true;publish();}
+  root.EvaDigitalEmployeesStore={
+    subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
+    agents:()=>state.agents,get,appearance,chatIds:()=>Object.keys(state.chats),
+    teamIds:()=>state.teamIds.filter(id=>get(id)?.kind==='staff'),
+    hasInTeam:id=>state.teamIds.includes(id),
+    addToTeam(id){if(get(id)?.kind!=='staff')throw new Error('请选择数字员工');if(state.teamIds.includes(id))return false;state.teamIds=[...state.teamIds,id];publish();return true;},
+    removeFromTeam(id){state.teamIds=state.teamIds.filter(value=>value!==id);publish();},
+    sessions(id){return [...list(id)].reverse().sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||b.updatedAt.localeCompare(a.updatedAt)).map(({id,title,updatedAt,pinned})=>({id,title,updatedAt,pinned}));},
+    createSession(id){const session=newSession(id);publish();return session.id;},
+    setSessionFlag(id,sessionId,flag,value){if(flag!=='pinned')throw new Error('不支持的会话设置');const session=readSession(id,sessionId);if(!session)return;session.pinned=!!value;publish();},
+    deleteSession(id,sessionId){if(!state.chats[id])return;state.chats[id].sessions=list(id).filter(s=>s.id!==sessionId);publish();},
+    conversationSource(id,sessionId){
+      const a=get(id);if(!a)return null;
+      const selected=readSession(id,sessionId);if(sessionId&&!selected)return null;
+      const c=selected||{messages:[],draft:''},targetId=selected?.id,channelId=targetId||'digital-chat:'+id;
+      return {conversationOnly:true,channels:[{id:channelId,name:a.name,sessionTitle:c.title||'新对话',chatType:'direct',members:2,threads:[],identityId:id,identityName:a.name,identityAppearance:appearance(a),identityAvatarUrl:root.__EVA_COLLEAGUE_PORTRAIT}],cats:[],messages:{[channelId]:c.messages.map(m=>({...m,sender:m.sender.uid==='u-wangyilin'?{...m.sender,avatar:root.__EVA_CURRENT_USER_PORTRAIT}:m.sender}))},threadMessages:{},scopeNameOf:{},initialDraft:c.draft,onDraftChange:text=>setSessionDraft(id,targetId,text),onSend:text=>sendSession(id,targetId,text)};
+    },
+    saveDraft(type,draft){state.drafts[type]=structuredClone(draft);publish();},draft:type=>state.drafts[type],
+    create(type,draft){
+      const rt=seed.runtimes.find(r=>r.key===type);if(!rt)throw new Error('请选择创建类型');
+      const name=draft.name?.trim();if(!name)throw new Error('请填写名称');
+      const no='AS'+String(Math.max(518,...state.agents.map(a=>Number(a.no?.replace('AS',''))||0))+1).padStart(5,'0');
+      const a={id:'digital:'+no,no,name,kind:type==='team'?'team':'staff',market:'mine',by:'u-wangyilin',creatorName:'王宜林',ownership:type==='mine'?'personal':type==='team'?'project':'organization',domain:draft.domain||'数智化',tier:draft.tier||'small',presence:'online',runtime:type==='dify'?'dify':type==='domain'?'external':'cloud',scope:type==='mine'?'self':type==='team'?'project':draft.publication==='org'?'org':'self',one:draft.one||'',desc:draft.description||'',skills:draft.skills||[],systems:draft.conn||[],configuration:structuredClone(draft),role:draft.role||'记录员',projectId:type==='team'?draft.target:undefined,tagline:type==='mine'?'我建的 · 只有我能拉进群':type==='team'?'项目 AI 助手':type==='dify'?'Dify 工作流 · 我接的':'业务域接入 · 我接的'};
+      state.agents=[...state.agents,a];delete state.drafts[type];publish();return a;
+    },
+    discardCreated(id){state.agents=state.agents.filter(a=>a.id!==id);publish();},
+    chat(id){return readSession(id)||{messages:[],draft:''};},
+    setDraft(id,draft){setSessionDraft(id,null,draft);},
+    send(id,text){return sendSession(id,null,text);}
+
+  };
+})(window);

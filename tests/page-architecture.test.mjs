@@ -56,13 +56,15 @@ test('个人 Eva 主入口进入个人三栏页且加号仅作提示', () => {
   assert.match(personalColumns, /#\/guid/);
 });
 
-test('个人创建入口保留，团队通过连接助理与创建分身组织来源', () => {
+test('个人创建入口保留，团队仅展示云端分身与数字员工', () => {
   const personalColumns = read('prototype/042-personal-conversation-columns.js');
   const imPatch = read('prototype/009-5-patch-im.js');
 
-  assert.match(imPatch, /连接本地助理/);
+  assert.doesNotMatch(imPatch, /连接本地助理/);
   assert.match(imPatch, /创建云端分身/);
-  assert.match(imPatch, /store\.connectAssistant/);
+  assert.doesNotMatch(imPatch.slice(imPatch.indexOf('function EvaAITeamPage()')), /store\.connectAssistant/);
+  assert.match(imPatch, /snapshot\.identities\.filter\(i=>i\.role==='persona'\|\|i\.role==='employee'\)/);
+  assert.doesNotMatch(imPatch, /数字员工（暂未接入）/);
   assert.match(imPatch, /store\.createPersona/);
   assert.match(personalColumns, /eva-my-ai-sidebar-actions eva-personal-sidebar-actions/);
   assert.match(personalColumns, /eva-my-ai-sidebar-actions__create-assistant/);
@@ -112,11 +114,14 @@ test('一级页面只挂入路由宿主，不再追加到 document.body', () => 
     'prototype/044-final-layout-convergence.js',
   ];
   const source = files.map(read).join('\n');
+  const runtime=createPatchedRuntime().source;
+  assert.match(runtime,/React\.createElement\(EvaDigitalEmployeesPage/);
+  assert.doesNotMatch(source,/__evaNativePages\.register\(['"]digital-employees/);
 
   assert.doesNotMatch(source, /document\.body\.appendChild\((?:root|page|center)\)/);
   assert.doesNotMatch(source, /document\.body\.insertAdjacentHTML\([^,]+,\s*build(?:Workboard|Automation)\(/);
   assert.doesNotMatch(source, /stopImmediatePropagation\(\)/);
-  for (const pageId of ['contacts', 'drive', 'workboard', 'digital-employees', 'connection-center', 'personal']) {
+  for (const pageId of ['contacts', 'drive', 'workboard', 'connection-center', 'personal']) {
     assert.match(source, new RegExp(`__evaNativePages\\.register\\(['"]${pageId}['"]`));
   }
 });

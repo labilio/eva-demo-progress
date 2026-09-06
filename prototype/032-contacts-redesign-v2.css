@@ -214,7 +214,8 @@
 
   .eva-contacts__cell--ai-list {
     align-items: center;
-    flex-flow: row wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 40px;
     gap: 8px 20px;
     padding: 0;
   }
@@ -347,3 +348,8 @@
     font-size: 13px;
   }
 
+
+.eva-contacts__ai-identity{min-width:0;display:flex;align-items:center;gap:6px}
+.eva-contacts__ai-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eva-contacts__ai-identity .ai-badge{flex-shrink:0}
+.eva-contacts__more{align-self:center;font:inherit;font-size:12px;cursor:pointer;padding:6px;text-align:center;border:0;border-radius:6px;color:var(--semi-color-primary);background:var(--semi-color-fill-0)}

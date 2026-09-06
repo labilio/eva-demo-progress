@@ -1,6 +1,7 @@
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { execFileSync } from 'node:child_process';
 
 const manifestPath = path.resolve(process.argv[2] || 'prototype-manifest.json');
 const root = path.dirname(manifestPath);
@@ -13,6 +14,9 @@ for (const [index, block] of manifest.blocks.entries()) {
   if (block.file) {
     const fileStat = await stat(path.join(root, block.file));
     if (!fileStat.isFile()) throw new Error(`Manifest 目标不是文件：${block.file}`);
+    if (/\.m?js$/.test(block.file)) {
+      execFileSync(process.execPath, ['--check', path.join(root, block.file)], { stdio: 'pipe' });
+    }
   }
 }
 

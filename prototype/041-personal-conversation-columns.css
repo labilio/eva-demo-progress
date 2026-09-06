@@ -225,8 +225,8 @@
   aside.arco-layout-sider .layout-sider-content > .size-full > .flex-1.min-h-0.overflow-hidden > .size-full.flex.flex-col.gap-2px::-webkit-scrollbar,
   aside.layout-sider .layout-sider-content > .size-full > .flex-1.min-h-0.overflow-hidden > .size-full.flex.flex-col.gap-2px::-webkit-scrollbar { width: 0; height: 0; }
 
-  /* Compact navigation has no settings/logout tail; these remain available in the wide user row. */
-  aside.layout-sider.collapsed .sider-footer { display: none !important; }
+  /* Settings remains reachable from the compact sidebar gear. */
+  aside.layout-sider.collapsed .sider-footer { display: block; }
 
   .eva-project-pinned-card { overflow: hidden; border: 1px solid #e1e4e8 !important; box-shadow: 0 1px 2px rgba(31,35,41,.04); }
   .eva-project-pinned-card .semi-card-header { min-height: 56px; padding: 13px 15px 8px; border-bottom: 0; }

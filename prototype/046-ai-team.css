@@ -22,8 +22,8 @@
   --eva-rail-primary: #1f2329;
   --eva-rail-secondary: #30343b;
   --eva-rail-time: #8d95a1;
-  --eva-rail-hover: #e2e3e5;
-  --eva-rail-selected: #e5e6eb;
+  --eva-rail-hover: color-mix(in srgb, var(--semi-color-fill-0) 60%, transparent);
+  --eva-rail-selected: var(--semi-color-fill-0);
   --eva-rail-name-size: 13px;
   --eva-rail-label-size: 13px;
   --eva-rail-line-height: 20px;
@@ -97,7 +97,7 @@
 .eva-ai-team__chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__role-label { flex-shrink: 0; font-size: var(--gds-type-caption-font-size); color: var(--gds-color-text-secondary); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__more.semi-button { flex-shrink: 0; color: #8d949d; background: transparent; }
-.eva-ai-team__more.semi-button:hover { color: #3f454d; background: #e5e6eb; }
+.eva-ai-team__more.semi-button:hover { color: var(--semi-color-text-1); background: var(--eva-rail-hover); }
 .eva-ai-team__identity-status { margin: 0 0 var(--gds-space-2) var(--gds-space-8); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); }
 .eva-ai-team__session {
   width: 100%;
@@ -311,7 +311,7 @@
 .eva-ai-team__connection-option:not(:disabled):not(:has(input:disabled)):hover { background: var(--semi-color-fill-1); }
 .eva-ai-team__connection-option.is-selected { border-color: var(--semi-color-text-2); background: var(--semi-color-fill-1); }
 .eva-ai-team__connection-title { display: flex; flex: 1; min-width: 0; align-items: center; gap: 12px; }
-.eva-ai-team__connection-title strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; line-height: 20px; font-weight: 500; color: var(--semi-color-text-0); }
+.eva-ai-team__connection-title > strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; line-height: 20px; font-weight: 500; color: var(--semi-color-text-0); }
 .eva-ai-team__connection-status { flex-shrink: 0; color: var(--semi-color-text-2); font-size: 12px; font-weight: 400; }
 .eva-ai-team__modal .semi-modal-header { align-items: center; margin: 24px 0 16px; }
 .eva-ai-team__modal .semi-modal-title { line-height: 24px; }
@@ -355,3 +355,7 @@
 
 .eva-ai-team__relation { display: inline-flex; flex: 0 0 18px; align-items: center; justify-content: center; height: 24px; color: var(--semi-color-text-3); opacity: 0; pointer-events: none; cursor: default; transition: opacity 120ms ease; }
 .eva-ai-team__identity-heading:hover .eva-ai-team__relation { opacity: 1; pointer-events: auto; }
+
+.eva-ai-team__employee-options { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; }
+
+.eva-ai-team__connection-title .eva-identity-name-text { font-size: 13px; line-height: 20px; font-weight: 500; color: var(--semi-color-text-0); }

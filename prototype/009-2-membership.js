@@ -19,6 +19,8 @@
     const cancelPending=(id,uid)=>state.invitations.forEach(i=>{if(i.scopeId===id&&i.inviterId===uid&&i.status==='pending_approval')i.status='withdrawn';});
     const drop=(id,uid)=>{const s=scope(id);s.humans=s.humans.filter(m=>m.id!==uid);s.cloneIds=s.cloneIds.filter(cid=>clone(cid)?.ownerId!==uid);cancelPending(id,uid);};
     const dissolve=id=>{delete state.groups[id];Object.keys(state.threads).filter(t=>state.threads[t]===id).forEach(t=>delete state.threads[t]);state.invitations.filter(i=>i.scopeId===id&&i.status.startsWith('pending')).forEach(i=>i.status='expired');};
+    const employee=id=>{const a=root.EvaDigitalEmployeesStore?.get(id);return a?{...a,kind:'employee',ai:true,identityAppearance:root.EvaDigitalEmployeesStore.appearance(a)}:null;};
+    const employeeRows=s=>(s.employeeIds||[]).map(employee).filter(Boolean);
     const agentFor=pid=>state.projects[pid]?{id:'project-agent:'+pid,name:'Eva 项目管理专员',kind:'project-agent',ai:true,projectId:pid,cloud:true,removable:false,ownership:'project'}:null;
     const agentIn=id=>{id=state.threads[id]||id;return agentFor(id.startsWith('all:')?id.slice(4):projectId(id));};
     const projectInfo=pid=>({...state.projects[pid],...resolveProjectInfo?.(pid)});
@@ -32,7 +34,9 @@
     };
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
-      snapshot:()=>JSON.parse(JSON.stringify(state)),person,clone,manager,projectAgent:agentFor,
+      snapshot:()=>JSON.parse(JSON.stringify(state)),person,clone,employee,manager,projectAgent:agentFor,
+      addEmployee(id,uid,eid){requireHuman(uid);const sid=id.startsWith("all:")?id.slice(4):id,s=state.projects[sid]||fail("数字员工只能放进项目，不能拉进群聊"),a=employee(eid)||fail("数字员工不存在");if(!member(sid,uid))fail("请先加入项目");if((a.ownership==="personal"||a.scope==="self")&&a.by!==uid)fail("只有创建者能邀请自己的数字员工");if(a.ownership==="project"&&a.projectId!==projectId(sid))fail("项目助手只能在所属项目中使用");s.employeeIds=[...new Set([...(s.employeeIds||[]),eid])];notify();},
+      removeEmployee(id,uid,eid){const s=writable(id),a=employee(eid)||fail("数字员工不存在");if(!member(id,uid)||(!manager(id,uid)&&a.by!==uid))fail("无移除权限");s.employeeIds=(s.employeeIds||[]).filter(x=>x!==eid);if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.employeeIds=(g.employeeIds||[]).filter(x=>x!==eid);});notify();},
       transaction(fn){const staged=create(state,undefined,resolveProjectInfo);fn(staged);state=staged.snapshot();notify();},
       renameProject(id,uid,name){requireHuman(uid);if(!state.projects[id]||!manager(id,uid))fail('仅项目负责人或管理员可修改');if(!name.trim()||name.length>50)fail('项目名称须为 1–50 个字符');state.projects[id].name=name.trim();notify();},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
@@ -59,17 +63,27 @@
       setActor(uid){requireHuman(uid);state.actorId=uid;notify();},
       seedSupplyChatContent(){
         let changed=false;
+        if(!state.conciseAllHandsV2){
+          const id='all:prod',old=state.messages[id]||[],isOld=m=>String(m.fixtureId||'').startsWith('supply-chat-v1:all:prod:')||String(m.fixtureId||'').startsWith('project-agent-demo:');
+          // Replace shipped demo messages only; retain user messages and clear-history boundaries.
+          Object.values(state.chatPreferences||{}).forEach(prefs=>{const pref=prefs[id];if(pref?.clearedCount)pref.clearedCount=old.slice(0,pref.clearedCount).filter(m=>!isOld(m)).length;});
+          state.messages[id]=old.filter(m=>!isOld(m));state.conciseAllHandsV2=true;changed=true;
+        }
         for(const block of root.__EVA_SUPPLY_CHAT_CONTENT||[]){
           const id=block.scopeId||Object.values(state.groups).find(g=>g.projectId==='prod'&&g.name===block.groupName)?.id;
           if(!id||!api.canRead(id,'u-wangyilin'))continue;
           const list=state.messages[id]||(state.messages[id]=[]);
           block.messages.forEach(([senderId,time,text],index)=>{
-            const fixtureId='supply-chat-v1:'+id+':'+index;
-            if(list.some(m=>m.fixtureId===fixtureId)||!person(senderId)||!api.canRead(id,senderId))return;
-            list.push({fixtureId,kind:'text',sender:{...person(senderId),uid:senderId},time,text});changed=true;
+            const fixtureId=(id==='all:prod'?'supply-chat-v2:':'supply-chat-v1:')+id+':'+index;
+            const projectAgent=senderId==='project-agent:prod'&&agentIn(id)?.projectId==='prod';
+            if(list.some(m=>m.fixtureId===fixtureId)||(!projectAgent&&(!person(senderId)||!api.canRead(id,senderId))))return;
+            list.push({fixtureId,kind:'text',sender:projectAgent?agentSender('prod'):{...person(senderId),uid:senderId},time,text});changed=true;
           });
           if(block.notice&&!state.chatSettings[id]?.notice){state.chatSettings[id]={...state.chatSettings[id],notice:block.notice};changed=true;}
         }
+        // Upgrade only the shipped request text, preserving user messages and edits.
+        const request=(state.messages['all:prod']||[]).find(m=>m.fixtureId==='supply-chat-v2:all:prod:7');
+        if(request&&request.text==="备选方案会多一次换型。我把产能影响补到 SC-105，等质量结论一起确认。"){request.text="备选方案会多一次换型。我把产能影响补到 SC-105，等质量结论一起确认。\n@Eva 项目管理专员 请结合刚才的更新，简要汇总还需要确认的事项。";changed=true;}
         if(changed)notify();
       },
       loadSupplyDemo(){
@@ -102,13 +116,13 @@
         return JSON.parse(JSON.stringify(state.messages[id]||[])).map(m=>({...m,mentions:[...(m.mentions||[]),...candidates.filter(c=>m.text?.includes(c.name)&&!m.mentions?.some(x=>x.name===c.name))],sender:m.sender?.kind==='project-agent'?{...m.sender,identityAppearance:root.EvaAIIdentity?.projectAgentAppearance()}:m.sender}));
       },
       mentionCandidates(id){return api.groupMembers(state.threads[id]||id).filter(p=>p.kind==='human');},
-      members(id){const s=scope(id);return [...s.humans.map(m=>({...person(m.id),...m,kind:'human'})),...s.cloneIds.map(cid=>({...clone(cid),kind:'clone'})),...(agentIn(id)?[agentIn(id)]:[])];},
+      members(id){const s=scope(id);return [...s.humans.map(m=>({...person(m.id),...m,kind:'human'})),...s.cloneIds.map(cid=>({...clone(cid),kind:'clone'})),...employeeRows(s),...(agentIn(id)?[agentIn(id)]:[])];},
       groupMembers(id){id=state.threads[id]||id;return api.members(id.startsWith('all:')?id.slice(4):id);},
-      canRead(id,uid){if(!id||state.threadDetails[id]?.deleted)return false;const target=state.threads[id]||id;const sid=target.startsWith('all:')?target.slice(4):target;const s=state.projects[sid]||state.groups[sid];return !!s&&(s.humans.some(m=>m.id===uid)||s.cloneIds.includes(uid)||agentIn(id)?.id===uid);},
+      canRead(id,uid){if(!id||state.threadDetails[id]?.deleted)return false;const target=state.threads[id]||id;const sid=target.startsWith('all:')?target.slice(4):target;const s=state.projects[sid]||state.groups[sid];return !!s&&(s.humans.some(m=>m.id===uid)||s.cloneIds.includes(uid)||(s.employeeIds||[]).includes(uid)||agentIn(id)?.id===uid);},
       channels(pid,uid,base=[]){pid=pid||null;
         if(pid&&!api.canRead(pid,uid))return [];
         const p=state.projects[pid];
-        const view=(g,id,isAll)=>{const original=base.find(c=>c.id===id)||{};return {...original,id,name:isAll?'全员群':g.name,lastAt:original.lastAt||root.__EVA_DEMO_TIME?.T1||'2026-09-02T10:00:00+08:00',color:original.color||'var(--semi-color-primary)',unread:original.unread||0,threads:[...(original.threads||[]).map(t=>({...t,...state.threadDetails[t.id]})),...Object.entries(state.threads).filter(([tid,gid])=>gid===id&&state.threadDetails[tid]&&!(original.threads||[]).some(t=>t.id===tid)).map(([tid])=>state.threadDetails[tid])].filter(t=>!t.deleted).map(t=>({...t,updated_at:t.updated_at||t.created_at||root.__EVA_DEMO_TIME?.T1||'2026-09-02T10:00:00+08:00'})),members:g.humans.length+g.cloneIds.length+(p?1:0),systemAICount:p?1:0,humanCount:g.humans.length,cloneCount:g.cloneIds.length,allMembers:isAll,projectId:pid};};
+        const view=(g,id,isAll)=>{const original=base.find(c=>c.id===id)||{};return {...original,id,name:isAll?'全员群':g.name,lastAt:original.lastAt||root.__EVA_DEMO_TIME?.T1||'2026-09-02T10:00:00+08:00',color:original.color||'var(--semi-color-primary)',unread:original.unread||0,threads:[...(original.threads||[]).map(t=>({...t,...state.threadDetails[t.id]})),...Object.entries(state.threads).filter(([tid,gid])=>gid===id&&state.threadDetails[tid]&&!(original.threads||[]).some(t=>t.id===tid)).map(([tid])=>state.threadDetails[tid])].filter(t=>!t.deleted).map(t=>({...t,updated_at:t.updated_at||t.created_at||root.__EVA_DEMO_TIME?.T1||'2026-09-02T10:00:00+08:00'})),members:g.humans.length+g.cloneIds.length+(g.employeeIds||[]).length+(p?1:0),systemAICount:p?1:0,humanCount:g.humans.length,cloneCount:g.cloneIds.length,employeeCount:(g.employeeIds||[]).length,allMembers:isAll,projectId:pid};};
         return [...(p?[view(p,'all:'+pid,true)]:[]),...Object.values(state.groups).filter(g=>g.projectId===pid&&api.canRead(g.id,uid)).map(g=>view(g,g.id,false))];
       },
       candidates(id,uid){const s=writable(id);if(!member(id,uid))fail('请先加入');return state.people.filter(p=>p.active!==false&&!member(id,p.id)&&(!s.projectId||member(s.projectId,p.id)));},
