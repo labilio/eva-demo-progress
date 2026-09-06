@@ -52,6 +52,30 @@
 
   window.__evaOpenRecentMessageEntry = openRecentItem;
 
+  /* 「最近」列表的点击／键盘入口原先寄居在 042-personal-conversation-columns.js。
+     个人页那条 336 中栏随 GDS 六态改造一并删除，这两段委托搬回真正的归属地，
+     并收窄到 .eva-project-recent-item 一种目标（原来还兼管个人页会话按钮）。
+     两个 dataset 开关沿用旧名，避免与任何残留副本重复绑定。 */
+  if (!document.documentElement.dataset.evaMessageEntryDelegation) {
+    document.documentElement.dataset.evaMessageEntryDelegation = 'true';
+    document.addEventListener('click', function (event) {
+      var recentItem = event.target.closest('.eva-project-recent-item');
+      if (!recentItem || !recentItem.closest('.eva-project-recent-list')) return;
+      event.preventDefault();
+      openRecentItem(recentItem);
+    }, true);
+  }
+  if (!document.documentElement.dataset.evaImEntryKeyboard) {
+    document.documentElement.dataset.evaImEntryKeyboard = 'true';
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      var entry = event.target.closest('.eva-project-recent-item');
+      if (!entry) return;
+      event.preventDefault();
+      entry.click();
+    });
+  }
+
   function setView(messageRoot, tabbar, view) {
     currentView = view;
     messageRoot.classList.toggle('eva-team-message-view--project', view === 'follow');

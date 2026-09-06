@@ -1,0 +1,202 @@
+/* ============================================================
+   Eva GDS for AI 2.0 · token layer
+   原样采用设计规范包 tokens/tokens.css（resolved implementation tokens）。
+   Source: Figma uglNwB9uiCqB1f5IdTKBM5 / Page 1 / 6 artboards
+   Reference viewport: 1200 x 800
+
+   AGENTS.md:141 —— GDS 必须经由「语义 token + 组件适配层」进入，
+   业务 CSS 只引用这里的变量，不写原始色值。
+   Primitives（--eva-c-*）只供本 token 层内部组合，不要直接使用。
+   ============================================================ */
+
+:root {
+  /* ---- color · primitive (token layer only) ---------------- */
+  --eva-c-white: #ffffff;
+  --eva-c-paper: #fefefe;
+  --eva-c-neutral-50: #f5f5f5;
+  --eva-c-lavender-25: #f0f2ff;
+  --eva-c-neutral-200: #ebebeb;
+  --eva-c-neutral-300: #dbdbdb;
+  --eva-c-neutral-400: #cccccc;
+  --eva-c-neutral-550: #939393;
+  --eva-c-neutral-650: #6b7280;
+  --eva-c-neutral-700: #4a4a4a;
+  --eva-c-ink: #1e1e1e;
+  --eva-c-black: #000000;
+  --eva-c-brand-blue: #1563eb;
+  --eva-c-icon-ink: #1b1d24;
+  --eva-c-mac-red: #ff5d56;
+  --eva-c-mac-yellow: #feb52e;
+  --eva-c-mac-green: #34c03f;
+
+  /* ---- color · semantic (use these) ------------------------ */
+  --eva-surface-primary: var(--eva-c-white);        /* main workspace, input panel */
+  --eva-surface-subtle: var(--eva-c-neutral-50);    /* composer wrapper, editor work area */
+  --eva-surface-paper: var(--eva-c-paper);          /* presentation canvas */
+  --eva-surface-glass: rgba(255, 255, 255, 0.8);    /* sidebar glass foreground */
+
+  --eva-text-strong: var(--eva-c-black);            /* 32px hero title only */
+  --eva-text-primary: var(--eva-c-ink);             /* body, nav, primary controls */
+  --eva-text-secondary: var(--eva-c-neutral-700);   /* secondary actions, captions */
+  --eva-text-muted: var(--eva-c-neutral-550);       /* placeholder, time, non-critical */
+  --eva-text-secondary-accessible: var(--eva-c-neutral-650); /* production mode swap */
+  --eva-text-inverse: var(--eva-c-white);
+
+  --eva-action-primary: var(--eva-c-brand-blue);    /* send, selected, brand */
+  --eva-action-primary-text: var(--eva-c-white);
+  --eva-action-dark: var(--eva-c-ink);              /* operation-card CTA */
+  --eva-action-disabled-fill: rgba(30, 30, 30, 0.09); /* never a faded brand blue */
+
+  --eva-border-default: var(--eva-c-neutral-400);   /* outlines meant to be seen */
+  --eva-border-subtle: var(--eva-c-neutral-300);    /* structural separation */
+  --eva-border-faint: var(--eva-c-neutral-200);     /* secondary dividers */
+  --eva-border-focus: var(--eva-c-brand-blue);
+  --eva-border-hairline: rgba(20, 20, 20, 0.15);
+
+  --eva-decoration-dot: var(--eva-c-lavender-25);   /* hero dot field, never functional */
+
+  --eva-overlay-hover: rgba(0, 0, 0, 0.06);
+  --eva-overlay-pressed: rgba(0, 0, 0, 0.09);
+  --eva-overlay-dismiss: rgba(0, 0, 0, 0.2);        /* operation-card dismiss */
+
+  /* ---- typography ----------------------------------------- */
+  --eva-font-sans: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --eva-font-display: "Praise", "Snell Roundhand", cursive; /* decorative brand voice only */
+  --eva-fw-regular: 400;
+  --eva-fw-medium: 500;
+  --eva-fw-semibold: 600;
+
+  /* ---- space · 4px grid ----------------------------------- */
+  /* Do not round the observed 6 / 10 / 14 steps to 8 or 16. */
+  --eva-space-0: 0px;
+  --eva-space-0-5: 2px;
+  --eva-space-1: 4px;
+  --eva-space-1-5: 6px;
+  --eva-space-2: 8px;
+  --eva-space-2-5: 10px;
+  --eva-space-3: 12px;
+  --eva-space-3-5: 14px;
+  --eva-space-4: 16px;
+  --eva-space-5: 20px;
+  --eva-space-5-5: 22px;
+  --eva-space-6: 24px;
+  --eva-space-6-5: 26px;
+  --eva-space-7: 28px;
+  --eva-space-8: 32px;
+  --eva-space-10: 40px;
+  --eva-space-12: 48px;
+  --eva-space-13: 52px;
+
+  /* ---- radius · hierarchy, not decoration ----------------- */
+  /* Outer radius MUST be >= inner radius. */
+  --eva-radius-dot: 1.5px;
+  --eva-radius-small: 4px;
+  --eva-radius-key: 6px;
+  --eva-radius-control: 8px;   /* nav row, CTA, skill row */
+  --eva-radius-chip: 12px;     /* scenario chip, thumbnail, operation card */
+  --eva-radius-panel: 16px;    /* composer panel, skill picker, canvas */
+  --eva-radius-window: 20px;   /* app shell, composer wrapper */
+  --eva-radius-full: 999px;    /* round icon buttons, send */
+
+  /* ---- border widths ------------------------------------- */
+  --eva-border-hairline-w: 0.5px;
+  --eva-border-standard-w: 1px;
+  --eva-border-focus-w: 2px;
+
+  /* ---- shadow -------------------------------------------- */
+  --eva-shadow-floating: 0 16px 48px -8px rgba(0, 0, 0, 0.07);
+  --eva-shadow-hairline: 0 0 0 0.5px rgba(20, 20, 20, 0.15);
+  --eva-shadow-canvas: 0 4px 80px 8px rgba(0, 0, 0, 0.04), 0 3px 6px 0 rgba(0, 0, 0, 0.04);
+
+  /* ---- blur ---------------------------------------------- */
+  --eva-blur-glass: 200px;   /* sidebar only */
+  --eva-blur-floating: 20px; /* composer, skill picker, operation card */
+  --eva-blur-dismiss: 8px;
+
+  /* ---- icon ---------------------------------------------- */
+  --eva-icon-chevron: 12px;
+  --eva-icon-content: 16px;
+  --eva-icon-nav: 18px;
+  --eva-icon-toolbar: 20px;
+  --eva-icon-stroke: 1.5; /* stroke on a 24x24 source box */
+
+  /* ---- layout · standard shell --------------------------- */
+  --eva-vw: 1200px;
+  --eva-vh: 800px;
+  --eva-sidebar-w: 260px;
+  --eva-workspace-w: 940px;
+  --eva-main-col-w: 776px;
+  --eva-main-col-x: 342px;
+  --eva-workspace-inset: 82px;
+  --eva-topbar-h: 52px;
+
+  /* ---- layout · completed shell ------------------------- */
+  --eva-completed-conversation-w: 390px;
+  --eva-completed-editor-w: 810px;
+  --eva-completed-file-header-h: 48px;
+  --eva-completed-editor-body-h: 660px;
+  --eva-completed-statusbar-h: 40px;
+}
+
+/* ============================================================
+   Type styles - apply as a single class, do not mix sizes.
+   ============================================================ */
+.eva-t-hero {
+  font: var(--eva-fw-semibold) 32px/40px var(--eva-font-sans);
+  letter-spacing: 0;
+}
+.eva-t-header {
+  font: var(--eva-fw-medium) 16px/24px var(--eva-font-sans);
+}
+.eva-t-body {
+  font: var(--eva-fw-regular) 15px/24px var(--eva-font-sans);
+}
+.eva-t-body-medium {
+  font: var(--eva-fw-medium) 15px/24px var(--eva-font-sans);
+}
+.eva-t-label {
+  font: var(--eva-fw-regular) 14px/22px var(--eva-font-sans);
+}
+.eva-t-label-medium {
+  font: var(--eva-fw-medium) 14px/22px var(--eva-font-sans);
+}
+.eva-t-chip {
+  font: var(--eva-fw-regular) 14px/20px var(--eva-font-sans);
+}
+.eva-t-caption {
+  font: var(--eva-fw-regular) 12px/16px var(--eva-font-sans);
+}
+.eva-t-toolbar {
+  font: var(--eva-fw-regular) 12px/12px var(--eva-font-sans);
+}
+.eva-t-mascot {
+  font: var(--eva-fw-regular) 23px/28px var(--eva-font-display);
+}
+
+/* ============================================================
+   Icon contract - Lucide linear, round caps and joins.
+   ============================================================ */
+.eva-i {
+  flex: none;
+  width: var(--eva-icon-content);
+  height: var(--eva-icon-content);
+  stroke: currentColor;
+  stroke-width: var(--eva-icon-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+.eva-i-nav { width: var(--eva-icon-nav); height: var(--eva-icon-nav); }
+.eva-i-toolbar { width: var(--eva-icon-toolbar); height: var(--eva-icon-toolbar); }
+.eva-i-chevron { width: var(--eva-icon-chevron); height: var(--eva-icon-chevron); }
+
+/* ============================================================
+   Interaction states - design.md section 13.
+   Size never changes across states.
+   ============================================================ */
+.eva-hoverable:hover { background: var(--eva-overlay-hover); }
+.eva-hoverable:active { background: var(--eva-overlay-pressed); }
+.eva-focusable:focus-visible {
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+  outline-offset: 2px;
+}

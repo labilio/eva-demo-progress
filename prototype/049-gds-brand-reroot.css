@@ -1,0 +1,99 @@
+/* ============================================================
+   Eva GDS for AI 2.0 · 本项目改根层
+   047 是规范自带的 token 层，048 是规范自带的组件层；
+   这一层只放「把本项目既有变量接到 GDS token 上」的改根声明。
+
+   加载顺序：本文件在 vendor/eva-legacy.css（index.html 第 29 行）
+   之后加载，:root 与 :root 同特异度、后来者胜，因此不需要 !important，
+   也不构成 AGENTS.md:106 禁止的「靠更高优先级掩盖旧规则」。
+   ============================================================ */
+
+:root {
+  /* ------------------------------------------------------------
+     1) 品牌主色改根（结论 1）
+     vendor 里 --semi-color-primary 的胜出声明就在 :root 上，
+     值为 var(--wk-brand-primary)；而 --wk-brand-primary 原本指向
+     --wk-brand-black(#1c1c23)。所以只改这一族即可带动整个 Semi
+     主色，无需逐条覆盖 .semi-* 规则。
+     ------------------------------------------------------------ */
+  --wk-brand-primary: var(--eva-action-primary);          /* #1563eb */
+  --wk-brand-primary-hover: var(--eva-action-primary-hover);
+  --wk-brand-from: var(--wk-brand-primary);
+  --wk-brand-to: var(--wk-brand-primary);
+  --wk-brand-accent: var(--wk-brand-primary);
+  --wk-brand-gradient: var(--wk-brand-primary);
+  --wk-brand-gradient-hover: var(--wk-brand-primary-hover);
+  --wk-brand-gradient-subtle: var(--eva-action-primary-08);
+  --wk-brand-primary-ring: var(--eva-action-primary-20);
+  --wk-brand-glow: var(--eva-action-primary-20);
+  /* vendor 里被 3 处读取却从未定义，导致那几条 background 直接失效 */
+  --wk-brand-primary-bg: var(--eva-action-primary-08);
+
+  /* GDS 只给了主色一档，hover／ring／subtle 由主色派生 */
+  --eva-action-primary-hover: #1255ca;      /* [D] #1563eb 明度 -14% */
+  --eva-action-primary-08: rgba(21, 99, 235, 0.08);
+  --eva-action-primary-20: rgba(21, 99, 235, 0.2);
+
+  /* ------------------------------------------------------------
+     刻意「不」改根的一族 —— 这是本次改根里最大的回归面控制点。
+     --wk-brand-tint-03/04/06/08/10/12/15/35 与 --wk-brand-black /
+     --wk-brand-black-hover / --wk-brand-dark-tab 都是
+     rgba(28,28,35,α) 的中性灰罩层与墨色，用在 hover 底、分隔线、
+     深色页签上。把它们也刷成蓝，会让全应用每一个 hover 面泛蓝。
+     黑该是黑的地方保持黑，只有主色槽位变蓝。
+     ------------------------------------------------------------ */
+
+  /* ------------------------------------------------------------
+     2) 骨架尺寸变量补定义（结论 3）
+     --topbar-height 被 prototype 里 10 处 fixed 浮层读取，却从未
+     被任何地方定义，全部回退到 2.6rem = 41.6px；而真实标题栏
+     .app-titlebar 高 var(--titlebar-height)=36px，加运行时 border-b
+     的 1px，底边在 37px —— 所有浮层低了 4.6px。
+     这里按 vendor 自己的 --titlebar-height 推导，不再写死数值。
+     ------------------------------------------------------------ */
+  --topbar-height: calc(var(--titlebar-height, 36px) + 1px);
+
+  /* 020-mode-layer.js 的 syncDriveLeft() 会以行内样式写入实测值，
+     这里的定义只用于首帧之前，替掉散落的 260px 字面回退。 */
+  --eva-drive-left: var(--eva-sidebar-w);
+}
+
+/* ============================================================
+   3) 字族名重定向（结论 1）
+   Inter 优先的字体栈被字面写进 vendor 的 165 条规则（几乎全是
+   .semi-*），没有任何变量接缝。但全库唯一的 @font-face 是
+   KaTeX_AMS —— Inter 从未被 @font-face 加载过，只在本机装了
+   Inter 时才生效。因此把 Inter 这个字族名解析到 PingFang SC，
+   即可让那 165 条规则一并换字，且不动任何选择器、不靠特异度压制。
+   本机没有 PingFang SC 时 local() 落空，浏览器继续沿原 fallback
+   链走，Windows 行为零变化。
+   ============================================================ */
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 400;
+  src: local("PingFang SC"), local("PingFangSC-Regular");
+}
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 500;
+  src: local("PingFang SC Medium"), local("PingFangSC-Medium");
+}
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 600;
+  src: local("PingFang SC Semibold"), local("PingFangSC-Semibold");
+}
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 700;
+  src: local("PingFang SC Semibold"), local("PingFangSC-Semibold");
+}
+
+/* 非 Semi 文本（body 直接继承的那部分）走 GDS 字体栈 */
+body {
+  font-family: var(--eva-font-sans);
+}

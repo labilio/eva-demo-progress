@@ -838,7 +838,7 @@ body.eva-message-hierarchy-ready
 
 /* The global drive is a first-level EVA surface. */
 body.eva-message-hierarchy-ready .eva-drive {
-  top: var(--topbar-height, 2.6rem);
+  top: var(--topbar-height, 37px);
   grid-template-columns: minmax(0, 1fr);
   overflow: hidden;
 }
@@ -1543,7 +1543,7 @@ body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab
 body.eva-message-hierarchy-ready .eva-contacts {
   position: fixed;
   z-index: 71;
-  top: var(--topbar-height, 2.6rem);
+  top: var(--topbar-height, 37px);
   right: 0;
   bottom: 0;
   left: var(--eva-drive-left, 260px);
@@ -1560,7 +1560,7 @@ body.eva-message-hierarchy-ready .eva-contacts[hidden] {
 body.eva-message-hierarchy-ready .eva-my-avatar-chat {
   position: fixed;
   z-index: 71;
-  top: var(--topbar-height, 2.6rem);
+  top: var(--topbar-height, 37px);
   right: 0;
   bottom: 0;
   left: var(--eva-drive-left, 260px);

@@ -1,0 +1,244 @@
+/* ============================================================
+   个人 Eva · GDS 六态工作区（布局层）
+   外观全部来自 048-gds-components.css，色值／间距／圆角全部来自
+   047-gds-tokens.css；本文件只负责「把那些固有尺寸的组件按 GDS
+   的六态摆进真实应用宿主」，因此这里没有一个十六进制字面量。
+
+   ------------------------------------------------------------
+   一、六态怎么切
+   单一根节点 .eva-personal-workspace 上的 data-eva-state 取六值之一：
+     home / input / skill-picker / operation / generating / completed
+   显隐用属性选择器，不用 [hidden] —— 045-native-page-layout.css:34-36
+   的 `.eva-native-page-host > … { display:flex }` 与 [hidden] 同为
+   0,2,0，加载更晚会赢，[hidden] 在这个宿主里是不可靠的。
+
+   评审可直接跳态：
+     window.__evaPersonalState('completed')
+     window.__evaPersonalState()            // 读当前态
+   六个态名与 GDS spec/components.json 的 pageStates 一一对应。
+
+   ------------------------------------------------------------
+   二、两处对 GDS 的有意偏离（标 [D]，其余严格照搬）
+
+   [D1] completed 态保留侧栏与标题栏。
+   GDS 的 completed.forbidden 列了 sidebar，要求 390/810 占满 1200
+   的整屏。但 AGENTS.md:8-9 规定一级页面不得从 top:0 盖住标题栏、
+   不得用全屏或 fixed 定位的根节点、只能挂进 Router Outlet 宿主。
+   两者冲突时以本仓库的架构红线为准：390 会话列按规范固定，810 编辑
+   列改成「以 810 为 flex 基线、可收缩」（见 048 的 .eva-ed-col），
+   栏比与内部所有尺寸不变。用户已就此拍板。
+
+   [D2] 主列纵向位置用居中，不写死画板 y 坐标。
+   GDS 画板 1200x800 没有应用标题栏，hero 标题顶边在 y=268；本仓库
+   工作区顶边已经在 37px（标题栏底边），宿主净高 763 而非 800，画板
+   y 坐标无法原样成立。改为把主列在宿主内垂直居中——1200x800 下
+   标题落在宿主内 241、全局 278，比写死 268（全局 305）更接近画板的
+   视觉位置。水平方向仍是规范原值：776 主列居中，左右各 82 内缩。
+   ============================================================ */
+
+.eva-personal-workspace {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--eva-surface-primary);
+  color: var(--eva-text-primary);
+  font: var(--eva-fw-regular) 15px/24px var(--eva-font-sans);
+}
+
+/* ------------------------------------------------------------
+   态显隐
+   ------------------------------------------------------------ */
+.eva-personal-workspace__scroll,
+.eva-personal-workspace__conversation,
+.eva-personal-workspace__completed,
+.eva-personal-workspace__opcard,
+.eva-personal-workspace__pickerhost {
+  display: none;
+}
+.eva-personal-workspace[data-eva-state="home"] .eva-personal-workspace__scroll,
+.eva-personal-workspace[data-eva-state="input"] .eva-personal-workspace__scroll,
+.eva-personal-workspace[data-eva-state="skill-picker"] .eva-personal-workspace__scroll,
+.eva-personal-workspace[data-eva-state="operation"] .eva-personal-workspace__scroll {
+  display: flex;
+}
+.eva-personal-workspace[data-eva-state="skill-picker"] .eva-personal-workspace__pickerhost {
+  display: block;
+}
+.eva-personal-workspace[data-eva-state="operation"] .eva-personal-workspace__opcard {
+  display: block;
+}
+.eva-personal-workspace[data-eva-state="generating"] .eva-personal-workspace__conversation {
+  display: flex;
+}
+.eva-personal-workspace[data-eva-state="completed"] .eva-personal-workspace__completed {
+  display: flex;
+}
+
+/* ============================================================
+   home / input / skill-picker / operation
+   宿主是 overflow:hidden，滚动条必须由这一层自带（AGENTS.md 提到的
+   .eva-connection-center 自我抵消写法就是漏了这一步）。
+   ============================================================ */
+.eva-personal-workspace__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden; /* hero 点阵会越出主列右边 62px，越出部分是装饰 */
+  padding: var(--eva-space-10) 0;
+}
+.eva-personal-workspace__column {
+  /* margin:auto 才能在可滚动的 flex 容器里既居中又不吞掉顶部溢出，
+     align-items:center 会让超高内容的顶端滚不到。 */
+  margin: auto;
+  width: var(--eva-main-col-w);
+  flex: none;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- hero：标题在流内，点阵／吉祥物／气泡按画板相对位摆 ----
+   画板全局坐标（workspace 左边界 = 260）：
+     标题 342,268 · 点阵 930,186 · 吉祥物 996,260 · 气泡 968,280
+   换成相对主列左上角（主列在 342,268）：
+     点阵 588,-82 · 吉祥物 654,-8 · 气泡 626,12
+   ------------------------------------------------------------ */
+.eva-personal-workspace__hero {
+  position: relative;
+  flex: none;
+}
+.eva-personal-workspace__hero .eva-dotfield {
+  position: absolute;
+  left: 588px;
+  top: -82px;
+}
+.eva-personal-workspace__hero .eva-mascot {
+  position: absolute;
+  left: 654px;
+  top: -8px;
+}
+.eva-personal-workspace__hero .eva-bubble {
+  position: absolute;
+  left: 626px;
+  top: 12px;
+}
+
+/* ---- 场景 chip 排：标题底边 308 → chip 顶边 330 ---- */
+.eva-personal-workspace__rail {
+  flex: none;
+  margin-top: var(--eva-space-5-5);
+}
+
+/* ---- 输入器：chip 底边 367 → 输入器外框顶边 383 ---- */
+.eva-personal-workspace__composer {
+  position: relative;
+  flex: none;
+  margin-top: var(--eva-space-4);
+}
+
+/* ---- 技能选择器：画板 342,119，高 263.5，底边 382.5，
+        正好压在输入器外框顶边上方 0.5px，浮在 hero 与 chip 排之上 ---- */
+.eva-personal-workspace__pickerhost {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + var(--eva-border-hairline-w));
+  z-index: 2;
+}
+
+/* ---- 操作卡 ----
+   [D] GDS 把它放在 260 侧栏底部；本仓库的侧栏是 React 拥有的
+   （009-7-patch-sider.js），DOM 侧的原生页挂不进去，因此改挂在
+   工作区左下角——离规范位置最近且不跨越所有权边界。 */
+.eva-personal-workspace__opcard {
+  position: absolute;
+  left: var(--eva-space-5);
+  bottom: var(--eva-space-5);
+  z-index: 3;
+}
+
+/* ============================================================
+   generating
+   顶栏 52 通栏 · 会话流 776 居中（画板 342,84）· 输入器 768 贴底
+   （画板 346,668，底边 786，视口 800 → 底部留 14）
+   ============================================================ */
+.eva-personal-workspace__conversation {
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+.eva-personal-workspace__topbar {
+  flex: none;
+}
+.eva-personal-workspace__stream {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--eva-space-8) 0 var(--eva-space-2);
+  display: flex;
+  justify-content: center;
+}
+.eva-personal-workspace__stream > .eva-flow {
+  width: var(--eva-main-col-w);
+  flex: none;
+  height: max-content;
+}
+.eva-personal-workspace__dock {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  padding-bottom: var(--eva-space-3-5);
+}
+
+/* ============================================================
+   completed（见顶部 [D1]）
+   390 会话列 + 810 基线编辑列，中间 1px 细分隔（.eva-ed-col 自带）
+   ============================================================ */
+.eva-personal-workspace__completed {
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
+}
+.eva-personal-completed__conversation {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.eva-personal-completed__stream {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--eva-space-6) var(--eva-space-5) var(--eva-space-2);
+}
+.eva-personal-completed__dock {
+  flex: none;
+  padding: 0 var(--eva-space-3-5) var(--eva-space-3-5);
+}
+/* 编辑列内部：页签 52 / 文件头 48 / 编辑体（基线 660，可伸缩）/ 状态条 40 */
+.eva-personal-completed__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+/* ============================================================
+   本页专用的少量补充（DS 里由画板绝对定位承担的部分）
+   ============================================================ */
+/* 顶栏标题左边的任务图标，与 .ttl 之间 8px 由 .eva-topbar 的 gap 给 */
+.eva-personal-topbar__mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--eva-text-primary);
+}
+/* 会话流里的工具事件行，图标槽固定 16 见方，文字永不换行 */
+.eva-personal-tool__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+}

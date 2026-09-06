@@ -70,7 +70,7 @@
   .eva-create-group-layer {
     position: fixed;
     z-index: 10040;
-    top: var(--topbar-height, 2.6rem);
+    top: var(--topbar-height, 37px);
     right: 0;
     bottom: 0;
     left: 0;
@@ -93,7 +93,7 @@
     position: relative;
     display: flex;
     width: min(520px, calc(100vw - 48px));
-    max-height: min(680px, calc(100vh - var(--topbar-height, 2.6rem) - 48px));
+    max-height: min(680px, calc(100vh - var(--topbar-height, 37px) - 48px));
     flex-direction: column;
     overflow: hidden;
     border: 1px solid var(--semi-color-border, #e5e6eb);

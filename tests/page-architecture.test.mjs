@@ -42,10 +42,10 @@ test('侧栏模式和唯一选中态完全由路由推导', () => {
   assert.doesNotMatch(source, /__evaSidebarOverlayNavId|eva:sidebar-select/);
 });
 
-test('个人 Eva 主入口进入个人三栏页且加号仅作提示', () => {
+test('个人 Eva 主入口进入 GDS 工作区且加号仅作提示', () => {
   const { source } = createPatchedRuntime();
   const hierarchy = read('prototype/021-message-hierarchy.js');
-  const personalColumns = read('prototype/042-personal-conversation-columns.js');
+  const workspace = read('prototype/052-personal-eva-gds.js');
 
   assert.match(source, /EvaPersonalEntry=/);
   assert.match(source, /className:"eva-personal-entry__plus","aria-hidden":"true"/);
@@ -53,43 +53,48 @@ test('个人 Eva 主入口进入个人三栏页且加号仅作提示', () => {
   assert.match(source, /onClick:\(\)=>rt\.navigate\("\/guid"\)/);
   assert.doesNotMatch(source, /case"new-chat":return[^;]+SiderToolbar/);
   assert.doesNotMatch(hierarchy, /syncPersonalAssistantNav/);
-  assert.match(personalColumns, /#\/guid/);
+  assert.match(workspace, /register\('personal'/);
+  assert.equal(fs.existsSync('prototype/041-personal-conversation-columns.css'), false, '336px 会话中栏样式仍然存在');
+  assert.equal(fs.existsSync('prototype/042-personal-conversation-columns.js'), false, '336px 会话中栏脚本仍然存在');
 });
 
-test('个人 Eva 中栏与团队我的 AI 共用双操作顶部结构', () => {
-  const personalColumns = read('prototype/042-personal-conversation-columns.js');
+test('个人 Eva 侧栏面板与团队我的 AI 共用双操作顶部结构', () => {
+  const { source } = createPatchedRuntime();
   const imPatch = read('prototype/009-5-patch-im.js');
 
   assert.match(imPatch, /eva-my-ai-sidebar-actions/);
-  assert.match(personalColumns, /eva-my-ai-sidebar-actions eva-personal-sidebar-actions/);
-  assert.match(personalColumns, /eva-my-ai-sidebar-actions__create-assistant/);
-  assert.match(personalColumns, />创建助理<\/button>/);
-  assert.match(personalColumns, /personalPlusIcon\.cloneNode\(true\)/);
-  assert.match(personalColumns, /eva-my-ai-sidebar-actions__new-session/);
-  assert.match(personalColumns, />新建对话<\/button>/);
-  assert.doesNotMatch(personalColumns, /eva-personal-assistant-heading/);
+  assert.match(source, /eva-my-ai-sidebar-actions eva-personal-sidebar-actions/);
+  assert.match(source, /eva-my-ai-sidebar-actions__create-assistant/);
+  assert.match(source, /"创建助理"\)/);
+  assert.match(source, /React\.createElement\(EvaPersonalPlusIcon,\{size:16,strokeWidth:1\.5\}\),"创建助理"/);
+  assert.match(source, /eva-my-ai-sidebar-actions__new-session/);
+  assert.match(source, /"新建对话"\)/);
+  assert.doesNotMatch(source, /eva-personal-assistant-heading/);
 });
 
 test('个人助理使用 Brain 身份图标且整行提供 Hover', () => {
   const { source } = createPatchedRuntime();
-  const personalColumns = read('prototype/042-personal-conversation-columns.js');
   const convergence = read('prototype/043-final-layout-convergence.css');
 
-  assert.match(source, /eva-personal-assistant-icon-template/);
-  assert.match(source, /React\.createElement\(Brain\$8,/);
-  assert.match(personalColumns, /eva-personal-assistant-icon-template svg/);
-  assert.doesNotMatch(personalColumns, /chat-history__item > span\.size-22px/);
-  assert.match(convergence, /eva-personal-assistant-folder__row:hover\s*\{[^}]*background:\s*#e2e3e5/s);
+  // 助理身份图标由侧栏面板直接渲染，不再靠隐藏模板 + DOM 抓取克隆。
+  assert.match(source, /EvaPersonalAssistantFolder=/);
+  assert.match(source, /eva-assistant-folder__icon","aria-hidden":"true"\},React\.createElement\(Brain\$8,/);
+  assert.doesNotMatch(source, /eva-personal-assistant-icon-template/);
+  // Hover／选中态取 047 的语义 token，业务 CSS 不再写原始色值。
+  assert.match(convergence, /eva-personal-assistant-folder__row:hover\s*\{[^}]*background:\s*var\(--eva-overlay-hover\)/s);
   assert.match(convergence, /eva-personal-assistant-folder__row:hover\s+\.eva-assistant-folder__button\s*\{[^}]*background:\s*transparent/s);
-  assert.match(convergence, /eva-assistant-conversation:hover\s*\{[^}]*background:\s*#e2e3e5/s);
+  assert.match(convergence, /eva-assistant-conversation:hover\s*\{[^}]*background:\s*var\(--eva-overlay-hover\)/s);
+  assert.match(convergence, /eva-assistant-conversation\.is-selected\s*\{[^}]*background:\s*var\(--eva-overlay-pressed\)/s);
 });
 
 test('创建和编辑助理共用编辑器并按模式新增或原位更新', () => {
-  const personalColumns = read('prototype/042-personal-conversation-columns.js');
+  const { source } = createPatchedRuntime();
+  const assistants = read('prototype/046-personal-assistants.js');
   const convergence = read('prototype/044-final-layout-convergence.js');
 
-  assert.match(personalColumns, /data-eva-edit-assistant/);
-  assert.match(personalColumns, /window\.__evaSavePersonalAssistant/);
+  assert.match(source, /data-eva-edit-assistant/);
+  assert.match(assistants, /window\.__evaSavePersonalAssistant/);
+  assert.match(convergence, /\.eva-personal-sider-panel \[data-eva-edit-assistant\]/);
   assert.match(convergence, /function openAssistantEditor\(options\)/);
   assert.match(convergence, /mode:\s*'create'/);
   assert.match(convergence, /mode:\s*'edit'/);
@@ -104,6 +109,7 @@ test('一级页面只挂入路由宿主，不再追加到 document.body', () => 
     'prototype/025-demo-0902-v2-pages.js',
     'prototype/029-connection-center-v2-functional.js',
     'prototype/044-final-layout-convergence.js',
+    'prototype/052-personal-eva-gds.js',
   ];
   const source = files.map(read).join('\n');
 
@@ -127,4 +133,82 @@ test('迁移后的一级页面不再保留 DOM 导航状态或浏览器补丁加
   assert.doesNotMatch(recent, /eva-mode-collaboration/);
   assert.match(recent, /route === '\/messages'/);
   assert.doesNotMatch(connectionCenter, /new MutationObserver|centerOpen|setCenterOpen/);
+});
+
+test('GDS 经语义 token 与组件适配层进入，业务层不写原始色值', () => {
+  const tokens = read('prototype/047-gds-tokens.css');
+  const reroot = read('prototype/049-gds-brand-reroot.css');
+  const workspaceCss = read('prototype/051-personal-eva-gds.css');
+
+  assert.match(tokens, /--eva-font-sans:\s*"PingFang SC"/);
+  assert.match(tokens, /--eva-action-primary:\s*var\(--eva-c-brand-blue\)/);
+  assert.match(tokens, /--eva-c-brand-blue:\s*#1563eb/);
+  // 改根层把项目既有的品牌槽位接到 GDS 主色上，而不是逐条覆盖 .semi-* 规则。
+  assert.match(reroot, /--wk-brand-primary:\s*var\(--eva-action-primary\)/);
+  assert.doesNotMatch(workspaceCss, /#[0-9a-fA-F]{3,8}\b/, '051 出现了十六进制字面量');
+});
+
+test('个人 Eva 六态挂在路由宿主内，不使用全屏或 fixed 根节点', () => {
+  const workspace = read('prototype/052-personal-eva-gds.js');
+  const workspaceCss = read('prototype/051-personal-eva-gds.css');
+
+  for (const state of ['home', 'input', 'skill-picker', 'operation', 'generating', 'completed']) {
+    assert.ok(workspace.includes(`'${state}'`), `缺少 GDS 页面态：${state}`);
+    assert.ok(
+      workspaceCss.includes(`[data-eva-state="${state}"]`),
+      `缺少 ${state} 的态选择器`,
+    );
+  }
+  assert.match(workspace, /window\.__evaPersonalState/);
+  assert.doesNotMatch(workspaceCss, /position:\s*fixed/);
+});
+
+test('侧栏宽度回到 GDS 标准外壳的 260 并保留 84 折叠宽', () => {
+  const { source } = createPatchedRuntime();
+
+  assert.match(source, /DEFAULT_SIDER_WIDTH=260,DESKTOP_COLLAPSED_WIDTH=84,SIDER_MIN_WIDTH=200/);
+  assert.doesNotMatch(source, /DEFAULT_SIDER_WIDTH=248/);
+  assert.match(source, /EvaPersonalWorkspacePanel=/);
+  assert.match(source, /className:"eva-personal-sider-panel"/);
+  // 连接中心图标改用 createLucideIcon，不再手写内联 svg（AGENTS.md:151）。
+  assert.match(source, /EvaConnectionCenterIcon=createLucideIcon\("unplug",/);
+});
+
+test('折叠侧栏整列可滚动，导航与历史共用同一个滚动容器', () => {
+  const { source } = createPatchedRuntime();
+
+  // vendor 宿主 .flex-1.min-h-0.overflow-hidden 会裁掉一切溢出，而三段导航都是
+  // shrink-0：折叠态 11 个 entry 各 56px + 3 个分组标题实测 700px > 宿主 662px。
+  // 所以注入内容必须自己套一层 flex-1 min-h-0 overflow-y-auto 的滚动容器。
+  assert.match(
+    source,
+    /React\.createElement\("div",\{className:classNames\("flex-1 min-h-0 flex flex-col gap-2px overflow-y-auto",siderStyles\.scrollArea\)\},React\.createElement\(EvaSidebarNavigation,/
+  );
+  // 折叠态的分组历史跟着外层一起滚：shrink-0，不再抢 flex-1 被压成 0 高。
+  assert.match(
+    source,
+    /ct\?React\.createElement\("div",\{className:"shrink-0"\},React\.createElement\(reactExports\.Suspense,.*?React\.createElement\(WorkspaceGroupedHistory\$1,\{\.\.\.pr\}\)\)\):React\.createElement\(EvaPersonalWorkspacePanel,/
+  );
+  // 折叠态曾经落到没有滚动容器的静态占位块上，导致整列无法上下滚动。
+  assert.doesNotMatch(source, /evaMode==="personal"&&!ct\?/);
+});
+
+test('--topbar-height 全库只定义一次，浮层不再回退到 2.6rem', () => {
+  const roots = ['prototype', 'review', 'index.html'];
+  const files = [];
+  const walk = target => {
+    const stat = fs.statSync(target);
+    if (stat.isDirectory()) fs.readdirSync(target).forEach(name => walk(`${target}/${name}`));
+    else if (/\.(css|js|mjs|html)$/.test(target)) files.push(target);
+  };
+  roots.forEach(walk);
+
+  const definitions = files.flatMap(file => {
+    const hits = read(file).match(/--topbar-height\s*:/g) || [];
+    return hits.map(() => file);
+  });
+  assert.deepEqual(definitions, ['prototype/049-gds-brand-reroot.css']);
+  for (const file of files) {
+    assert.doesNotMatch(read(file), /--topbar-height\s*,\s*2\.6rem/, `${file} 仍在回退到 2.6rem`);
+  }
 });
