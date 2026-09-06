@@ -526,6 +526,17 @@
     }));
   }
 
+  // The project shortcut belongs to the message rail. Catch it before any
+  // legacy workspace listener can replace the whole message page.
+  window.addEventListener('click', function (event) {
+    var projectTaskButton = event.target.closest('.eva-space-task-button');
+    if (!projectTaskButton) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    openProjectTasks(projectTaskButton);
+  }, true);
+
   document.addEventListener('click', function (event) {
     var contextTaskItem = event.target.closest('[data-eva-context-task-id]');
     if (contextTaskItem) {
