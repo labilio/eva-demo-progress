@@ -13,6 +13,12 @@
         }
 
         replaceEvaRuntimeFragment(
+          'React.createElement("div",{className:"ch-list"},React.createElement("div",{className:"ch-list__top"}',
+          'React.createElement("div",{className:"ch-list"},React.createElement("div",{className:"eva-conversation-rail-resizer",role:"separator","aria-label":"调整中间栏宽度","aria-orientation":"vertical",tabIndex:0,"data-eva-conversation-rail-resizer":!0}),React.createElement("div",{className:"ch-list__top"}',
+          'shared conversation rail resizer'
+        );
+
+        replaceEvaRuntimeFragment(
           'dragHandleAttributes:Ft,dragHandleListeners:Qt})=>',
           'dragHandleAttributes:Ft,dragHandleListeners:Qt,avatarUrl:It})=>',
           'identity avatar property'
@@ -24,7 +30,7 @@
         );
         replaceEvaRuntimeFragment(
           'title:React.createElement(CategoryHeader,{name:ci.name,groupCount:Fi.length,unreadCount:Ki,hasMention:Ms.hasMention,isCollapsed:ro,isEmpty:Fi.length===0,onToggle:zs})',
-          'title:React.createElement(CategoryHeader,{name:ci.name,groupCount:Fi.length,unreadCount:Ki,hasMention:Ms.hasMention,isCollapsed:ro,isEmpty:Fi.length===0,onToggle:zs,avatarUrl:ci.avatarUrl})',
+          'title:React.createElement(CategoryHeader,{name:ci.name,groupCount:Fi.length,unreadCount:Ki,hasMention:Ms.hasMention,isCollapsed:ro,isEmpty:Fi.length===0,onToggle:()=>{ct?.sidebarVariant==="ai-sessions"&&Fi[0]&&La(Fi[0].id),zs()},avatarUrl:ci.avatarUrl})',
           'identity avatar data flow'
         );
         replaceEvaRuntimeFragment(
@@ -49,8 +55,18 @@
         );
         replaceEvaRuntimeFragment(
           'React.createElement("div",{className:"ch-list__top"},React.createElement(ForwardInput,{className:"ch-list-search",prefix:React.createElement(Search$1,{size:13}),placeholder:"搜索",value:Va,onChange:ci=>Fa(ci),showClear:!0}),React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",visible:sn,onVisibleChange:cn,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),ut?(Ir(null),Qr(null),hr(!0)):pr("channel")}},"新建群聊"))},React.createElement("button",{type:"button",className:"ch-cat-gear",title:"新建"},React.createElement(Plus$c,{size:15}))))',
-          'React.createElement("div",{className:"ch-list__top"},ct?.sidebarVariant==="ai-sessions"?React.createElement("div",{className:"eva-my-ai-sidebar-actions"},React.createElement(Button,{className:"eva-my-ai-sidebar-actions__create-assistant",theme:"light",icon:React.createElement(Plus$c,{size:15}),onClick:()=>Toast.info("演示：进入创建助理")},"创建助理"),React.createElement(Button,{className:"eva-my-ai-sidebar-actions__new-session",theme:"solid",type:"primary",onClick:()=>Toast.info("演示：新建 OpenClaw 会话")},"新建对话")):React.createElement(React.Fragment,null,React.createElement(ForwardInput,{className:"ch-list-search",prefix:React.createElement(Search$1,{size:13}),placeholder:"搜索",value:Va,onChange:ci=>Fa(ci),showClear:!0}),React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",visible:sn,onVisibleChange:cn,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),ut?(Ir(null),Qr(null),hr(!0)):pr("channel")}},"新建群聊"))},React.createElement("button",{type:"button",className:"ch-cat-gear",title:"新建"},React.createElement(Plus$c,{size:15})))))',
+          'React.createElement("div",{className:"ch-list__top"},ct?.sidebarVariant==="ai-sessions"?null:React.createElement(React.Fragment,null,React.createElement(ForwardInput,{className:"ch-list-search",prefix:React.createElement(Search$1,{size:13}),placeholder:"搜索",value:Va,onChange:ci=>Fa(ci),showClear:!0}),React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",visible:sn,onVisibleChange:cn,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),ut?(Ir(null),Qr(null),hr(!0)):pr("channel")}},"新建群聊"))},React.createElement("button",{type:"button",className:"ch-cat-gear",title:"新建"},React.createElement(Plus$c,{size:15})))))',
           'My AI sidebar actions'
+        );
+        replaceEvaRuntimeFragment(
+          'className:`eva-space-card-foundation eva-space-card-foundation--compact eva-space-card eva-space-card--${ci.id.slice(6)}`,',
+          'className:`eva-space-card-foundation eva-space-card-foundation--compact eva-space-card eva-space-card--${ci.id.slice(6)}${ct?.sidebarVariant==="ai-sessions"&&Fi.some(ns=>ns.id===Ct&&!Pt)?" eva-my-ai-identity-active":""}`,',
+          'My AI identity active state'
+        );
+        replaceEvaRuntimeFragment(
+          'extra:ci.id.startsWith("space:")?React.createElement(Button,{className:"eva-space-task-button",icon:React.createElement(ClipboardList,{size:16}),theme:"borderless",type:"tertiary",size:"small","aria-label":`打开${ci.name}任务页`,title:`打开${ci.name}任务页`,onClick:ns=>{ns.stopPropagation(),window.__evaOpenWorkspaceFromTree?.(ci.id.slice(6),"tasks")}}):null,headerStyle:',
+          'extra:ci.id.startsWith("space:")?React.createElement(Button,{className:"eva-space-task-button",icon:React.createElement(ClipboardList,{size:16}),theme:"borderless",type:"tertiary",size:"small","aria-label":`打开${ci.name}任务页`,title:`打开${ci.name}任务页`,onClick:ns=>{ns.stopPropagation(),window.__evaOpenWorkspaceFromTree?.(ci.id.slice(6),"tasks")}}):ct?.sidebarVariant==="ai-sessions"?React.createElement(React.Fragment,null,React.createElement(Button,{className:"eva-my-ai-identity-new-session",icon:React.createElement(Plus$c,{size:16}),theme:"borderless",type:"tertiary",size:"small","aria-label":`新建${ci.name}会话`,title:"新建会话",onClick:ns=>{ns.stopPropagation(),Toast.info(`演示：为${ci.name}新建 OpenClaw 会话`)}}),React.createElement("button",{type:"button",className:"eva-my-ai-identity-toggle","aria-label":`${ro?"展开":"收起"}${ci.name}`,title:ro?"展开":"收起",onClick:ns=>{ns.stopPropagation(),zs()}},React.createElement(ro?ChevronDown:ChevronRight,{size:16}))):null,headerStyle:',
+          'My AI identity new session action'
         );
         replaceEvaRuntimeFragment(
           'src:window.EvaAvatar.uri({kind:Sa.id.startsWith("dm-")?"person":"group",id:Sa.id,color:Sa.color}),alt:""})),React.createElement("div",{className:"wk-chat-conversation-header-channel-info"}',

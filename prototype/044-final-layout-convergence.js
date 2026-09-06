@@ -68,6 +68,72 @@
     });
   }
 
+  /* 消息与个人 Eva 共用一个中间栏宽度偏好。宽度归 documentElement 所有，
+     页面切换只重新挂载视图，不复制状态；双击分隔线可恢复 260px。 */
+  var conversationRailStorageKey = 'eva:conversation-rail-width';
+  var conversationRailDefault = 260;
+  var conversationRailMin = 220;
+  var conversationRailMax = 480;
+  var activeConversationRailDrag = null;
+
+  function clampConversationRailWidth(width) {
+    return Math.min(conversationRailMax, Math.max(conversationRailMin, Math.round(width)));
+  }
+
+  function setConversationRailWidth(width, persist) {
+    var next = clampConversationRailWidth(width);
+    document.documentElement.style.setProperty('--eva-conversation-rail-current', next + 'px');
+    document.querySelectorAll('[data-eva-conversation-rail-resizer]').forEach(function (handle) {
+      handle.setAttribute('aria-valuemin', String(conversationRailMin));
+      handle.setAttribute('aria-valuemax', String(conversationRailMax));
+      handle.setAttribute('aria-valuenow', String(next));
+    });
+    if (persist) localStorage.setItem(conversationRailStorageKey, String(next));
+    return next;
+  }
+
+  function restoreConversationRailWidth() {
+    var saved = Number(localStorage.getItem(conversationRailStorageKey));
+    setConversationRailWidth(Number.isFinite(saved) && saved > 0 ? saved : conversationRailDefault, false);
+  }
+
+  document.addEventListener('pointerdown', function (event) {
+    var handle = event.target.closest && event.target.closest('[data-eva-conversation-rail-resizer]');
+    if (!handle || event.button !== 0) return;
+    var rail = handle.closest('.ch-list, .eva-personal-sider-panel');
+    if (!rail) return;
+    event.preventDefault();
+    activeConversationRailDrag = { pointerId: event.pointerId, startX: event.clientX, startWidth: rail.getBoundingClientRect().width };
+    handle.setPointerCapture(event.pointerId);
+    document.documentElement.classList.add('eva-conversation-rail-resizing');
+  });
+
+  document.addEventListener('pointermove', function (event) {
+    if (!activeConversationRailDrag || event.pointerId !== activeConversationRailDrag.pointerId) return;
+    setConversationRailWidth(activeConversationRailDrag.startWidth + event.clientX - activeConversationRailDrag.startX, false);
+  });
+
+  function finishConversationRailDrag(event) {
+    if (!activeConversationRailDrag || event.pointerId !== activeConversationRailDrag.pointerId) return;
+    var width = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--eva-conversation-rail-current'));
+    setConversationRailWidth(width, true);
+    activeConversationRailDrag = null;
+    document.documentElement.classList.remove('eva-conversation-rail-resizing');
+  }
+
+  document.addEventListener('pointerup', finishConversationRailDrag);
+  document.addEventListener('pointercancel', finishConversationRailDrag);
+  document.addEventListener('dblclick', function (event) {
+    if (event.target.closest && event.target.closest('[data-eva-conversation-rail-resizer]')) setConversationRailWidth(conversationRailDefault, true);
+  });
+  document.addEventListener('keydown', function (event) {
+    if (!event.target.matches || !event.target.matches('[data-eva-conversation-rail-resizer]')) return;
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && event.key !== 'Home') return;
+    event.preventDefault();
+    var current = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--eva-conversation-rail-current')) || conversationRailDefault;
+    setConversationRailWidth(event.key === 'Home' ? conversationRailDefault : current + (event.key === 'ArrowLeft' ? -10 : 10), true);
+  });
+
   document.addEventListener('click', function (event) {
     var editAssistant = event.target.closest('.eva-personal-sider-panel [data-eva-edit-assistant]');
     if (editAssistant) {
@@ -131,5 +197,6 @@
     };
   });
 
+  restoreConversationRailWidth();
   tuneLegacyAutomation();
 })();

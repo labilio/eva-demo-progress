@@ -20,8 +20,10 @@ requireText('conversationKind:"openclaw-session"', 'My AI child rows are not ide
 requireText('identityAvatarUrl:', 'My AI sessions do not carry their parent AI identity avatar');
 requireText('avatarUrl:', 'My AI identity groups do not provide an avatar');
 requireText('wk-category-header__identity-avatar', 'the shared category header cannot render an AI identity avatar');
+requireText('Fi[0]&&La(Fi[0].id)', 'clicking a My AI identity does not select one of its sessions');
 requireText('wk-conv-compact-item--session', 'the shared conversation item has no session-row presentation');
 requireText('eva-my-ai-sidebar-actions', 'My AI is missing separate create-assistant and new-session actions');
+requireText('eva-my-ai-identity-toggle', 'My AI identity expand/collapse control is missing from the right side');
 requireText('Sa.identityAvatarUrl??', 'the shared conversation header does not use the selected session identity avatar');
 requireText('split("\\\\n")', 'runtime-generated session previews contain an unescaped newline and will blank the app');
 requireText('ct?.sidebarVariant!=="ai-sessions"', 'My AI still renders the team-only subzone action');

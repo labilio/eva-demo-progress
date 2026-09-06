@@ -8,26 +8,16 @@
     padding: 24px 48px 56px;
   }
 
-  body.eva-message-hierarchy-ready .eva-project-directory-hero {
+  .eva-project-directory-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 20px;
   }
 
-  body.eva-message-hierarchy-ready .eva-project-directory-hero .left {
-    gap: 14px;
-    padding-top: 12px;
-  }
-
-  body.eva-message-hierarchy-ready .eva-project-directory-hero .slogan {
-    max-width: 520px;
-    margin: 0;
-    color: var(--semi-color-text-2, #646a73);
-    font-size: 14px;
-    line-height: 22px;
-  }
-
-  body.eva-message-hierarchy-ready .eva-project-directory-hero .illustration {
-    width: 380px;
-    max-width: 40%;
+  .eva-project-directory-search {
+    width: 280px;
+    max-width: min(50%, 360px);
   }
 
   .eva-project-pinned-section,
@@ -243,8 +233,4 @@
       grid-template-columns: 1fr;
     }
 
-    body.eva-message-hierarchy-ready .eva-project-directory-hero .illustration {
-      width: 300px;
-      max-width: 38%;
-    }
   }

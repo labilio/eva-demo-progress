@@ -675,43 +675,56 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
 body.eva-message-hierarchy-ready
   .eva-channel-surface[data-eva-message-mode="my-ai"]
   .ch-list__top {
-  padding: 14px 14px 12px;
+  display: none;
 }
 
 body.eva-message-hierarchy-ready .eva-channel-surface[data-eva-message-mode="my-ai"] .wk-sidebar-tabbar {
   display: none !important;
 }
 
+/* “我的 AI”不再有独立顶部操作；新会话属于具体助理。助理或其任一
+   session 被选中时才固定显示高亮加号，Hover／键盘焦点时临时显示。 */
 body.eva-message-hierarchy-ready
   .eva-channel-surface[data-eva-message-mode="my-ai"]
-  .eva-my-ai-sidebar-actions {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  width: 100%;
-}
-
-body.eva-message-hierarchy-ready
-  .eva-channel-surface[data-eva-message-mode="my-ai"]
-  .eva-my-ai-sidebar-actions .semi-button {
-  height: 34px;
+  .eva-my-ai-identity-new-session {
+  display: none;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
   border-radius: 8px;
-  font-size: 13px;
+  line-height: 0;
 }
 
 body.eva-message-hierarchy-ready
   .eva-channel-surface[data-eva-message-mode="my-ai"]
-  .eva-my-ai-sidebar-actions__create-assistant {
-  background: var(--semi-color-fill-0, #eceef0);
-  color: var(--semi-color-text-0, #1c1f23);
+  .eva-my-ai-identity-new-session svg,
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-toggle svg {
+  display: block;
+  width: 16px;
+  height: 16px;
 }
 
 body.eva-message-hierarchy-ready
   .eva-channel-surface[data-eva-message-mode="my-ai"]
-  .eva-my-ai-sidebar-actions__new-session {
-  padding-inline: 15px;
-  background: var(--semi-color-text-0, #1c1f23);
-  color: #fff;
+  .eva-space-card:hover .eva-my-ai-identity-new-session,
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card:focus-within .eva-my-ai-identity-new-session,
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-active .eva-my-ai-identity-new-session {
+  display: inline-grid;
+  place-items: center;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-active .eva-my-ai-identity-new-session {
+  background: var(--semi-color-primary, var(--eva-action-primary, #1563eb));
+  color: var(--semi-color-white, #fff);
 }
 
 body.eva-message-hierarchy-ready
@@ -749,16 +762,56 @@ body.eva-message-hierarchy-ready
 body.eva-message-hierarchy-ready
   .eva-channel-surface[data-eva-message-mode="my-ai"]
   .wk-category-header__arrow {
-  margin-right: 0;
+  display: none;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card .arco-card-header-title {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card .arco-card-header-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  line-height: 0;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-toggle {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--semi-color-text-2, #8a8f99);
+  cursor: pointer;
+  line-height: 0;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-toggle:hover {
+  background: var(--semi-color-fill-1, #f2f3f5);
+  color: var(--semi-color-text-0, #1c1f23);
 }
 
 body.eva-message-hierarchy-ready
   .eva-channel-surface[data-eva-message-mode="my-ai"]
   .wk-category-header__identity-avatar {
   display: block;
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -768,7 +821,7 @@ body.eva-message-hierarchy-ready
   .eva-space-card .wk-category-header__name {
   color: var(--semi-color-text-0, #1c1f23);
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 body.eva-message-hierarchy-ready

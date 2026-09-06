@@ -12,3 +12,7 @@ artifacts/
 __MACOSX/
 ._*
 Thumbs.db
+
+# 本地参考副本：规范正本在 docs/design-system/gds-for-ai2.0/（四份 JSON/MD 内容一致），
+# 这里额外的 23 个渲染 HTML 页只在本地看，不入库。
+eva-design-system/

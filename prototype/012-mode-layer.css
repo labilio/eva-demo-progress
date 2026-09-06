@@ -46,6 +46,10 @@
   outline-offset: 2px;
 }
 
+.layout-sider {
+  box-sizing: border-box;
+}
+
 .eva-space-picker {
   position: relative;
 }
@@ -414,15 +418,12 @@
   width: 100%;
   height: 38px;
   border-radius: 10px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 34px;
-  align-items: center;
+  display: flex;
+  align-items: stretch;
   color: var(--semi-color-text-0, #1c1f23);
   background: transparent;
-  transition: background-color 120ms ease;
 }
 
-.eva-personal-entry:hover,
 .eva-personal-entry.is-selected {
   background: #e2e3e5;
 }
@@ -430,8 +431,9 @@
 .eva-personal-entry__main {
   box-sizing: border-box;
   min-width: 0;
+  width: 100%;
   height: 100%;
-  padding: 0 0 0 10px;
+  padding: 0 10px;
   border: 0;
   display: flex;
   align-items: center;
@@ -441,6 +443,10 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+.eva-personal-entry:hover {
+  background: #e2e3e5;
 }
 
 .eva-personal-entry__logo,
@@ -467,17 +473,6 @@
   white-space: nowrap;
 }
 
-.eva-personal-entry__plus {
-  width: 34px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--semi-color-text-2, #8f959e);
-  pointer-events: none;
-  user-select: none;
-}
-
 .eva-personal-entry.is-collapsed {
   height: 56px;
   display: flex;
@@ -487,12 +482,20 @@
 .eva-personal-entry.is-collapsed .eva-personal-entry__main {
   width: 100%;
   padding: 5px 2px;
+  flex-direction: column;
   justify-content: center;
+  gap: 2px;
+  text-align: center;
 }
 
-.eva-personal-entry.is-collapsed .eva-personal-entry__label,
-.eva-personal-entry.is-collapsed .eva-personal-entry__plus {
-  display: none;
+.eva-personal-entry.is-collapsed .eva-personal-entry__label {
+  display: block;
+  flex: 0 0 auto;
+  color: var(--semi-color-text-1, #4e5969);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 16px;
+  text-align: center;
 }
 
 
@@ -994,4 +997,3 @@
   .eva-drive__scroll { padding: 22px 22px 40px; }
   .eva-drive__actions { grid-template-columns: 1fr; }
 }
-

@@ -7,7 +7,7 @@
    ------------------------------------------------------------
    一、六态怎么切
    单一根节点 .eva-personal-workspace 上的 data-eva-state 取六值之一：
-     home / input / skill-picker / operation / generating / completed
+     home / input / skill-picker / operation / generating / completed；history 是已完成会话的上下文查看态
    显隐用属性选择器，不用 [hidden] —— 045-native-page-layout.css:34-36
    的 `.eva-native-page-host > … { display:flex }` 与 [hidden] 同为
    0,2,0，加载更晚会赢，[hidden] 在这个宿主里是不可靠的。
@@ -43,11 +43,22 @@
   min-width: 0;
   min-height: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   overflow: hidden;
   background: var(--eva-surface-primary);
   color: var(--eva-text-primary);
   font: var(--eva-fw-regular) 15px/24px var(--eva-font-sans);
+}
+
+.eva-personal-workspace__stage {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--eva-surface-primary);
 }
 
 /* ------------------------------------------------------------
@@ -72,7 +83,8 @@
 .eva-personal-workspace[data-eva-state="operation"] .eva-personal-workspace__opcard {
   display: block;
 }
-.eva-personal-workspace[data-eva-state="generating"] .eva-personal-workspace__conversation {
+.eva-personal-workspace[data-eva-state="generating"] .eva-personal-workspace__conversation:not(.eva-personal-workspace__history),
+.eva-personal-workspace[data-eva-state="history"] .eva-personal-workspace__history {
   display: flex;
 }
 .eva-personal-workspace[data-eva-state="completed"] .eva-personal-workspace__completed {
@@ -183,7 +195,9 @@
   justify-content: center;
 }
 .eva-personal-workspace__stream > .eva-flow {
-  width: var(--eva-main-col-w);
+  /* 776px 是 GDS 的标准主列；个人会话栏同时存在时，小视口需在内容区
+     留出安全内边距，不能让固定列宽从左右两侧被裁掉。 */
+  width: min(var(--eva-main-col-w), calc(100% - var(--eva-space-6)));
   flex: none;
   height: max-content;
 }
@@ -242,3 +256,92 @@
   display: grid;
   place-items: center;
 }
+
+/* ============================================================
+   history：复用会话主列，只按用户请求、Eva 结论、待确认项与附件组织。
+   它是工作上下文，不重造团队 IM 气泡；所有颜色和边界均取 GDS 语义 token。
+   ============================================================ */
+.eva-history-header__assistant {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--eva-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eva-history-flow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eva-space-5);
+  padding-bottom: var(--eva-space-6);
+}
+.eva-history-message {
+  display: flex;
+  max-width: min(100%, 680px);
+  flex-direction: column;
+  gap: var(--eva-space-1);
+}
+.eva-history-message.is-user {
+  align-self: flex-end;
+  margin-left: auto;
+}
+.eva-history-message__sender {
+  display: flex;
+  align-items: center;
+  gap: var(--eva-space-1);
+  color: var(--eva-text-secondary);
+}
+.eva-history-message.is-user .eva-history-message__sender { align-self: flex-end; }
+.eva-history-message__ai {
+  padding: 0 var(--eva-space-1);
+  border-radius: var(--eva-radius-key);
+  background: var(--eva-action-primary);
+  color: var(--eva-action-primary-text);
+  font: var(--eva-fw-medium) 11px/16px var(--eva-font-sans);
+}
+.eva-history-message__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eva-space-2);
+}
+.eva-history-message.is-user .eva-history-message__body {
+  max-width: 560px;
+  padding: var(--eva-space-3) var(--eva-space-4);
+  border: var(--eva-border-standard-w) solid var(--eva-border-subtle);
+  border-radius: var(--eva-radius-panel);
+  background: var(--eva-surface-subtle);
+}
+.eva-history-message__text {
+  margin: 0;
+  color: var(--eva-text-primary);
+}
+.eva-history-message__note {
+  padding: var(--eva-space-3) var(--eva-space-4);
+  border-radius: var(--eva-radius-key);
+  background: var(--eva-surface-subtle);
+  color: var(--eva-text-secondary);
+}
+.eva-history-artifact {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--eva-space-2);
+  padding: var(--eva-space-3) var(--eva-space-4);
+  border: var(--eva-border-standard-w) solid var(--eva-border-subtle);
+  border-radius: var(--eva-radius-panel);
+  background: var(--eva-surface-primary);
+}
+.eva-history-artifact__icon,
+.eva-history-artifact__action {
+  display: grid;
+  place-items: center;
+  color: var(--eva-text-secondary);
+}
+.eva-history-artifact__name,
+.eva-history-artifact__meta { display: block; }
+.eva-history-artifact__name {
+  overflow: hidden;
+  color: var(--eva-text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eva-history-artifact__meta { color: var(--eva-text-muted); }
