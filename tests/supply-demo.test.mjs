@@ -15,7 +15,7 @@ test('供应链教程闭环：审批、带分身加入、文件共享不泄漏�
  assert.ok(s.channels('prod','u-wangyilin').every(c=>typeof c.lastAt==='string'&&c.threads.every(t=>typeof t.updated_at==='string')));assert.equal(s.snapshot().projects.prod.humans.length,3);assert.equal(s.canRead('prod','u-hejing'),false);
  const invite=s.snapshot().invitations[0];assert.equal(invite.status,'pending_approval');
  s.approve(invite.id,'u-wangyilin');s.accept(invite.id,'u-hejing',['clone-hejing']);
- assert.equal(s.groupMembers('all:prod').length,7);assert.equal(s.canRead('supply-demo-rectification','u-hejing'),false);
+ assert.equal(s.groupMembers('all:prod').length,8);assert.equal(s.canRead('supply-demo-rectification','u-hejing'),false);
  const file=s.messagesFor('supply-demo-rectification','u-wangyilin').find(m=>m.kind==='file').file;
  files.transfer('u-wangyilin','prod',file,{groupId:'supply-demo-rectification',groupName:'供应商整改协同'});
  assert.equal(files.list('prod','u-hejing').length,1);assert.equal(s.canRead('supply-demo-evidence','u-hejing'),false);
@@ -30,7 +30,7 @@ test('供应链教程闭环：审批、带分身加入、文件共享不泄漏�
 test('群聊预设增量加载不重复、不覆盖成员与手动消息',()=>{
  const {s}=setup();s.loadSupplyDemo();s.sendMessage('supply-demo-rectification','u-wangyilin','手动补充');
  const before=JSON.stringify(s.snapshot());s.seedSupplyChatContent();s.seedSupplyChatContent();assert.equal(JSON.stringify(s.snapshot()),before);
- assert.equal(s.messagesFor('all:prod','u-wangyilin').filter(m=>m.fixtureId).length,5);
+ assert.equal(s.messagesFor('all:prod','u-wangyilin').filter(m=>m.fixtureId?.startsWith('supply-chat-v1:')).length,5);
  assert.equal(s.messagesFor('supply-demo-rectification','u-wangyilin').filter(m=>m.fixtureId).length,6);
  assert.equal(s.messagesFor('supply-demo-evidence','u-wangyilin').filter(m=>m.fixtureId).length,4);
  assert.equal(s.canRead('prod','u-hejing'),false);

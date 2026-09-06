@@ -54,3 +54,10 @@ test('React and HTML badges share the same fixed Octo badge contract', () => {
   assert.equal(badge.props.className,'ai-badge ai-badge-small');
   assert.equal(badge.children[0],'AI');
 });
+
+test('project agent uses shared avatar geometry with bot marker and no invented human owner',()=>{
+ const ctx={window:{__EVA_COLLEAGUE_PORTRAIT:'eva-logo',__EVA_CURRENT_USER_PORTRAIT:'human'}};
+ vm.runInNewContext(readFileSync(new URL('../prototype/003-my-assistant-identity.js',import.meta.url),'utf8'),ctx);
+ const appearance=ctx.window.EvaAIIdentity.projectAgentAppearance();const markup=ctx.window.EvaAIIdentity.avatar(appearance,32);
+ assert.match(markup,/Eva 云端项目 AI/);assert.match(markup,/project-agent-bot.svg/);assert.doesNotMatch(markup,/属于undefined/);
+});

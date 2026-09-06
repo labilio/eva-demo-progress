@@ -24,11 +24,12 @@ window.EvaAIIdentity = (() => {
     return ' '+(key==='className'?'class':key)+'="'+escape(value)+'"';
   }).join('')+'>'+children.join('')+(tag==='img'?'':'</'+tag+'>');
   function avatar(appearance, size=32, render=html) {
-    const label=appearance.name+'，来自'+(appearance.sourceName||'Eva')+'，属于'+appearance.ownerName;
+    const label=appearance.markerKind==='bot'?appearance.name+'，Eva 云端项目 AI':appearance.name+'，来自'+(appearance.sourceName||'Eva')+'，属于'+appearance.ownerName;
     return render('span',{className:'eva-identity-avatar',role:'img','aria-label':label,title:label,style:{'--eva-identity-avatar-size':size+'px'}},
       render('img',{className:'eva-identity-avatar__logo',src:appearance.logo,alt:''}),
       render('img',{className:'eva-identity-avatar__owner',src:appearance.ownerAvatar,alt:''}));
   }
   function badge(render=html,className='') {return render('span',{className:'ai-badge ai-badge-small'+(className?' '+className:'')},'AI');}
-  return Object.freeze({avatar,badge});
+  function projectAgentAppearance(){return {name:'Eva 项目管理专员',sourceName:'Eva',logo:window.__EVA_COLLEAGUE_PORTRAIT,markerKind:'bot',ownerAvatar:'prototype/assets/project-agent-bot.svg'};}
+  return Object.freeze({avatar,badge,projectAgentAppearance});
 })();
