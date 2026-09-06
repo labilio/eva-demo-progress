@@ -1,11 +1,8 @@
 import { createCommentsStore } from './comments-store.mjs';
 import { buildAnchorRecord, isVisiblePin, normalizeStatus } from './comments-domain.mjs';
+import { COMMENTS_CONFIG } from './comments-config.mjs';
 
-const config = {
-  url: 'https://gmkfxrmgvczafiohtbhy.supabase.co',
-  key: 'sb_publishable_8wNaj1kGhJ5jM1_XAnN7rA_NVsUUU42',
-};
-const store = createCommentsStore(config);
+const store = createCommentsStore(COMMENTS_CONFIG);
 const state = { rows: [], target: null, picking: false, pinMode: localStorage.getItem('eva-review-pin-mode') || 'all', activeId: null };
 
 const KINDS = {
