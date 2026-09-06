@@ -589,8 +589,6 @@
     });
     var title = document.querySelector('.collab-list-page .collab-hero h1');
     if (title) title.textContent = '项目';
-    var slogan = document.querySelector('.collab-list-page .collab-hero .slogan');
-    if (slogan) slogan.textContent = '把需要共同使用成员、助理、文件和任务的工作放在一起。';
     var section = document.querySelector('.collab-list-page .collab-section-head h2');
     if (section) section.textContent = '已加入';
     var input = document.querySelector('.collab-create-form input');
