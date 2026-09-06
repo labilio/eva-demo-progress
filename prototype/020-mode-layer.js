@@ -235,7 +235,7 @@
       openDrive('workspace', workspace.id, 'workspace');
       return;
     }
-    var labels = { projects: '项目', tasks: '任务', channels: '群聊', experts: '专家', squads: '专家团', skills: '技能', automation: '自动化' };
+    var labels = { projects: '项目', tasks: '任务', channels: '群聊', experts: '专家', squads: '专家团', skills: '技能', automation: '自动化', settings: '设置' };
     var target = Array.from(frame.querySelectorAll('.collab-tab')).find(function (button) {
       return button.textContent.trim().replace(/\d+$/, '') === labels[tab];
     });
