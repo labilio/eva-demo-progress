@@ -24,16 +24,22 @@
   --eva-rail-time: #8d95a1;
   --eva-rail-hover: #e2e3e5;
   --eva-rail-selected: #e5e6eb;
-  --eva-rail-name-size: 13px;
-  --eva-rail-label-size: 13px;
-  --eva-rail-line-height: 20px;
+  --eva-rail-name-size: var(--gds-type-label-medium-font-size);
+  --eva-rail-label-size: var(--gds-type-label-font-size);
+  --eva-rail-line-height: var(--gds-type-label-medium-line-height);
   --eva-rail-identity-height: 34px;
   --eva-rail-session-height: 38px;
+  --eva-rail-level-indent: 12px;
   box-sizing: border-box;
-  --eva-rail-session-indent: 58px;
+  /* Group title → assistant label → session label advances by 12px.
+     The session has no leading avatar, so its start includes the 24px avatar
+     and 4px icon/text gap that precede an assistant label. */
+  --eva-rail-session-indent: calc(24px + var(--gds-space-1) + var(--eva-rail-level-indent));
   position: relative;
-  flex: 0 0 var(--eva-conversation-rail-width, 336px);
-  width: var(--eva-conversation-rail-width, 336px);
+  flex: 0 0 var(--eva-conversation-rail-current);
+  width: var(--eva-conversation-rail-current);
+  min-width: var(--eva-conversation-rail-current);
+  max-width: var(--eva-conversation-rail-current);
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -51,16 +57,29 @@
 .eva-ai-team__sidebar-header .eva-ai-team__add { width: 100%; }
 .eva-ai-team__sidebar-header .semi-button { height: 34px; font-size: var(--eva-rail-label-size); }
 .eva-ai-team__menu-anchor { display: inline-flex; flex-shrink: 0; }
-.eva-ai-team__identity-heading .eva-ai-team__menu-anchor { opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
-.eva-ai-team__identity-heading:hover .eva-ai-team__menu-anchor,
-.eva-ai-team__identity-heading:focus-within .eva-ai-team__menu-anchor { opacity: 1; pointer-events: auto; }
 .eva-ai-team__new-session-anchor { display: inline-flex; flex-shrink: 0; }
-.eva-ai-team__new-session.semi-button { width: 26px; height: 26px; min-height: 26px; padding: 0; color: var(--eva-rail-time); background: transparent; opacity: 0; pointer-events: none; }
-.eva-ai-team__identity-heading:hover .eva-ai-team__new-session.semi-button,
-.eva-ai-team__identity-heading:focus-within .eva-ai-team__new-session.semi-button,
-.eva-ai-team__new-session.semi-button.is-active { opacity: 1; pointer-events: auto; color: var(--semi-color-primary); }
-.eva-ai-team__new-session.semi-button:hover,
-.eva-ai-team__new-session.semi-button.is-active { background: var(--eva-rail-selected); }
+.eva-ai-team__identity-action {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--gds-radius-control);
+  background: transparent;
+  color: var(--eva-rail-time);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease, color 120ms ease, background-color 120ms ease;
+}
+.eva-ai-team__identity-heading:hover .eva-ai-team__identity-action,
+.eva-ai-team__identity-heading:focus-within .eva-ai-team__identity-action,
+.eva-ai-team__new-session.is-active { opacity: 1; pointer-events: auto; }
+.eva-ai-team__identity-action:hover { color: var(--eva-rail-primary); background: var(--eva-rail-selected); }
+.eva-ai-team__new-session.is-active { background: var(--eva-rail-selected); color: var(--eva-rail-primary); }
+.eva-ai-team__identity-action:focus-visible { opacity: 1; pointer-events: auto; outline: 2px solid var(--gds-color-action-primary); outline-offset: -2px; }
 .eva-ai-team__sidebar-header .eva-ai-team__new {
   background: var(--semi-color-text-0, #1c1f23);
   color: var(--gds-color-surface-primary);
@@ -72,15 +91,34 @@
   padding-top: 8px;
   border-top: 1px solid var(--eva-rail-divider);
 }
-.eva-ai-team__group-title {
-  margin: 0;
+.eva-ai-team__group-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 30px;
+  align-items: center;
+  gap: var(--gds-space-1);
   padding: 4px 0;
+  border: 0;
+  border-radius: var(--gds-radius-control);
+  background: transparent;
   color: var(--eva-rail-caption);
-  font-size: var(--gds-type-caption-font-size);
-  line-height: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+.eva-ai-team__group-toggle:hover { color: var(--eva-rail-primary); }
+.eva-ai-team__group-toggle:focus-visible { outline: 2px solid var(--gds-color-action-primary); outline-offset: -2px; }
+.eva-ai-team__group-title {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  font-size: var(--gds-type-label-medium-font-size);
+  line-height: var(--gds-type-label-medium-line-height);
   font-weight: var(--gds-font-weight-medium);
 }
-.eva-ai-team__role-group > .eva-ai-team__group-title { margin-bottom: var(--gds-space-2); }
+.eva-ai-team__group-count { min-width: 18px; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); text-align: right; }
+.eva-ai-team__group-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
+.eva-ai-team__group-chevron.is-expanded { transform: rotate(90deg); }
+.eva-ai-team__group-content { margin-top: var(--gds-space-2); }
 .eva-ai-team__identity + .eva-ai-team__identity { margin-top: 6px; }
 .eva-ai-team__identity-heading { display: flex; align-items: center; gap: var(--gds-space-1); margin-bottom: var(--gds-space-1); }
 .eva-ai-team__identity-button,
@@ -95,17 +133,15 @@
   font: inherit;
   cursor: pointer;
 }
-.eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-2); min-height: var(--eva-rail-identity-height); padding: var(--gds-space-1) var(--gds-space-1); flex: 1; }
-.eva-ai-team__identity-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height); font-weight: 500; color: var(--eva-rail-primary); }
+.eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-1); min-height: var(--eva-rail-identity-height); padding: 0; flex: 1; }
+.eva-ai-team__identity-name { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-medium); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-button > svg,
 .eva-ai-team__identity-button > .ai-badge,
 .eva-ai-team__identity-button > .eva-identity-avatar { flex-shrink: 0; }
 .eva-ai-team__chevron { color: var(--gds-color-text-secondary); }
 .eva-ai-team__chevron.is-expanded { transform: rotate(90deg); }
-.eva-ai-team__role-label { flex-shrink: 0; font-size: var(--gds-type-caption-font-size); color: var(--gds-color-text-secondary); font-weight: var(--gds-font-weight-regular); }
-.eva-ai-team__more.semi-button { flex-shrink: 0; color: #8d949d; background: transparent; }
-.eva-ai-team__more.semi-button:hover { color: #3f454d; background: #e5e6eb; }
-.eva-ai-team__identity-status { margin: 0 0 var(--gds-space-2) var(--gds-space-8); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); }
+.eva-ai-team__role-label { flex-shrink: 0; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); color: var(--gds-color-text-secondary); font-weight: var(--gds-font-weight-regular); }
+.eva-ai-team__identity-status { margin: 0 0 var(--gds-space-2) var(--gds-space-8); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); }
 .eva-ai-team__session {
   width: 100%;
   display: grid;
@@ -130,9 +166,9 @@
 .eva-ai-team__session-row .eva-ai-team__session { grid-template-columns: minmax(0, 1fr) 50px; }
 .eva-ai-team__session-row .eva-ai-team__session-time { justify-self: end; }
 .eva-ai-team__session-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.eva-ai-team__session-title { grid-column: 1; font-size: var(--eva-rail-label-size); line-height: 20px; font-weight: 400; color: var(--eva-rail-secondary); }
-.eva-ai-team__session.is-selected .eva-ai-team__session-title { color: var(--eva-rail-primary); font-weight: 400; }
-.eva-ai-team__session-time { grid-column: 2; grid-row: 1; align-self: center; white-space: nowrap; color: var(--eva-rail-time); font-size: 11px; line-height: 20px; }
+.eva-ai-team__session-title { grid-column: 1; font-size: var(--eva-rail-label-size); line-height: var(--gds-type-label-line-height); font-weight: var(--gds-font-weight-regular); color: var(--eva-rail-secondary); }
+.eva-ai-team__session.is-selected .eva-ai-team__session-title { color: var(--eva-rail-primary); font-weight: var(--gds-font-weight-regular); }
+.eva-ai-team__session-time { grid-column: 2; grid-row: 1; align-self: center; white-space: nowrap; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__identity-button:hover,
 .eva-ai-team__session:hover,
 .eva-ai-team__digital-button:hover { background: var(--eva-rail-hover); }
@@ -142,11 +178,13 @@
 .eva-ai-team__digital-button .eva-ai-team__group-title { padding: 0; }
 .eva-ai-team__digital-button > .eva-ai-team__role-label { margin-left: auto; }
 .eva-ai-team__main {
+  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
 }
 .eva-ai-team__main > .ch-layout { flex: 1; min-height: 0; }
 .eva-ai-team__empty {
@@ -359,6 +397,3 @@
 .eva-ai-team__source-options .eva-ai-team__connection-option { min-height: 54px; }
 .eva-ai-team__source-options input[type="radio"] { flex-shrink: 0; width: 16px; height: 16px; margin: 0; accent-color: var(--semi-color-text-1); cursor: inherit; }
 .eva-ai-team__source-options .eva-ai-team__connection-option:has(input:focus-visible) { outline: 2px solid var(--semi-color-text-2); outline-offset: -2px; }
-
-.eva-ai-team__relation { display: inline-flex; flex: 0 0 18px; align-items: center; justify-content: center; height: 24px; color: var(--semi-color-text-3); opacity: 0; pointer-events: none; cursor: default; transition: opacity 120ms ease; }
-.eva-ai-team__identity-heading:hover .eva-ai-team__relation { opacity: 1; pointer-events: auto; }

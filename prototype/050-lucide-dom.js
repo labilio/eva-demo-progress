@@ -48,6 +48,7 @@
     'globe': [["circle", {cx: "12", cy: "12", r: "10"}], ["path", {d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"}], ["path", {d: "M2 12h20"}]],
     'hexagon': [["path", {d: "M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"}]],
     'layout-grid': [["rect", {width: "7", height: "7", x: "3", y: "3", rx: "1"}], ["rect", {width: "7", height: "7", x: "14", y: "3", rx: "1"}], ["rect", {width: "7", height: "7", x: "14", y: "14", rx: "1"}], ["rect", {width: "7", height: "7", x: "3", y: "14", rx: "1"}]],
+    'link-2': [["path", {d: "M9 17H7A5 5 0 0 1 7 7h2"}], ["path", {d: "M15 7h2a5 5 0 0 1 0 10h-2"}], ["line", {x1: "8", x2: "16", y1: "12", y2: "12"}]],
     'list': [["path", {d: "M3 5h.01"}], ["path", {d: "M3 12h.01"}], ["path", {d: "M3 19h.01"}], ["path", {d: "M8 5h13"}], ["path", {d: "M8 12h13"}], ["path", {d: "M8 19h13"}]],
     'list-checks': [["path", {d: "M13 5h8"}], ["path", {d: "M13 12h8"}], ["path", {d: "M13 19h8"}], ["path", {d: "m3 17 2 2 4-4"}], ["path", {d: "m3 7 2 2 4-4"}]],
     'loader-circle': [["path", {d: "M21 12a9 9 0 1 1-6.219-8.56"}]],

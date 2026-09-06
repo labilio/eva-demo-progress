@@ -123,7 +123,7 @@
           + '<span class="eva-assistant-folder__icon" aria-hidden="true">' + icon('brain', 18, 'eva-i') + '</span>'
           + '<span class="eva-assistant-folder__name">' + escapeHTML(assistant.name) + '</span>'
           + '<span class="eva-assistant-folder__chevron" aria-hidden="true">' + icon('chevron-right', 12, 'eva-i-chevron') + '</span></button>'
-          + '<span class="eva-personal-assistant-folder__actions"><button type="button" aria-label="编辑' + escapeHTML(assistant.name) + '" data-eva-edit-assistant>' + icon('ellipsis', 16, 'eva-i') + '</button>'
+          + '<span class="eva-personal-assistant-folder__actions"><button type="button" aria-label="查看' + escapeHTML(assistant.name) + '配置" title="查看配置" data-eva-edit-assistant>' + icon('link-2', 16, 'eva-i') + '</button>'
           + '<button type="button" class="eva-personal-assistant-folder__new-chat" aria-label="新建会话" title="新建会话" data-eva-new-assistant-chat="' + escapeHTML(assistant.id) + '">' + icon('plus', 16, 'eva-i') + '</button></span></div>'
           + '<div class="eva-assistant-folder__conversations">' + (tasks[assistant.id] || []).map(function (item) {
             var detail = conversationForTitle(item[0]);

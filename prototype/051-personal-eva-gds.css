@@ -345,3 +345,23 @@
   white-space: nowrap;
 }
 .eva-history-artifact__meta { color: var(--eva-text-muted); }
+
+/* 个人助理配置属于当前工作区内容，不使用遮罩式弹框。 */
+.eva-assistant-editor-inline {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--eva-surface-primary);
+}
+.eva-assistant-editor-inline .eva-create-assistant-modal {
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.eva-assistant-editor-inline .eva-create-assistant-modal__body { overflow: auto; }

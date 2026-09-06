@@ -521,14 +521,9 @@
     var project = projectForTaskButton(button);
     if (!project) return;
     closePopover(false);
-    routeProjectId = project.id;
-    routeAttempts = 0;
-    if (typeof window.__evaOpenWorkspaceFromTree === 'function') {
-      window.__evaOpenWorkspaceFromTree(project.id, 'tasks');
-    } else {
-      location.hash = '#/collab';
-    }
-    setTimeout(settleProjectRoute, 80);
+    window.dispatchEvent(new CustomEvent('eva:open-inline-project', {
+      detail: { projectId: project.id }
+    }));
   }
 
   document.addEventListener('click', function (event) {

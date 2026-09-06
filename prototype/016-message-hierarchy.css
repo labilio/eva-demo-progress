@@ -7,6 +7,73 @@ body.eva-message-hierarchy-ready .eva-msg .ch-list {
   background: #f6f7f8;
 }
 
+/* The project is a message-area view, so the route and conversation rail stay intact. */
+body.eva-message-hierarchy-ready .eva-msg .ch-main {
+  position: relative;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  background: #fff;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__head {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-bottom: 1px solid #e7e9ed;
+  background: #fff;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #4c5962;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__back:hover {
+  background: #f0f1f2;
+  color: #26343d;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__back:focus-visible {
+  outline: 2px solid #6b8fa3;
+  outline-offset: 2px;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__title {
+  min-width: 0;
+  overflow: hidden;
+  color: #26343d;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body,
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body .collab-frame {
+  min-height: 0;
+  flex: 1;
+}
+
 body.eva-message-hierarchy-ready .eva-msg .ch-list__top {
   gap: 8px;
   padding: 14px 14px 10px;
@@ -499,9 +566,31 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:
   line-height: 18px;
 }
 
-/* The nested list already exposes subzones; the duplicate group-row affordance is unnecessary. */
+/* 群聊名称支持双击收缩／展开子区；右侧用与“我的 AI”相同的折叠方向图标
+   表达当前状态，单击图标也可完成同一操作。 */
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-thread-tag {
   display: none;
+}
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-thread-toggle {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
+  margin-left: 4px;
+  border-radius: 6px;
+  color: #7c8790;
+  cursor: pointer;
+  transition: transform 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-thread-toggle:hover,
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-thread-toggle:focus-visible {
+  background: #e4e7ea;
+  color: #3f4851;
+  outline: none;
+}
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-thread-toggle.is-collapsed {
+  transform: rotate(-90deg);
 }
 
 .eva-msg .eva-space-card .wk-conv-compact-item--thread {
@@ -543,7 +632,10 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card {
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card > .arco-card-header,
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card > .semi-card-header {
   min-height: 30px;
-  padding: 0 6px;
+  /* Project-space headers are level-one peers of My AI's role groups.
+     Do not give the card wrapper an extra inset: it would make this level
+     start one step later than “本地助理 / 云端分身”. */
+  padding: 0;
   border: 0;
   background: transparent !important;
 }
@@ -561,21 +653,29 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .semi-card-header-wrap
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header {
   min-height: 28px;
+  /* The native card title wrapper adds a 6px inset that My AI's role group
+     does not have. Offset only the toggle (not the task action) so both
+     level-one labels share the same left edge and right-side action remains
+     aligned to the rail. */
+  width: calc(100% + var(--gds-space-1-5));
+  margin-inline-start: calc(-1 * var(--gds-space-1-5));
+  gap: var(--gds-space-1);
   padding: 0;
   border-radius: 6px;
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__arrow {
-  width: 16px;
-  margin-right: 5px;
+  /* Keep the same 12px chevron and 4px icon/text gap as the My AI group. */
+  width: var(--gds-icon-size-chevron);
+  margin-right: 0;
   color: #8a929a;
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__name {
   color: #5f6871;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 20px;
+  font-size: var(--gds-type-label-medium-font-size);
+  font-weight: var(--gds-font-weight-medium);
+  line-height: var(--gds-type-label-medium-line-height);
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .eva-space-task-button {
@@ -623,7 +723,7 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
   position: relative;
   min-height: 26px;
   margin: 0;
-  padding: 2px 8px 2px 42px;
+  padding: 2px 8px 2px calc(var(--eva-space-thread-indent, 12px) + var(--gds-space-5-5));
   border-radius: 6px;
   color: #68717a;
 }
@@ -631,7 +731,7 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item--thread::before {
   position: absolute;
   top: -1px;
-  left: 20px;
+  left: var(--eva-space-thread-indent, 12px);
   width: 22px;
   height: calc(50% + 1px);
   border-bottom: 1px solid #c6cbd0;
@@ -645,7 +745,7 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
   position: absolute;
   top: 50%;
   bottom: -1px;
-  left: 20px;
+  left: var(--eva-space-thread-indent, 12px);
   border-left: 1px solid #c6cbd0;
   content: '';
   pointer-events: none;
@@ -667,8 +767,52 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item--thread .wk-conv-compact-name {
-  font-size: 13px;
-  font-weight: 450;
+  font-size: var(--gds-type-label-font-size);
+  font-weight: var(--gds-font-weight-regular);
+  line-height: var(--gds-type-label-line-height);
+}
+
+/* 项目分组是一级，组内群聊整体右移一级；子区随所属群聊一起移动，
+   继续保留自身的连接线与二级缩进。12px 是两种第二栏共用的层级间距，
+   让每一级的起点明确递进。 */
+body.eva-message-hierarchy-ready
+  .eva-channel-surface:not([data-eva-message-mode="my-ai"])
+  .eva-space-card {
+  --eva-space-group-indent: 12px;
+  --eva-space-thread-indent: 12px;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface:not([data-eva-message-mode="my-ai"])
+  .eva-space-card
+  .wk-conv-compact-item:not(.wk-conv-compact-item--thread) {
+  /* Header chevron occupies 12px; group avatars occupy 24px plus an 8px gap.
+     This inset aligns the visible labels to the shared 12px step. */
+  width: 100%;
+  margin-inline-start: 0;
+  padding-inline-start: calc(var(--eva-space-group-indent) - var(--gds-space-0-5));
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface:not([data-eva-message-mode="my-ai"])
+  .eva-space-card
+  .wk-conv-compact-item--thread {
+  width: 100%;
+  margin-inline-start: 0;
+}
+
+/* The team-message rail and My AI rail use the same GDS list hierarchy:
+   group / primary row = labelMedium, nested row = label, metadata = caption. */
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-name {
+  font-size: var(--gds-type-label-medium-font-size);
+  line-height: var(--gds-type-label-medium-line-height);
+  font-weight: var(--gds-font-weight-medium);
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-badge {
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+  font-weight: var(--gds-font-weight-regular);
 }
 
 /* Team / My AI: one AI identity owns multiple OpenClaw session previews. */

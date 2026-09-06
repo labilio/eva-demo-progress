@@ -73,7 +73,7 @@
   document.addEventListener('pointerdown', function (event) {
     var handle = event.target.closest && event.target.closest('[data-eva-conversation-rail-resizer]');
     if (!handle || event.button !== 0) return;
-    var rail = handle.closest('.ch-list, .eva-personal-sider-panel');
+    var rail = handle.closest('.ch-list, .eva-personal-sider-panel, .eva-ai-team__sidebar');
     if (!rail) return;
     event.preventDefault();
     activeConversationRailDrag = { pointerId: event.pointerId, startX: event.clientX, startWidth: rail.getBoundingClientRect().width };
@@ -112,7 +112,7 @@
     if (editAssistant) {
       event.preventDefault();
       var folder = editAssistant.closest('[data-eva-assistant-id]');
-      openAssistantEditor({ mode: 'edit', id: folder.dataset.evaAssistantId, name: folder.dataset.evaAssistantName });
+      openAssistantEditor({ mode: 'edit', id: folder.dataset.evaAssistantId, name: folder.dataset.evaAssistantName, presentation: 'personal-workspace' });
       return;
     }
     var createAssistant = event.target.closest('.eva-personal-sider-panel .eva-assistant-tree__create');

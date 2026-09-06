@@ -9,7 +9,8 @@
   }
 
   body.eva-message-hierarchy-ready .eva-msg .ch-list,
-  .eva-personal-sider-panel {
+  .eva-personal-sider-panel,
+  .eva-ai-team__sidebar {
     position: relative;
     box-sizing: border-box;
     width: var(--eva-conversation-rail-current);
@@ -229,8 +230,8 @@
     color: var(--eva-text-primary);
   }
   .eva-personal-sider-panel .eva-personal-assistant-folder.is-selected-assistant .eva-personal-assistant-folder__new-chat {
-    background: var(--eva-action-primary);
-    color: var(--eva-action-primary-text);
+    background: var(--eva-overlay-pressed);
+    color: var(--eva-text-primary);
   }
   .eva-personal-sider-panel .eva-assistant-folder__conversations {
     display: flex;

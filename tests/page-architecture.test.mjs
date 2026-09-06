@@ -68,6 +68,19 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /eva-ai-team__new-session/);
   assert.match(imPatch, /identity\?\.id===i\.id\?' is-active'/);
   assert.match(imPatch, /content:'新建会话'/);
+  assert.doesNotMatch(imPatch, /Dropdown\.Item,\{onClick:\(\)=>newConversation\(i\.id\)\},'新建会话'/);
+  assert.doesNotMatch(imPatch, /Dropdown\.Item,\{onClick:\(\)=>openDetails\(i\.id\)\},'查看配置'/);
+  assert.doesNotMatch(imPatch, /TooltipComponent,\{position:'right',content:'查看配置'/);
+  assert.match(imPatch, /className:'eva-ai-team__identity-action eva-ai-team__relation'.+openDetails\(i\.id\)/);
+  assert.match(imPatch, /presentation:'ai-team-workspace'/);
+  assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
+  assert.match(imPatch, /if\(identity\?\.id!==i\.id\)choose\(i\.id,sessions\[0\]\?\.id\|\|null\)/);
+  assert.match(imPatch, /collapsedGroups/);
+  assert.match(imPatch, /roleGroup\('assistant','本地助理',localIdentities\)/);
+  assert.match(imPatch, /roleGroup\('persona','云端分身',personas\)/);
+  assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
+  assert.match(imPatch, /className:'eva-ai-team__group-count'/);
+  assert.match(imPatch, /EvaAIIdentityAvatar.+eva-ai-team__identity-name.+AiBadge.+eva-ai-team__chevron/s);
   assert.doesNotMatch(source, /EvaPersonalWorkspacePanel|EvaPersonalAssistantFolder/);
   assert.doesNotMatch(source, /eva-personal-sider-panel|eva-personal-sidebar-actions/);
   assert.match(workspace, /assistantRailHTML/);
@@ -91,6 +104,11 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(convergenceCss, /\.eva-msg \.ch-list,\s*\n\s*\.eva-personal-sider-panel/);
   assert.match(convergenceCss, /background:\s*var\(--eva-conversation-rail-bg\)/);
   assert.match(workspace, /data-eva-conversation-rail-resizer/);
+  assert.match(imPatch, /className:'eva-ai-team__sidebar'/);
+  assert.match(imPatch, /'data-eva-conversation-rail-resizer':true/);
+  assert.match(imPatch, /shared conversation rail resizer/);
+  assert.match(convergenceCss, /\.eva-ai-team__sidebar/);
+  assert.match(convergenceCss, /width:\s*var\(--eva-conversation-rail-current\)/);
 });
 
 test('个人会话详情由数据仓驱动，并通过会话路由恢复对应内容', () => {
@@ -107,6 +125,38 @@ test('个人会话详情由数据仓驱动，并通过会话路由恢复对应�
   assert.match(workspace, /#\/conversation\//);
 });
 
+test('消息关注中的群聊可双击收缩子区并显示状态指示', () => {
+  const imPatch = read('prototype/009-5-patch-im.js');
+  const hierarchyCss = read('prototype/016-message-hierarchy.css');
+
+  assert.match(imPatch, /onDoubleClick:Dt=>\{xt&&/);
+  assert.match(imPatch, /wk-conv-compact-thread-toggle/);
+  assert.match(imPatch, /threadsExpanded:Zi/);
+  assert.match(hierarchyCss, /wk-conv-compact-thread-toggle\.is-collapsed/);
+  assert.match(hierarchyCss, /--eva-space-group-indent:\s*12px/);
+  assert.match(hierarchyCss, /--eva-space-thread-indent:\s*12px/);
+  assert.match(hierarchyCss, /padding-inline-start:\s*calc\(var\(--eva-space-group-indent\) - var\(--gds-space-0-5\)\)/);
+});
+
+test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', () => {
+  const hierarchyCss = read('prototype/016-message-hierarchy.css');
+  const aiTeamCss = read('prototype/046-ai-team.css');
+  const imPatch = read('prototype/009-5-patch-im.js');
+
+  for (const css of [hierarchyCss, aiTeamCss]) {
+    assert.match(css, /--gds-type-label-medium-font-size/);
+    assert.match(css, /--gds-type-label-font-size/);
+    assert.match(css, /--gds-type-caption-font-size/);
+  }
+  assert.match(hierarchyCss, /wk-category-header__name\s*\{[^}]*font-size:\s*var\(--gds-type-label-medium-font-size\)[^}]*font-weight:\s*var\(--gds-font-weight-medium\)/s);
+  assert.match(hierarchyCss, /wk-conv-compact-item--thread \.wk-conv-compact-name\s*\{[^}]*font-size:\s*var\(--gds-type-label-font-size\)[^}]*font-weight:\s*var\(--gds-font-weight-regular\)/s);
+  assert.match(aiTeamCss, /eva-ai-team__group-title\s*\{[^}]*font-size:\s*var\(--gds-type-label-medium-font-size\)/s);
+  assert.match(aiTeamCss, /eva-ai-team__session-title\s*\{[^}]*font-size:\s*var\(--eva-rail-label-size\)[^}]*font-weight:\s*var\(--gds-font-weight-regular\)/s);
+  assert.match(aiTeamCss, /--eva-rail-level-indent:\s*12px/);
+  assert.match(aiTeamCss, /--eva-rail-session-indent:\s*calc\(24px \+ var\(--gds-space-1\) \+ var\(--eva-rail-level-indent\)\)/);
+  assert.match(imPatch, /EvaAIIdentityAvatar,\{appearance:evaIdentityAppearance\(i\),size:24\}/);
+});
+
 test('个人助理使用 Brain 身份图标且整行提供 Hover', () => {
   const workspace = read('prototype/052-personal-eva-gds.js');
   const convergence = read('prototype/043-final-layout-convergence.css');
@@ -119,6 +169,7 @@ test('个人助理使用 Brain 身份图标且整行提供 Hover', () => {
   assert.match(convergence, /eva-personal-assistant-folder__row:hover\s+\.eva-assistant-folder__button\s*\{[^}]*background:\s*transparent/s);
   assert.match(convergence, /eva-assistant-conversation:hover\s*\{[^}]*background:\s*var\(--eva-overlay-hover\)/s);
   assert.match(convergence, /eva-assistant-conversation\.is-selected\s*\{[^}]*background:\s*var\(--eva-overlay-pressed\)/s);
+  assert.match(convergence, /eva-personal-assistant-folder\.is-selected-assistant.+eva-personal-assistant-folder__new-chat\s*\{[^}]*background:\s*var\(--eva-overlay-pressed\)/s);
 });
 
 test('创建和编辑助理共用编辑器并按模式新增或原位更新', () => {
@@ -127,17 +178,22 @@ test('创建和编辑助理共用编辑器并按模式新增或原位更新', ()
   const convergence = read('prototype/044-final-layout-convergence.js');
 
   assert.match(workspace, /data-eva-edit-assistant/);
+  assert.match(workspace, /icon\('link-2', 16/);
   assert.match(assistants, /window\.__evaSavePersonalAssistant/);
   assert.match(convergence, /\.eva-personal-sider-panel \[data-eva-edit-assistant\]/);
   assert.match(convergence, /function openAssistantEditor\(options\)/);
   assert.match(convergence, /mode:\s*'create'/);
   assert.match(convergence, /mode:\s*'edit'/);
+  assert.match(convergence, /presentation:\s*'personal-workspace'/);
   assert.match(convergence, /window\.__evaOpenAssistantEditor/);
   assert.doesNotMatch(convergence, /function ensureCreateAssistantModal/);
   const sharedEditor = read('prototype/009-5-patch-im.js');
   assert.match(sharedEditor, /function EvaAssistantEditor\(/);
   assert.match(sharedEditor, /store\.saveLocalAssistant/);
   assert.match(sharedEditor, /store\.savePersona/);
+  assert.match(sharedEditor, /ReactDOM\.createPortal/);
+  assert.match(sharedEditor, /eva-assistant-editor-inline/);
+  assert.match(read('prototype/051-personal-eva-gds.css'), /\.eva-assistant-editor-inline/);
 });
 
 test('一级页面只挂入路由宿主，不再追加到 document.body', () => {
@@ -184,6 +240,24 @@ test('GDS 经语义 token 与组件适配层进入，业务层不写原始色值
   // 改根层把项目既有的品牌槽位接到 GDS 主色上，而不是逐条覆盖 .semi-* 规则。
   assert.match(reroot, /--wk-brand-primary:\s*var\(--eva-action-primary\)/);
   assert.doesNotMatch(workspaceCss, /#[0-9a-fA-F]{3,8}\b/, '051 出现了十六进制字面量');
+});
+
+test('项目内项目信息位于项目设置前并展示核心项目档案', () => {
+  const patch = read('prototype/009-6-patch-general.js');
+  const projectCss = read('prototype/036-project-directory-v3.css');
+  const { source } = createPatchedRuntime();
+
+  assert.match(patch, /eva-project-directory-actions/);
+  assert.match(patch, /eva-project-directory-search/);
+  assert.match(patch, /evaFilteredPinnedProjects/);
+  assert.match(patch, /evaFilteredProjects/);
+  assert.doesNotMatch(patch, /eva-project-directory-hero/);
+  assert.match(projectCss, /\.eva-project-info\s*\{[^}]*height:\s*100%[^}]*overflow-y:\s*auto/s);
+  assert.match(patch, /key:\"project-info\",label:\"项目信息\"\},\{key:\"settings\",label:\"项目设置\"/);
+  assert.match(source, /case\"project-info\":return React\.createElement\(EvaProjectInfoPage/);
+  for (const section of ['发起背景', '项目目标', '项目周期', '关键里程碑', '协作范围', '关键协作人']) {
+    assert.ok(source.includes(section), `项目信息缺少：${section}`);
+  }
 });
 
 test('个人 Eva 六态挂在路由宿主内，不使用全屏或 fixed 根节点', () => {
