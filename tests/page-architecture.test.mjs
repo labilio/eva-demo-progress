@@ -144,6 +144,8 @@ test('消息内嵌项目隐藏群聊标签并在会话选择时返回群聊', ()
   const hierarchyCss = read('prototype/016-message-hierarchy.css');
 
   assert.match(hierarchyCss, /eva-inline-project-panel[\s\S]+collab-tab:nth-child\(2\)\s*\{\s*display:\s*none/);
+  assert.doesNotMatch(imPatch, /eva-inline-project-panel__head|返回群聊/);
+  assert.doesNotMatch(hierarchyCss, /eva-inline-project-panel__(?:head|back|title)/);
   assert.match(imPatch, /La=ci=>\{setEvaInlineProjectId\(null\),xt\(ci\),Nt\(null\)/);
   assert.match(imPatch, /Za=\(ci,Zi\)=>\{setEvaInlineProjectId\(null\),xt\(ci\),Nt\(Zi\)/);
 });

@@ -10,7 +10,7 @@ function EvaAIIdentityAvatar({appearance,size=32}) {
   return window.EvaAIIdentity.avatar(appearance,size,React.createElement);
 }
 
-function EvaInlineProjectPanel({projectId,onClose}) {
+function EvaInlineProjectPanel({projectId}) {
   const h=React.createElement;
   const spaces=loadSpaces();
   const [activeProjectId,setActiveProjectId]=reactExports.useState(projectId);
@@ -18,10 +18,6 @@ function EvaInlineProjectPanel({projectId,onClose}) {
   const space=spaces.find(item=>item.id===activeProjectId);
   if(!space)return null;
   return h('section',{className:'eva-inline-project-panel','aria-label':space.name+' 项目页面'},
-    h('header',{className:'eva-inline-project-panel__head'},
-      h('button',{type:'button',className:'eva-inline-project-panel__back',onClick:onClose,'aria-label':'返回群聊'},
-        h(ArrowLeft$3,{size:16}),h('span',null,'返回群聊')),
-      h('span',{className:'eva-inline-project-panel__title',title:space.name},space.name)),
     h('div',{className:'eva-inline-project-panel__body'},
       h(SpaceFrame,{key:space.id,space,spaces,onSwitch:setActiveProjectId})));
 }
@@ -339,7 +335,7 @@ function EvaAITeamPage() {
       '项目入口内联打开');
     source=root.__evaCut(source,
       '!ui&&Vs)),ki,Ss)',
-      '!ui&&Vs),evaInlineProjectId&&React.createElement(EvaInlineProjectPanel,{projectId:evaInlineProjectId,onClose:()=>setEvaInlineProjectId(null)})),ki,Ss)',
+      '!ui&&Vs),evaInlineProjectId&&React.createElement(EvaInlineProjectPanel,{projectId:evaInlineProjectId})),ki,Ss)',
       '消息内容区内联项目面板');
 
     cut('function getMentionRenderState(rt){return rt==="all"||rt==="channel"?{className:"mention-highlight",interactive:!1}', 'function getMentionRenderState(rt){return rt==="all"||rt==="channel"?{className:"mention-entity",interactive:!1}', '所有人提及沿用成员提及样式');

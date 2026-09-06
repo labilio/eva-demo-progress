@@ -30,54 +30,6 @@ body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel {
   background: #fff;
 }
 
-body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__head {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex: 0 0 44px;
-  min-height: 44px;
-  align-items: center;
-  gap: 10px;
-  padding: 0 16px;
-  border-bottom: 1px solid #e7e9ed;
-  background: #fff;
-}
-
-body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__back {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  height: 28px;
-  padding: 0 6px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: #4c5962;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__back:hover {
-  background: #f0f1f2;
-  color: #26343d;
-}
-
-body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__back:focus-visible {
-  outline: 2px solid #6b8fa3;
-  outline-offset: 2px;
-}
-
-body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__title {
-  min-width: 0;
-  overflow: hidden;
-  color: #26343d;
-  font-size: 14px;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body,
 body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body .collab-frame {
   min-height: 0;
@@ -86,8 +38,7 @@ body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body .colla
 
 /* SpaceFrame is also used as a first-level project page.  In the message
    surface it must be a normal child of the right-hand pane, never a viewport
-   layer: otherwise its page styles paint over the navigation and the return
-   action. */
+   layer: otherwise its page styles paint over the navigation. */
 body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body {
   position: relative;
   z-index: 1;
