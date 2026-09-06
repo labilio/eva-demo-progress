@@ -35,8 +35,14 @@ test('manifest 声明数据入口和构建期运行时补丁', () => {
   const manifest = JSON.parse(fs.readFileSync('prototype-manifest.json', 'utf8'));
   const blocks = manifest.blocks.filter(block => block.file && /^prototype\/009-/.test(block.file));
 
-  assert.deepEqual(blocks.map(block => block.file), splitRuntimeScripts);
-  for (const block of blocks.slice(4)) assert.equal(block.role, 'build-input');
+  const membershipFiles = ['prototype/009-2-membership.js', 'prototype/009-1-file-sharing.js', 'prototype/009-2-picker-preview.js',
+    'prototype/009-2-picker-preview.css',
+    'prototype/009-2-chat-settings.js',
+    'prototype/009-2-chat-settings.css',
+    'prototype/009-2-members-ui.js', 'prototype/009-2-members.css'];
+  assert.deepEqual(blocks.map(block => block.file), [...splitRuntimeScripts.slice(0,4), ...membershipFiles, ...splitRuntimeScripts.slice(4)]);
+  for (const block of blocks.filter(block => splitRuntimeScripts.slice(4).includes(block.file))) assert.equal(block.role, 'build-input');
+  for (const file of membershipFiles) assert.equal(blocks.find(block => block.file === file).role, 'prototype');
   assert.equal(fs.existsSync('prototype/009-9-loader.js'), false, '旧的浏览器运行时加载器仍然存在');
 });
 

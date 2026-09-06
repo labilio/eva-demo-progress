@@ -143,3 +143,8 @@
     projects: projects, issues: issues, agentTasks: agentTasks
   };
 })();
+
+// Local sample assets for prototype preview/download; never real supplier records.
+window.__EVA_FILE_SAMPLE_URLS = {
+  'A-2409来料异常分析报告.pdf': 'prototype/assets/file-samples/a-2409-demo.pdf'
+};
