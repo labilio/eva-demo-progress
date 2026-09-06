@@ -36,6 +36,8 @@ export function createServer(root = process.cwd()) {
     }
     response.writeHead(200, {
       'Content-Type': contentTypes.get(path.extname(resolved.path)) || 'application/octet-stream',
+      // Local prototype previews must never retain a prior runtime or CSS after a rebuild.
+      'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff',
     });
     fs.createReadStream(resolved.path).pipe(response);

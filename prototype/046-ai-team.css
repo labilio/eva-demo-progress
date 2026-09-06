@@ -187,6 +187,9 @@
   overflow: hidden;
 }
 .eva-ai-team__main > .ch-layout { flex: 1; min-height: 0; }
+.eva-ai-team__conversation-breadcrumb .wk-chat-conversation-header-parent-group {
+  cursor: default;
+}
 .eva-ai-team__empty {
   display: flex;
   flex: 1;

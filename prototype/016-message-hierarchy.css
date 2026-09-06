@@ -12,10 +12,17 @@ body.eva-message-hierarchy-ready .eva-msg .ch-main {
   position: relative;
 }
 
+body.eva-message-hierarchy-ready .eva-msg .ch-layout {
+  position: relative;
+}
+
 body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel {
   position: absolute;
   z-index: 5;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--eva-conversation-rail-current, 260px);
   display: flex;
   min-width: 0;
   min-height: 0;
@@ -24,7 +31,10 @@ body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel {
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__head {
+  position: relative;
+  z-index: 2;
   display: flex;
+  flex: 0 0 44px;
   min-height: 44px;
   align-items: center;
   gap: 10px;
@@ -72,6 +82,39 @@ body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body,
 body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body .collab-frame {
   min-height: 0;
   flex: 1;
+}
+
+/* SpaceFrame is also used as a first-level project page.  In the message
+   surface it must be a normal child of the right-hand pane, never a viewport
+   layer: otherwise its page styles paint over the navigation and the return
+   action. */
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body > .collab-frame {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* The message rail already provides group navigation. Avoid repeating the
+   project's group-chat tab while the project is embedded beside that rail. */
+body.eva-message-hierarchy-ready
+  .eva-msg
+  .eva-inline-project-panel
+  .collab-tabs__list
+  .collab-tab:nth-child(2) {
+  display: none;
 }
 
 body.eva-message-hierarchy-ready .eva-msg .ch-list__top {
@@ -653,12 +696,10 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .semi-card-header-wrap
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header {
   min-height: 28px;
-  /* The native card title wrapper adds a 6px inset that My AI's role group
-     does not have. Offset only the toggle (not the task action) so both
-     level-one labels share the same left edge and right-side action remains
-     aligned to the rail. */
-  width: calc(100% + var(--gds-space-1-5));
-  margin-inline-start: calc(-1 * var(--gds-space-1-5));
+  /* Keep the toggle inside its native card title box. A negative inset here
+     can be clipped by the scroll container at wide rail widths. */
+  width: 100%;
+  margin-inline-start: 0;
   gap: var(--gds-space-1);
   padding: 0;
   border-radius: 6px;
@@ -668,11 +709,26 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__a
   /* Keep the same 12px chevron and 4px icon/text gap as the My AI group. */
   width: var(--gds-icon-size-chevron);
   margin-right: 0;
-  color: #8a929a;
+  color: var(--semi-color-text-2, var(--gds-color-text-secondary));
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__arrow svg {
+  width: var(--gds-icon-size-chevron);
+  height: var(--gds-icon-size-chevron);
+}
+
+/* The legacy IM header used a filled triangle. The child icon now uses the
+   exact My AI class and state transform; neutralize legacy wrapper rotation. */
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__arrow {
+  transform: none;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__arrow--collapsed {
+  transform: none;
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__name {
-  color: #5f6871;
+  color: var(--semi-color-text-2, var(--gds-color-text-secondary));
   font-size: var(--gds-type-label-medium-font-size);
   font-weight: var(--gds-font-weight-medium);
   line-height: var(--gds-type-label-medium-line-height);
