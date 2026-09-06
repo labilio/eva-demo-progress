@@ -65,8 +65,9 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   const workspace = read('prototype/052-personal-eva-gds.js');
 
   assert.doesNotMatch(imPatch, /eva-my-ai-sidebar-actions/);
-  assert.match(imPatch, /eva-my-ai-identity-new-session/);
-  assert.match(imPatch, /eva-my-ai-identity-active/);
+  assert.match(imPatch, /eva-ai-team__new-session/);
+  assert.match(imPatch, /identity\?\.id===i\.id\?' is-active'/);
+  assert.match(imPatch, /content:'新建会话'/);
   assert.doesNotMatch(source, /EvaPersonalWorkspacePanel|EvaPersonalAssistantFolder/);
   assert.doesNotMatch(source, /eva-personal-sider-panel|eva-personal-sidebar-actions/);
   assert.match(workspace, /assistantRailHTML/);
@@ -131,8 +132,12 @@ test('创建和编辑助理共用编辑器并按模式新增或原位更新', ()
   assert.match(convergence, /function openAssistantEditor\(options\)/);
   assert.match(convergence, /mode:\s*'create'/);
   assert.match(convergence, /mode:\s*'edit'/);
-  assert.match(convergence, /data-eva-assistant-editor-mode/);
-  assert.match(convergence, /__evaSavePersonalAssistant/);
+  assert.match(convergence, /window\.__evaOpenAssistantEditor/);
+  assert.doesNotMatch(convergence, /function ensureCreateAssistantModal/);
+  const sharedEditor = read('prototype/009-5-patch-im.js');
+  assert.match(sharedEditor, /function EvaAssistantEditor\(/);
+  assert.match(sharedEditor, /store\.saveLocalAssistant/);
+  assert.match(sharedEditor, /store\.savePersona/);
 });
 
 test('一级页面只挂入路由宿主，不再追加到 document.body', () => {

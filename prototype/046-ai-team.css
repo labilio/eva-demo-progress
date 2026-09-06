@@ -1,0 +1,364 @@
+/* AI Team-specific surfaces use GDS semantic tokens. The conversation remains Octo IM.
+ * The 336px rail is Eva's existing team rail, not GDS's personal 260px shell. */
+.eva-ai-team {
+  display: flex;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--gds-color-surface-primary);
+  color: var(--gds-color-text-primary);
+  font-family: var(--gds-font-family-sans);
+  font-size: var(--gds-type-label-font-size);
+  line-height: var(--gds-type-label-line-height);
+}
+.eva-ai-team__sidebar {
+  /* Match existing personal Eva list typography and message rail surfaces. */
+  --eva-rail-divider: var(--color-border-2, var(--semi-color-border, #e5e6eb));
+  --eva-rail-caption: var(--semi-color-text-2, #8f959e);
+  --eva-rail-primary: #1f2329;
+  --eva-rail-secondary: #30343b;
+  --eva-rail-time: #8d95a1;
+  --eva-rail-hover: #e2e3e5;
+  --eva-rail-selected: #e5e6eb;
+  --eva-rail-name-size: 13px;
+  --eva-rail-label-size: 13px;
+  --eva-rail-line-height: 20px;
+  --eva-rail-identity-height: 34px;
+  --eva-rail-session-height: 38px;
+  box-sizing: border-box;
+  --eva-rail-session-indent: 58px;
+  position: relative;
+  flex: 0 0 var(--eva-conversation-rail-width, 336px);
+  width: var(--eva-conversation-rail-width, 336px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--eva-conversation-rail-bg);
+  border-right: 1px solid var(--eva-conversation-rail-border);
+}
+.eva-ai-team__sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gds-space-2);
+  flex-shrink: 0;
+  padding: var(--gds-space-3);
+}
+.eva-ai-team__add-anchor { flex: 1; min-width: 0; display: flex; }
+.eva-ai-team__sidebar-header .eva-ai-team__add { width: 100%; }
+.eva-ai-team__sidebar-header .semi-button { height: 34px; font-size: var(--eva-rail-label-size); }
+.eva-ai-team__menu-anchor { display: inline-flex; flex-shrink: 0; }
+.eva-ai-team__identity-heading .eva-ai-team__menu-anchor { opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
+.eva-ai-team__identity-heading:hover .eva-ai-team__menu-anchor,
+.eva-ai-team__identity-heading:focus-within .eva-ai-team__menu-anchor { opacity: 1; pointer-events: auto; }
+.eva-ai-team__new-session-anchor { display: inline-flex; flex-shrink: 0; }
+.eva-ai-team__new-session.semi-button { width: 26px; height: 26px; min-height: 26px; padding: 0; color: var(--eva-rail-time); background: transparent; opacity: 0; pointer-events: none; }
+.eva-ai-team__identity-heading:hover .eva-ai-team__new-session.semi-button,
+.eva-ai-team__identity-heading:focus-within .eva-ai-team__new-session.semi-button,
+.eva-ai-team__new-session.semi-button.is-active { opacity: 1; pointer-events: auto; color: var(--semi-color-primary); }
+.eva-ai-team__new-session.semi-button:hover,
+.eva-ai-team__new-session.semi-button.is-active { background: var(--eva-rail-selected); }
+.eva-ai-team__sidebar-header .eva-ai-team__new {
+  background: var(--semi-color-text-0, #1c1f23);
+  color: var(--gds-color-surface-primary);
+  flex-shrink: 0;
+}
+.eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-2) var(--gds-space-3) var(--gds-space-4); }
+.eva-ai-team__role-group + .eva-ai-team__role-group {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--eva-rail-divider);
+}
+.eva-ai-team__group-title {
+  margin: 0;
+  padding: 4px 0;
+  color: var(--eva-rail-caption);
+  font-size: var(--gds-type-caption-font-size);
+  line-height: 18px;
+  font-weight: var(--gds-font-weight-medium);
+}
+.eva-ai-team__role-group > .eva-ai-team__group-title { margin-bottom: var(--gds-space-2); }
+.eva-ai-team__identity + .eva-ai-team__identity { margin-top: 6px; }
+.eva-ai-team__identity-heading { display: flex; align-items: center; gap: var(--gds-space-1); margin-bottom: var(--gds-space-1); }
+.eva-ai-team__identity-button,
+.eva-ai-team__session,
+.eva-ai-team__digital-button {
+  min-width: 0;
+  border: 0;
+  border-radius: var(--gds-radius-control);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-2); min-height: var(--eva-rail-identity-height); padding: var(--gds-space-1) var(--gds-space-1); flex: 1; }
+.eva-ai-team__identity-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height); font-weight: 500; color: var(--eva-rail-primary); }
+.eva-ai-team__identity-button > svg,
+.eva-ai-team__identity-button > .ai-badge,
+.eva-ai-team__identity-button > .eva-identity-avatar { flex-shrink: 0; }
+.eva-ai-team__chevron { color: var(--gds-color-text-secondary); }
+.eva-ai-team__chevron.is-expanded { transform: rotate(90deg); }
+.eva-ai-team__role-label { flex-shrink: 0; font-size: var(--gds-type-caption-font-size); color: var(--gds-color-text-secondary); font-weight: var(--gds-font-weight-regular); }
+.eva-ai-team__more.semi-button { flex-shrink: 0; color: #8d949d; background: transparent; }
+.eva-ai-team__more.semi-button:hover { color: #3f454d; background: #e5e6eb; }
+.eva-ai-team__identity-status { margin: 0 0 var(--gds-space-2) var(--gds-space-8); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); }
+.eva-ai-team__session {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--gds-space-1) var(--gds-space-2);
+  min-height: var(--eva-rail-session-height);
+  align-items: center;
+  padding: 4px 8px 4px var(--eva-rail-session-indent);
+}
+/* Actions share the time slot; sibling buttons avoid nested interactive elements. */
+.eva-ai-team__session-row { position: relative; border-radius: var(--gds-radius-control); }
+.eva-ai-team__session-row:hover { background: var(--eva-rail-hover); }
+.eva-ai-team__session-row.is-selected { background: var(--eva-rail-selected); }
+.eva-ai-team__session-actions { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; opacity: 0; pointer-events: none; }
+.eva-ai-team__session-actions .semi-button { width: 24px; height: 24px; min-height: 24px; padding: 0; color: var(--eva-rail-time); }
+.eva-ai-team__session-actions .semi-button:hover,
+.eva-ai-team__session-actions .semi-button[aria-pressed="true"] { color: var(--eva-rail-primary); background: var(--eva-rail-selected); }
+.eva-ai-team__session-row:hover .eva-ai-team__session-actions,
+.eva-ai-team__session-row:focus-within .eva-ai-team__session-actions { opacity: 1; pointer-events: auto; }
+.eva-ai-team__session-row:hover .eva-ai-team__session-time,
+.eva-ai-team__session-row:focus-within .eva-ai-team__session-time { visibility: hidden; }
+.eva-ai-team__session-row .eva-ai-team__session { grid-template-columns: minmax(0, 1fr) 50px; }
+.eva-ai-team__session-row .eva-ai-team__session-time { justify-self: end; }
+.eva-ai-team__session-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-ai-team__session-title { grid-column: 1; font-size: var(--eva-rail-label-size); line-height: 20px; font-weight: 400; color: var(--eva-rail-secondary); }
+.eva-ai-team__session.is-selected .eva-ai-team__session-title { color: var(--eva-rail-primary); font-weight: 400; }
+.eva-ai-team__session-time { grid-column: 2; grid-row: 1; align-self: center; white-space: nowrap; color: var(--eva-rail-time); font-size: 11px; line-height: 20px; }
+.eva-ai-team__identity-button:hover,
+.eva-ai-team__session:hover,
+.eva-ai-team__digital-button:hover { background: var(--eva-rail-hover); }
+.eva-ai-team__session.is-selected,
+.eva-ai-team__digital-button.is-selected { background: var(--eva-rail-selected); }
+.eva-ai-team__digital-button { display: flex; align-items: center; width: 100%; gap: var(--gds-space-2); padding: var(--gds-space-2); }
+.eva-ai-team__digital-button .eva-ai-team__group-title { padding: 0; }
+.eva-ai-team__digital-button > .eva-ai-team__role-label { margin-left: auto; }
+.eva-ai-team__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.eva-ai-team__main > .ch-layout { flex: 1; min-height: 0; }
+.eva-ai-team__empty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--gds-space-3);
+  padding: var(--gds-space-8);
+  color: var(--gds-color-text-secondary);
+  text-align: center;
+}
+.eva-ai-team__empty h2 {
+  margin: 0;
+  color: var(--gds-color-text-primary);
+  font-size: var(--gds-type-header-font-size);
+  font-weight: var(--gds-font-weight-medium);
+}
+.eva-ai-team__empty p { max-width: 36em; margin: 0; }
+.eva-ai-team__notice,
+.eva-ai-team__error {
+  margin: var(--gds-space-2) var(--gds-space-3);
+  padding: var(--gds-space-2) var(--gds-space-3);
+  border-radius: var(--gds-radius-control);
+  background: var(--eva-conversation-rail-bg);
+  color: var(--gds-color-text-secondary);
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+  overflow-wrap: anywhere;
+}
+.eva-ai-team__error { border: var(--gds-border-standard) solid var(--gds-color-border-default); }
+/* The portal belongs to the route host below the shared client titlebar. */
+.eva-ai-team__modal-host {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+.eva-ai-team__modal-host > .semi-portal,
+.eva-ai-team__modal-host .semi-modal-mask,
+.eva-ai-team__modal-host .semi-modal-wrap {
+  position: absolute;
+  inset: 0;
+}
+.eva-ai-team__modal-host .semi-modal-mask,
+.eva-ai-team__modal-host .semi-modal-wrap { pointer-events: auto; }
+.eva-ai-team__modal-host .semi-modal-mask { background: var(--gds-color-overlay-dismiss); }
+.eva-ai-team__modal-host .semi-modal-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gds-space-6);
+  overflow: auto;
+}
+.eva-ai-team__modal-host .semi-modal {
+  top: auto;
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+.eva-ai-team__modal-host .semi-modal-content {
+  pointer-events: auto;
+  border-radius: var(--gds-radius-panel);
+  background: var(--gds-color-surface-primary);
+  box-shadow: var(--gds-shadow-floating), var(--gds-shadow-hairline);
+}
+.eva-ai-team__form {
+  font-size: 13px;
+  line-height: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gds-space-4);
+}
+.eva-ai-team__form > p { margin: 0; color: var(--semi-color-text-1); }
+.eva-ai-team__field { display: flex; flex-direction: column; gap: var(--gds-space-2); }
+.eva-ai-team__field label { font-weight: var(--gds-font-weight-medium); }
+.eva-ai-team__field .semi-select {
+  width: 100%;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: var(--gds-border-standard) solid var(--gds-color-border-default);
+  border-radius: var(--gds-radius-control);
+  color: var(--gds-color-text-primary);
+  background: var(--gds-color-surface-primary);
+  font: inherit;
+}
+.eva-ai-team__sidebar .semi-button,
+.eva-ai-team__modal-host .semi-button:not(.semi-modal-close) { min-height: var(--gds-space-8); border-radius: var(--gds-radius-control); }
+.eva-ai-team__sidebar .semi-button-primary:not(.semi-button-borderless):not(.semi-button-light):not(.semi-button-disabled),
+.eva-ai-team__modal-host .semi-button-primary:not(.semi-button-borderless):not(.semi-button-light):not(.semi-button-disabled) {
+  background: var(--gds-color-action-primary);
+  color: var(--gds-color-action-primary-text);
+}
+.eva-ai-team__identity-button:focus-visible,
+.eva-ai-team__session:focus-visible,
+.eva-ai-team__field .semi-select:focus-visible,
+.eva-ai-team__sidebar .semi-button:focus-visible,
+.eva-ai-team__modal-host .semi-button:focus-visible {
+  outline: var(--gds-border-focus) solid var(--semi-color-text-2);
+  outline-offset: var(--gds-space-0-5);
+}
+
+.eva-ai-team .wk-chat-conversation-header-channel-avatar,
+.eva-ai-team .wk-msg-avatar { overflow: visible; }
+.eva-ai-team__identity-heading .ai-badge { flex-shrink: 0; }
+  .eva-create-assistant-modal { display: flex; width: 100%; height: min(650px, calc(100dvh - 76px)); box-sizing: border-box; font-family: var(--gds-font-family-sans); font-size: 13px; line-height: 20px; flex-direction: column; overflow: hidden; border: 1px solid #dfe2e6; border-radius: 12px; background: #fff; box-shadow: 0 24px 64px rgb(31 35 41 / 24%); }
+  .eva-create-assistant-modal__head { display: flex; min-height: 92px; box-sizing: border-box; flex-shrink: 0; align-items: flex-start; gap: 14px; padding: 24px 28px 12px; }
+  .eva-create-assistant-modal__mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 9px; background: #f2f3f5; color: #4e5969; font-weight: 700; }
+  .eva-create-assistant-modal__mark img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+  .eva-create-assistant-modal__identity { min-width: 0; flex: 1; }
+  .eva-create-assistant-modal__identity input { display: block; width: 100%; border: 0; outline: 0; background: transparent; color: #1f2329; font: inherit; font-size: 20px; font-weight: 600; }
+  .eva-create-assistant-modal__identity input::placeholder { color: #b7bcc4; }
+  .eva-create-assistant-modal__identity span { color: var(--semi-color-text-2); font-size: 13px; }
+  .eva-create-assistant-modal__head-actions { display: flex; align-items: center; gap: 8px; }
+  .eva-create-assistant-modal__head-actions button { height: 34px; padding: 0 13px; border: 1px solid #e1e4e8; border-radius: 8px; background: #fff; color: #4e5969; font: inherit; cursor: pointer; }
+  .eva-create-assistant-modal__close { width: 34px; padding: 0 !important; border-color: transparent !important; font-size: 22px !important; }
+  .eva-create-assistant-modal__tabs { display: flex; gap: 28px; padding: 0 28px; overflow-x: auto; border-bottom: 1px solid #e5e7ea; }
+  .eva-create-assistant-modal__tab { position: relative; flex-shrink: 0; white-space: nowrap; height: 42px; padding: 0; border: 0; background: transparent; color: #747b84; font: inherit; cursor: pointer; }
+  .eva-create-assistant-modal__tab.is-active { color: #1f2329; font-weight: 600; }
+  .eva-create-assistant-modal__tab.is-active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: #1f2329; content: ''; }
+  .eva-create-assistant-modal__body { flex: 1; min-height: 0; padding: 28px; }
+  .eva-create-assistant-modal__hint { margin: 0 0 14px; color: #646a73; font-size: 13px; }
+  .eva-create-assistant-modal__editor { display: block; width: 100%; height: calc(100% - 35px); min-height: 80px; border: 0; outline: none; resize: none; background: transparent; color: var(--gds-color-text-primary); font: inherit; font-size: 14px; line-height: 22px; }
+  .eva-create-assistant-modal__editor::placeholder { color: var(--gds-color-text-placeholder); }
+  .eva-create-assistant-modal__footer { box-sizing: border-box; display: flex; flex-shrink: 0; min-height: 68px; align-items: center; gap: 10px; padding: 0 24px; border-top: 1px solid #e5e7ea; }
+  .eva-create-assistant-modal__chip { padding: 8px 12px; border-radius: 8px; background: #f5f6f7; color: #4e5969; font-size: 13px; }
+  .eva-create-assistant-modal__spacer { flex: 1; }
+  .eva-create-assistant-modal__submit { height: 32px; padding: 0 16px; border: 0; border-radius: 8px; background: #8d7cf4; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+/* Shared editor preserves the original layout and stays below the client titlebar. */
+.eva-editor-host { position: fixed; inset: 36px 0 0; z-index: 1000; pointer-events: none; }
+.eva-editor-host > .semi-portal,
+.eva-editor-host .semi-modal-mask,
+.eva-editor-host .semi-modal-wrap { position: absolute; inset: 0; }
+.eva-editor-host .semi-modal-mask,
+.eva-editor-host .semi-modal-wrap { pointer-events: auto; }
+.eva-editor-host .semi-modal-wrap { box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: auto; }
+.eva-editor-host .semi-modal { top: auto; margin: 0; max-width: 100%; }
+.eva-editor-dialog .semi-modal-content { padding: 0; background: transparent; box-shadow: none; }
+.eva-editor-dialog .semi-modal-body { margin: 0; padding: 0; }
+.eva-editor-dialog .eva-create-assistant-modal { position: relative; }
+.eva-editor-dialog .eva-create-assistant-modal__identity .eva-editor-description { margin-top: 6px; font-size: 13px; line-height: 20px; font-weight: normal; }
+.eva-editor-dialog .eva-create-assistant-modal__chip { display: inline-flex; align-items: center; }
+.eva-editor-dialog .eva-create-assistant-modal__tabs { flex-shrink: 0; }
+.eva-editor-dialog .eva-create-assistant-modal__submit { background: var(--gds-color-action-primary); }
+
+.eva-editor-kind { display: block; margin-bottom: var(--gds-space-1); }
+.eva-editor-dialog .eva-create-assistant-modal__body { display: flex; flex-direction: column; overflow: auto; }
+.eva-editor-dialog .eva-create-assistant-modal__editor { flex: 1; height: auto; }
+.eva-editor-memory { display: flex; flex-wrap: wrap; gap: var(--gds-space-2) var(--gds-space-4); padding: var(--gds-space-3); margin-bottom: var(--gds-space-4); border-radius: var(--gds-radius-control); background: var(--eva-conversation-rail-bg); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); }
+.eva-editor-memory p { flex-basis: 100%; margin: 0; color: var(--gds-color-text-primary); }
+
+.eva-editor-title-row { display: flex; align-items: center; gap: var(--gds-space-2); }
+.eva-editor-title-row .ai-badge { flex-shrink: 0; }
+.eva-editor-dialog .eva-editor-title-row input { width: auto; min-width: 0; flex: 0 1 16em; }
+.eva-editor-dialog .eva-create-assistant-modal__editor { box-sizing: border-box; min-width: 0; }
+
+/* Connection choices are selectable rows, not content cards. */
+.eva-ai-team__connections { display: flex; flex-direction: column; gap: 8px; }
+.eva-ai-team__connection-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--semi-color-text-2); font-size: 12px; }
+.eva-ai-team__connection-heading .eva-ai-team__personal-link.semi-button { min-height: 24px; height: 24px; padding: 0 4px; font-size: 12px; font-weight: 400; color: var(--semi-color-text-1); }
+.eva-ai-team__connection-list { display: flex; flex-direction: column; gap: 8px; max-height: min(360px, 45vh); overflow-y: auto; }
+.eva-ai-team__connection-option { box-sizing: border-box; position: relative; display: flex; gap: 12px; align-items: center; width: 100%; padding: 10px 12px; border: 1px solid transparent; border-radius: var(--gds-radius-control); background: var(--eva-conversation-rail-bg); text-align: left; font: inherit; color: var(--gds-color-text-primary); cursor: pointer; }
+.eva-ai-team__connection-option:disabled,
+.eva-ai-team__connection-option:has(input:disabled) { cursor: not-allowed; background: var(--eva-conversation-rail-bg); border-color: transparent; }
+.eva-ai-team__connection-option:disabled::after,
+.eva-ai-team__connection-option:has(input:disabled)::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--gds-color-overlay-hover); opacity: .4; pointer-events: none; }
+.eva-ai-team__connection-option:not(:disabled):not(:has(input:disabled)):hover { background: var(--semi-color-fill-1); }
+.eva-ai-team__connection-option.is-selected { border-color: var(--semi-color-text-2); background: var(--semi-color-fill-1); }
+.eva-ai-team__connection-title { display: flex; flex: 1; min-width: 0; align-items: center; gap: 12px; }
+.eva-ai-team__connection-title strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; line-height: 20px; font-weight: 500; color: var(--semi-color-text-0); }
+.eva-ai-team__connection-status { flex-shrink: 0; color: var(--semi-color-text-2); font-size: 12px; font-weight: 400; }
+.eva-ai-team__modal .semi-modal-header { align-items: center; margin: 24px 0 16px; }
+.eva-ai-team__modal .semi-modal-title { line-height: 24px; }
+.eva-ai-team__modal .semi-modal-close { flex-shrink: 0; width: 24px; height: 24px; min-height: 24px; }
+
+.eva-editor-source { display: flex; flex-direction: column; gap: 12px; max-width: 560px; width: 100%; font-size: 13px; color: var(--semi-color-text-1); }
+.eva-editor-source p { margin: 0; line-height: 20px; }
+
+/* One control scale across the connection form and shared assistant/persona editor. */
+.eva-ai-team__modal .semi-button,
+.eva-ai-team__modal .semi-select,
+.eva-ai-team__modal .semi-select-option,
+.eva-ai-team__sidebar .semi-dropdown-item,
+.eva-editor-dialog .semi-button,
+.eva-editor-dialog .semi-select,
+.eva-editor-dialog .semi-dropdown-item,
+.eva-editor-dialog .semi-select-option { font-size: 13px; line-height: 20px; }
+.eva-editor-dialog .semi-select { min-width: 0; height: 32px; }
+.eva-create-assistant-modal__identity > span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-create-assistant-modal__head-actions { flex-shrink: 0; }
+.eva-create-assistant-modal__identity input:focus-visible { outline: none; box-shadow: 0 1px 0 var(--semi-color-border); }
+.eva-create-assistant-modal__editor:focus-visible { outline: none; }
+.eva-create-assistant-modal__tab:focus-visible { outline: 2px solid var(--semi-color-text-2); outline-offset: -2px; }
+@media (max-width: 760px) {
+  .eva-editor-host .semi-modal-wrap { padding: 12px; }
+  .eva-create-assistant-modal { height: calc(100dvh - 60px); }
+  .eva-create-assistant-modal__head { flex-wrap: wrap; gap: 12px; padding: 20px; }
+  .eva-create-assistant-modal__identity { flex-basis: calc(100% - 48px); }
+  .eva-create-assistant-modal__head-actions { margin-left: auto; }
+  .eva-create-assistant-modal__tabs { padding: 0 20px; gap: 20px; }
+  .eva-create-assistant-modal__body { padding: 20px; }
+  .eva-create-assistant-modal__footer { flex-wrap: wrap; gap: 8px; padding: 12px 20px; }
+  .eva-create-assistant-modal__chip { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+}
+
+.eva-ai-team__source-options { border: 0; padding: 0; margin: 0; min-width: 0; }
+.eva-ai-team__source-options legend { padding: 0; margin-bottom: 8px; color: var(--semi-color-text-2); font-size: 12px; }
+.eva-ai-team__source-options .eva-ai-team__connection-option { min-height: 54px; }
+.eva-ai-team__source-options input[type="radio"] { flex-shrink: 0; width: 16px; height: 16px; margin: 0; accent-color: var(--semi-color-text-1); cursor: inherit; }
+.eva-ai-team__source-options .eva-ai-team__connection-option:has(input:focus-visible) { outline: 2px solid var(--semi-color-text-2); outline-offset: -2px; }
+
+.eva-ai-team__relation { display: inline-flex; flex: 0 0 18px; align-items: center; justify-content: center; height: 24px; color: var(--semi-color-text-3); opacity: 0; pointer-events: none; cursor: default; transition: opacity 120ms ease; }
+.eva-ai-team__identity-heading:hover .eva-ai-team__relation { opacity: 1; pointer-events: auto; }

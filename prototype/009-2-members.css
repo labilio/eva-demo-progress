@@ -1,0 +1,78 @@
+.eva-members{padding:8px 0;min-width:0;color:var(--semi-color-text-0)}
+.eva-members h3,.eva-members h4{margin:12px 0;font-weight:600}
+.eva-members-toolbar,.eva-members-invitation,.eva-members-actor{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.eva-members-actor{justify-content:flex-start;padding:0;margin:0}
+.eva-members-actor small,.eva-members-muted{color:var(--semi-color-text-2);font-size:12px}
+.eva-members-actor .semi-select{min-width:130px}
+.eva-members-toolbar{margin:24px 0 16px}
+.eva-members-toolbar h3{margin:0;font-size:16px;line-height:24px}
+.eva-members-toolbar p{margin:4px 0 0;line-height:18px}
+
+.eva-members-role{margin-left:10px;color:var(--semi-color-text-2);font-size:12px}
+.eva-members-clones,.eva-members-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.eva-members-invitation{padding:12px 0;border-bottom:1px solid var(--semi-color-border)}
+.eva-members-field label{display:block;margin-bottom:8px}
+.eva-members-select{width:100%}
+.eva-members-notice{padding:12px;background:var(--semi-color-fill-0);border-radius:8px}
+.eva-members-error{color:var(--semi-color-danger);font-size:13px}
+body:has(.eva-members-modal) .semi-modal-mask,.semi-modal-wrap:has(.eva-members-modal){top:var(--topbar-height);height:calc(100% - var(--topbar-height))}
+.eva-members-group-panel{padding:12px 0}
+.eva-members-group-panel h4{margin:0 0 12px}
+.eva-members-inbox{padding:12px;border-bottom:1px solid var(--semi-color-border);display:flex;flex-direction:column;gap:6px}
+.eva-members-inbox strong{font-size:12px;color:var(--semi-color-text-2)}
+.eva-file-name-content{display:flex;flex-direction:column;gap:4px;min-width:0}
+.eva-file-name-content button{text-align:left}
+.eva-project-file-preview{height:65vh;display:flex;flex-direction:column;min-height:360px}
+.eva-project-file-preview>.eva-members-notice{flex:none;margin-top:0}
+.eva-members-mention-list{display:flex;flex-direction:column;align-items:stretch;gap:6px;max-height:50vh;overflow:auto}
+/* Shared preview host normally docks at the right of a workspace. Inside the
+   project modal it must fill the modal's content instead. */
+.eva-project-file-preview>.wk-file-preview-panel{position:relative;inset:auto;width:100%;max-width:none;height:auto;flex:1;min-height:0;box-shadow:none;border:0}
+
+.eva-members-ai-identity{display:inline-flex;align-items:center;gap:8px;text-align:left}
+
+.eva-members-human-identity{display:flex;align-items:center;gap:8px}
+.eva-members-human-avatar{display:block;width:32px;height:32px;flex:none;border-radius:50%;object-fit:cover}
+
+.eva-members-human-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.eva-members-human-role{font-size:12px;line-height:18px;color:var(--semi-color-text-2);font-weight:400}
+
+.eva-members-human-identity.is-compact .eva-members-human-avatar{width:24px;height:24px}
+.eva-members-human-name{font-size:14px;line-height:22px;font-weight:500}
+
+.eva-members-invite-section{margin-top:24px}
+.eva-members-invite-section>h4{margin:0 0 12px;font-size:14px;line-height:22px;font-weight:600}
+:is(.eva-members-table,.eva-members-invite-table) .semi-table-thead>.semi-table-row>.semi-table-row-head{background:var(--semi-color-fill-0);font-size:12px;font-weight:400;color:var(--semi-color-text-2)}
+:is(.eva-members-table,.eva-members-invite-table) .semi-table-tbody>.semi-table-row>.semi-table-row-cell{padding:12px 16px}
+.eva-members-invite-status{font-size:12px;line-height:20px;color:var(--semi-color-text-2)}
+.eva-members-invite-status.is-pending{color:var(--semi-color-text-1)}
+:is(.eva-members-table,.eva-members-invite-table) .eva-members-actions{justify-content:flex-end;gap:4px}
+
+.eva-members-ai-identity{font-size:14px;line-height:22px;font-weight:500;color:var(--semi-color-text-0)}
+.eva-members-table .eva-members-identity-button{height:auto;padding:0;background:transparent}
+.eva-members-table .eva-members-clones{gap:12px}
+:is(.eva-members-table,.eva-members-invite-table) .semi-button{font-size:12px;font-weight:400}
+:is(.eva-members-table,.eva-members-invite-table) .semi-table-row-head{padding:10px 16px;line-height:18px}
+:is(.eva-members-table,.eva-members-invite-table) .semi-table-row-cell{vertical-align:middle}
+
+.eva-invitation-mailbox-button{ -webkit-app-region:no-drag;position:relative}
+.eva-invitation-count{font-size:11px;line-height:16px;min-width:16px;border-radius:8px;background:var(--semi-color-danger);color:var(--semi-color-white);text-align:center}
+.eva-invitation-tabs{display:flex;gap:8px;margin:16px 0}
+.eva-invitation-mail-list{max-height:50vh;overflow:auto}
+.eva-invitation-mail-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--semi-color-border)}
+.eva-invitation-mail-copy{display:flex;flex-direction:column;gap:8px;font-size:14px}
+.eva-invitation-mail-person{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--semi-color-text-2)}
+
+.eva-invitation-demo-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.eva-members>.eva-members-toolbar:first-child{margin-top:0}
+
+.eva-account-switcher.semi-button{height:auto;width:100%;justify-content:flex-start;padding:4px 0}
+.eva-account-options{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow:auto;margin-bottom:12px}
+.eva-account-options>.semi-button{height:auto;min-height:44px;justify-content:space-between;padding:6px 12px}
+
+.eva-project-info{max-width:640px;padding:24px 0;display:flex;flex-direction:column;gap:24px;align-items:flex-start}
+.eva-project-info-field{width:100%;display:flex;flex-direction:column;gap:8px}
+.eva-project-info-field label{font-size:14px;font-weight:500;color:var(--semi-color-text-0)}
+.eva-project-info-field textarea{box-sizing:border-box;width:100%;resize:vertical;min-height:144px;padding:12px;border:1px solid var(--semi-color-border);border-radius:var(--semi-border-radius-small);background:var(--semi-color-fill-0);color:var(--semi-color-text-0);font:inherit;line-height:1.6}
+.eva-project-info-field textarea:focus-visible{outline:2px solid var(--semi-color-primary);outline-offset:2px}
+.eva-project-info-field p{margin:0}

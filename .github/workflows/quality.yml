@@ -1,0 +1,50 @@
+name: Eva quality gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: eva-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Check manifest
+        run: npm run check:manifest
+
+      - name: Check project contract
+        run: npm run check:project
+
+      - name: Check collaboration contract
+        run: npm run check:collaboration
+
+      - name: Validate customer design system
+        run: node docs/design-system/gds-for-ai2.0/validate.mjs
+
+      - name: Check generated runtime syntax
+        run: node --check dist/vendor/eva-runtime.module.js

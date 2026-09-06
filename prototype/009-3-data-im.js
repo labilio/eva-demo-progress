@@ -1,17 +1,141 @@
 (function () {
   'use strict';
   window.__EVA_IM_DEMO = {
+    aiTeamSessions: [
+  {
+    "id": "team-assistant-welcome",
+    "identityId": "ai-general",
+    "title": "把今天的事情排出先后",
+    "messages": [
+      {
+        "minute": 840,
+        "ai": false,
+        "text": "今天采购、质量和合同都在催。帮我排一下，先处理什么？"
+      },
+      {
+        "minute": 841,
+        "ai": true,
+        "text": "先处理 A-2409 来料异常，它可能影响今天排产；其次确认两份到期合同；采购需求汇总可放到下午。\n我把每项的负责人、缺失证据和截止时间整理好了。"
+      },
+      {
+        "minute": 842,
+        "ai": false,
+        "text": "给我一份十分钟晨会提纲，别只报进度。"
+      },
+      {
+        "minute": 843,
+        "ai": true,
+        "text": "晨会只讨论三件事：\n1. 林晓：复测证据是否齐全，何时能给出放行建议？\n2. 何静：合同哪些条款需要今天拍板？\n3. 周远：采购需求是否存在交付缺口？\n会后按“结论、负责人、截止时间”记录，未确认的交期保持待核实。"
+      }
+    ]
+  },
+  {
+    "id": "team-persona-welcome",
+    "identityId": "persona-initial",
+    "title": "电脑关机后，供应风险继续跟进",
+    "messages": [
+      {
+        "minute": 0,
+        "ai": false,
+        "text": "我准备关电脑了。今晚帮我盯 A-2409 的整改进展，明早给我结论。不要代我承诺交期。"
+      },
+      {
+        "minute": 1,
+        "ai": true,
+        "text": "收到。我在云端继续跟进，不依赖你的电脑在线。会核对复测报告和供应商回复，只提醒缺失材料；涉及放行或交期承诺，留给你确认。"
+      },
+      {
+        "minute": 185,
+        "ai": true,
+        "text": "21:05 跟进：已收到供应商原因分析，仍缺复测原始记录。已提醒林晓核对这项证据，当前状态保持“待验证”。"
+      },
+      {
+        "minute": 742,
+        "ai": true,
+        "text": "06:22 更新：复测记录已补齐，三项指标符合要求；“供应商预计恢复时间”仍未获得现场确认，我没有据此修改交期。"
+      },
+      {
+        "minute": 850,
+        "ai": false,
+        "text": "我回来了，昨晚有什么需要我决定？"
+      },
+      {
+        "minute": 851,
+        "ai": true,
+        "text": "材料已整理为一页摘要：原因分析、复测证据、剩余风险。\n现在只需你确认：是否安排质量负责人现场复核？建议通过复核后再决定放行。交期仍标记为待确认。"
+      }
+    ]
+  },
+  {
+    "id": "team-rd-review",
+    "identityId": "ai-rd",
+    "title": "把评审意见变成可验收清单",
+    "messages": [
+      {
+        "minute": 860,
+        "ai": false,
+        "text": "项目群聊这轮评审意见很多，帮我收成研发能执行的清单。"
+      },
+      {
+        "minute": 861,
+        "ai": true,
+        "text": "已归为三项：成员权限、群文件共享、入口切换。每项都补了触发条件和预期结果。\n优先验证：未入群不能读历史；转存文件不授予来源群权限；切换会话不残留上一条草稿。"
+      },
+      {
+        "minute": 862,
+        "ai": false,
+        "text": "给测试同事一条能走通的路径。"
+      },
+      {
+        "minute": 863,
+        "ai": true,
+        "text": "用林晓身份进入供应链项目 → 打开已加入的整改群 → 转存报告到项目团队文件 → 切换何静，只查看共享文件 → 确认她仍不能读取整改群历史。\n再往返消息与我的 AI 团队，检查选中态、输入区和草稿。"
+      }
+    ]
+  },
+  {
+    "id": "team-pilot-night",
+    "identityId": "persona-pilot",
+    "title": "夜间巡检，早上只看需要处理的事",
+    "messages": [
+      {
+        "minute": 15,
+        "ai": false,
+        "text": "今晚我不在线。你在云端盯一下版本验收，失败就整理原因，先别发布。"
+      },
+      {
+        "minute": 16,
+        "ai": true,
+        "text": "我会持续检查已授权的验收结果；电脑关闭后也会继续。通过项汇总到晨报，失败项保留证据，正式发布等你确认。"
+      },
+      {
+        "minute": 310,
+        "ai": true,
+        "text": "23:10 巡检：发现一项失败——从项目群聊返回消息后，仍保留上一入口的筛选条件。已整理复现步骤和影响范围，其余检查通过。"
+      },
+      {
+        "minute": 795,
+        "ai": true,
+        "text": "07:15 复核：该问题修复后，入口往返检查已通过。验收记录已汇总，尚未触发正式发布。"
+      },
+      {
+        "minute": 865,
+        "ai": false,
+        "text": "早上我需要看哪些？"
+      },
+      {
+        "minute": 866,
+        "ai": true,
+        "text": "只需看一项发布决定。检查结果与复现记录已经放在摘要中；建议确认当前目标版本后再发布。你确认之前，我会继续观察新增失败。"
+      }
+    ]
+  }
+],
     channels: [
       { id: 'im-eva-octo', name: 'EVA + OCTO 融合推进群', color: '#7567d8', unread: 0, members: 6, lastAt: '2026-09-04T18:20:00+08:00', threads: [], demoOnly: true },
       { id: 'im-delivery', name: '项目交付推进', color: '#66789e', unread: 0, members: 5, lastAt: '2026-09-04T17:30:00+08:00', threads: [], demoOnly: true },
       { id: 'im-review', name: '方案评审', color: '#5f8798', unread: 0, members: 4, lastAt: '2026-09-04T16:42:00+08:00', threads: [], demoOnly: true },
       { id: 'im-meeting', name: '会议跟进', color: '#9a8062', unread: 0, members: 5, lastAt: '2026-09-04T15:40:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-ai-focus', name: '整理今天的工作重点', color: '#7567d8', unread: 0, members: 2, lastAt: '2026-09-04T10:28:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-ai-drive', name: '云盘权限方案梳理', color: '#7567d8', unread: 0, members: 2, lastAt: '2026-09-04T10:18:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-ai-meeting', name: '会议纪要与待办', color: '#7567d8', unread: 0, members: 2, lastAt: '2026-09-03T18:20:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-pilot-trip', name: '明天的出差行程', color: '#4b91b8', unread: 0, members: 2, lastAt: '2026-09-02T17:15:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-pilot-client', name: '客户拜访准备', color: '#4b91b8', unread: 0, members: 2, lastAt: '2026-09-02T16:25:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-pilot-brief', name: '本周飞行简报', color: '#4b91b8', unread: 0, members: 2, lastAt: '2026-09-02T15:30:00+08:00', threads: [], demoOnly: true }
     ],
     messages: {
       'im-eva-octo': [
@@ -42,37 +166,6 @@
         { kind: 'text', sender: { uid: 'u-kangzhixi', name: '康执玺', color: '#4c83a5', online: true }, time: '15:22', text: '刚才会议里有结论、有行动项，也有一个待确认风险。' },
         { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '15:24', text: '@王宜林的 Eva 助理 按这三类整理，并把行动项转成任务。', mentions: [{ name: '@王宜林的 Eva 助理', uid: 'b-wangyilin' }] },
         { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 Eva 助理', color: '#7567d8', ai: true, online: true }, time: '15:28', text: '已完成分类：结论 2 项、行动项 3 项、待确认风险 1 项。行动项已转成任务并关联到原会议。' }
-      ],
-      'im-ai-focus': [
-        { kind: 'divider', text: '9月4日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '10:26', text: '帮我把今天要推进的事情排一下优先级。' },
-        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 Eva 助理', color: '#7567d8', ai: true, online: true }, time: '10:28', text: '建议先处理三件事：\n1. 确认项目群聊的任务归属；\n2. 补齐通讯录中的 AI 身份；\n3. 下午评审前检查 Demo 的关键跳转。' },
-        { kind: 'taskcard', sender: { uid: 'b-wangyilin', name: '王宜林的 Eva 助理', color: '#7567d8', ai: true, online: true }, time: '10:28', note: '已创建待办：Demo 评审前检查 · 今天 17:30' }
-      ],
-      'im-ai-drive': [
-        { kind: 'divider', text: '9月4日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '10:12', text: '把云盘权限方案压缩成一个能评审的版本。' },
-        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 Eva 助理', color: '#7567d8', ai: true, online: true }, time: '10:18', text: '核心边界可以收敛为：个人文件默认私有，团队文件继承项目权限，跨项目分享必须显式授权。评审时重点确认继承关系和失效后的回收规则。' }
-      ],
-      'im-ai-meeting': [
-        { kind: 'divider', text: '9月3日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '18:12', text: '把刚才会议里的结论和待办分开。' },
-        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 Eva 助理', color: '#7567d8', ai: true, online: true }, time: '18:20', text: '结论：新版导航继续使用当前方案；团队 IM 全部进入统一内核。\n待办：补齐我的 AI 多身份入口，并同步更新通讯录展示。' }
-      ],
-      'im-pilot-trip': [
-        { kind: 'divider', text: '9月2日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '17:08', text: '明天去杭州，把行程整理得紧凑一点。' },
-        { kind: 'text', sender: { uid: 'b-pilot', name: '飞行员E号（王宜林的分身）', color: '#4b91b8', ai: true, online: true }, time: '17:15', text: '建议 08:30 出发，上午留给客户沟通，午后安排现场确认，返程前预留 40 分钟整理结论。关键材料已按出发、会议、返程三个阶段归类。' }
-      ],
-      'im-pilot-client': [
-        { kind: 'divider', text: '9月2日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '16:18', text: '客户拜访前我还需要准备什么？' },
-        { kind: 'text', sender: { uid: 'b-pilot', name: '飞行员E号（王宜林的分身）', color: '#4b91b8', ai: true, online: true }, time: '16:25', text: '还需要确认参会人、目标问题、可现场演示的版本，以及会后负责人。建议把演示链路提前离线走一遍，并准备一页异常兜底说明。' }
-      ],
-      'im-pilot-brief': [
-        { kind: 'divider', text: '9月2日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '15:24', text: '给我一份本周推进简报。' },
-        { kind: 'text', sender: { uid: 'b-pilot', name: '飞行员E号（王宜林的分身）', color: '#4b91b8', ai: true, online: true }, time: '15:30', text: '本周已完成导航结构统一和个人会话三栏改造；正在收口团队 IM 内核。下一步是核对通讯录身份展示和关键入口切换一致性。' }
       ]
     }
   };

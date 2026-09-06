@@ -12,14 +12,15 @@ const patchFiles = [
 ];
 
 export function createPatchedRuntime(root = process.cwd()) {
-  const window = {};
+  const release = JSON.parse(fs.readFileSync(path.join(root, 'release.json'), 'utf8'));
+  const window = { __EVA_RELEASE: release };
   const context = vm.createContext({ window, console });
   for (const file of patchFiles) {
     vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
   }
   let source = fs.readFileSync(path.join(root, 'vendor/eva-legacy-runtime.js'), 'utf8');
   for (const patch of window.__EVA_PATCHES || []) source = patch.apply(source);
-  return { source, patchOrder: Array.from(window.__EVA_PATCHES || [], patch => String(patch.name)) };
+  return { source, release, patchOrder: Array.from(window.__EVA_PATCHES || [], patch => String(patch.name)) };
 }
 
 export function buildSite(root = process.cwd()) {
@@ -41,7 +42,7 @@ export function buildSite(root = process.cwd()) {
   const result = createPatchedRuntime(projectRoot);
   fs.writeFileSync(
     path.join(outputRoot, 'vendor/eva-runtime.module.js'),
-    `${result.source}\n//# sourceURL=eva-demo-0904-v1.module.js\n`,
+    `${result.source}\n//# sourceURL=eva-demo-${result.release.version.replace(/[^0-9a-z]+/gi, '-').toLowerCase()}.module.js\n`,
   );
   return { outputRoot, ...result };
 }

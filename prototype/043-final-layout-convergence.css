@@ -426,30 +426,7 @@
   .eva-digital-employee-toast[hidden] { display: none; }
   body.eva-digital-employee-open [data-eva-nav-id="digital-employees"] > * { overflow: hidden; border-radius: 10px; background: #e2e3e5; }
 
-  .eva-create-assistant-layer { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: 32px; background: rgb(31 35 41 / 46%); backdrop-filter: blur(2px); }
-  .eva-create-assistant-layer[hidden] { display: none; }
-  .eva-create-assistant-modal { display: flex; width: min(920px, calc(100vw - 64px)); height: min(650px, calc(100vh - 72px)); flex-direction: column; overflow: hidden; border: 1px solid #dfe2e6; border-radius: 12px; background: #fff; box-shadow: 0 24px 64px rgb(31 35 41 / 24%); }
-  .eva-create-assistant-modal__head { display: flex; min-height: 92px; align-items: flex-start; gap: 14px; padding: 24px 28px 12px; }
-  .eva-create-assistant-modal__mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 9px; background: #f2f3f5; color: #4e5969; font-weight: 700; }
-  .eva-create-assistant-modal__mark img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
-  .eva-create-assistant-modal__identity { min-width: 0; flex: 1; }
-  .eva-create-assistant-modal__identity input { display: block; width: 100%; border: 0; outline: 0; background: transparent; color: #1f2329; font: inherit; font-size: 20px; font-weight: 600; }
-  .eva-create-assistant-modal__identity input::placeholder { color: #b7bcc4; }
-  .eva-create-assistant-modal__identity span { color: #a2a7ae; font-size: 13px; }
-  .eva-create-assistant-modal__head-actions { display: flex; align-items: center; gap: 8px; }
-  .eva-create-assistant-modal__head-actions button { height: 34px; padding: 0 13px; border: 1px solid #e1e4e8; border-radius: 8px; background: #fff; color: #4e5969; font: inherit; cursor: pointer; }
-  .eva-create-assistant-modal__close { width: 34px; padding: 0 !important; border-color: transparent !important; font-size: 22px !important; }
-  .eva-create-assistant-modal__tabs { display: flex; gap: 28px; padding: 0 28px; border-bottom: 1px solid #e5e7ea; }
-  .eva-create-assistant-modal__tab { position: relative; height: 42px; padding: 0; border: 0; background: transparent; color: #747b84; font: inherit; cursor: pointer; }
-  .eva-create-assistant-modal__tab.is-active { color: #1f2329; font-weight: 600; }
-  .eva-create-assistant-modal__tab.is-active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: #1f2329; content: ''; }
-  .eva-create-assistant-modal__body { flex: 1; min-height: 0; padding: 28px; }
-  .eva-create-assistant-modal__hint { margin: 0 0 14px; color: #646a73; font-size: 13px; }
-  .eva-create-assistant-modal__editor { min-height: 210px; color: #b3b8c0; font-size: 14px; line-height: 22px; }
-  .eva-create-assistant-modal__footer { display: flex; min-height: 68px; align-items: center; gap: 10px; padding: 0 24px; border-top: 1px solid #e5e7ea; }
-  .eva-create-assistant-modal__chip { padding: 8px 12px; border-radius: 8px; background: #f5f6f7; color: #4e5969; font-size: 13px; }
-  .eva-create-assistant-modal__spacer { flex: 1; }
-  .eva-create-assistant-modal__submit { height: 38px; padding: 0 18px; border: 0; border-radius: 8px; background: #8d7cf4; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+
 
   @media (max-width: 1440px) {
     .eva-digital-employee-page__body { grid-template-columns: 290px minmax(0, 1fr); }
