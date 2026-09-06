@@ -24,9 +24,11 @@ requireText('!ct?.conversationOnly&&React.createElement', 'My AI mounts the lega
 requireText('key:draftKey,source', 'identity/session changes do not reset shared IM state');
 requireText('store.sendMessage(', 'My AI send does not use the canonical session store');
 requireText('store.setDraft(', 'My AI drafts are not scoped in the canonical store');
+forbidText('eva-ai-team__toolbar', 'My AI must not add an identity toolbar above the shared IM header');
+requireText('eva-ai-team__more', 'identity configuration must use the session rail menu');
 requireText('store.subscribe', 'My AI does not observe canonical identity data');
-requireText('暂无可用的数字员工', 'My AI does not disclose the digital employee integration boundary');
-requireText('Sa.identityAvatarUrl??', 'the shared conversation header does not use the selected session identity avatar');
+
+requireText('Sa.identityAppearance?React.createElement(EvaAIIdentityAvatar', 'the shared conversation header loses source and ownership');
 requireText('ct?.sidebarVariant!=="ai-sessions"', 'My AI still renders the team-only subzone action');
 requireText('!fa&&ct?.sidebarVariant!=="ai-sessions"&&Zi.push', 'My AI message context menus still expose the team-only create-subzone action');
 requireText('b-wangyilin|b-pilot', 'AI assistant message avatars are not resolved from their identity source');

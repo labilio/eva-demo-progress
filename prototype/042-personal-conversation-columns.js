@@ -139,23 +139,6 @@
     });
   }
 
-  window.__evaSavePersonalAssistant = function (options) {
-    var settings = options || {};
-    var name = String(settings.name || '').trim();
-    if (!name) return false;
-    try {
-      aiTeamStore.saveLocalAssistant({
-        mode: settings.mode === 'edit' ? 'edit' : 'create',
-        id: settings.id,
-        name: name,
-        configuration: settings.configuration
-      });
-    } catch (_) {
-      return false;
-    }
-    return true;
-  };
-
   function hideHistoryColumn() {
     if (historyDivider) historyDivider.classList.add('eva-personal-history-divider-hidden');
     var column = document.getElementById('eva-personal-history-column');

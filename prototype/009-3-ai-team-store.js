@@ -1,7 +1,7 @@
 /* Eva My AI team: local demo data only; adapters never contact a live service. */
 (function (window) {
   'use strict';
-  const STORAGE_KEY = 'eva:ai-team:v1';
+  const STORAGE_KEY = 'eva:ai-team:v2';
   const copy = value => JSON.parse(JSON.stringify(value));
   function freeze(value) {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) {
@@ -11,6 +11,11 @@
     return value;
   }
   const configuration = value => ({
+    description: typeof value?.description === 'string' ? value.description : '',
+    about: typeof value?.about === 'string' ? value.about : '',
+    collaboration: typeof value?.collaboration === 'string' ? value.collaboration : '',
+    model: typeof value?.model === 'string' ? value.model : 'Qwen3.7 Plus',
+    toolset: typeof value?.toolset === 'string' ? value.toolset : '四两的产品脑袋',
     identity: typeof value?.identity === 'string' ? value.identity : '通用助理',
     personality: typeof value?.personality === 'string' ? value.personality : '清晰、友善',
     skills: Array.isArray(value?.skills) ? value.skills.filter(x => typeof x === 'string') : []
@@ -21,18 +26,23 @@
     configVersion: local.version, syncStatus: 'synced', lastSyncedAt: time,
     configuration: configuration(local.configuration)
   });
-  function seed(time) {
+  function seed(time, options = {}) {
+    const ownerName=options.ownerName||window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName||'王宜林';
+    const defaultName=ownerName+'的通用助理';
     const localAssistants = [
-      { id: 'assistant-general', name: '通用助理', version: 1, online: true, configuration: configuration({ identity: '通用助理', skills: ['沟通', '文档整理'] }) },
+      { id: 'assistant-general', name: defaultName, isDefault:true, version: 1, online: true, configuration: configuration({ identity: defaultName, skills: ['沟通', '文档整理'] }) },
       { id: 'assistant-rd', name: 'Eva研发助理', version: 1, online: true, configuration: configuration({ identity: 'Eva研发助理', skills: ['研发资料整理'] }) }
     ];
-    const identities = [makeIdentity('ai-general', 'assistant', '通用助理', localAssistants[0], time), makeIdentity('persona-initial', 'persona', '通用助理的分身', localAssistants[0], time)];
+    const identities = [makeIdentity('ai-general', 'assistant', defaultName, localAssistants[0], time), makeIdentity('persona-initial', 'persona', '执剑人', localAssistants[0], time)];
     const sessions = identities.map((identity, i) => ({
       id: i ? 'team-persona-welcome' : 'team-assistant-welcome', identityId: identity.id,
       title: i ? '团队沟通接待' : '整理工作安排', updatedAt: time,
       messages: [{ id: 'team-seed-' + i, kind: 'text', sender: { uid: identity.id, name: identity.name, color: '#1563EB', ai: true }, time,
         text: i ? '你好，我可以替你接收协作请求并跟进进展。' : '把需要整理的事项发给我，我们一起安排。' }]
     }));
+    if(options.profile==='review') {
+      identities.push(makeIdentity('ai-rd','assistant',localAssistants[1].name,localAssistants[1],time),makeIdentity('persona-pilot','persona','飞行员E号',localAssistants[1],time));
+    } else {localAssistants.splice(1);identities.splice(1);sessions.splice(1);}
     return { schemaVersion: 1, localAssistants, identities, sessions, drafts: {}, storageWarning: null };
   }
   function valid(state) {
@@ -42,8 +52,8 @@
     const unique = rows => new Set(rows.map(x => x.id)).size === rows.length;
     if (!record(state) || state.schemaVersion !== 1 || !Array.isArray(state.localAssistants) || !Array.isArray(state.identities) || !Array.isArray(state.sessions) || !record(state.drafts)) return false;
     if (!state.localAssistants.every(x => record(x) && str(x.id) && str(x.name) && Number.isInteger(x.version) && x.version > 0 && typeof x.online === 'boolean' && config(x.configuration))) return false;
-    if (!state.identities.every(x => record(x) && str(x.id) && str(x.name) && ['assistant', 'persona'].includes(x.role) && ['ready', 'offline'].includes(x.status) && ['synced', 'syncing', 'waiting', 'error'].includes(x.syncStatus) && str(x.lastSyncedAt) && Number.isInteger(x.configVersion) && x.configVersion > 0 && config(x.configuration) && state.localAssistants.some(l => l.id === x.sourceAssistantId && x.configVersion <= l.version))) return false;
-    if (!state.sessions.every(x => record(x) && str(x.id) && str(x.title) && str(x.updatedAt) && state.identities.some(i => i.id === x.identityId) && Array.isArray(x.messages) && x.messages.every(m => record(m) && m.kind === 'text' && str(m.text) && str(m.time) && record(m.sender) && str(m.sender.uid) && str(m.sender.name) && str(m.sender.color) && typeof m.sender.ai === 'boolean'))) return false;
+    if (!state.identities.every(x => record(x) && str(x.id) && str(x.name) && ['assistant', 'persona'].includes(x.role) && ['ready', 'offline'].includes(x.status) && ['synced', 'syncing', 'waiting', 'error'].includes(x.syncStatus) && str(x.lastSyncedAt) && Number.isInteger(x.configVersion) && x.configVersion > 0 && config(x.configuration) && ((x.role === 'persona' && x.sourceAssistantId === null && x.syncStatus === 'synced') || state.localAssistants.some(l => l.id === x.sourceAssistantId && x.configVersion <= l.version)))) return false;
+    if (!state.sessions.every(x => record(x) && str(x.id) && str(x.title) && str(x.updatedAt) && (x.pinned === undefined || typeof x.pinned === 'boolean') && state.identities.some(i => i.id === x.identityId) && Array.isArray(x.messages) && x.messages.every(m => record(m) && m.kind === 'text' && str(m.text) && str(m.time) && record(m.sender) && str(m.sender.uid) && str(m.sender.name) && str(m.sender.color) && typeof m.sender.ai === 'boolean'))) return false;
     return unique(state.localAssistants) && unique(state.identities) && unique(state.sessions) && Object.entries(state.drafts).every(([key, value]) => str(value) && (state.sessions.some(s => s.id === key) || state.identities.some(i => 'draft:' + i.id === key))) && new Set(state.identities.filter(i => i.role === 'assistant').map(i => i.sourceAssistantId)).size === state.identities.filter(i => i.role === 'assistant').length;
   }
   // Migrate only known generated copy; never rewrite user-authored messages.
@@ -65,7 +75,7 @@
     const now = () => { const value = options.now ? options.now() : new Date(); return value instanceof Date ? value.toISOString() : String(value); };
     let storage, warning = null;
     try { storage = Object.prototype.hasOwnProperty.call(options, 'storage') ? options.storage : window.localStorage; } catch (_) { warning = '本地存储不可用，刷新后数据可能丢失。'; }
-    let state = seed(now());
+    let state = seed(now(), options);
     try {
       const saved = storage?.getItem(STORAGE_KEY);
       if (saved) {
@@ -73,6 +83,7 @@
         if (!valid(parsed)) throw new Error('Invalid demo state');
         state = parsed;
         normalizeProductCopy(state);
+        state.sessions.forEach(session => { delete session.archived; });
         state.localAssistants.forEach(l => { l.configuration = configuration(l.configuration); });
         state.identities.forEach(i => {
           i.configuration = configuration(i.configuration);
@@ -107,21 +118,39 @@
       }).finally(() => connections.delete(sourceId));
       connections.set(sourceId, work); return work;
     }
-    async function createPersona(sourceId) {
-      const local = localById(sourceId);
+    async function createPersona(sourceId, input = {}) {
+      const independent = sourceId == null;
+      const local = independent ? {id:null,name:'独立',online:true,version:1,configuration:{}} : localById(sourceId);
       if (!local.online) throw new Error('本地助理离线');
       await simulate('createPersona', local);
-      const current = localById(sourceId);
+      const current = independent ? local : localById(sourceId);
       if (!current.online) throw new Error('本地助理离线');
-      const base = current.name + '的分身';
+      const base = typeof input.name === 'string' && input.name.trim() ? input.name.trim() : current.name + '的分身';
       let name = base, number = 2;
       while (state.identities.some(i => i.name === name)) name = base + ' ' + number++;
       const identity = makeIdentity(id('persona'), 'persona', name, current, now());
+      if(independent)identity.lastSyncedAt='';
+      if(input.configuration)identity.configuration=configuration(input.configuration);
       state.identities.push(identity); publish(); return freeze(copy(identity));
+    }
+    function savePersona(input) {
+      const identity=identityById(input.id);
+      if(identity.role!=='persona')throw new Error('只能编辑分身');
+      if(typeof input.name!=='string'||!input.name.trim())throw new Error('请填写分身名称');
+      const nextSource=Object.prototype.hasOwnProperty.call(input,'sourceAssistantId')?input.sourceAssistantId:identity.sourceAssistantId;
+      const changed=nextSource!==identity.sourceAssistantId;
+      const local=nextSource===null?null:localById(nextSource);
+      if(changed&&local&&!local.online)throw new Error('本地助理离线');
+      identity.name=input.name.trim();identity.configuration=configuration(input.configuration||identity.configuration);
+      if(changed){identity.sourceAssistantId=nextSource;identity.configVersion=local?.version||1;identity.lastSyncedAt=local?now():'';if(local)identity.configuration=configuration(local.configuration);}
+
+      syncTokens.set(identity.id,(syncTokens.get(identity.id)||0)+1);
+      identity.syncStatus='synced';publish();return freeze(copy(identity));
     }
     async function syncPersona(identityId) {
       const identity = identityById(identityId);
       if (identity.role !== 'persona') throw new Error('只有分身需要同步');
+      if(identity.sourceAssistantId===null)return freeze(copy(identity));
       const local = localById(identity.sourceAssistantId);
       const token = (syncTokens.get(identityId) || 0) + 1;
       syncTokens.set(identityId, token);
@@ -146,7 +175,9 @@
         local = { id: id('assistant-local'), name: input.name.trim(), version: 1, online: true, configuration: configuration(input.configuration || { identity: input.name.trim() }) };
         state.localAssistants.push(local);
       } else {
-        local = localById(input.id); local.name = input.name.trim(); local.version++;
+        local = localById(input.id);
+        if(local.id==='assistant-general'&&input.name.trim()!==local.name)throw new Error('通用助理不可改名');
+        local.name = input.name.trim(); local.version++;
         local.configuration = configuration(input.configuration || local.configuration);
         state.identities.filter(i => i.role === 'assistant' && i.sourceAssistantId === local.id).forEach(i => {
           i.name = local.name; i.configuration = configuration(local.configuration); i.configVersion = local.version; i.lastSyncedAt = now();
@@ -175,6 +206,19 @@
       if (text) state.drafts[key] = text; else delete state.drafts[key];
       publish();
     }
+    function setSessionFlag(sessionId, flag, value) {
+      const session = state.sessions.find(s => s.id === sessionId);
+      if (!session) throw new Error('找不到会话');
+      if (flag !== 'pinned' || typeof value !== 'boolean') throw new Error('无效会话状态');
+      session[flag] = value;
+      publish();
+    }
+    function deleteSession(sessionId) {
+      if (!state.sessions.some(s => s.id === sessionId)) throw new Error('找不到会话');
+      state.sessions = state.sessions.filter(s => s.id !== sessionId);
+      delete state.drafts[sessionId];
+      publish();
+    }
     function sendMessage(identityId, sessionId, text) {
       if (typeof text !== 'string' || !text.trim()) return null;
       const identity = identityById(identityId);
@@ -189,7 +233,7 @@
       session.updatedAt = time;
       delete state.drafts[sessionId || 'draft:' + identityId]; publish(); return session.id;
     }
-    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, syncPersona, saveLocalAssistant, setLocalOnline, setDraft, sendMessage });
+    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, sendMessage, setSessionFlag, deleteSession });
   }
-  window.EvaAITeam = Object.freeze({ ...createStore(), createStore });
+  window.EvaAITeam = Object.freeze({ ...createStore({profile:'review'}), createStore });
 })(window);

@@ -79,13 +79,13 @@
         ? window.EvaAvatar.personUri('eva-person:' + member.name)
         : '';
       var avatar = kind === 'assistant'
-        ? '<span class="eva-identity-avatar eva-identity-avatar--contact eva-create-group-member__avatar" role="img" aria-label="' + member.name + '"><img class="eva-identity-avatar__logo" src="' + (window.__EVA_COLLEAGUE_PORTRAIT || '') + '" alt=""><img class="eva-identity-avatar__owner" src="' + (window.__EVA_CURRENT_USER_PORTRAIT || '') + '" alt=""></span>'
+        ? window.EvaAIIdentity.avatar({name:member.name,sourceName:'Eva',logo:window.__EVA_COLLEAGUE_PORTRAIT,ownerName:window.__EVA_MY_ASSISTANT_IDENTITY.ownerName,ownerAvatar:window.__EVA_CURRENT_USER_PORTRAIT},32)
         : (portrait ? '<img class="eva-create-group-member__avatar" src="' + portrait + '" alt="">' : '<span class="eva-create-group-member__avatar" aria-hidden="true">' + member.mark + '</span>');
       return [
         '<label class="eva-create-group-member" data-member-kind="' + kind + '" data-member-id="' + member.id + '" data-member-name="' + member.name + '">',
           '<input type="checkbox" value="' + member.id + '" aria-label="选择' + member.name + '">',
           avatar,
-          '<span class="eva-create-group-member__copy"><strong>' + member.name + (kind === 'assistant' ? '<span class="ai-badge ai-badge-small">AI</span>' : '') + '</strong><span>' + member.detail + '</span></span>',
+          '<span class="eva-create-group-member__copy"><strong>' + member.name + (kind === 'assistant' ? window.EvaAIIdentity.badge() : '') + '</strong><span>' + member.detail + '</span></span>',
         '</label>'
       ].join('');
     }).join('');

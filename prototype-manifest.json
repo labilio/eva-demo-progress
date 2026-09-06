@@ -34,6 +34,14 @@
     },
     {
       "order": 4,
+      "tag": "style",
+      "name": "ai-identity",
+      "file": "prototype/003-ai-identity.css",
+      "bytes": 1082,
+      "role": "prototype"
+    },
+    {
+      "order": 5,
       "tag": "script",
       "name": "project-registry",
       "file": "prototype/004-project-registry.js",
@@ -41,7 +49,7 @@
       "role": "prototype"
     },
     {
-      "order": 5,
+      "order": 6,
       "tag": "script",
       "name": "script-5",
       "file": "prototype/005-script-5.js",
@@ -49,7 +57,7 @@
       "role": "prototype"
     },
     {
-      "order": 6,
+      "order": 7,
       "tag": "style",
       "name": "style-6",
       "file": "prototype/006-style-6.css",
@@ -61,11 +69,11 @@
       "name": "runtime-diagnostics",
       "file": "prototype/007-runtime-diagnostics.js",
       "role": "prototype",
-      "order": 7,
+      "order": 8,
       "bytes": 833
     },
     {
-      "order": 8,
+      "order": 9,
       "tag": "script",
       "name": "eva-app-module-source",
       "file": "vendor/eva-legacy-runtime.js",
@@ -73,7 +81,7 @@
       "role": "vendor"
     },
     {
-      "order": 9,
+      "order": 10,
       "tag": "style",
       "name": "semi-card-official",
       "file": "prototype/008-semi-card-official.css",
@@ -86,10 +94,10 @@
       "name": "gds-semantic-tokens",
       "role": "prototype",
       "bytes": 3218,
-      "order": 10
+      "order": 11
     },
     {
-      "order": 11,
+      "order": 12,
       "tag": "script",
       "name": "demo-time",
       "file": "prototype/009-0-demo-time.js",
@@ -97,7 +105,7 @@
       "role": "prototype"
     },
     {
-      "order": 12,
+      "order": 13,
       "tag": "script",
       "name": "data-drive",
       "file": "prototype/009-1-data-drive.js",
@@ -105,7 +113,7 @@
       "role": "prototype"
     },
     {
-      "order": 13,
+      "order": 14,
       "tag": "script",
       "name": "data-supply",
       "file": "prototype/009-2-data-supply.js",
@@ -113,7 +121,7 @@
       "role": "prototype"
     },
     {
-      "order": 14,
+      "order": 15,
       "tag": "script",
       "name": "data-im",
       "file": "prototype/009-3-data-im.js",
@@ -126,18 +134,18 @@
       "name": "ai-team-store",
       "role": "prototype",
       "bytes": 13827,
-      "order": 15
+      "order": 16
     },
     {
       "tag": "script",
       "name": "native-page-registry",
       "file": "prototype/010-native-page-registry.js",
       "role": "prototype",
-      "order": 16,
+      "order": 17,
       "bytes": 1230
     },
     {
-      "order": 17,
+      "order": 18,
       "tag": "script",
       "name": "runtime-patch-registry",
       "file": "prototype/009-4-registry.js",
@@ -145,7 +153,7 @@
       "role": "build-input"
     },
     {
-      "order": 18,
+      "order": 19,
       "tag": "script",
       "name": "runtime-patch-im",
       "file": "prototype/009-5-patch-im.js",
@@ -153,7 +161,7 @@
       "role": "build-input"
     },
     {
-      "order": 19,
+      "order": 20,
       "tag": "script",
       "name": "runtime-patch-general",
       "file": "prototype/009-6-patch-general.js",
@@ -161,7 +169,7 @@
       "role": "build-input"
     },
     {
-      "order": 20,
+      "order": 21,
       "tag": "script",
       "name": "runtime-patch-sider",
       "file": "prototype/009-7-patch-sider.js",
@@ -169,7 +177,7 @@
       "role": "build-input"
     },
     {
-      "order": 21,
+      "order": 22,
       "tag": "script",
       "name": "runtime-patch-automation",
       "file": "prototype/009-8-patch-automation.js",
@@ -177,7 +185,7 @@
       "role": "build-input"
     },
     {
-      "order": 22,
+      "order": 23,
       "tag": "style",
       "name": "style-10",
       "file": "vendor/eva-legacy.css",
@@ -185,7 +193,7 @@
       "role": "vendor"
     },
     {
-      "order": 23,
+      "order": 24,
       "tag": "script",
       "name": "script-11",
       "file": "prototype/011-script-11.js",
@@ -193,7 +201,7 @@
       "role": "prototype"
     },
     {
-      "order": 24,
+      "order": 25,
       "tag": "style",
       "name": "mode-layer",
       "file": "prototype/012-mode-layer.css",
@@ -201,7 +209,7 @@
       "role": "prototype"
     },
     {
-      "order": 25,
+      "order": 26,
       "tag": "script",
       "name": "jdenticon",
       "file": "prototype/013-jdenticon.js",
@@ -209,7 +217,7 @@
       "role": "prototype"
     },
     {
-      "order": 26,
+      "order": 27,
       "tag": "script",
       "name": "avatar",
       "file": "prototype/014-avatar.js",
@@ -217,7 +225,7 @@
       "role": "prototype"
     },
     {
-      "order": 27,
+      "order": 28,
       "tag": "script",
       "name": "file-message",
       "file": "prototype/015-file-message.js",
@@ -225,7 +233,7 @@
       "role": "prototype"
     },
     {
-      "order": 28,
+      "order": 29,
       "tag": "style",
       "name": "message-hierarchy",
       "file": "prototype/016-message-hierarchy.css",
@@ -233,7 +241,7 @@
       "role": "prototype"
     },
     {
-      "order": 29,
+      "order": 30,
       "tag": "style",
       "name": "im-shell",
       "file": "prototype/017-im-shell.css",
@@ -241,7 +249,7 @@
       "role": "prototype"
     },
     {
-      "order": 30,
+      "order": 31,
       "tag": "style",
       "name": "eva-release-meta-style",
       "file": "prototype/018-eva-release-meta-style.css",
@@ -249,7 +257,7 @@
       "role": "prototype"
     },
     {
-      "order": 31,
+      "order": 32,
       "tag": "script",
       "name": "script-19",
       "file": "prototype/019-script-19.js",
@@ -257,7 +265,7 @@
       "role": "prototype"
     },
     {
-      "order": 32,
+      "order": 33,
       "tag": "script",
       "name": "mode-layer",
       "file": "prototype/020-mode-layer.js",
@@ -265,7 +273,7 @@
       "role": "prototype"
     },
     {
-      "order": 33,
+      "order": 34,
       "tag": "script",
       "name": "message-hierarchy",
       "file": "prototype/021-message-hierarchy.js",
@@ -273,7 +281,7 @@
       "role": "prototype"
     },
     {
-      "order": 34,
+      "order": 35,
       "tag": "style",
       "name": "demo-0902-v2",
       "file": "prototype/022-demo-0902-v2.css",
@@ -281,7 +289,7 @@
       "role": "prototype"
     },
     {
-      "order": 35,
+      "order": 36,
       "tag": "script",
       "name": "demo-0902-v2",
       "file": "prototype/023-demo-0902-v2.js",
@@ -289,7 +297,7 @@
       "role": "prototype"
     },
     {
-      "order": 36,
+      "order": 37,
       "tag": "style",
       "name": "demo-0902-v2-pages",
       "file": "prototype/024-demo-0902-v2-pages.css",
@@ -297,7 +305,7 @@
       "role": "prototype"
     },
     {
-      "order": 37,
+      "order": 38,
       "tag": "script",
       "name": "demo-0902-v2-pages",
       "file": "prototype/025-demo-0902-v2-pages.js",
@@ -305,7 +313,7 @@
       "role": "prototype"
     },
     {
-      "order": 38,
+      "order": 39,
       "tag": "style",
       "name": "connection-center-v2",
       "file": "prototype/026-connection-center-v2.css",
@@ -313,7 +321,7 @@
       "role": "prototype"
     },
     {
-      "order": 39,
+      "order": 40,
       "tag": "style",
       "name": "connection-center-functional-v2",
       "file": "prototype/028-connection-center-functional-v2.css",
@@ -321,7 +329,7 @@
       "role": "prototype"
     },
     {
-      "order": 40,
+      "order": 41,
       "tag": "script",
       "name": "connection-center-v2-functional",
       "file": "prototype/029-connection-center-v2-functional.js",
@@ -329,7 +337,7 @@
       "role": "prototype"
     },
     {
-      "order": 41,
+      "order": 42,
       "tag": "style",
       "name": "expert-center-v1",
       "file": "prototype/030-expert-center-v1.css",
@@ -337,7 +345,7 @@
       "role": "prototype"
     },
     {
-      "order": 42,
+      "order": 43,
       "tag": "style",
       "name": "shared-automation-v2",
       "file": "prototype/031-shared-automation-v2.css",
@@ -345,7 +353,7 @@
       "role": "prototype"
     },
     {
-      "order": 43,
+      "order": 44,
       "tag": "style",
       "name": "contacts-redesign-v2",
       "file": "prototype/032-contacts-redesign-v2.css",
@@ -353,7 +361,7 @@
       "role": "prototype"
     },
     {
-      "order": 44,
+      "order": 45,
       "tag": "script",
       "name": "contacts-redesign-v2",
       "file": "prototype/033-contacts-redesign-v2.js",
@@ -361,7 +369,7 @@
       "role": "prototype"
     },
     {
-      "order": 45,
+      "order": 46,
       "tag": "style",
       "name": "project-task-toolbar-v3",
       "file": "prototype/034-project-task-toolbar-v3.css",
@@ -369,7 +377,7 @@
       "role": "prototype"
     },
     {
-      "order": 46,
+      "order": 47,
       "tag": "style",
       "name": "project-switcher-semi-v3",
       "file": "prototype/035-project-switcher-semi-v3.css",
@@ -377,7 +385,7 @@
       "role": "prototype"
     },
     {
-      "order": 47,
+      "order": 48,
       "tag": "style",
       "name": "project-directory-v3",
       "file": "prototype/036-project-directory-v3.css",
@@ -385,7 +393,7 @@
       "role": "prototype"
     },
     {
-      "order": 48,
+      "order": 49,
       "tag": "style",
       "name": "context-task-popover-v5",
       "file": "prototype/037-context-task-popover-v5.css",
@@ -393,7 +401,7 @@
       "role": "prototype"
     },
     {
-      "order": 49,
+      "order": 50,
       "tag": "script",
       "name": "context-task-popover-v5",
       "file": "prototype/038-context-task-popover-v5.js",
@@ -401,7 +409,7 @@
       "role": "prototype"
     },
     {
-      "order": 50,
+      "order": 51,
       "tag": "style",
       "name": "team-message-project-recent",
       "file": "prototype/039-team-message-project-recent.css",
@@ -409,7 +417,7 @@
       "role": "prototype"
     },
     {
-      "order": 51,
+      "order": 52,
       "tag": "script",
       "name": "team-message-project-recent",
       "file": "prototype/040-team-message-project-recent.js",
@@ -417,7 +425,7 @@
       "role": "prototype"
     },
     {
-      "order": 52,
+      "order": 53,
       "tag": "style",
       "name": "personal-conversation-columns",
       "file": "prototype/041-personal-conversation-columns.css",
@@ -425,7 +433,7 @@
       "role": "prototype"
     },
     {
-      "order": 53,
+      "order": 54,
       "tag": "script",
       "name": "personal-conversation-columns",
       "file": "prototype/042-personal-conversation-columns.js",
@@ -433,7 +441,7 @@
       "role": "prototype"
     },
     {
-      "order": 54,
+      "order": 55,
       "tag": "style",
       "name": "final-layout-convergence",
       "file": "prototype/043-final-layout-convergence.css",
@@ -445,7 +453,7 @@
       "name": "native-page-layout",
       "file": "prototype/045-native-page-layout.css",
       "role": "prototype",
-      "order": 55,
+      "order": 56,
       "bytes": 921
     },
     {
@@ -454,10 +462,10 @@
       "name": "ai-team",
       "role": "prototype",
       "bytes": 8996,
-      "order": 56
+      "order": 57
     },
     {
-      "order": 57,
+      "order": 58,
       "tag": "script",
       "name": "final-layout-convergence",
       "file": "prototype/044-final-layout-convergence.js",
@@ -465,7 +473,7 @@
       "role": "prototype"
     },
     {
-      "order": 58,
+      "order": 59,
       "tag": "style",
       "name": "review-comments",
       "file": "review/comments.css",
@@ -473,7 +481,7 @@
       "role": "review"
     },
     {
-      "order": 59,
+      "order": 60,
       "tag": "script",
       "name": "review-comments-store",
       "file": "review/comments-store.mjs",
@@ -481,7 +489,7 @@
       "role": "review-module"
     },
     {
-      "order": 60,
+      "order": 61,
       "tag": "script",
       "name": "review-comments",
       "file": "review/comments.js",

@@ -60,8 +60,8 @@ test('个人创建入口保留，团队通过连接助理与创建分身组织�
   const personalColumns = read('prototype/042-personal-conversation-columns.js');
   const imPatch = read('prototype/009-5-patch-im.js');
 
-  assert.match(imPatch, /连接助理/);
-  assert.match(imPatch, /创建分身/);
+  assert.match(imPatch, /连接本地助理/);
+  assert.match(imPatch, /创建云端分身/);
   assert.match(imPatch, /store\.connectAssistant/);
   assert.match(imPatch, /store\.createPersona/);
   assert.match(personalColumns, /eva-my-ai-sidebar-actions eva-personal-sidebar-actions/);
@@ -92,12 +92,15 @@ test('创建和编辑助理共用编辑器并按模式新增或原位更新', ()
   const convergence = read('prototype/044-final-layout-convergence.js');
 
   assert.match(personalColumns, /data-eva-edit-assistant/);
-  assert.match(personalColumns, /window\.__evaSavePersonalAssistant/);
   assert.match(convergence, /function openAssistantEditor\(options\)/);
   assert.match(convergence, /mode:\s*'create'/);
   assert.match(convergence, /mode:\s*'edit'/);
-  assert.match(convergence, /data-eva-assistant-editor-mode/);
-  assert.match(convergence, /__evaSavePersonalAssistant/);
+  assert.match(convergence, /window\.__evaOpenAssistantEditor\(options\)/);
+  assert.doesNotMatch(convergence, /function ensureCreateAssistantModal/);
+  const sharedEditor = read('prototype/009-5-patch-im.js');
+  assert.match(sharedEditor, /function EvaAssistantEditor\(/);
+  assert.match(sharedEditor, /store\.saveLocalAssistant/);
+  assert.match(sharedEditor, /store\.savePersona/);
 });
 
 test('一级页面只挂入路由宿主，不再追加到 document.body', () => {

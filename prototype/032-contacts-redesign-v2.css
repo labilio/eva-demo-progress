@@ -248,51 +248,6 @@
     white-space: nowrap;
   }
 
-  .eva-identity-avatar {
-    position: relative;
-    display: inline-flex;
-    width: var(--eva-identity-avatar-size, 36px);
-    height: var(--eva-identity-avatar-size, 36px);
-    flex: 0 0 var(--eva-identity-avatar-size, 36px);
-    border-radius: 50%;
-  }
-
-  .eva-identity-avatar__logo {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--semi-color-fill-0, #f2f3f5);
-    object-fit: cover;
-  }
-
-  .eva-identity-avatar__owner {
-    position: absolute;
-    right: var(--eva-identity-owner-offset, -3px);
-    bottom: var(--eva-identity-owner-offset, -3px);
-    display: block;
-    width: var(--eva-identity-owner-size, 18px);
-    height: var(--eva-identity-owner-size, 18px);
-    border: var(--eva-identity-owner-border, 2px) solid var(--semi-color-bg-0, #fff);
-    border-radius: 50%;
-    background: var(--semi-color-fill-0, #f2f3f5);
-    object-fit: cover;
-  }
-
-  .eva-identity-avatar--contact {
-    --eva-identity-avatar-size: 32px;
-    --eva-identity-owner-size: 14px;
-    --eva-identity-owner-offset: -1px;
-    --eva-identity-owner-border: 1px;
-  }
-  .eva-identity-avatar--chat { --eva-identity-avatar-size: 32px; --eva-identity-owner-size: 16px; }
-  .eva-identity-avatar--nav {
-    --eva-identity-avatar-size: 22px;
-    --eva-identity-owner-size: 10px;
-    --eva-identity-owner-offset: -1px;
-    --eva-identity-owner-border: 1px;
-  }
-
   .eva-personal-assistant-entry .eva-personal-assistant-add {
     display: inline-flex;
     width: 24px;
