@@ -10,6 +10,7 @@ function createHarness() {
     async list(page) { calls.push(['list', page]); return [{ id: 'comment-1', page_path: page }]; },
     async addReply(id, value) { calls.push(['reply', id, value]); return { id: 'reply-1', comment_id: id, ...value }; },
     async updateStatus(id, status) { calls.push(['status', id, status]); return { id, status }; },
+    async remove(id) { calls.push(['delete', id]); return { id }; },
   };
   const output = [];
   return { store, calls, output, write: value => output.push(value) };
@@ -28,6 +29,7 @@ test('AI 可以用页面、选择器和意见创建结构化批注', async () =>
     author_name: 'Codex',
     body: '调整这个入口的间距',
     kind: 'ui',
+    status: 'open',
     anchor: {
       version: 1,
       page: '#/guid',
@@ -62,6 +64,19 @@ test('AI 可以查询、回复和更新开发状态', async () => {
   ]);
 });
 
+test('AI 不提供页面时可以查询全部共享批注', async () => {
+  const harness = createHarness();
+  await runCommentsCommand(['list'], harness);
+  assert.deepEqual(harness.calls, [['list', undefined]]);
+});
+
+test('AI 可以删除共享批注', async () => {
+  const harness = createHarness();
+  const row = await runCommentsCommand(['delete', '--id', 'comment-1'], harness);
+  assert.deepEqual(harness.calls, [['delete', 'comment-1']]);
+  assert.deepEqual(row, { id: 'comment-1' });
+});
+
 test('AI 不能在没有人工确认标志时将批注改为已确认', async () => {
   const harness = createHarness();
   await assert.rejects(
@@ -72,6 +87,18 @@ test('AI 不能在没有人工确认标志时将批注改为已确认', async ()
     'status', '--id', 'comment-1', '--status', 'approved', '--confirmed-by-user',
   ], harness);
   assert.deepEqual(harness.calls, [['status', 'comment-1', 'approved']]);
+});
+
+test('AI 只有得到人工确认后才能创建已基本定稿类型的批注', async () => {
+  const harness = createHarness();
+  const addArgs = [
+    'add', '--page', '#/guid', '--selector', '[data-eva-nav-id="my-ai"]',
+    '--body', '这部分大差不差了', '--kind', 'ready',
+  ];
+  await assert.rejects(runCommentsCommand(addArgs, harness), /--confirmed-by-user/);
+  await runCommentsCommand([...addArgs, '--confirmed-by-user'], harness);
+  assert.equal(harness.calls[0][1].kind, 'ready');
+  assert.equal(harness.calls[0][1].status, 'open');
 });
 
 test('AI 署名可由参数或环境变量覆盖', async () => {
@@ -98,5 +125,6 @@ test('没有历史记忆的 AI 能从仓库规则发现机器批注入口', () =
   assert.match(guide, /list/);
   assert.match(guide, /reply/);
   assert.match(guide, /status/);
+  assert.match(guide, /delete/);
   assert.match(guide, /--confirmed-by-user/);
 });

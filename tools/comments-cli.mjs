@@ -10,11 +10,12 @@ const HELP = `Eva 云端批注命令
   npm run comments -- add --page <hash> --selector <css> --kind <type> --body <text>
   npm run comments -- list --page <hash>
   npm run comments -- reply --id <comment-id> --body <text>
-  npm run comments -- status --id <comment-id> --status <open|approved|doing>
+  npm run comments -- status --id <comment-id> --status <open|approved|doing|done>
+  npm run comments -- delete --id <comment-id>
 
 定位参数：--selector、--anchor-id、--quote 至少提供一个。
 署名：默认 Codex；可用 --author 或 EVA_REVIEW_AUTHOR 覆盖。
-已确认：status=approved 时必须额外提供 --confirmed-by-user。
+已确认状态或“已基本定稿”类型必须额外提供 --confirmed-by-user。
 `;
 
 function parseFlags(argv) {
@@ -59,6 +60,11 @@ export async function runCommentsCommand(argv, dependencies = {}) {
 
   if (command === 'add') {
     const page = required(flags, 'page');
+    const status = String(flags.status || 'open');
+    const kind = String(flags.kind || 'function');
+    if ((status === 'approved' || kind === 'ready') && !flags['confirmed-by-user']) {
+      throw new Error(`设置${kind === 'ready' ? '已基本定稿类型' : '已确认状态'}必须提供 --confirmed-by-user，表示已取得人工确认`);
+    }
     if (![flags.selector, flags['anchor-id'], flags.quote].some(value => String(value || '').trim())) {
       throw new Error('批注必须提供 selector、anchor-id 或 quote 之一');
     }
@@ -66,7 +72,8 @@ export async function runCommentsCommand(argv, dependencies = {}) {
       page_path: page,
       author_name: author,
       body: required(flags, 'body'),
-      kind: String(flags.kind || 'function'),
+      kind,
+      status,
       anchor: buildAnchorRecord({
         page,
         selector: flags.selector,
@@ -87,7 +94,7 @@ export async function runCommentsCommand(argv, dependencies = {}) {
   }
 
   if (command === 'list') {
-    const rows = await store.list(required(flags, 'page'));
+    const rows = await store.list(flags.page ? String(flags.page).trim() : undefined);
     printJson(write, rows);
     return rows;
   }
@@ -104,9 +111,15 @@ export async function runCommentsCommand(argv, dependencies = {}) {
   if (command === 'status') {
     const status = required(flags, 'status');
     if (status === 'approved' && !flags['confirmed-by-user']) {
-      throw new Error('设置已确认必须提供 --confirmed-by-user，表示已取得人工确认');
+      throw new Error('设置已确认状态必须提供 --confirmed-by-user，表示已取得人工确认');
     }
     const row = await store.updateStatus(required(flags, 'id'), status);
+    printJson(write, row);
+    return row;
+  }
+
+  if (command === 'delete') {
+    const row = await store.remove(required(flags, 'id'));
     printJson(write, row);
     return row;
   }
