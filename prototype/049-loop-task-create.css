@@ -1,0 +1,65 @@
+/* Project Loop creation uses its own portal; the desktop titlebar remains outside. */
+.eva-loop-task-create-portal {
+  position: fixed;
+  inset: var(--topbar-height) 0 0;
+  z-index: 1100;
+  pointer-events: none;
+}
+.eva-loop-task-create-portal .semi-modal-mask,
+.eva-loop-task-create-portal .semi-modal-wrap {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  pointer-events: auto;
+}
+.eva-loop-task-create-portal .eva-loop-task-create { overflow: hidden; padding: 0; }
+.eva-loop-task-create .semi-modal {
+  box-sizing: border-box;
+  top: 0;
+  width: 720px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - var(--topbar-height) - 32px);
+  margin: 16px auto;
+  padding: 0;
+}
+.eva-loop-task-create .semi-modal-content {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - var(--topbar-height) - 32px);
+  overflow: hidden;
+  padding: 20px;
+  border-radius: var(--gds-radius-panel);
+  color: var(--semi-color-text-0);
+  font-family: var(--gds-font-family-sans);
+  font-size: 13px;
+  line-height: 20px;
+}
+.eva-loop-task-create .semi-modal-header,
+.eva-loop-task-create .semi-modal-footer { flex-shrink: 0; }
+.eva-loop-task-create .semi-modal-title { font-size: 18px; font-weight: 600; line-height: 26px; }
+.eva-loop-task-create .semi-modal-body { min-height: 0; overflow: auto; margin: 0; }
+.eva-loop-task-create .semi-modal-footer { padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--semi-color-border); }
+.eva-loop-task-create__layout { display: grid; grid-template-columns: minmax(0, 1fr) 216px; gap: 20px; }
+.eva-loop-task-create__main,
+.eva-loop-task-create__properties { min-width: 0; }
+.eva-loop-task-create__properties { padding-left: 16px; border-left: 1px solid var(--semi-color-border); }
+.eva-loop-task-create__field { display: flex; flex-direction: column; min-width: 0; gap: 8px; margin-bottom: 16px; }
+.eva-loop-task-create__field:last-child { margin-bottom: 0; }
+.eva-loop-task-create__label,
+.eva-loop-task-create__field > label { display: block; color: var(--semi-color-text-0); font-size: 13px; font-weight: 500; line-height: 20px; }
+.eva-loop-task-create__hint { margin: 0; color: var(--semi-color-text-2); font-size: 12px; line-height: 18px; }
+.eva-loop-task-create__field .semi-select,
+.eva-loop-task-create__field .semi-datepicker { width: 100%; min-width: 0; }
+.eva-loop-task-create .semi-input,
+.eva-loop-task-create .semi-input-textarea,
+.eva-loop-task-create .semi-select,
+.eva-loop-task-create .semi-button { font-size: 13px; }
+.eva-loop-task-create__actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.eva-loop-task-create__error { margin: 12px 0 0; color: var(--semi-color-danger); font-size: 12px; line-height: 18px; }
+.eva-loop-task-create .eva-identity-name-row { display: inline-flex; align-items: center; min-width: 0; gap: 4px; }
+.eva-loop-task-create__properties h3 { margin: 0 0 16px; font-size: 13px; font-weight: 500; line-height: 20px; }
+@media (max-width: 700px) {
+  .eva-loop-task-create__layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .eva-loop-task-create__properties { padding: 16px 0 0; border-left: 0; border-top: 1px solid var(--semi-color-border); }
+}

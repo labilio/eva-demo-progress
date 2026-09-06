@@ -11,6 +11,7 @@ Eva 桌面端交互原型的在线进度预览。
 - 构建兼容依赖：`vendor/`（仅作为构建输入，不作为产品实现参照）
 - 模块加载顺序：`prototype-manifest.json`
 - 客户设计规范：`docs/design-system/gds-for-ai2.0/README.md`（GDS for AI 2.0）
+- AI／Codex 云端批注：`docs/AI_COMMENTS.md`
 
 本地使用 `npm start` 后访问 `http://127.0.0.1:4173`。应用通过 HTTP 加载；线上由 GitHub `main` 自动发布到 Vercel。
 

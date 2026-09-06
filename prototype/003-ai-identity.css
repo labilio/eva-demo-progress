@@ -34,3 +34,8 @@
 
 /* Placement belongs to the name row; badge appearance stays with Octo. */
 .wk-chat-conversation-header-channel-info > .ai-badge { margin-inline-start: 6px; }
+
+/* Follow the contacts name row: badge follows the name, never a stretched column. */
+.eva-identity-name-row { display: flex; align-items: center; min-width: 0; gap: 6px; }
+.eva-identity-name-row > .eva-identity-name-text { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-identity-name-row > .ai-badge { flex-shrink: 0; }

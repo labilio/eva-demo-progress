@@ -30,8 +30,10 @@ test('供应链教程闭环：审批、带分身加入、文件共享不泄漏�
 test('群聊预设增量加载不重复、不覆盖成员与手动消息',()=>{
  const {s}=setup();s.loadSupplyDemo();s.sendMessage('supply-demo-rectification','u-wangyilin','手动补充');
  const before=JSON.stringify(s.snapshot());s.seedSupplyChatContent();s.seedSupplyChatContent();assert.equal(JSON.stringify(s.snapshot()),before);
- assert.equal(s.messagesFor('all:prod','u-wangyilin').filter(m=>m.fixtureId?.startsWith('supply-chat-v1:')).length,5);
+ assert.equal(s.messagesFor('all:prod','u-wangyilin').filter(m=>m.fixtureId?.startsWith('supply-chat-v2:')).length,10);
  assert.equal(s.messagesFor('supply-demo-rectification','u-wangyilin').filter(m=>m.fixtureId).length,6);
  assert.equal(s.messagesFor('supply-demo-evidence','u-wangyilin').filter(m=>m.fixtureId).length,4);
+ const messages=s.messagesFor('all:prod','u-wangyilin');
+ for(const [index,message] of messages.entries()){if(message.fixtureId?.startsWith('supply-chat-v2:')&&message.sender.uid==='project-agent:prod')assert.ok(messages[index-1].text.includes('@Eva 项目管理专员'));}
  assert.equal(s.canRead('prod','u-hejing'),false);
 });

@@ -39,7 +39,7 @@
     ];
     return [
       '<section class="eva-personal-feature-page eva-feature-page" data-eva-page="workboard" hidden>',
-      '<header class="eva-feature-head"><h1>工作板</h1></header>',
+      '<header class="eva-feature-head"><h1>任务看板</h1></header>',
       '<div class="eva-feature-body"><div class="eva-board-topline"><p class="eva-feature-intro">管理任务卡片、依赖、调度、运行和诊断</p>',
       '<div class="eva-feature-actions"><button class="eva-ui-btn" type="button">' + icon('refresh') + '刷新</button><button class="eva-ui-btn" type="button">' + icon('bolt') + '提醒调度器</button><button class="eva-ui-btn eva-ui-btn--primary" type="button">' + icon('plus') + '新建卡片</button></div></div>',
       '<div class="eva-board-stats">' + stats.map(function (item) { return '<div class="eva-board-stat"><span>' + icon(item[0]) + item[1] + '</span><strong>' + item[2] + '</strong></div>'; }).join('') + '</div>',

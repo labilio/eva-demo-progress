@@ -1,0 +1,49 @@
+.eva-digital-center{display:flex;flex:1;min-width:0;min-height:0;height:100%;color:var(--semi-color-text-0);background:var(--semi-color-bg-0);font-family:var(--gds-font-family-sans);font-size:13px;line-height:20px;position:relative}
+.eva-digital-center__rail{box-sizing:border-box;width:var(--eva-conversation-rail-width);flex-shrink:0;background:var(--eva-conversation-rail-bg);border-right:1px solid var(--eva-conversation-rail-border);padding:20px 16px;overflow:auto}
+.eva-digital-center__rail h2{font-size:var(--gds-type-header-font-size);line-height:var(--gds-type-header-line-height);margin:0 0 20px;font-weight:600}
+.eva-digital-center__rail .semi-button{width:100%;justify-content:flex-start;height:auto;min-height:42px;margin-bottom:6px;text-align:left;font-size:13px;font-weight:500;line-height:20px;border-radius:var(--gds-radius-control)}
+.eva-digital-center__rail small{display:block;font-size:11px;color:var(--semi-color-text-2);font-weight:400;white-space:normal;margin-top:4px;line-height:1.5}
+.eva-digital-center__main{flex:1;min-width:0;overflow:auto;padding:20px 16px}
+.eva-digital-center__head,.eva-digital-center__section-head,.eva-digital-center__actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.eva-digital-center__head{justify-content:space-between;margin-bottom:16px}
+.eva-digital-center h1{font-size:18px;line-height:26px;font-weight:600;margin:0 0 8px}.eva-digital-center h3{font-size:14px;line-height:22px;font-weight:600;margin:0 0 8px}
+.eva-digital-center p,.eva-digital-center__muted{color:var(--semi-color-text-2);line-height:1.7;margin:6px 0}
+.eva-digital-center__filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}.eva-digital-center__section-head{justify-content:space-between;margin-bottom:12px}
+.eva-digital-center__section{margin-bottom:20px}.eva-digital-center__cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:16px}
+.eva-digital-center__card{border:1px solid var(--semi-color-border);border-radius:var(--gds-radius-chip);padding:20px;background:var(--semi-color-bg-1);display:flex;flex-direction:column;gap:10px}
+.eva-digital-center__card.is-selected{border-color:var(--semi-color-primary);background:var(--semi-color-primary-light-default)}
+.eva-digital-center__card ul{padding-left:18px;margin:4px 0;line-height:1.9}.eva-digital-center__card .semi-button{align-self:flex-start}
+.eva-digital-center__identity{display:flex;align-items:center;gap:10px;min-width:0}.eva-digital-center__identity strong{font-weight:500}.eva-digital-center__identity small{display:block;color:var(--semi-color-text-2);font-size:11px;margin-top:4px}
+.eva-digital-center__field{display:flex;flex-direction:column;gap:8px;margin:0 0 20px;max-width:800px}.eva-digital-center__field>label{font-weight:500}.eva-digital-center__field .semi-select{width:100%}
+.eva-digital-center__form{max-width:1000px}.eva-digital-center__empty{padding:48px 20px;text-align:center;color:var(--semi-color-text-2)}
+.eva-digital-center__modal{position:fixed;inset:var(--topbar-height) 0 0;z-index:1000;pointer-events:none}.eva-digital-center__modal .semi-modal-mask,.eva-digital-center__modal .semi-modal-wrap{position:absolute;inset:0;height:100%;pointer-events:auto}.eva-digital-center__modal .semi-modal-wrap{display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}
+.eva-digital-center__modal .eva-digital-center__field{margin-top:12px}.eva-digital-center__modal h3{margin-top:22px}
+.eva-digital-center__chat{display:flex;flex:1;min-width:0;min-height:0;flex-direction:column}.eva-digital-center__chat>.eva-digital-center__head{padding:12px 20px;margin:0;border-bottom:1px solid var(--semi-color-border)}
+.eva-digital-center__chat>.eva-msg{flex:1;min-height:0;display:flex}.eva-digital-center__table{width:100%;min-width:0;overflow:auto}
+.eva-digital-center__table .semi-table-container,.eva-digital-center__table .semi-table-body{max-width:100%}
+.eva-digital-center__table .semi-table{width:100%;min-width:734px;table-layout:fixed;font-size:12px;line-height:18px}
+.eva-digital-center__table .semi-table-thead>.semi-table-row>.semi-table-row-head,.eva-digital-center__table .semi-table-tbody>.semi-table-row>.semi-table-row-cell{padding:8px 6px;font-size:12px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eva-digital-center__table .semi-table-thead>.semi-table-row>.semi-table-row-head{font-weight:500}
+.eva-digital-center__table .semi-table-row{cursor:pointer}
+.eva-digital-center__table .semi-button{white-space:nowrap;font-size:12px;font-weight:400;padding:0 5px;min-width:28px;height:28px}
+.eva-digital-center__table .eva-digital-center__actions{flex-wrap:nowrap;gap:6px;min-width:288px}
+.eva-digital-center__table .eva-digital-center__identity{gap:6px;width:100%}
+.eva-digital-center__table .eva-digital-center__identity>span:last-child{flex:1;min-width:0;overflow:hidden}
+.eva-digital-center__table .eva-digital-center__identity strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500}
+.eva-digital-center__table .eva-digital-center__identity small{font-size:11px}
+.eva-digital-center__document{white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;padding:16px;border-radius:8px;background:var(--semi-color-fill-0);font-size:12px;line-height:1.8}
+
+.eva-digital-dialog .semi-modal{top:0;margin:0;max-width:100%;height:auto;max-height:100%;padding:0}
+.eva-digital-dialog .semi-modal-content{max-height:calc(100vh - 112px);display:flex;flex-direction:column}
+.eva-digital-dialog .semi-modal-header,.eva-digital-dialog .semi-modal-footer{flex-shrink:0}
+.eva-digital-dialog .semi-modal-body{min-height:0;overflow:auto;font-size:13px;line-height:20px}
+.eva-digital-dialog .semi-table-row-cell,.eva-digital-dialog .semi-table-row-head{padding:8px 12px;font-size:12px;overflow-wrap:anywhere}
+.eva-digital-project-options{display:flex;flex-direction:column;gap:4px;max-height:280px;overflow:auto;margin-top:12px}
+.eva-digital-project-options>.semi-checkbox{display:flex;padding:10px 8px;border-radius:8px;align-items:center}
+.eva-digital-project-options>.semi-checkbox:hover{background:var(--semi-color-fill-0)}
+.eva-digital-project-identity{display:flex;align-items:center;gap:10px;min-width:0}
+.eva-digital-project-identity strong{font-size:13px;font-weight:500}
+.eva-digital-project-identity small{display:block;font-size:11px;color:var(--semi-color-text-2)}
+
+.eva-digital-dialog .semi-modal-footer{margin:16px 0 0;padding:16px 0 0;border-top:1px solid var(--semi-color-border)}
+.eva-digital-dialog .semi-modal-footer .eva-picker-footer{margin:0;padding:0;border:0;justify-content:flex-end}

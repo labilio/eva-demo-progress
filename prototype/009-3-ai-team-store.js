@@ -11,6 +11,7 @@
     return value;
   }
   const configuration = value => ({
+    creationCenter: value?.creationCenter || null,
     description: typeof value?.description === 'string' ? value.description : '',
     about: typeof value?.about === 'string' ? value.about : '',
     collaboration: typeof value?.collaboration === 'string' ? value.collaboration : '',
@@ -80,6 +81,16 @@
       const saved = storage?.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
+        // Older demo follow-ups omitted this presentation-only field.
+        // Repair it before validation without replacing conversations or drafts.
+        if (parsed?.schemaVersion === 1 && Array.isArray(parsed.sessions)) {
+          parsed.sessions.forEach(session => {
+            if (!Array.isArray(session?.messages)) return;
+            session.messages.forEach(message => {
+              if (message?.sender && typeof message.sender === 'object' && message.sender.color === undefined) message.sender.color = '#1563EB';
+            });
+          });
+        }
         if (!valid(parsed)) throw new Error('Invalid demo state');
         state = parsed;
         normalizeProductCopy(state);
@@ -105,6 +116,62 @@
       });
       state.reviewStoriesVersion = 1;
       try { storage?.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { warning = '本地存储不可用，刷新后数据可能丢失。'; }
+    }
+    // Upgrade only exact shipped demo copy; preserve user edits, drafts and deleted sessions.
+    if (options.profile === 'review' && !state.markdownDemoV1) {
+      const upgrades = window.__EVA_IM_MARKDOWN_UPGRADES || {};
+      state.sessions.forEach(session => session.messages.forEach(message => {
+        if (message.sender?.ai && message.id?.includes('-story-') && Object.hasOwn(upgrades, message.text)) message.text = upgrades[message.text];
+      }));
+      state.markdownDemoV1 = true;
+      try { storage?.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { warning = '本地存储不可用，刷新后数据可能丢失。'; }
+    }
+    if (options.profile === 'review' && !state.richFollowupsIMV4) {
+      state.sessions.forEach(session => { const identity=state.identities.find(i=>i.id===session.identityId); if(identity?.role!=='persona') session.messages=session.messages.filter(m=>!/^rich-v2-/.test(m.id||'')); });
+      (window.__EVA_IM_RICH_FOLLOWUPS || []).forEach(item => {
+        const session = state.sessions.find(s => s.id === item.sessionId + '-example') || state.sessions.find(s => s.id === item.sessionId);
+        if (!session || session.messages.some(m => m.id === item.id + '-ai')) return;
+        const identity = state.identities.find(i => i.id === session.identityId);
+        if (!identity || identity.role !== 'persona') return;
+        const time = session.updatedAt;
+        session.messages.push({id:item.id+'-self',kind:'text',time,text:item.question,sender:{uid:'self',name:'我',color:'#1563EB',ai:false}}, {id:item.id+'-ai',kind:'text',time,text:item.answer,sender:{uid:identity.id,name:identity.name,color:'#1563EB',ai:true}});
+      });
+      state.richFollowupsIMV4 = true;
+      try { storage?.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { warning = '本地存储不可用，刷新后数据可能丢失。'; }
+    }
+    if(options.profile==='review'&&!state.compactPresentationV1){
+      state.sessions.forEach(session=>{
+        session.messages=session.messages.filter(m=>!/^rich-v2-|^rich-supply-private-/.test(m.id||''));
+        session.messages.forEach(m=>{const map=window.__EVA_IM_COMPACT_COPY||{};if(m.sender?.ai&&m.id?.includes('-story-')&&Object.hasOwn(map,m.text))m.text=map[m.text];});
+      });
+      state.compactPresentationV1=true;
+      try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
+    }
+    if(options.profile==='review'&&!state.personaShortDemoV1){
+      Object.entries(window.__EVA_PERSONA_SHORT_DEMO||{}).forEach(([id,texts])=>{
+        const session=state.sessions.find(s=>s.id===id+'-example')||state.sessions.find(s=>s.id===id);
+        if(!session)return;
+        const identity=state.identities.find(i=>i.id===session.identityId);
+        if(identity?.role!=='persona')return;
+        const retained=session.messages.filter(m=>!String(m.id||'').startsWith(id+'-story-')&&!/^rich-v2-|^rich-supply-private-/.test(m.id||''));
+        const base=new Date(window.__EVA_DEMO_TIME.AI_REVIEW_START).getTime();
+        session.messages=texts.map((text,index)=>({id:id+'-story-'+index,kind:'text',text,time:new Date(base+(480+index)*60000).toISOString(),sender:{uid:index%2?identity.id:'self',name:index%2?identity.name:'我',color:'#1563EB',ai:!!(index%2)}})).concat(retained);
+      });
+      state.personaShortDemoV1=true;
+      try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
+    }
+    if(options.profile==='review'&&!state.personaVarietyV2){
+      Object.entries(window.__EVA_PERSONA_VARIETY_DEMO||{}).forEach(([id,copy])=>{
+        const session=state.sessions.find(s=>s.id===id+'-example')||state.sessions.find(s=>s.id===id);
+        if(!session)return;
+        const identity=state.identities.find(i=>i.id===session.identityId);
+        if(identity?.role!=='persona')return;
+        const old=window.__EVA_PERSONA_SHORT_DEMO?.[id];
+        session.messages.forEach(m=>{const index=Number(String(m.id||'').replace(id+'-story-',''));if(old&&Number.isInteger(index)&&index>=0&&index<4&&m.id===id+'-story-'+index&&m.text===old[index])m.text=copy.texts[index];});
+        if(session.title==='电脑关机后，供应风险继续跟进'||session.title==='夜间巡检，早上只看需要处理的事')session.title=copy.title;
+      });
+      state.personaVarietyV2=true;
+      try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
     }
     state.storageWarning = warning;
     let snapshot = freeze(copy(state));
@@ -193,7 +260,7 @@
         local = localById(input.id);
         if(local.id==='assistant-general'&&input.name.trim()!==local.name)throw new Error('通用助理不可改名');
         local.name = input.name.trim(); local.version++;
-        local.configuration = configuration(input.configuration || local.configuration);
+        local.configuration = configuration({...local.configuration,...input.configuration});
         state.identities.filter(i => i.role === 'assistant' && i.sourceAssistantId === local.id).forEach(i => {
           i.name = local.name; i.configuration = configuration(local.configuration); i.configVersion = local.version; i.lastSyncedAt = now();
         });

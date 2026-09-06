@@ -5,7 +5,7 @@
   var currentView = 'follow';
   var tuneQueued = false;
   var RECENT_CONVERSATIONS = [
-    { id: 'im-eva-octo', title: 'EVA + OCTO 融合推进群', preview: 'EVA+OCTO项目助手：任务已创建，负责人已指定为威少。', time: '18:20', color: '#7567d8' },
+    { id: 'im-eva-octo', title: 'EVA + OCTO 融合推进群', preview: 'Eva 项目管理专员：任务已创建，负责人已指定为威少。', time: '18:20', color: '#7567d8' },
     { id: 'im-delivery', title: '项目交付推进', preview: '王宜林的 Eva 助理：已整理交付清单并创建任务。', time: '17:30', color: '#66789e' },
     { id: 'im-review', title: '方案评审', preview: '王宜林的 Eva 助理：已读取附件并给出评审重点。', time: '16:42', color: '#5f8798' },
     { id: 'im-meeting', title: '会议跟进', preview: '王宜林的 Eva 助理：结论、行动项和风险已分类。', time: '15:40', color: '#9a8062' }
@@ -33,7 +33,7 @@
     if (list.dataset.evaRendered !== 'true') {
       list.dataset.evaRendered = 'true';
       list.dataset.selectedId = RECENT_CONVERSATIONS[0].id;
-      list.innerHTML = '<div class="eva-project-recent-list__intro"><span><strong>重点演示对话</strong><small>4 个能力场景</small></span><button class="eva-project-recent-list__create" type="button" data-eva-context-task-create aria-expanded="false">＋ 新建任务</button></div>' + RECENT_CONVERSATIONS.map(function (item) {
+      list.innerHTML = '<div class="eva-project-recent-list__intro"><span><strong>重点演示对话</strong><small>4 个能力场景</small></span></div>' + RECENT_CONVERSATIONS.map(function (item) {
         return '<button type="button" class="eva-project-recent-item" role="listitem" data-eva-im-conversation-id="' + item.id + '" aria-current="' + (item.id === RECENT_CONVERSATIONS[0].id ? 'true' : 'false') + '" style="--eva-recent-accent:' + item.color + ';--eva-recent-surface:' + item.color + '18"><span class="eva-project-recent-item__avatar">' + recentIcon() + '</span><span class="eva-project-recent-item__name">' + item.title + '</span><time class="eva-project-recent-item__time">' + item.time + '</time><span class="eva-project-recent-item__preview">' + item.preview + '</span></button>';
       }).join('');
     }

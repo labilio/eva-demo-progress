@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const patchFiles = [
@@ -44,6 +45,8 @@ export function buildSite(root = process.cwd()) {
     path.join(outputRoot, 'vendor/eva-runtime.module.js'),
     `${result.source}\n//# sourceURL=eva-demo-${result.release.version.replace(/[^0-9a-z]+/gi, '-').toLowerCase()}.module.js\n`,
   );
+  // Reject an invalid browser bundle before reporting a successful build.
+  execFileSync(process.execPath, ['--check', path.join(outputRoot, 'vendor/eva-runtime.module.js')], { stdio: 'pipe' });
   return { outputRoot, ...result };
 }
 

@@ -1,7 +1,8 @@
 const TABLE = 'eva_demo_comments';
 const REPLIES_TABLE = 'eva_demo_comment_replies';
-const STATUSES = new Set(['open', 'approved', 'doing']);
-const KINDS = new Set(['copy', 'ui', 'rebuild', 'function']);
+const STATUSES = new Set(['open', 'approved', 'doing', 'done']);
+const KINDS = new Set(['copy', 'ui', 'rebuild', 'function', 'ready']);
+const DEFAULT_AUTHOR = '匿名同事';
 
 function createNonce() {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
@@ -12,15 +13,16 @@ function createNonce() {
 }
 
 function validateComment(comment) {
-  const name = String(comment.author_name || '').trim();
+  const name = String(comment.author_name || '').trim() || DEFAULT_AUTHOR;
   const body = String(comment.body || '').trim();
-  if (name.length < 2) throw new Error('姓名至少两个字');
   if (name.length > 40) throw new Error('姓名不能超过 40 个字');
   if (!body) throw new Error('请填写意见');
   if (body.length > 2000) throw new Error('意见不能超过 2000 个字');
   const kind = comment.kind || 'function';
   if (!KINDS.has(kind)) throw new Error('不支持的修改类型');
-  return { ...comment, author_name: name, body, kind };
+  const status = comment.status || 'open';
+  if (!STATUSES.has(status)) throw new Error('不支持的批注状态');
+  return { ...comment, author_name: name, body, kind, status };
 }
 
 function validateReply(reply) {
@@ -46,9 +48,9 @@ export function createCommentsStore({ url, key, fetchImpl = fetch }) {
     async list(pagePath) {
       const query = new URLSearchParams({
         select: 'id,seq,page_path,anchor,author_name,body,kind,status,created_at,updated_at,replies:eva_demo_comment_replies(id,author_name,body,created_at)',
-        page_path: `eq.${pagePath}`,
         order: 'created_at.desc',
       });
+      if (pagePath) query.set('page_path', `eq.${pagePath}`);
       return request(`${endpoint}?${query}`, { method: 'GET' });
     },
     async create(comment) {
@@ -63,7 +65,7 @@ export function createCommentsStore({ url, key, fetchImpl = fetch }) {
           author_name: valid.author_name,
           body: valid.body,
           kind: valid.kind,
-          status: 'open',
+          status: valid.status,
         }),
       });
       return rows[0];
@@ -90,6 +92,15 @@ export function createCommentsStore({ url, key, fetchImpl = fetch }) {
           body: valid.body,
         }),
       });
+      return rows[0];
+    },
+    async remove(id) {
+      const query = new URLSearchParams({ id: `eq.${id}` });
+      const rows = await request(`${endpoint}?${query}`, {
+        method: 'DELETE',
+        headers: { Prefer: 'return=representation' },
+      });
+      if (!rows[0]) throw new Error('批注不存在或没有删除权限');
       return rows[0];
     },
   };
