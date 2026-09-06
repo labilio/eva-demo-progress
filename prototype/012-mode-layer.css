@@ -400,6 +400,16 @@
   height: 20px !important;
 }
 
+.eva-nav-section.is-collapsed .eva-my-ai-collaboration-icon__ring {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.eva-nav-section.is-collapsed .eva-my-ai-collaboration-icon__bot {
+  width: 7px !important;
+  height: 7px !important;
+}
+
 .eva-nav-section.is-collapsed .eva-nav-entry [class*="text-14px"] {
   display: block;
   max-width: 100%;
@@ -471,6 +481,42 @@
   line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.eva-my-ai-collaboration-icon {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  display: block;
+  color: currentColor;
+}
+
+.eva-my-ai-collaboration-icon__ring,
+.eva-my-ai-collaboration-icon__bot {
+  position: absolute;
+  display: block;
+  color: currentColor;
+}
+
+.eva-my-ai-collaboration-icon__ring {
+  top: 2px;
+  left: 2px;
+}
+
+.eva-my-ai-collaboration-icon__bot--top {
+  top: -1px;
+  left: 6px;
+}
+
+.eva-my-ai-collaboration-icon__bot--left {
+  bottom: 0;
+  left: 0;
+}
+
+.eva-my-ai-collaboration-icon__bot--right {
+  right: 0;
+  bottom: 0;
 }
 
 .eva-personal-entry.is-collapsed {
