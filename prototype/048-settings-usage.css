@@ -10,6 +10,8 @@
 .eva-settings-dialog__layout>nav .semi-button{justify-content:flex-start;margin-bottom:4px;font-size:13px;font-weight:500;line-height:20px;min-height:34px;border-radius:var(--gds-radius-control);color:var(--semi-color-text-1)}
 .eva-settings-dialog__layout>nav .semi-button[aria-current="page"]{color:var(--semi-color-primary)}
 .eva-settings-dialog__content{flex:1;min-width:0;overflow:auto;padding:20px 24px}
+.sider-footer.shrink-0{padding-top:4px;padding-bottom:4px}
+.eva-account-switcher.semi-button{min-height:32px;padding-top:0;padding-bottom:0}
 .eva-settings-trigger{flex:none;display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--semi-color-text-2);cursor:pointer}
 .eva-settings-trigger:hover{background:var(--semi-color-fill-0);color:var(--semi-color-text-0)}
 .eva-usage{max-width:960px;margin:0 auto;padding:0}
