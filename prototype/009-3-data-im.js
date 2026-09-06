@@ -6,12 +6,6 @@
       { id: 'im-delivery', name: '项目交付推进', color: '#66789e', unread: 0, members: 5, lastAt: '2026-09-04T17:30:00+08:00', threads: [], demoOnly: true },
       { id: 'im-review', name: '方案评审', color: '#5f8798', unread: 0, members: 4, lastAt: '2026-09-04T16:42:00+08:00', threads: [], demoOnly: true },
       { id: 'im-meeting', name: '会议跟进', color: '#9a8062', unread: 0, members: 5, lastAt: '2026-09-04T15:40:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-ai-focus', name: '整理今天的工作重点', color: '#7567d8', unread: 0, members: 2, lastAt: '2026-09-04T10:28:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-ai-drive', name: '云盘权限方案梳理', color: '#7567d8', unread: 0, members: 2, lastAt: '2026-09-04T10:18:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-ai-meeting', name: '会议纪要与待办', color: '#7567d8', unread: 0, members: 2, lastAt: '2026-09-03T18:20:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-pilot-trip', name: '明天的出差行程', color: '#4b91b8', unread: 0, members: 2, lastAt: '2026-09-02T17:15:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-pilot-client', name: '客户拜访准备', color: '#4b91b8', unread: 0, members: 2, lastAt: '2026-09-02T16:25:00+08:00', threads: [], demoOnly: true },
-      { id: 'im-pilot-brief', name: '本周飞行简报', color: '#4b91b8', unread: 0, members: 2, lastAt: '2026-09-02T15:30:00+08:00', threads: [], demoOnly: true }
     ],
     messages: {
       'im-eva-octo': [
@@ -42,37 +36,6 @@
         { kind: 'text', sender: { uid: 'u-kangzhixi', name: '康执玺', color: '#4c83a5', online: true }, time: '15:22', text: '刚才会议里有结论、有行动项，也有一个待确认风险。' },
         { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '15:24', text: '@王宜林的 Eva 助理 按这三类整理，并把行动项转成任务。', mentions: [{ name: '@王宜林的 Eva 助理', uid: 'b-wangyilin' }] },
         { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 Eva 助理', color: '#7567d8', ai: true, online: true }, time: '15:28', text: '已完成分类：结论 2 项、行动项 3 项、待确认风险 1 项。行动项已转成任务并关联到原会议。' }
-      ],
-      'im-ai-focus': [
-        { kind: 'divider', text: '9月4日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '10:26', text: '帮我把今天要推进的事情排一下优先级。' },
-        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 Eva 助理', color: '#7567d8', ai: true, online: true }, time: '10:28', text: '建议先处理三件事：\n1. 确认项目群聊的任务归属；\n2. 补齐通讯录中的 AI 身份；\n3. 下午评审前检查 Demo 的关键跳转。' },
-        { kind: 'taskcard', sender: { uid: 'b-wangyilin', name: '王宜林的 Eva 助理', color: '#7567d8', ai: true, online: true }, time: '10:28', note: '已创建待办：Demo 评审前检查 · 今天 17:30' }
-      ],
-      'im-ai-drive': [
-        { kind: 'divider', text: '9月4日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '10:12', text: '把云盘权限方案压缩成一个能评审的版本。' },
-        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 Eva 助理', color: '#7567d8', ai: true, online: true }, time: '10:18', text: '核心边界可以收敛为：个人文件默认私有，团队文件继承项目权限，跨项目分享必须显式授权。评审时重点确认继承关系和失效后的回收规则。' }
-      ],
-      'im-ai-meeting': [
-        { kind: 'divider', text: '9月3日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '18:12', text: '把刚才会议里的结论和待办分开。' },
-        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 Eva 助理', color: '#7567d8', ai: true, online: true }, time: '18:20', text: '结论：新版导航继续使用当前方案；团队 IM 全部进入统一内核。\n待办：补齐我的 AI 多身份入口，并同步更新通讯录展示。' }
-      ],
-      'im-pilot-trip': [
-        { kind: 'divider', text: '9月2日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '17:08', text: '明天去杭州，把行程整理得紧凑一点。' },
-        { kind: 'text', sender: { uid: 'b-pilot', name: '飞行员E号（王宜林的分身）', color: '#4b91b8', ai: true, online: true }, time: '17:15', text: '建议 08:30 出发，上午留给客户沟通，午后安排现场确认，返程前预留 40 分钟整理结论。关键材料已按出发、会议、返程三个阶段归类。' }
-      ],
-      'im-pilot-client': [
-        { kind: 'divider', text: '9月2日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '16:18', text: '客户拜访前我还需要准备什么？' },
-        { kind: 'text', sender: { uid: 'b-pilot', name: '飞行员E号（王宜林的分身）', color: '#4b91b8', ai: true, online: true }, time: '16:25', text: '还需要确认参会人、目标问题、可现场演示的版本，以及会后负责人。建议把演示链路提前离线走一遍，并准备一页异常兜底说明。' }
-      ],
-      'im-pilot-brief': [
-        { kind: 'divider', text: '9月2日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '15:24', text: '给我一份本周推进简报。' },
-        { kind: 'text', sender: { uid: 'b-pilot', name: '飞行员E号（王宜林的分身）', color: '#4b91b8', ai: true, online: true }, time: '15:30', text: '本周已完成导航结构统一和个人会话三栏改造；正在收口团队 IM 内核。下一步是核对通讯录身份展示和关键入口切换一致性。' }
       ]
     }
   };

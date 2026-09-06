@@ -1,6 +1,12 @@
 (function (root) {
   'use strict';
   root.__evaPatch('general', function (source) {
+        var evaRelease = root.__EVA_RELEASE;
+        if (!evaRelease || !/^\d{2}-\d{2} v\d+$/.test(evaRelease.version || '') || !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(evaRelease.updatedAt || '')) {
+          throw new Error('release.json 缺失或格式错误');
+        }
+        var evaReleaseRevision = evaRelease.version.split(' ')[1];
+        var evaReleaseDate = evaRelease.updatedAt.slice(0, 10);
         var projectDirectoryComponentSource = String.raw`EvaPinIcon=createLucideIcon("pin",[["path",{d:"M12 17v5",key:"eva-pin-stem"}],["path",{d:"M5 17h14",key:"eva-pin-base"}],["path",{d:"M15 3.3a1 1 0 0 1 .7 1.7L13 7.7V12l1.8 1.8a1 1 0 0 1-.7 1.7H9.9a1 1 0 0 1-.7-1.7L11 12V7.7L8.3 5A1 1 0 0 1 9 3.3z",key:"eva-pin-body"}]]),EvaPinOffIcon=createLucideIcon("pin-off",[["path",{d:"M12 17v5",key:"eva-pin-off-stem"}],["path",{d:"M7 17h10",key:"eva-pin-off-base"}],["path",{d:"M5 5l14 14",key:"eva-pin-off-slash"}],["path",{d:"M15 3.3a1 1 0 0 1 .7 1.7L14 6.7",key:"eva-pin-off-top"}],["path",{d:"M10.3 10.3 11 9.6V7.7L8.3 5A1 1 0 0 1 9 3.3h1",key:"eva-pin-off-body"}]]),EvaProjectList=Object.assign(({dataSource:evaDataSource=[],renderItem:evaRenderItem,emptyContent:evaEmptyContent,className:evaClassName=""})=>React.createElement("div",{className:evaClassName,role:"list"},evaDataSource.length?evaDataSource.map(evaRenderItem):evaEmptyContent),{Item:({header:evaHeader,main:evaMain,extra:evaExtra,className:evaClassName="",...evaProps})=>React.createElement("div",{...evaProps,className:evaClassName},evaHeader,evaMain,evaExtra)}),EvaProjectDirectory=({spaces:evaSpaces,onEnter:evaEnter,onCreate:evaCreate,onSeed:evaSeed})=>{
           const[evaCreateOpen,setEvaCreateOpen]=reactExports.useState(!1),[evaProjectName,setEvaProjectName]=reactExports.useState(""),[evaPinnedIds,setEvaPinnedIds]=reactExports.useState(()=>{try{const evaRaw=localStorage.getItem("eva:pinned-project-ids:v2");if(evaRaw===null)return["drive-design"];const evaSaved=JSON.parse(evaRaw||"[]");return Array.isArray(evaSaved)?evaSaved.slice(0,6):["drive-design"]}catch{return["drive-design"]}}),[evaOrganizationProjects,setEvaOrganizationProjects]=reactExports.useState([]);
           reactExports.useEffect(()=>{try{localStorage.setItem("eva:pinned-project-ids:v2",JSON.stringify(evaPinnedIds))}catch{}},[evaPinnedIds]);
@@ -16,7 +22,7 @@
         var replacements = [
           [
             '最近更新：2026-09-04 20:28',
-            '最近更新：2026-09-06 13:55'
+            '最近更新：' + evaRelease.updatedAt
           ],
           [
             'function isPwaRegistrationSupported(){if(typeof window>"u"||typeof navigator>"u"||isElectronDesktop()||!("serviceWorker"in navigator))return!1;',
@@ -24,7 +30,7 @@
           ],
           [
             'function titleForPath(rt,ct){return rt.startsWith("/login")?ct("login.pageTitle"):"Eva 同学"}',
-            'function titleForPath(rt,ct){return rt.startsWith("/login")?ct("login.pageTitle"):"Eva · 2026-09-06 · v1"}'
+            'function titleForPath(rt,ct){return rt.startsWith("/login")?ct("login.pageTitle"):"Eva · ' + evaReleaseDate + ' · ' + evaReleaseRevision + '"}'
           ],
           [
             'BY_SPACE={agents:{[SPACE_DATA_KEY]:AGENTS},squads:{[SPACE_DATA_KEY]:SQUADS},skills:{[SPACE_DATA_KEY]:SKILLS},autopilots:{[SPACE_DATA_KEY]:AUTOPILOTS},projects:{[SPACE_DATA_KEY]:PROJECTS},members:{[SPACE_DATA_KEY]:MEMBERS}}',

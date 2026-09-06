@@ -106,12 +106,10 @@
         '<img class="semi-avatar semi-avatar-circle eva-contacts__avatar" src="' + escapeHTML(avatar(person.name)) + '" alt="">' +
         '<strong class="eva-contacts__person-name">' + escapeHTML(person.name) + '</strong></span>';
       var aiRows = person.ais.map(function (identity) {
-        var botAvatar = '<span class="eva-identity-avatar eva-identity-avatar--contact" role="img" aria-label="' + escapeHTML(identity.name + '，AI 分身，' + ownerLabel) + '">' +
-          '<img class="eva-identity-avatar__logo" src="' + escapeHTML(window.__EVA_COLLEAGUE_PORTRAIT) + '" alt="">' +
-          '<img class="eva-identity-avatar__owner" src="' + escapeHTML(avatar(person.name)) + '" alt="" title="' + escapeHTML(ownerLabel) + '"></span>';
+        var botAvatar = window.EvaAIIdentity.avatar({name:identity.name,sourceName:'Eva',logo:window.__EVA_COLLEAGUE_PORTRAIT,ownerName:person.name,ownerAvatar:avatar(person.name)},32);
         return '<span class="eva-contacts__ai-row">' + botAvatar +
           '<span class="eva-contacts__ai-identity"><strong class="eva-contacts__ai-name">' + escapeHTML(identity.name) + '</strong>' +
-          '<span class="ai-badge ai-badge-small">AI</span></span></span>';
+          window.EvaAIIdentity.badge() + '</span></span>';
       }).join('');
       var ai = '<span class="eva-contacts__cell eva-contacts__cell--ai eva-contacts__cell--ai-list">' + aiRows + '</span>';
       return '<li class="semi-list-item eva-contacts__person" role="listitem">' +
