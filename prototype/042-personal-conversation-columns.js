@@ -5,11 +5,25 @@
   var historyNode = null;
   var historyDivider = null;
   var tuneQueued = false;
-  var personalAssistants = [
-    { id: 'assistant-general', name: '通用助理' },
-    { id: 'assistant-rd', name: 'Eva研发助理' }
-  ];
-  window.__EVA_PERSONAL_ASSISTANTS = personalAssistants;
+  var aiTeamStore = window.EvaAITeam;
+  if (!aiTeamStore) throw new Error('EvaAITeam must load before personal assistant columns');
+  var personalAssistants = aiTeamStore.getSnapshot().localAssistants;
+  function assistantListSignature(assistants) {
+    return JSON.stringify(assistants.map(function (assistant) { return [assistant.id, assistant.name]; }));
+  }
+  var assistantSignature = assistantListSignature(personalAssistants);
+  // Legacy editor reads this list; the store remains its only owner.
+  Object.defineProperty(window, '__EVA_PERSONAL_ASSISTANTS', {
+    configurable: true,
+    get: function () { return aiTeamStore.getSnapshot().localAssistants; }
+  });
+  aiTeamStore.subscribe(function () {
+    personalAssistants = aiTeamStore.getSnapshot().localAssistants;
+    var nextSignature = assistantListSignature(personalAssistants);
+    if (nextSignature === assistantSignature) return;
+    assistantSignature = nextSignature;
+    queueTune();
+  });
   function sidebar() {
     return document.querySelector('aside.arco-layout-sider') || document.querySelector('aside');
   }
@@ -129,17 +143,16 @@
     var settings = options || {};
     var name = String(settings.name || '').trim();
     if (!name) return false;
-    if (settings.mode === 'edit') {
-      var assistant = personalAssistants.find(function (item) { return item.id === settings.id; });
-      if (!assistant) return false;
-      assistant.name = name;
-    } else {
-      personalAssistants.push({ id: 'assistant-' + Date.now().toString(36), name: name });
+    try {
+      aiTeamStore.saveLocalAssistant({
+        mode: settings.mode === 'edit' ? 'edit' : 'create',
+        id: settings.id,
+        name: name,
+        configuration: settings.configuration
+      });
+    } catch (_) {
+      return false;
     }
-    var tree = document.querySelector('#eva-personal-history-column > .eva-assistant-tree');
-    if (tree) tree.dataset.signature = '';
-    var column = document.getElementById('eva-personal-history-column');
-    if (column) ensureAssistantTree(column);
     return true;
   };
 

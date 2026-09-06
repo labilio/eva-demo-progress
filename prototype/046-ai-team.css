@@ -1,0 +1,288 @@
+/* AI Team-specific surfaces use GDS semantic tokens. The conversation remains Octo IM.
+ * The 336px rail is Eva's existing team rail, not GDS's personal 260px shell. */
+.eva-ai-team {
+  display: flex;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--gds-color-surface-primary);
+  color: var(--gds-color-text-primary);
+  font-family: var(--gds-font-family-sans);
+  font-size: var(--gds-type-label-font-size);
+  line-height: var(--gds-type-label-line-height);
+}
+.eva-ai-team__sidebar {
+  flex: 0 0 var(--eva-conversation-rail-width, 336px);
+  width: var(--eva-conversation-rail-width, 336px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: var(--gds-border-standard) solid var(--gds-color-border-faint);
+}
+.eva-ai-team__sidebar-header {
+  flex-shrink: 0;
+  padding: var(--gds-space-4);
+  border-bottom: var(--gds-border-standard) solid var(--gds-color-border-faint);
+}
+.eva-ai-team__sidebar-header h2 {
+  margin: 0 0 var(--gds-space-3);
+  font-size: var(--gds-type-header-font-size);
+  line-height: var(--gds-type-header-line-height);
+  font-weight: var(--gds-font-weight-medium);
+}
+.eva-ai-team__sidebar-header > div {
+  display: flex;
+  gap: var(--gds-space-2);
+}
+.eva-ai-team__roles {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--gds-space-3) var(--gds-space-2);
+}
+.eva-ai-team__role + .eva-ai-team__role { margin-top: var(--gds-space-5); }
+.eva-ai-team__role-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--gds-space-2);
+  margin: 0;
+  padding: var(--gds-space-2) var(--gds-space-2);
+  justify-content: space-between;
+  color: var(--gds-color-text-secondary-accessible);
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+  font-weight: var(--gds-font-weight-medium);
+}
+.eva-ai-team__role-heading h3 {
+  margin: 0;
+  font: inherit;
+}
+.eva-ai-team__identity { margin-bottom: var(--gds-space-2); }
+.eva-ai-team__identity-button,
+.eva-ai-team__session {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--gds-space-8);
+  border: 0;
+  border-radius: var(--gds-radius-control);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.eva-ai-team__identity-button {
+  display: grid;
+  grid-template-columns: var(--gds-icon-size-navigation) minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--gds-space-2);
+  row-gap: var(--gds-space-1);
+  padding: var(--gds-space-2) var(--gds-space-2);
+  font-weight: var(--gds-font-weight-medium);
+}
+.eva-ai-team__identity-button > svg { flex-shrink: 0; }
+.eva-ai-team__identity-button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.eva-ai-team__identity-meta {
+  display: block;
+  padding: 0;
+  color: var(--gds-color-text-secondary-accessible);
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+}
+.eva-ai-team__identity-button > .eva-ai-team__identity-meta {
+  grid-column: 2;
+  white-space: normal;
+  font-weight: var(--gds-font-weight-regular);
+}
+.eva-ai-team__sessions { padding-left: var(--gds-space-6); }
+.eva-ai-team__session {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--gds-space-2);
+  row-gap: var(--gds-space-1);
+  padding: var(--gds-space-2);
+}
+.eva-ai-team__session-title,
+.eva-ai-team__session-preview {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eva-ai-team__session-title { grid-column: 1; }
+.eva-ai-team__session-preview {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  color: var(--gds-color-text-secondary-accessible);
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+}
+.eva-ai-team__session-time {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  white-space: nowrap;
+  color: var(--gds-color-text-secondary-accessible);
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+}
+.eva-ai-team__identity-button:hover,
+.eva-ai-team__session:hover { background: var(--gds-color-overlay-hover); }
+.eva-ai-team__identity-button.is-selected,
+.eva-ai-team__session.is-selected {
+  background: var(--gds-color-surface-subtle);
+  color: var(--gds-color-action-primary);
+}
+.eva-ai-team__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.eva-ai-team__main > .ch-layout { flex: 1; min-height: 0; }
+.eva-ai-team__toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gds-space-3);
+  padding: var(--gds-space-3) var(--gds-space-20) var(--gds-space-3) var(--gds-space-4);
+  border-bottom: var(--gds-border-standard) solid var(--gds-color-border-faint);
+}
+.eva-ai-team__toolbar > div { flex: 1; min-width: 0; }
+.eva-ai-team__toolbar > .semi-button { flex-shrink: 0; }
+.eva-ai-team__toolbar h2,
+.eva-ai-team__toolbar strong {
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--gds-type-header-font-size);
+  line-height: var(--gds-type-header-line-height);
+  font-weight: var(--gds-font-weight-medium);
+}
+.eva-ai-team__toolbar-meta {
+  color: var(--gds-color-text-secondary-accessible);
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+}
+.eva-ai-team__empty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--gds-space-3);
+  padding: var(--gds-space-8);
+  color: var(--gds-color-text-secondary);
+  text-align: center;
+}
+.eva-ai-team__empty h2 {
+  margin: 0;
+  color: var(--gds-color-text-primary);
+  font-size: var(--gds-type-header-font-size);
+  font-weight: var(--gds-font-weight-medium);
+}
+.eva-ai-team__empty p { max-width: 36em; margin: 0; }
+.eva-ai-team__notice,
+.eva-ai-team__error {
+  margin: var(--gds-space-2) var(--gds-space-3);
+  padding: var(--gds-space-2) var(--gds-space-3);
+  border-radius: var(--gds-radius-control);
+  background: var(--gds-color-surface-subtle);
+  color: var(--gds-color-text-secondary);
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+  overflow-wrap: anywhere;
+}
+.eva-ai-team__error { border: var(--gds-border-standard) solid var(--gds-color-border-default); }
+/* The portal belongs to the route host below the shared client titlebar. */
+.eva-ai-team__modal-host {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+.eva-ai-team__modal-host > .semi-portal,
+.eva-ai-team__modal-host .semi-modal-mask,
+.eva-ai-team__modal-host .semi-modal-wrap {
+  position: absolute;
+  inset: 0;
+}
+.eva-ai-team__modal-host .semi-modal-mask,
+.eva-ai-team__modal-host .semi-modal-wrap { pointer-events: auto; }
+.eva-ai-team__modal-host .semi-modal-mask { background: var(--gds-color-overlay-dismiss); }
+.eva-ai-team__modal-host .semi-modal-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gds-space-6);
+  overflow: auto;
+}
+.eva-ai-team__modal-host .semi-modal {
+  top: auto;
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+.eva-ai-team__modal-host .semi-modal-content {
+  pointer-events: auto;
+  border-radius: var(--gds-radius-panel);
+  background: var(--gds-color-surface-primary);
+  box-shadow: var(--gds-shadow-floating), var(--gds-shadow-hairline);
+}
+.eva-ai-team__form,
+.eva-ai-team__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gds-space-4);
+}
+.eva-ai-team__field { display: flex; flex-direction: column; gap: var(--gds-space-2); }
+.eva-ai-team__field label { font-weight: var(--gds-font-weight-medium); }
+.eva-ai-team__field .semi-select {
+  width: 100%;
+  min-height: var(--gds-space-10);
+  padding: var(--gds-space-2) var(--gds-space-3);
+  border: var(--gds-border-standard) solid var(--gds-color-border-default);
+  border-radius: var(--gds-radius-control);
+  color: var(--gds-color-text-primary);
+  background: var(--gds-color-surface-primary);
+  font: inherit;
+}
+.eva-ai-team__detail-row {
+  display: grid;
+  grid-template-columns: 7em minmax(0, 1fr);
+  gap: var(--gds-space-3);
+  padding-bottom: var(--gds-space-3);
+  border-bottom: var(--gds-border-standard) solid var(--gds-color-border-faint);
+  overflow-wrap: anywhere;
+}
+.eva-ai-team__detail-row > span:first-child { color: var(--gds-color-text-secondary-accessible); }
+.eva-ai-team__detail-row > span:last-child { margin: 0; white-space: pre-wrap; }
+.eva-ai-team__sidebar .semi-button,
+.eva-ai-team__toolbar .semi-button,
+.eva-ai-team__modal-host .semi-button { min-height: var(--gds-space-8); border-radius: var(--gds-radius-control); }
+.eva-ai-team__sidebar .semi-button-primary:not(.semi-button-borderless):not(.semi-button-light):not(.semi-button-disabled),
+.eva-ai-team__modal-host .semi-button-primary:not(.semi-button-borderless):not(.semi-button-light):not(.semi-button-disabled) {
+  background: var(--gds-color-action-primary);
+  color: var(--gds-color-action-primary-text);
+}
+.eva-ai-team__identity-button:focus-visible,
+.eva-ai-team__session:focus-visible,
+.eva-ai-team__field .semi-select:focus-visible,
+.eva-ai-team__sidebar .semi-button:focus-visible,
+.eva-ai-team__toolbar .semi-button:focus-visible,
+.eva-ai-team__modal-host .semi-button:focus-visible {
+  outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
+  outline-offset: var(--gds-space-0-5);
+}

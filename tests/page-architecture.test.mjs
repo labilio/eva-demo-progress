@@ -56,11 +56,14 @@ test('个人 Eva 主入口进入个人三栏页且加号仅作提示', () => {
   assert.match(personalColumns, /#\/guid/);
 });
 
-test('个人 Eva 中栏与团队我的 AI 共用双操作顶部结构', () => {
+test('个人创建入口保留，团队通过连接助理与创建分身组织来源', () => {
   const personalColumns = read('prototype/042-personal-conversation-columns.js');
   const imPatch = read('prototype/009-5-patch-im.js');
 
-  assert.match(imPatch, /eva-my-ai-sidebar-actions/);
+  assert.match(imPatch, /连接助理/);
+  assert.match(imPatch, /创建分身/);
+  assert.match(imPatch, /store\.connectAssistant/);
+  assert.match(imPatch, /store\.createPersona/);
   assert.match(personalColumns, /eva-my-ai-sidebar-actions eva-personal-sidebar-actions/);
   assert.match(personalColumns, /eva-my-ai-sidebar-actions__create-assistant/);
   assert.match(personalColumns, />创建助理<\/button>/);

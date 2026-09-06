@@ -1,6 +1,7 @@
 import { readActiveSource } from './lib/read-active-source.mjs';
+import { createPatchedRuntime } from '../tools/build-runtime.mjs';
 
-const source = readActiveSource();
+const source = readActiveSource() + '\n' + createPatchedRuntime().source;
 const failures = [];
 
 function requireText(text, message) {
@@ -18,15 +19,16 @@ requireText('key:evaMessageMode,source:rt', 'ChannelsView is reused with stale i
 requireText('sidebarVariant:"ai-sessions"', 'My AI does not declare the assistant/session sidebar variant');
 requireText('conversationKind:"openclaw-session"', 'My AI child rows are not identified as OpenClaw sessions');
 requireText('identityAvatarUrl:', 'My AI sessions do not carry their parent AI identity avatar');
-requireText('avatarUrl:', 'My AI identity groups do not provide an avatar');
-requireText('wk-category-header__identity-avatar', 'the shared category header cannot render an AI identity avatar');
-requireText('wk-conv-compact-item--session', 'the shared conversation item has no session-row presentation');
-requireText('eva-my-ai-sidebar-actions', 'My AI is missing separate create-assistant and new-session actions');
+requireText('function EvaAITeamPage()', 'My AI has no React role controller');
+requireText('!ct?.conversationOnly&&React.createElement', 'My AI mounts the legacy sidebar alongside its role sidebar');
+requireText('key:draftKey,source', 'identity/session changes do not reset shared IM state');
+requireText('store.sendMessage(', 'My AI send does not use the canonical session store');
+requireText('store.setDraft(', 'My AI drafts are not scoped in the canonical store');
+requireText('store.subscribe', 'My AI does not observe canonical identity data');
+requireText('暂无可用的数字员工', 'My AI does not disclose the digital employee integration boundary');
 requireText('Sa.identityAvatarUrl??', 'the shared conversation header does not use the selected session identity avatar');
-requireText('split("\\\\n")', 'runtime-generated session previews contain an unescaped newline and will blank the app');
 requireText('ct?.sidebarVariant!=="ai-sessions"', 'My AI still renders the team-only subzone action');
 requireText('!fa&&ct?.sidebarVariant!=="ai-sessions"&&Zi.push', 'My AI message context menus still expose the team-only create-subzone action');
-requireText('[data-eva-message-mode="my-ai"] .wk-sidebar-tabbar', 'My AI still exposes the team IM focus/recent switcher');
 requireText('b-wangyilin|b-pilot', 'AI assistant message avatars are not resolved from their identity source');
 requireText('!/[?&]evaIM=my-ai/.test(hash)', 'group-creation controls must not appear in My AI');
 forbidText("event.target.closest('[data-eva-my-avatar-nav]')", 'a DOM capture layer still intercepts the My AI navigation entry');
