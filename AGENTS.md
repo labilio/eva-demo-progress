@@ -162,10 +162,15 @@ git diff --check
 
 ## Git、发布与验收状态
 
-- 本项目生产发布链路固定为：本地修改 → 在用户明确授权后 commit → push 到 GitHub `main` → Vercel 自动部署。禁止默认执行 `vercel deploy`；只有用户明确要求临时 Preview Deployment 或排查 Vercel CLI 时才允许手动部署。
-- “完成后部署”不等于自动获得 commit 或 push 权限。用户要求“不 commit”时只保留本地工作区；没有新的明确授权，不得为触发 Vercel 而自行提交或推送。
+- 多电脑、多人和多个 AI 的完整协作流程以根目录 `CONTRIBUTING.md` 为准。任何没有历史上下文的执行者，开始任务前必须先阅读本文件和 `CONTRIBUTING.md`。
+- 禁止直接在 `main` 开发、提交或 push。每个任务必须从最新 `origin/main` 创建独立功能分支；允许 AI 自动提交并 push 功能分支、创建 PR、获取 Vercel Preview 和执行检查。
+- “合并 `main`”与“更新版本号”是同一个正式发布动作。只有用户在当前任务中人工明确确认“合并上线”等同等语义后，AI 才能运行 `npm run release:bump`、合并 PR 并删除分支；过去授权、普通 push 或 Preview 验收不能替代本次确认。
+- 正式版本号与最近更新时间的唯一数据源是根目录 `release.json`。不得在页面、补丁、CSS 或其他数据文件维护第二份；功能分支日常提交不得修改它。
+- PR 必须等待 `.github/workflows/quality.yml` 通过，并填写 Vercel Preview、目标 commit 和验证结果。Preview 是评审环境，不得被表述为 Production。
+- 本项目生产发布链路固定为：功能分支修改与提交 → push 功能分支 → Vercel Preview 验收 → 人工确认 → 更新 `release.json` → PR 合并 `main` → Vercel 自动部署 Production。禁止默认执行 `vercel deploy`；只有用户明确要求临时部署或排查 Vercel CLI 时才允许手动部署。
+- 功能分支的 commit、push、Preview 和 PR 属于正常交付步骤，可由 AI 自动完成；用户明确要求“不 commit”或“不 push”时除外。任何情况下，功能分支权限都不能推导出合并或 push `main` 的权限。
 - 任何进度汇报都必须区分四种状态：`本地已修改`、`GitHub main 已推送`、`Vercel 已部署`、`浏览器已验收`。后一状态不能由前一状态推导，必须分别有 Git、Vercel 和浏览器证据。
-- push 后等待 Vercel 自动部署，确认部署对应目标 commit，再进行线上浏览器检查。页面显示旧内容时先核对 commit、部署状态、缓存和页面“最近更新时间”，不得通过额外手动部署掩盖发布链路问题。
+- 功能分支 push 后核对 Vercel Preview 与目标 commit；PR 合并后再核对 Vercel Production 与 `main` 的目标 commit。页面显示旧内容时先检查 commit、部署状态和缓存，不得通过额外手动部署掩盖发布链路问题。
 - 每轮交付至少运行 `node scripts/verify-project-contract.mjs` 和与本次修改相关的专项检查；若声称视觉或交互已完成，还必须提供目标版本的浏览器实测证据。
 
 ## 云端批注与评审

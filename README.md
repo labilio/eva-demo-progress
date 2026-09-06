@@ -2,6 +2,8 @@
 
 Eva 桌面端交互原型的在线进度预览。
 
+多人、多电脑和 AI 协作请先阅读 [`CONTRIBUTING.md`](CONTRIBUTING.md)。普通开发使用功能分支和 Vercel Preview；`main` 只接收经过人工确认的正式发布。
+
 ## 当前入口
 
 - 唯一页面入口：`index.html`
