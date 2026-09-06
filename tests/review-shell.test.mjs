@@ -112,8 +112,8 @@ test('review panel and launcher can move, collapse, hide, and restore without ch
 });
 
 test('review launcher starts below the top bar at the right edge without a comment count', () => {
-  assert.match(styles, /\.eva-review-launcher\{[^}]*top:calc\(var\(--topbar-height,52px\) \+ 12px\);right:0;/);
+  assert.match(styles, /\.eva-review-launcher\{[^}]*right:0;bottom:112px;/);
   assert.doesNotMatch(source, /data-review-badge/);
-  assert.match(source, /eva-review-launcher-position-v2/);
+  assert.match(source, /eva-review-launcher-position-v3/);
   assert.doesNotMatch(source, /['"]eva-review-launcher-position['"]/);
 });
