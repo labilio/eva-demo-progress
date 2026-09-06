@@ -97,7 +97,7 @@
     }
     function MentionPicker({scopeId,visible,onClose,onChoose}){
       const s=useState(),members=scopeId&&store.canRead(scopeId,s.actorId)?store.groupMembers(scopeId):[];
-      return h(Modal,{className:'eva-members-modal',title:'提及成员',visible,onCancel:onClose,footer:null},h('p',{className:'eva-members-muted'},'仅显示当前群的人类和分身；全体成员只通知人类。'),h('div',{className:'eva-members-mention-list'},h(Button,{onClick:()=>{onChoose('全体成员');onClose();}},'全体成员（'+members.filter(m=>m.kind==='human').length+' 位人类）'),members.map(m=>h(Button,{key:m.id,theme:'borderless',onClick:()=>{onChoose(m.name);onClose();}},m.kind==='clone'?h(CloneIdentity,{clone:store.clone(m.id)}):h(HumanIdentity,{id:m.id})))));
+      return h(Modal,{className:'eva-members-modal',title:'提及成员',visible,onCancel:onClose,footer:null},h('p',{className:'eva-members-muted'},'仅显示当前群的人类和分身；所有人只通知人类。'),h('div',{className:'eva-members-mention-list'},h(Button,{onClick:()=>{onChoose('所有人');onClose();}},'所有人（'+members.filter(m=>m.kind==='human').length+' 位人类）'),members.map(m=>h(Button,{key:m.id,theme:'borderless',onClick:()=>{onChoose(m.name);onClose();}},m.kind==='clone'?h(CloneIdentity,{clone:store.clone(m.id)}):h(HumanIdentity,{id:m.id})))));
     }
     const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,PlusIcon,CloseIcon,BackIcon,HumanIdentity,CloneIdentity,MemberPicker,humanItems,cloneItems,useState},store);
     return {ChatSettings,AccountSwitcher,InvitationMailbox,Members,CloneChoice,ActorPicker,useState,CreateGroup,GroupInvitations,FileTransfer,MentionPicker};

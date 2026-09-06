@@ -91,6 +91,21 @@
         });
       }
     } catch (_) { warning = '无法读取已保存的数据，已恢复初始内容。'; }
+    // Add review stories once; preserve edited conversations, drafts and later deletions.
+    if (options.profile === 'review' && !state.reviewStoriesVersion && window.__EVA_IM_DEMO?.aiTeamSessions) {
+      const base = new Date(window.__EVA_DEMO_TIME.AI_REVIEW_START).getTime();
+      window.__EVA_IM_DEMO.aiTeamSessions.forEach(story => {
+        const identity = state.identities.find(i => i.id === story.identityId);
+        if (!identity) return;
+        const old = state.sessions.find(s => s.id === story.id);
+        const placeholder = old && old.messages.length === 1 && ['team-seed-0','team-seed-1'].includes(old.messages[0].id);
+        const messages = story.messages.map((message, index) => ({id: story.id + '-story-' + index, kind: 'text', text: message.text, time: new Date(base + message.minute * 60000).toISOString(), sender: {uid: message.ai ? identity.id : 'self', name: message.ai ? identity.name : '我', color: '#1563EB', ai: message.ai}}));
+        const session = {id: old && !placeholder ? story.id + '-example' : story.id, identityId: identity.id, title: story.title, updatedAt: messages.at(-1).time, messages};
+        if (placeholder) Object.assign(old, session); else if (!state.sessions.some(s => s.id === session.id)) state.sessions.push(session);
+      });
+      state.reviewStoriesVersion = 1;
+      try { storage?.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { warning = '本地存储不可用，刷新后数据可能丢失。'; }
+    }
     state.storageWarning = warning;
     let snapshot = freeze(copy(state));
     const listeners = new Set(), connections = new Map(), syncTokens = new Map();
