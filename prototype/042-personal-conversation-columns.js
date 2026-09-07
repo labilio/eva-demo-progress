@@ -34,7 +34,7 @@
 
   function historyIn(container) {
     return Array.from(container ? container.children : []).find(function (child) {
-      return String(child.className || '').indexOf('overflow-y-auto') >= 0;
+      return !child.querySelector('.eva-nav-section, [data-eva-nav-id]') && !!child.querySelector('.chat-history__item');
     }) || null;
   }
 
