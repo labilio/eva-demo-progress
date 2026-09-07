@@ -34,8 +34,10 @@ requireText('key:draftKey,source', 'identity/session changes do not reset shared
 requireText('store.sendMessage(', 'My AI send does not use the canonical session store');
 requireText('store.setDraft(', 'My AI drafts are not scoped in the canonical store');
 forbidText('eva-ai-team__toolbar', 'My AI must not add an identity toolbar above the shared IM header');
-requireText("className:'eva-ai-team__identity-action eva-ai-team__relation'", 'identity configuration is missing its link-icon entry');
-requireText('openDetails(i.id)', 'the identity configuration icon does not open the shared editor');
+forbidText('eva-ai-team__relation', 'My AI still renders the removed identity configuration link');
+forbidText('const LinkIcon=', 'My AI still defines the removed identity configuration icon');
+forbidText('const openDetails =', 'My AI still exposes the removed identity configuration action');
+forbidText("presentation:'ai-team-workspace'", 'My AI still opens the removed identity configuration workspace');
 forbidText("Dropdown.Item,{onClick:()=>newConversation(i.id)},'新建会话'", 'the identity menu duplicates the dedicated new-session plus action');
 forbidText("Dropdown.Item,{onClick:()=>openDetails(i.id)},'查看配置'", 'identity configuration still uses the obsolete overflow menu');
 requireText('store.subscribe', 'My AI does not observe canonical identity data');
