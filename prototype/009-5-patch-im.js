@@ -12,14 +12,15 @@ function EvaAIIdentityAvatar({appearance,size=32}) {
 
 function EvaInlineProjectPanel({projectId}) {
   const h=React.createElement;
-  const spaces=loadSpaces();
+  const [spaces,setSpaces]=reactExports.useState(()=>loadSpaces());
   const [activeProjectId,setActiveProjectId]=reactExports.useState(projectId);
   reactExports.useEffect(()=>setActiveProjectId(projectId),[projectId]);
   const space=spaces.find(item=>item.id===activeProjectId);
   if(!space)return null;
+  setCurrentSpace(space.id,space.name);
   return h('section',{className:'eva-inline-project-panel','aria-label':space.name+' 项目页面'},
     h('div',{className:'eva-inline-project-panel__body'},
-      h(SpaceFrame,{key:space.id,space,spaces,onSwitch:setActiveProjectId})));
+      h(SpaceFrame,{key:space.id,space,spaces,onSwitch:setActiveProjectId,onProjectUpdated:setSpaces})));
 }
 
 function EvaAssistantSourceCards({sources,value,disabled,onChange}) {
@@ -378,6 +379,14 @@ function EvaAITeamPage() {
     cut("const Zi=Va.trim();return ci.filter(Fi=>!Zi||Fi.name.includes(Zi)||(Fi.crumb??\"\").includes(Zi)).sort((Fi,Ki)=>Ki.at.localeCompare(Fi.at))},[pt,Va,oa,ct])","return ci.sort((Fi,Ki)=>Ki.at.localeCompare(Fi.at))},[pt,oa,ct])","移除群聊搜索 5");
     cut("projectId:evaMembershipProjectId}),wi,Ai,","projectId:evaMembershipProjectId}),Ai,","移除群聊搜索 6");
     cut("ii=ci=>{const Zi=SENDERS[ci];if(!Zi)return;Fa(\"\"),ir(\"recent\");const Fi=pt.find(ro=>ro.members===2&&ro.name===Zi.name);if(Fi){La(Fi.id);return}const Ki={id:`dm-${ci}`,name:Zi.name,color:Zi.color,unread:0,members:2,category:NO_CAT,lastAt:new Date().toISOString(),threads:[]};mt(ro=>[...ro,Ki]),La(Ki.id)},Ei=reactExports.useMemo(()=>{const ci=Va.trim();return!ut||!ci?[]:searchPeople(ci).filter(Zi=>Zi.uid!==ME&&!Zi.ai).slice(0,6)},[ut,Va]),wi=Ei.length>0&&React.createElement(\"div\",{className:\"ch-contacts\"},React.createElement(\"div\",{className:\"ch-contacts__hd\"},\"联系人\"),Ei.map(ci=>React.createElement(\"div\",{key:ci.uid,className:\"ch-contact\",role:\"button\",tabIndex:0,onClick:()=>ii(ci.uid),onKeyDown:Zi=>{Zi.key===\"Enter\"&&ii(ci.uid)}},React.createElement(\"img\",{className:\"av\",src:avatarUri(ci.uid??ci.name,ci.color),alt:\"\"}),React.createElement(\"span\",{className:\"nm\"},ci.name),React.createElement(\"span\",{className:\"ds\"},ci.dept,ci.title?` · ${ci.title}`:\"\")))),","","移除群聊搜索 7");
+    // Loop belongs to the parent project, never to a direct conversation or a
+    // name-matched local task list. Subzones inherit their parent group's scope.
+    cut('const evaMemberStore=evaMembers().store,evaMemberRevision=',
+      'const [evaTaskContext,setEvaTaskContext]=reactExports.useState(null),evaMemberStore=evaMembers().store,evaMemberRevision=', 'IM project task native navigation');
+    cut('Sa={...evaSelectedChannel,...evaMemberStore.chatSettings(evaSelectedChannel.id)},',
+      'Sa={...evaSelectedChannel,...evaMemberStore.chatSettings(evaSelectedChannel.id)},evaTaskMembership=evaMemberStore.snapshot(),evaTaskGroupId=evaTaskMembership.threads[Sa.id]||Sa.id,evaTaskProjectId=Sa.chatType!=="direct"&&!Sa.id.startsWith("dm-")&&!ct?.conversationOnly&&(evaTaskGroupId.startsWith("all:")?evaTaskGroupId.slice(4):evaTaskMembership.groups[evaTaskGroupId]?.projectId),evaCanOpenProjectTasks=!!evaTaskProjectId&&evaMemberStore.canRead(evaTaskGroupId,evaActorId)&&evaMemberStore.canRead(evaTaskProjectId,evaActorId),', 'IM Loop project ownership and permissions');
+    cut('React.createElement("span",{className:"ops"},!fa&&!Sa.id.startsWith("dm-")',
+      'React.createElement("span",{className:"ops"},evaCanOpenProjectTasks&&React.createElement("span",{className:"op",role:"button",tabIndex:0,onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.currentTarget.click();}},title:"创建任务","aria-label":"创建所属项目的 Loop 任务",onClick:()=>{if(evaMemberStore.canRead(evaTaskGroupId,evaActorId)&&evaMemberStore.canRead(evaTaskProjectId,evaActorId))setEvaTaskContext({projectId:evaTaskProjectId,groupId:evaTaskGroupId,channelId:Sa.id})}},React.createElement(ClipboardList,{size:20,color:"currentColor"})),evaCanOpenProjectTasks&&evaTaskContext?.channelId===Sa.id&&React.createElement(CreateIssueModal,{key:Sa.id,visible:true,projectId:evaTaskContext.projectId,canCreate:()=>evaMemberStore.canRead(evaTaskContext.groupId,evaActorId)&&evaMemberStore.canRead(evaTaskContext.projectId,evaActorId),onClose:()=>setEvaTaskContext(null),onCreated:issue=>{setEvaTaskContext(null);Toast.success("任务 "+issue.identifier+" 已创建");}}),!fa&&!Sa.id.startsWith("dm-")', 'IM shared project Loop task entry');
     return EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);
