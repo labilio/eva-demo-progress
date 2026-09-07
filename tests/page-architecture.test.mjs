@@ -78,7 +78,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
   assert.match(imPatch, /if\(identity\?\.id!==i\.id\)choose\(i\.id,sessions\[0\]\?\.id\|\|null\)/);
   assert.match(imPatch, /collapsedGroups/);
-  assert.match(imPatch, /roleGroup\('assistant','本地助理',localIdentities\)/);
+  assert.match(imPatch, /roleGroup\('assistant','个人助理'/);
   assert.match(imPatch, /roleGroup\('persona','云端分身',personas\)/);
   assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
   assert.match(imPatch, /className:'eva-ai-team__group-count'/);
@@ -224,7 +224,7 @@ test('个人助理使用 Brain 身份图标且整行提供 Hover', () => {
   assert.match(convergence, /eva-personal-assistant-folder\.is-selected-assistant.+eva-personal-assistant-folder__new-chat\s*\{[^}]*background:\s*var\(--eva-overlay-pressed\)/s);
 });
 
-test('创建和编辑助理共用编辑器并按模式新增或原位更新', () => {
+test('创建助理进入创建中心，编辑助理保留个人工作区', () => {
   const workspace = read('prototype/052-personal-eva-gds.js');
   const assistants = read('prototype/046-personal-assistants.js');
   const convergence = read('prototype/044-final-layout-convergence.js');
@@ -234,7 +234,8 @@ test('创建和编辑助理共用编辑器并按模式新增或原位更新', ()
   assert.match(assistants, /window\.__evaSavePersonalAssistant/);
   assert.match(convergence, /\.eva-personal-sider-panel \[data-eva-edit-assistant\]/);
   assert.match(convergence, /function openAssistantEditor\(options\)/);
-  assert.match(convergence, /mode:\s*'create',\s*presentation:\s*'personal-workspace'/);
+  assert.match(workspace, /href="#\/eva-stub\/Agent创建中心\?evaCreate=mine"/);
+  assert.doesNotMatch(convergence, /var createAssistant/);
   assert.match(convergence, /mode:\s*'edit'/);
   assert.match(convergence, /presentation:\s*'personal-workspace'/);
   assert.match(convergence, /window\.__evaOpenAssistantEditor/);

@@ -7,11 +7,11 @@ function harness(overrides={}){
   const hooks=[],effects=[];let cursor=0,tree;
   const R={Fragment:'Fragment',createElement:(type,props,...children)=>({type,props:props||{},children:children.flat(Infinity)}),useSyncExternalStore:()=>{},useState(init){const i=cursor++;hooks[i]??={value:typeof init==='function'?init():init};return[hooks[i].value,value=>{hooks[i].value=typeof value==='function'?value(hooks[i].value):value;}];},useRef(value){const i=cursor++;return hooks[i]??={current:value};},useEffect(fn,deps){const i=cursor++,old=hooks[i];if(!old||deps.some((v,n)=>v!==old.deps[n])){effects.push(()=>{old?.cleanup?.();hooks[i]={deps,cleanup:fn()};});}}};
   const state={actorId:'u1',people:[{id:'u1',name:'甲'},{id:'u2',name:'乙'}],clones:[{id:'c1',name:'甲分身',ownerId:'u1'}],projects:{prod:{humans:[{id:'u1'}],cloneIds:['c1'],employeeIds:[]},other:{humans:[{id:'u2'}],cloneIds:[],employeeIds:[]}}};
-  const calls=[],deps={React:R,Modal:'Modal',Button:'Button',LoopButton:'Button',Input:'Input',AutoGrowTextarea:'TextArea',LoopPropertyPill:'LoopPropertyPill',Select:'Select',icons:{Paperclip:'Paperclip',Trash2:'Trash2'},members:{subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],createLabel:async name=>({id:'new-'+name,name}),uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
+  const calls=[],deps={React:R,Modal:'Modal',Button:'Button',LoopButton:'Button',Input:'Input',AutoGrowTextarea:'TextArea',LoopPropertyPill:'LoopPropertyPill',Select:'Select',Popover:'Popover',icons:{Paperclip:'Paperclip',Trash2:'Trash2'},members:{subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],createLabel:async name=>({id:'new-'+name,name}),uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
   const root={EvaAIIdentity:{avatar:()=> 'ai-avatar',badge:()=> 'ai-badge'},EvaAvatar:{personUri:id=>'avatar:'+id}};vm.runInNewContext(code,{window:root});
   const props={visible:true,onClose:()=>calls.push('closed'),onCreated:()=>calls.push('created')};
   const render=()=>{cursor=0;const el=root.EvaLoopTaskCreateUI.render(props,deps);tree=el.type(el.props);while(effects.length)effects.shift()();return tree;};
-  const all=(node=tree)=>node&&typeof node==='object'?[node,...node.children.filter(x=>x!==undefined).flatMap(x=>all(x)),...(node.props.footer?all(node.props.footer):[])]:[];
+  const all=(node=tree)=>node&&typeof node==='object'?[node,...node.children.filter(x=>x!==undefined).flatMap(x=>all(x)),...(node.props.footer?all(node.props.footer):[]),...(node.props.content?all(node.props.content):[])]:[];
   const find=label=>all().find(n=>n.props['aria-label']===label);
   const button=label=>all().find(n=>n.type==='Button'&&n.children.includes(label));
   const fill=()=>{render();for(const [label,value]of [['任务标题','测试任务'],['任务描述','任务说明'],['执行负责人','u1']]){find(label).props.onChange(label==='任务标题'?{target:{value}}:value);render();}};
@@ -50,4 +50,14 @@ test('原版创建布局保留外层项目路径且没有旧 Loop 项目选择�
 test('任务标签可在下拉框内直接新建，初始状态不再显示',async()=>{
   const h=harness();await new Promise(resolve=>setImmediate(resolve));h.render();const tags=h.find('添加或编辑任务标签');assert.equal(tags.props.placeholder,'选择或输入任务标签');tags.props.onChange('风险');h.render();await h.find('添加或编辑任务标签').props.onEnterPress();h.render();
   assert.ok(h.all().some(n=>n.props['aria-label']==='移除标签 风险'));assert.equal(h.find('新建标签'),undefined);assert.equal(h.button('添加'),undefined);assert.equal(h.all().some(n=>n.children.includes?.('初始状态')),false);
+});
+
+test('任务浮层共用弹窗容器，标签选择不丢失输入且重新打开时关闭',async()=>{
+ const h=harness();await new Promise(resolve=>setImmediate(resolve));h.render();
+ const modal=h.all().find(n=>n.type==='Modal');
+ for(const n of h.all().filter(n=>['LoopPropertyPill','Select','Popover'].includes(n.type)))assert.equal(n.props.getPopupContainer,modal.props.getPopupContainer);
+ h.find('添加或编辑任务标签').props.onFocus();h.render();assert.equal(h.all().find(n=>n.type==='Popover').props.visible,true);
+ const option=h.all().find(n=>n.props.role==='option');option.props.onClick();h.render();assert.ok(h.find('移除标签 标签'));
+ h.all().find(n=>n.type==='Popover').props.onClickOutSide();h.render();assert.equal(h.all().find(n=>n.type==='Popover').props.visible,false);
+ h.props.visible=false;h.render();h.props.visible=true;h.render();h.render();assert.equal(h.all().find(n=>n.type==='Popover').props.visible,false);
 });

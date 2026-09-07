@@ -58,3 +58,22 @@ test('会话项目路径按父群解析并遵守访问范围，改名即时更�
  s.renameProject('p','a','项目乙');s.setChatSettings('g','a',{name:'整改群'});assert.equal(s.conversationContext('t','a').path,'项目乙 / 整改群');
  s.createGroup('outside','非项目群',null,'a',[]);assert.equal(s.conversationContext('outside','a'),null);assert.equal(s.conversationContext('dm-b','a'),null);
 });
+
+test('非项目 Category 可自定义并按用户持久化，项目归属不受影响',()=>{
+ const s=setup(), channels=[{id:'dm-b',category:'scope:other'},{id:'group-free',category:'scope:other'},{id:'all:p',category:'space:p'}];
+ assert.equal(s.conversationCategories('a')[0].name,'其他会话');
+ const id=s.saveConversationCategory('a',{name:'工作交流',channelIds:['dm-b'],availableChannels:channels});
+ assert.equal(s.conversationCategory('a',channels[0]),id);
+ assert.equal(s.conversationCategory('b',channels[0]),'scope:other');
+ assert.equal(s.conversationCategory('a',channels[2]),'space:p');
+ assert.throws(()=>s.saveConversationCategory('a',{name:'项目乱入',channelIds:['all:p'],availableChannels:channels}));
+ assert.throws(()=>s.saveConversationCategory('a',{name:'工作交流'}));
+ assert.throws(()=>s.saveConversationCategory('a',{name:' '}));
+ s.saveConversationCategory('a',{id:'scope:other',name:'日常沟通',channelIds:['group-free'],availableChannels:channels});
+ const restored=windowlessRestore(s.snapshot());
+ assert.equal(restored.conversationCategories('a')[0].name,'日常沟通');
+ assert.equal(restored.conversationCategories('b')[0].name,'其他会话');
+ assert.equal(restored.conversationCategory('a',channels[0]),id);
+ restored.saveConversationCategory('a',{id,name:'协作沟通',channelIds:[],availableChannels:channels});
+ assert.equal(restored.conversationCategory('a',channels[0]),'scope:other');
+});

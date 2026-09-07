@@ -61,7 +61,7 @@
   });
   function seed(time, options = {}) {
     const ownerName=options.ownerName||window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName||'王宜林';
-    const defaultName=ownerName+'的通用助理';
+    const defaultName=options.profile==='review'?'通用助理':ownerName+'的通用助理';
     const localAssistants = [
       { id: 'assistant-general', name: defaultName, isDefault:true, version: 1, online: true, configuration: configuration({ identity: defaultName, skills: ['沟通', '文档整理'] }) },
       { id: 'assistant-rd', name: 'Eva研发助理', version: 1, online: true, configuration: configuration({ identity: 'Eva研发助理', skills: ['研发资料整理'] }) }
@@ -227,8 +227,21 @@
       state.personaVarietyV2=true;
       try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
     }
+    // Personal assistants automatically have an IM identity, separate from local chats.
+    if (options.profile === 'review') {
+      const general = state.localAssistants.find(item => item.id === 'assistant-general');
+      if (general?.name === '王宜林的通用助理') general.name = '通用助理';
+    }
+    state.localAssistants.forEach(local => {
+      let identity = state.identities.find(item => item.role === 'assistant' && item.sourceAssistantId === local.id);
+      if (!identity) {
+        identity = makeIdentity('ai-local:' + local.id, 'assistant', local.name, local, now());
+        state.identities.push(identity);
+      }
+      identity.name = local.name;
+    });
     // Add the Octo parent/topic relationship without changing local IDs or user content.
-    state.sessions = state.sessions.map(record => state.identities.find(i => i.id === record.identityId)?.role === 'persona'
+    state.sessions = state.sessions.map(record => ['persona', 'assistant'].includes(state.identities.find(i => i.id === record.identityId)?.role)
       ? threadRecord(record.identityId, record) : record);
     state.storageWarning = warning;
     let snapshot = freeze(copy(state));
@@ -316,6 +329,7 @@
       if (input.mode === 'create') {
         local = { id: id('assistant-local'), name: input.name.trim(), version: 1, online: true, configuration: configuration(input.configuration || { identity: input.name.trim() }) };
         state.localAssistants.push(local);
+        state.identities.push(makeIdentity('ai-local:' + local.id, 'assistant', local.name, local, now()));
       } else {
         local = localById(input.id);
         if(local.id==='assistant-general'&&input.name.trim()!==local.name)throw new Error('通用助理不可改名');
@@ -363,7 +377,7 @@
     }
     function createThread(identityId) {
       const identity = identityById(identityId);
-      if (!['assistant', 'persona'].includes(identity.role)) throw new Error('请选择可对话的 AI');
+      if (!['persona', 'assistant'].includes(identity.role)) throw new Error('请选择云端分身或个人助理');
       const records = state.sessions.filter(s => s.identityId === identityId);
       let title = '新对话', number = 2;
       while (records.some(s => s.title === title)) title = '新对话 ' + number++;
@@ -379,7 +393,7 @@
       const record = state.sessions.find(s => s.id === threadId && s.identityId === identityId);
       if (!record) throw new Error('会话已删除或不属于当前 AI');
       const title = String(name || '').trim();
-      if (!title || Array.from(title).length > 50) throw new Error('请输入 1–50 个字符的会话名称');
+      if (!title || Array.from(title).length > 50) throw new Error('请输入 1–100 个字符的会话名称');
       record.title = title; record.autoTitle = false; publish();
     }
     function sendMessage(identityId, sessionId, text) {
@@ -392,7 +406,7 @@
       if (!session) {
         session = {id: id(identity.role === 'persona' ? 'team-thread' : 'team-session'), identityId,
           title: Array.from(body).slice(0, 20).join(''), messages: [], updatedAt: time};
-        if (identity.role === 'persona') session = threadRecord(identityId, session);
+        session = threadRecord(identityId, session);
         state.sessions.push(session);
       }
       if (session.autoTitle) {session.title = Array.from(body).slice(0, 20).join(''); session.autoTitle = false;}
@@ -404,5 +418,77 @@
     }
     return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, setSessionFlag, deleteSession });
   }
+  // A fixed multi-AI group has its own channel/history; membership is derived live.
+  function createTeamGroupStore(options = {}) {
+    const id = 'my-ai-team:u-wangyilin', key = 'eva:my-ai-team-group:v1';
+    let storage, state = {messages: [], draft: '', threads: []}, revision = 0;
+    const listeners = new Set();
+    try {
+      storage = Object.hasOwn(options, 'storage') ? options.storage : window.localStorage;
+      const saved = JSON.parse(storage?.getItem(key) || 'null');
+      if (saved && Array.isArray(saved.messages) && typeof saved.draft === 'string') state = saved;
+    } catch (_) {}
+    state.threads ||= [];
+    const target = channelId => {
+      if (!channelId || channelId === id) return state;
+      const thread = state.threads.find(item => item.id === channelId && !item.deleted);
+      if (!thread) throw new Error('子区不存在');
+      return thread;
+    };
+    function publish() {
+      try { storage?.setItem(key, JSON.stringify(state)); } catch (_) {}
+      revision++; listeners.forEach(fn => fn());
+    }
+    return Object.freeze({
+      id, getSnapshot: () => revision,
+      subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+      createThread(record) {
+        const name = String(record.name || '').trim();
+        if (!name || name.length > 100) throw new Error('请输入 1–100 个字符的子区名称');
+        const shortId = record.short_id || record.id || 'thread-' + Date.now().toString(36);
+        const channelId = id + '____' + shortId;
+        if (state.threads.some(item => item.id === channelId)) throw new Error('子区已存在');
+        state.threads.push({...record, id:channelId, short_id:shortId, group_no:id, channel_id:channelId,
+          channel_type:5, name, status:1, messages:[], draft:''});
+        publish(); return channelId;
+      },
+      updateThread(channelId, patch) {
+        const thread = target(channelId);
+        if (thread === state) throw new Error('请选择子区');
+        if (patch.name !== undefined) {
+          const name = String(patch.name).trim();
+          if (!name || name.length > 100) throw new Error('请输入 1–100 个字符的子区名称');
+          thread.name = name;
+        }
+        for (const key of ['status','deleted','joined','is_joined','member_count']) if (patch[key] !== undefined) thread[key] = patch[key];
+        thread.updated_at = new Date().toISOString(); publish();
+      },
+      source(members, selectedThreadId) {
+        const unique = [...new Map(members.map(member => [member.id, member])).values()];
+        const channel = {id, name: '我的AI团队', chatType: 'group', channel_type: 2,
+          ownerId: 'u-wangyilin', memberIds: unique.map(member => member.id), members: unique.length,
+          fixedMembers: unique, threads: state.threads.filter(item=>!item.deleted).map(({messages,draft,...thread})=>({...thread,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name})), unread: 0, replyPolicy: 'mention-only'};
+        return {conversationOnly: true, sidebarVariant: 'ai-team-group', selectedThreadId, channels: [channel],
+          cats: [], messages: {[id]: copy(state.messages)}, threadMessages: Object.fromEntries(state.threads.filter(item=>!item.deleted).map(item=>[item.id,copy(item.messages)])), scopeNameOf: {},
+          initialDraft: target(selectedThreadId).draft,
+          getDraft: channelId => target(channelId).draft,
+          onDraftChange(text, channelId) { const current=target(channelId || selectedThreadId); if (current.draft !== text) {current.draft = text; publish();} },
+          onSend(text, channelId) {
+            const current = target(channelId || selectedThreadId);
+            if (!text.trim()) return false;
+            const time = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
+            const messageId = 'team-group:' + Date.now() + ':' + current.messages.length;
+            current.messages.push({id:messageId, kind:'text', sender:{uid:'u-wangyilin', name:'王宜林', avatar:window.__EVA_CURRENT_USER_PORTRAIT}, time, text});
+            unique.filter(member => member.kind !== 'human' && (text.includes('@' + member.name + ' ') || text.endsWith('@' + member.name))).forEach(member => {
+              current.messages.push({id:messageId+':'+member.id, kind:'text', sender:{uid:member.id, name:member.name, ai:true, identityAppearance:member.identityAppearance}, time,
+                text:'【原型】已收到你的请求，当前未调用真实服务。'});
+            });
+            current.draft = ''; current.updated_at = new Date().toISOString(); publish(); return true;
+          }
+        };
+      }
+    });
+  }
+  window.EvaMyAITeamGroup = Object.freeze({...createTeamGroupStore(), createStore:createTeamGroupStore});
   window.EvaAITeam = Object.freeze({ ...createStore({profile:'review'}), createStore });
 })(window);

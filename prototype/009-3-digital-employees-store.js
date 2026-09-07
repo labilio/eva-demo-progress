@@ -2,7 +2,7 @@
   'use strict';
   const seed=root.__EVA_DIGITAL_EMPLOYEES_DATA, key='eva:digital-employees:v1';
   let saved;try{saved=JSON.parse(root.localStorage.getItem(key));}catch{}
-  let state={agents:seed.agents, drafts:{}, chats:{}, teamIds:[],...saved};
+  let state={agents:seed.agents, drafts:{}, personaRequests:[], chats:{}, teamIds:[],...saved};
   // Remove the retired employee from existing local demo state as well as the seed.
   state.agents=state.agents.filter(a=>a.id!=='s_AS00139');
   state.teamIds=state.teamIds.filter(id=>id!=='s_AS00139');
@@ -84,6 +84,16 @@
       const source=privateConversations.source({identityId:id,name:a.name,appearance:appearance(a),records:list(id),selectedId:targetId,
         messages:threadId=>(list(id).find(s=>s.id===threadId)?.messages||[]).map(m=>({...m,sender:m.sender.uid==='u-wangyilin'?{...m.sender,avatar:root.__EVA_CURRENT_USER_PORTRAIT}:{...m.sender,name:a.name,identityAppearance:appearance(a)}}))});
       return {...source,initialDraft:c.draft,onDraftChange:text=>setSessionDraft(id,targetId,text),onSend:text=>sendSession(id,targetId,text)};
+    },
+    personaRequests(ownerId){return structuredClone((state.personaRequests||[]).filter(r=>r.ownerId===ownerId));},
+    submitPersonaRequest(ownerId,draft){
+      if(!ownerId||!draft.name?.trim())throw new Error('请填写分身名称');
+      if(!seed.businessDomains?.includes(draft.domain))throw new Error('请选择预置业务域');
+      state.personaRequests||=[];
+      if(state.personaRequests.some(r=>r.ownerId===ownerId&&r.name===draft.name.trim()&&r.status==='pending'))throw new Error('同名分身正在等待 IT 审核，请勿重复提交');
+      const configuration=structuredClone(draft);delete configuration.runtimeEndpoint;
+      const request={id:'persona-request:'+root.crypto.randomUUID(),ownerId,name:draft.name.trim(),domain:draft.domain,status:'pending',createdAt:now(),configuration};
+      state.personaRequests.push(request);delete state.drafts.persona;publish();return structuredClone(request);
     },
     saveDraft(type,draft){state.drafts[type]=structuredClone(draft);publish();},draft:type=>state.drafts[type],
     create(type,draft){

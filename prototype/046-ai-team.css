@@ -126,7 +126,7 @@
   font-weight: var(--gds-font-weight-semibold);
 }
 .eva-ai-team__group-count { min-width: 18px; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); text-align: right; }
-.eva-ai-team__group-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
+.eva-ai-team__group-chevron { flex: 0 0 22px; transition: transform 120ms ease; }
 .eva-ai-team__group-chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__group-content { margin-top: 0; }
 .eva-ai-team__identity + .eva-ai-team__identity { margin-top: 0; }
@@ -435,3 +435,31 @@
 .eva-ai-team__source-options .eva-ai-team__connection-option { min-height: 54px; }
 .eva-ai-team__source-options input[type="radio"] { flex-shrink: 0; width: 16px; height: 16px; margin: 0; accent-color: var(--semi-color-text-1); cursor: inherit; }
 .eva-ai-team__source-options .eva-ai-team__connection-option:has(input:focus-visible) { outline: 2px solid var(--semi-color-text-2); outline-offset: -2px; }
+
+/* One avatar/text grid and one trailing disclosure column for all identities. */
+.eva-ai-team__identity-button > .eva-identity-avatar { margin-right: 2px; }
+.eva-ai-team__identity-heading > .eva-ai-team__new-session-anchor,
+.eva-ai-team__identity-heading > .eva-ai-team__menu-anchor {
+  position: absolute; right: 32px; top: 50%; transform: translateY(-50%);
+}
+.eva-ai-team__identity-heading > .eva-ai-team__menu-anchor { right: 58px; opacity: 0; pointer-events: none; }
+.eva-ai-team__identity-heading:hover > .eva-ai-team__menu-anchor,
+.eva-ai-team__identity-heading:focus-within > .eva-ai-team__menu-anchor { opacity: 1; pointer-events: auto; }
+.eva-ai-team__identity-heading:hover .eva-ai-team__identity-button,
+.eva-ai-team__identity-heading:focus-within .eva-ai-team__identity-button,
+.eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__identity-button { padding-right: 60px; }
+.eva-ai-team__identity-heading:has(> .eva-ai-team__menu-anchor):hover .eva-ai-team__identity-button,
+.eva-ai-team__identity-heading:has(> .eva-ai-team__menu-anchor):focus-within .eva-ai-team__identity-button { padding-right: 86px; }
+.eva-ai-team__identity-heading .eva-ai-team__more { width: 24px; min-height: 24px; height: 24px; padding: 0; }
+.eva-ai-team__fixed-group-tree { margin-bottom: 16px; }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item {
+  box-sizing: border-box; min-height: var(--eva-rail-identity-height); height: auto;
+  padding: 0 8px; gap: 8px; border-radius: var(--gds-radius-control);
+  font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height);
+}
+.eva-ai-team__fixed-group-tree .wk-conv-compact-name { font-weight: var(--gds-font-weight-medium); }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-icon { width: 22px; flex: 0 0 22px; }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread { padding-left: 8px; min-height: var(--eva-rail-identity-height); }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread .wk-conv-compact-name { font-weight: var(--gds-font-weight-regular); }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item:hover { background: var(--eva-rail-hover); }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item--selected { background: var(--eva-rail-selected); }

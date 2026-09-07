@@ -102,12 +102,6 @@
       openAssistantEditor({ mode: 'edit', id: folder.dataset.evaAssistantId, name: folder.dataset.evaAssistantName, presentation: 'personal-workspace' });
       return;
     }
-    var createAssistant = event.target.closest('.eva-personal-sider-panel .eva-assistant-tree__create');
-    if (createAssistant) {
-      event.preventDefault();
-      openAssistantEditor({ mode: 'create', presentation: 'personal-workspace' });
-      return;
-    }
     var legacyTab = event.target.closest('.eva-auto-tabs .eva-auto-tab');
     if (legacyTab) requestAnimationFrame(tuneLegacyAutomation);
   }, true);

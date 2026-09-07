@@ -27,7 +27,8 @@ requireText('identityAvatarUrl:', 'My AI sessions do not carry their parent AI i
 requireText('avatarUrl:', 'My AI identity groups do not provide an avatar');
 requireText('wk-category-header__identity-avatar', 'the shared category header cannot render an AI identity avatar');
 requireText("className:'eva-ai-team__session'", 'My AI is missing its conversation selection rows');
-requireText("roleGroup('assistant','本地助理',localIdentities)", 'My AI does not expose its local assistant group');
+requireText("roleGroup('assistant','个人助理',teamIdentities.filter(i=>i.role==='assistant'))", 'My AI does not expose its personal assistant group');
+requireText("className:'eva-ai-team__fixed-group-tree'", 'My AI does not expose its fixed team group');
 requireText('eva-my-ai-sidebar-actions', 'My AI is missing separate create-assistant and new-session actions');
 requireText('eva-my-ai-identity-toggle', 'My AI identity expand/collapse control is missing from the right side');
 requireText('function EvaAITeamPage()', 'My AI has no React role controller');

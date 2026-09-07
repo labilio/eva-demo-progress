@@ -12,12 +12,11 @@
      变更时派发 eva:personal-assistants-change，侧栏面板订阅后重渲染。
      ============================================================ */
 
-  var personalAssistants = [
-    { id: 'assistant-general', name: '通用助理' },
-    { id: 'assistant-rd', name: 'Eva研发助理' }
-  ];
-
-  window.__EVA_PERSONAL_ASSISTANTS = personalAssistants;
+  // The shared assistant store owns names and configuration; local chats stay below.
+  Object.defineProperty(window, '__EVA_PERSONAL_ASSISTANTS', {
+    configurable: true,
+    get: function () { return window.EvaAITeam.getSnapshot().localAssistants; }
+  });
   window.__EVA_PERSONAL_ASSISTANT_TASKS = Object.freeze({
     'assistant-general': [['UI设计师发展前景的PPT', '3 小时'], ['整理本周会议结论', '7 小时'], ['帮我改写产品说明', '1 天']],
     'assistant-rd': [['Eva 前端联调排期', '1 分钟'], ['接口回归清单', '2 天']]
@@ -72,24 +71,12 @@
       ]
     }
   ]);
-  function announce() {
+  window.EvaAITeam.subscribe(function () {
     document.dispatchEvent(new CustomEvent('eva:personal-assistants-change', {
-      detail: { assistants: personalAssistants }
+      detail: { assistants: window.__EVA_PERSONAL_ASSISTANTS }
     }));
-  }
-
+  });
   window.__evaSavePersonalAssistant = function (options) {
-    var settings = options || {};
-    var name = String(settings.name || '').trim();
-    if (!name) return false;
-    if (settings.mode === 'edit') {
-      var assistant = personalAssistants.find(function (item) { return item.id === settings.id; });
-      if (!assistant) return false;
-      assistant.name = name;
-    } else {
-      personalAssistants.push({ id: 'assistant-' + Date.now().toString(36), name: name });
-    }
-    announce();
-    return true;
+    return window.EvaAITeam.saveLocalAssistant(options || {});
   };
 })();

@@ -8,7 +8,7 @@ const aiTeamSource=readFileSync(new URL('../prototype/009-3-ai-team-store.js',im
 function load(saved){
   let persisted=saved?JSON.stringify(saved):null;
   class FixedDate extends Date {constructor(...args){super(...(args.length?args:['2026-09-06T12:00:00.000Z']));}}
-  const window={crypto:webcrypto,__EVA_DIGITAL_EMPLOYEES_DATA:{agents:[{id:'staff-1',kind:'staff',name:'专家',ownership:'organization'},{id:'project-1',kind:'team',name:'项目助手'}],runtimes:[{key:'dify'}]},localStorage:{getItem:key=>key==='eva:digital-employees:v1'?persisted:null,setItem:(key,value)=>{if(key==='eva:digital-employees:v1')persisted=value;}}};
+  const window={crypto:webcrypto,__EVA_DIGITAL_EMPLOYEES_DATA:{businessDomains:['供应链','研发域'],agents:[{id:'staff-1',kind:'staff',name:'专家',ownership:'organization'},{id:'project-1',kind:'team',name:'项目助手'}],runtimes:[{key:'dify'}]},localStorage:{getItem:key=>key==='eva:digital-employees:v1'?persisted:null,setItem:(key,value)=>{if(key==='eva:digital-employees:v1')persisted=value;}}};
   const context=vm.createContext({window,structuredClone,Date:FixedDate});
   vm.runInContext(aiTeamSource,context);
   vm.runInContext(source,context);
@@ -50,4 +50,14 @@ test('creation preserves configuration and draft data without aliasing caller ob
   store.saveDraft('dify',draft);draft.skills.push('后续修改');assert.equal(store.draft('dify').skills.length,1);
   const created=store.create('dify',draft);draft.name='外部更改';
   const restored=load(saved()).store;assert.equal(restored.get(created.id).name,'接入专家');assert.equal(restored.get(created.id).scope,'org');assert.equal(restored.get(created.id).configuration.conn[0],'mcp-1');assert.equal(restored.draft('dify'),undefined);
+});
+
+test('cloud persona application remains pending and private after reload without activating an agent',()=>{
+ const {store,saved}=load(),before=store.agents().length;
+ assert.throws(()=>store.submitPersonaRequest('u1',{name:'采购分身',domain:'任意输入'}));
+ const request=store.submitPersonaRequest('u1',{name:'采购分身',domain:'供应链',skills:['资料整理'],prompt:'采购协作',runtimeEndpoint:'legacy'});
+ assert.equal(request.status,'pending');assert.equal(request.configuration.runtimeEndpoint,undefined);
+ assert.equal(store.agents().length,before);assert.equal(store.teamIds().length,0);
+ assert.throws(()=>store.submitPersonaRequest('u1',{name:'采购分身',domain:'供应链'}));
+ const restored=load(saved()).store;assert.equal(restored.personaRequests('u1')[0].configuration.prompt,'采购协作');assert.equal(restored.personaRequests('u2').length,0);
 });
