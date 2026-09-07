@@ -585,6 +585,47 @@
     }).join('');
   }
 
+  function tagSuggestions(resource) {
+    var selected = state.dialog && Array.isArray(state.dialog.tags) ? state.dialog.tags : [];
+    var seen = {};
+    return fileContext().files.list(resource.spaceId, fileActor()).reduce(function (tags, item) {
+      (item.tags || []).forEach(function (tag) {
+        if (!seen[tag] && !selected.includes(tag)) { seen[tag] = true; tags.push(tag); }
+      });
+      return tags;
+    }, []);
+  }
+
+  function tagEditorHTML(resource) {
+    var tags = Array.isArray(state.dialog.tags) ? state.dialog.tags : [];
+    var query = String(state.dialog.tagInput || '').trim().toLowerCase();
+    var suggestions = tagSuggestions(resource).filter(function (tag) { return !query || tag.toLowerCase().includes(query); });
+    var selected = tags.length ? tags.map(function (tag) {
+      return '<span class="eva-tag-editor__chip"><span>' + escapeHTML(tag) + '</span><button type="button" data-drive-action="tag-remove" data-drive-tag-value="' + escapeHTML(tag) + '" aria-label="移除标签 ' + escapeHTML(tag) + '">×</button></span>';
+    }).join('') : '<span class="eva-tag-editor__empty">暂未选择标签</span>';
+    var options = suggestions.length ? suggestions.map(function (tag) {
+      return '<button class="eva-tag-editor__option" type="button" role="option" data-drive-action="tag-option" data-drive-tag-value="' + escapeHTML(tag) + '">' + escapeHTML(tag) + '</button>';
+    }).join('') : '<span class="eva-tag-editor__empty">没有匹配标签，按回车新建</span>';
+    var dropdown = state.dialog.tagDropdownOpen === false ? '' : '<div id="eva-drive-tag-options" class="eva-tag-editor__dropdown" role="listbox" aria-label="当前空间已有标签">' + options + '</div>';
+    return '<div class="eva-tag-editor"><span class="eva-tag-editor__label">自定义标签</span><div class="eva-tag-editor__selected">' + selected + '</div><div class="eva-tag-editor__control"><input id="eva-drive-dialog-tags" data-drive-tag-input type="text" value="' + escapeHTML(state.dialog.tagInput || '') + '" maxlength="20" placeholder="输入或选择标签" role="combobox" aria-label="输入或选择标签" aria-expanded="' + (state.dialog.tagDropdownOpen === false ? 'false' : 'true') + '" aria-controls="eva-drive-tag-options" autocomplete="off"><button class="eva-tag-editor__toggle" type="button" data-drive-action="tag-dropdown-toggle" aria-label="' + (state.dialog.tagDropdownOpen === false ? '展开已有标签' : '收起已有标签') + '">' + icon('arrow') + '</button></div>' + dropdown + (state.dialog.tagError ? '<small class="eva-project-files__error">' + escapeHTML(state.dialog.tagError) + '</small>' : '') + '</div>';
+  }
+
+  function addDialogTag(value) {
+    if (!state.dialog || state.dialog.type !== 'tags') return;
+    var input = String(value == null ? state.dialog.tagInput || '' : value).trim().slice(0, 20);
+    var tags = Array.isArray(state.dialog.tags) ? state.dialog.tags.slice() : [];
+    var resource = fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === state.dialog.id; });
+    var existing = resource ? tagSuggestions(resource).find(function (tag) { return tag.toLowerCase() === input.toLowerCase(); }) : null;
+    var tag = existing || input;
+    if (!tag) { state.dialog.tagError = '请输入标签名称'; return; }
+    if (tags.some(function (selected) { return selected.toLowerCase() === tag.toLowerCase(); })) { state.dialog.tagInput = ''; state.dialog.tagError = '该标签已选择'; return; }
+    if (tags.length >= 8) { state.dialog.tagError = '每个文件最多添加 8 个标签'; return; }
+    tags.push(tag);
+    state.dialog.tags = tags;
+    state.dialog.tagInput = '';
+    state.dialog.tagError = '';
+  }
+
   function dialogHTML() {
     if (!state.dialog) return '';
     var type = state.dialog.type, resource = state.dialog.id ? fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === state.dialog.id; }) : null;
@@ -622,7 +663,7 @@
       content = '<label class="eva-drive-dialog__field"><span>新 Owner</span><select id="eva-drive-dialog-member">' + candidates.map(function (member) { return '<option value="' + escapeHTML(member.id) + '">' + escapeHTML(member.name + ' · ' + (member.role === 'manager' ? 'Manager' : 'Editor')) + '</option>'; }).join('') + '</select></label><p class="eva-drive-dialog__hint">转移后，你将变为 Manager。只有当前 Owner 可以执行此操作。</p>';
     }
     if (type === 'rename') content = '<label class="eva-drive-dialog__field"><span>新名称</span><input id="eva-drive-dialog-name" value="' + escapeHTML(resource ? resource.name : '') + '" autofocus></label>';
-    if (type === 'tags' && resource) content = '<label class="eva-drive-dialog__field"><span>自定义标签</span><input id="eva-drive-dialog-tags" value="' + escapeHTML((resource.tags || []).join('，')) + '" placeholder="多个标签用逗号分隔" autofocus></label><p class="eva-drive-dialog__hint">最多 8 个标签，每个标签最多 20 个字符。标签只用于当前文件或快捷方式，不影响权限。</p>';
+    if (type === 'tags' && resource) content = tagEditorHTML(resource) + '<p class="eva-drive-dialog__hint">从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。</p>';
     if (type === 'create-shortcut' && resource) {
       var shortcutSpaces = fileContext().files.writableSpaces(fileActor(), resource.spaceId);
       content = shortcutSpaces.length ? '<div class="eva-shortcut-source"><span>源文件</span><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(spaceRootLabel(resource)) + '</small></div><label class="eva-drive-dialog__field"><span>目标空间</span><select id="eva-drive-dialog-shortcut-space">' + shortcutTargetOptionsHTML(resource.spaceId, state.dialog.targetSpaceId) + '</select></label><label class="eva-drive-dialog__field"><span>目标文件夹</span><select id="eva-drive-dialog-shortcut-parent">' + shortcutFolderOptionsHTML(state.dialog.targetSpaceId, state.dialog.targetParentId || 0) + '</select></label><p class="eva-drive-dialog__hint">快捷方式不复制文件，也不会向目标空间成员授予源文件权限。</p>' : '<p>没有其他可写入的空间，暂时无法创建跨空间快捷方式。</p>';
@@ -800,6 +841,11 @@
 
   function openDialog(type, resource, spaceId) {
     state.dialog = { type: type, id: resource ? resource.id : null, spaceId: spaceId || null };
+    if (type === 'tags' && resource) {
+      state.dialog.tags = (resource.tags || []).slice();
+      state.dialog.tagInput = '';
+      state.dialog.tagDropdownOpen = true;
+    }
     if (type === 'create-shortcut' && resource) {
       var target = fileContext().files.writableSpaces(fileActor(), resource.spaceId)[0];
       state.dialog.targetSpaceId = target ? target.id : null;
@@ -822,7 +868,6 @@
     var spaceInput = document.getElementById('eva-drive-dialog-space');
     var parentInput = document.getElementById('eva-drive-dialog-parent');
     var memberInput = document.getElementById('eva-drive-dialog-member');
-    var tagsInput = document.getElementById('eva-drive-dialog-tags');
     var shortcutSpaceInput = document.getElementById('eva-drive-dialog-shortcut-space');
     var shortcutParentInput = document.getElementById('eva-drive-dialog-shortcut-parent');
     try {
@@ -845,7 +890,14 @@
       }
       if (dialog.type === 'shared-settings') context.files.updateSharedSpace(actor, state.sharedSpaceId, { name: nameInput.value, description: descriptionInput.value });
       if (dialog.type === 'transfer-shared') context.files.transferSharedOwnership(actor, state.sharedSpaceId, memberInput.value);
-      if (dialog.type === 'tags') context.files.updateTags(actor, resource.id, tagsInput.value);
+      if (dialog.type === 'tags') {
+        var nextTags = Array.isArray(dialog.tags) ? dialog.tags.slice() : [];
+        var pendingTag = String(dialog.tagInput || '').trim().slice(0, 20);
+        var matchedTag = pendingTag && tagSuggestions(resource).find(function (tag) { return tag.toLowerCase() === pendingTag.toLowerCase(); });
+        pendingTag = matchedTag || pendingTag;
+        if (pendingTag && !nextTags.some(function (tag) { return tag.toLowerCase() === pendingTag.toLowerCase(); }) && nextTags.length < 8) nextTags.push(pendingTag);
+        context.files.updateTags(actor, resource.id, nextTags);
+      }
       if (dialog.type === 'create-shortcut') context.files.createShortcut(actor, resource.id, shortcutSpaceInput.value, shortcutParentInput.value === '0' ? 0 : shortcutParentInput.value);
       if (dialog.type === 'rename') context.files.rename(actor, resource.id, nameInput.value);
       if (dialog.type === 'move') context.files.move(actor, resource.id, parentInput.value === '0' ? 0 : parentInput.value);
@@ -896,6 +948,23 @@
     event.preventDefault();
     event.stopPropagation();
     var name = action.dataset.driveAction;
+    if (name === 'tag-dropdown-toggle') {
+      state.dialog.tagDropdownOpen = state.dialog.tagDropdownOpen === false;
+      renderDrive();
+      return;
+    }
+    if (name === 'tag-option') {
+      addDialogTag(action.dataset.driveTagValue);
+      state.dialog.tagDropdownOpen = true;
+      renderDrive();
+      return;
+    }
+    if (name === 'tag-remove') {
+      state.dialog.tags = state.dialog.tags.filter(function (tag) { return tag !== action.dataset.driveTagValue; });
+      state.dialog.tagError = '';
+      renderDrive();
+      return;
+    }
     if (name === 'row-menu') {
       if (state.menuId === String(resource.id)) closeRowMenu();
       else {
@@ -1001,6 +1070,17 @@
   }
 
   function handleDriveInput(event) {
+    if (event.type === 'input' && event.target.matches('[data-drive-tag-input]')) {
+      state.dialog.tagInput = event.target.value;
+      state.dialog.tagError = '';
+      state.dialog.tagDropdownOpen = true;
+      renderDrive();
+      var editorInput = document.querySelector('[data-drive-tag-input]');
+      if (editorInput) {
+        editorInput.focus();
+        editorInput.setSelectionRange(editorInput.value.length, editorInput.value.length);
+      }
+    }
     if (event.type === 'input' && event.target.matches('[data-drive-search]')) {
       state.query = event.target.value;
       renderDrive();
@@ -1119,10 +1199,26 @@
     document.addEventListener('input', function (event) {
       if (event.target.closest('#eva-drive-root')) handleDriveInput(event);
     });
+    document.addEventListener('focusin', function (event) {
+      if (state.dialog && state.dialog.type === 'tags' && event.target.matches('[data-drive-tag-input]') && state.dialog.tagDropdownOpen === false) {
+        state.dialog.tagDropdownOpen = true;
+        renderDrive();
+        var input = document.querySelector('[data-drive-tag-input]');
+        if (input) input.focus();
+      }
+    });
     document.addEventListener('change', function (event) {
       if (event.target.closest('#eva-drive-root')) handleDriveInput(event);
     });
     document.addEventListener('keydown', function (event) {
+      if (state.dialog && state.dialog.type === 'tags' && event.target.matches('[data-drive-tag-input]') && event.key === 'Enter') {
+        event.preventDefault();
+        addDialogTag();
+        renderDrive();
+        var tagInput = document.querySelector('[data-drive-tag-input]');
+        if (tagInput) tagInput.focus();
+        return;
+      }
       if (event.key === 'Escape') {
         var menu = document.querySelector('.eva-space-picker__menu:not([hidden])');
         if (menu) menu.hidden = true;

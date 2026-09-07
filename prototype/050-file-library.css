@@ -1140,6 +1140,142 @@ body.eva-message-hierarchy-ready .eva-drive--inspector-open .eva-drive__inspecto
   resize: vertical;
 }
 
+.eva-tag-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eva-tag-editor__label {
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  font-size: var(--gds-type-caption-font-size, 12px);
+}
+
+.eva-tag-editor__selected {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.eva-tag-editor__chip {
+  min-width: 0;
+  height: 26px;
+  padding: 0 4px 0 9px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  background: var(--gds-color-surface-subtle, #f2f2f2);
+  font-size: 12px;
+}
+
+.eva-tag-editor__chip > span {
+  overflow: hidden;
+  max-width: 180px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-tag-editor__chip > button {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--gds-color-text-muted, #6b7280);
+  background: transparent;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.eva-tag-editor__chip > button:hover {
+  color: var(--gds-color-text-primary, #1e1e1e);
+  background: var(--gds-color-surface-hover, #e8e8e8);
+}
+
+.eva-tag-editor__control {
+  min-height: 38px;
+  border: 1px solid var(--gds-color-border-default, #ccc);
+  border-radius: var(--gds-radius-control, 8px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  align-items: center;
+  background: var(--gds-color-surface-primary, #fff);
+}
+
+.eva-tag-editor__control:focus-within {
+  border-color: var(--gds-color-brand-primary, #1769e0);
+  box-shadow: 0 0 0 2px rgba(23, 105, 224, .12);
+}
+
+.eva-tag-editor__control > input {
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  outline: 0;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  background: transparent;
+  font: inherit;
+}
+
+.eva-tag-editor__toggle {
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 8px;
+  border: 0 !important;
+  color: var(--gds-color-text-muted, #6b7280) !important;
+  background: transparent !important;
+  cursor: pointer;
+}
+
+.eva-tag-editor__toggle .eva-drive-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.eva-tag-editor__dropdown {
+  max-height: 144px;
+  padding: 4px;
+  border: 1px solid var(--gds-color-border-faint, #ebebeb);
+  border-radius: var(--gds-radius-control, 8px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--gds-color-surface-primary, #fff);
+  box-shadow: var(--gds-shadow-menu, 0 8px 24px rgba(0, 0, 0, .08));
+}
+
+.eva-tag-editor__option {
+  min-height: 32px;
+  padding: 0 9px;
+  border: 0 !important;
+  border-radius: 6px !important;
+  color: var(--gds-color-text-primary, #1e1e1e) !important;
+  background: transparent !important;
+  text-align: left;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.eva-tag-editor__option:hover,
+.eva-tag-editor__option:focus-visible {
+  background: var(--gds-color-surface-subtle, #f5f5f5) !important;
+  outline: 0;
+}
+
+.eva-tag-editor__empty {
+  padding: 6px 8px;
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: 12px;
+}
+
 .eva-drive-dialog__intro {
   margin-bottom: 12px !important;
 }
