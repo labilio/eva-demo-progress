@@ -3,7 +3,7 @@
   .eva-project-detail-page {
     position: fixed;
     z-index: 280;
-    top: var(--topbar-height, 2.6rem);
+    top: var(--topbar-height, 37px);
     right: 0;
     bottom: 0;
     left: var(--eva-drive-left, 260px);

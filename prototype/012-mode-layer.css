@@ -46,6 +46,10 @@
   outline-offset: 2px;
 }
 
+.layout-sider {
+  box-sizing: border-box;
+}
+
 .eva-space-picker {
   position: relative;
 }
@@ -312,16 +316,24 @@
 
 .eva-nav-section.is-collapsed .eva-nav-section__title {
   box-sizing: border-box;
-  min-height: 24px;
-  height: auto;
-  padding: 4px 2px;
-  display: block;
-  color: var(--semi-color-text-2);
-  font-size: 10px;
-  font-weight: 500;
+  height: 20px;
+  padding: 0 2px;
+  display: grid;
+  grid-template-columns: minmax(6px, 1fr) auto minmax(6px, 1fr);
+  align-items: center;
+  gap: 5px;
+  color: var(--semi-color-text-0, #1d2129);
+  font-size: 12px;
+  font-weight: 700;
   line-height: 16px;
   text-align: center;
-  white-space: nowrap;
+}
+
+.eva-nav-section.is-collapsed .eva-nav-section__title::before,
+.eva-nav-section.is-collapsed .eva-nav-section__title::after {
+  content: "";
+  height: 1px;
+  background: #b8bec7;
 }
 
 .eva-nav-section.is-collapsed .eva-nav-section__items {
@@ -388,6 +400,11 @@
   height: 20px !important;
 }
 
+.eva-nav-section.is-collapsed .eva-my-ai-collaboration-icon__ring {
+  width: 14px !important;
+  height: 14px !important;
+}
+
 .eva-nav-section.is-collapsed .eva-nav-entry [class*="text-14px"] {
   display: block;
   max-width: 100%;
@@ -406,15 +423,12 @@
   width: 100%;
   height: 38px;
   border-radius: 10px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 34px;
-  align-items: center;
+  display: flex;
+  align-items: stretch;
   color: var(--semi-color-text-0, #1c1f23);
   background: transparent;
-  transition: background-color 120ms ease;
 }
 
-.eva-personal-entry:hover,
 .eva-personal-entry.is-selected {
   background: #e2e3e5;
 }
@@ -422,8 +436,9 @@
 .eva-personal-entry__main {
   box-sizing: border-box;
   min-width: 0;
+  width: 100%;
   height: 100%;
-  padding: 0 0 0 10px;
+  padding: 0 10px;
   border: 0;
   display: flex;
   align-items: center;
@@ -433,6 +448,10 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+.eva-personal-entry:hover {
+  background: #e2e3e5;
 }
 
 .eva-personal-entry__logo,
@@ -459,15 +478,12 @@
   white-space: nowrap;
 }
 
-.eva-personal-entry__plus {
-  width: 34px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--semi-color-text-2, #8f959e);
-  pointer-events: none;
-  user-select: none;
+.eva-my-ai-collaboration-icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  display: block;
+  object-fit: contain;
 }
 
 .eva-personal-entry.is-collapsed {
@@ -480,17 +496,20 @@
   width: 100%;
   padding: 5px 2px;
   flex-direction: column;
-  gap: 3px;
   justify-content: center;
+  gap: 2px;
+  text-align: center;
 }
 
 .eva-personal-entry.is-collapsed .eva-personal-entry__label {
+  display: block;
   flex: 0 0 auto;
   color: var(--semi-color-text-1, #4e5969);
   font-size: 11px;
+  font-weight: 400;
   line-height: 16px;
+  text-align: center;
 }
-
 
 .eva-personal-entry.is-collapsed .eva-personal-entry__plus {
   display: none;
@@ -995,4 +1014,3 @@
   .eva-drive__scroll { padding: 22px 22px 40px; }
   .eva-drive__actions { grid-template-columns: 1fr; }
 }
-

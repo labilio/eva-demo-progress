@@ -8,26 +8,16 @@
     padding: 24px 48px 56px;
   }
 
-  body.eva-message-hierarchy-ready .eva-project-directory-hero {
+  .eva-project-directory-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 20px;
   }
 
-  body.eva-message-hierarchy-ready .eva-project-directory-hero .left {
-    gap: 14px;
-    padding-top: 12px;
-  }
-
-  body.eva-message-hierarchy-ready .eva-project-directory-hero .slogan {
-    max-width: 520px;
-    margin: 0;
-    color: var(--semi-color-text-2, #646a73);
-    font-size: 14px;
-    line-height: 22px;
-  }
-
-  body.eva-message-hierarchy-ready .eva-project-directory-hero .illustration {
-    width: 380px;
-    max-width: 40%;
+  .eva-project-directory-search {
+    width: 280px;
+    max-width: min(50%, 360px);
   }
 
   .eva-project-pinned-section,
@@ -243,8 +233,291 @@
       grid-template-columns: 1fr;
     }
 
-    body.eva-message-hierarchy-ready .eva-project-directory-hero .illustration {
-      width: 300px;
-      max-width: 38%;
+  }
+
+  .eva-project-info {
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 0;
+    width: 100%;
+    max-width: 1120px;
+    margin-inline: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 28px 40px 56px;
+    color: var(--semi-color-text-0);
+  }
+
+  .eva-project-info__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 48px;
+    padding: 28px 30px;
+    border: 1px solid var(--semi-color-border);
+    border-radius: 12px;
+    background: var(--semi-color-bg-0);
+  }
+
+  .eva-project-info__hero-main {
+    min-width: 0;
+  }
+
+  .eva-project-info__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--semi-color-text-2);
+    font-size: 12px;
+    line-height: 20px;
+  }
+
+  .eva-project-info__status {
+    display: inline-flex;
+    padding: 1px 9px;
+    border-radius: 999px;
+    background: var(--semi-color-primary-light-default);
+    color: var(--semi-color-primary);
+    font-weight: 600;
+  }
+
+  .eva-project-info__hero h1 {
+    margin: 12px 0 8px;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 34px;
+  }
+
+  .eva-project-info__hero p {
+    max-width: 640px;
+    margin: 0;
+    color: var(--semi-color-text-1);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .eva-project-info__facts {
+    display: grid;
+    min-width: 230px;
+    margin: 0;
+    align-content: center;
+  }
+
+  .eva-project-info__facts > div {
+    padding: 10px 0;
+  }
+
+  .eva-project-info__facts > div + div {
+    border-top: 1px solid var(--semi-color-border);
+  }
+
+  .eva-project-info__facts dt {
+    margin-bottom: 3px;
+    color: var(--semi-color-text-2);
+    font-size: 12px;
+  }
+
+  .eva-project-info__facts dd {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  .eva-project-info__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.8fr);
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .eva-project-info__card {
+    min-width: 0;
+    padding: 22px 24px;
+    border: 1px solid var(--semi-color-border);
+    border-radius: 12px;
+    background: var(--semi-color-bg-0);
+  }
+
+  .eva-project-info__card h2 {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+
+  .eva-project-info__card--background p {
+    margin: 0;
+    color: var(--semi-color-text-1);
+    font-size: 14px;
+    line-height: 24px;
+  }
+
+  .eva-project-info__goals {
+    display: grid;
+    gap: 11px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .eva-project-info__goals li {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+  }
+
+  .eva-project-info__goals li > span {
+    color: var(--semi-color-primary);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+
+  .eva-project-info__goals p {
+    margin: 0;
+    color: var(--semi-color-text-1);
+    font-size: 13px;
+    line-height: 22px;
+  }
+
+  .eva-project-info__card--milestones {
+    grid-row: span 2;
+  }
+
+  .eva-project-info__timeline {
+    display: grid;
+  }
+
+  .eva-project-info__milestone {
+    position: relative;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 10px;
+    min-height: 54px;
+    padding-left: 18px;
+    align-items: start;
+  }
+
+  .eva-project-info__milestone:not(:last-child)::before {
+    position: absolute;
+    top: 9px;
+    bottom: -9px;
+    left: 4px;
+    width: 1px;
+    background: var(--semi-color-border);
+    content: '';
+  }
+
+  .eva-project-info__milestone-dot {
+    position: absolute;
+    top: 5px;
+    left: 0;
+    width: 9px;
+    height: 9px;
+    border: 2px solid var(--semi-color-bg-0);
+    border-radius: 50%;
+    background: var(--semi-color-border);
+    box-shadow: 0 0 0 1px var(--semi-color-border);
+  }
+
+  .eva-project-info__milestone.is-done .eva-project-info__milestone-dot,
+  .eva-project-info__milestone.is-active .eva-project-info__milestone-dot {
+    background: var(--semi-color-primary);
+    box-shadow: 0 0 0 1px var(--semi-color-primary);
+  }
+
+  .eva-project-info__milestone time {
+    color: var(--semi-color-text-2);
+    font-size: 12px;
+    line-height: 20px;
+  }
+
+  .eva-project-info__milestone strong {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+
+  .eva-project-info__milestone-state {
+    color: var(--semi-color-text-2);
+    font-size: 11px;
+    line-height: 20px;
+  }
+
+  .eva-project-info__milestone.is-active .eva-project-info__milestone-state {
+    color: var(--semi-color-primary);
+    font-weight: 600;
+  }
+
+  .eva-project-info__scope {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .eva-project-info__scope span {
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: var(--semi-color-fill-0);
+    color: var(--semi-color-text-1);
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .eva-project-info__people-title {
+    margin-top: 24px !important;
+  }
+
+  .eva-project-info__people {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .eva-project-info__people > div {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .eva-project-info__people > div > span {
+    display: grid;
+    min-width: 0;
+  }
+
+  .eva-project-info__people strong,
+  .eva-project-info__people small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eva-project-info__people strong {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 18px;
+  }
+
+  .eva-project-info__people small {
+    color: var(--semi-color-text-2);
+    font-size: 11px;
+    line-height: 16px;
+  }
+
+  @media (max-width: 900px) {
+    .eva-project-info {
+      padding-inline: 28px;
+    }
+
+    .eva-project-info__hero,
+    .eva-project-info__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .eva-project-info__card--milestones {
+      grid-row: auto;
     }
   }

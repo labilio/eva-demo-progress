@@ -1,0 +1,689 @@
+/* ============================================================
+   Eva GDS for AI 2.0 · 组件适配层（AGENTS.md:141）
+   采用设计规范包 tokens/eva.css 中的「裸／固有尺寸」部分：
+   组件只声明自身内在尺寸，不含画板绝对坐标，因此可以直接挂进
+   真实应用外壳（Router Outlet 宿主）内，满足 AGENTS.md:8-9。
+
+   已剔除的部分：
+   - `.eva-window` / `.eva-abs` 画板绝对定位模式（1200x800 artboard）
+   - `.eva-sidebar` / `.eva-sb-*` / `.eva-traffic` / `.eva-nav-*`
+     整套画板侧栏（真实侧栏由 React 拥有，见 009-7-patch-sider.js）
+   - `.eva-completed` 的 1200x800 外壳（完成态在工作区宿主内做，
+     见 051-personal-eva-gds.css 顶部说明）
+
+   有意偏离规范原文的几处（全部标 [D]，理由写在就近注释里）：
+   完成态外壳按决策 1 挂在工作区宿主内，宿主宽度是「视口 - 260 侧栏」
+   而不是规范假定的整个 1200，所以 810 编辑列、534 画布、580 工具条
+   这三个原本写死的宽度改成「以规范值为基线、可收缩」。
+
+   全部色值、间距、圆角、阴影引用 047-gds-tokens.css 的语义 token。
+   ============================================================ */
+
+/* ============================================================
+   共享控件
+   ============================================================ */
+.eva-iconbtn {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  border-radius: var(--eva-radius-control);
+  background: transparent;
+  color: var(--eva-text-primary);
+  cursor: pointer;
+}
+.eva-iconbtn:hover { background: var(--eva-overlay-hover); }
+.eva-iconbtn:active { background: var(--eva-overlay-pressed); }
+.eva-iconbtn:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.eva-hero-title {
+  color: var(--eva-text-strong);
+  white-space: nowrap; /* one line only */
+  margin: 0;
+}
+/* dotField 250 x 250, dot 3px on an 8px pitch, radial fade */
+.eva-dotfield {
+  width: 250px;
+  height: 250px;
+  background-image: radial-gradient(circle, var(--eva-decoration-dot) 1.5px, transparent 1.6px);
+  background-size: 8px 8px;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 18%, rgba(0, 0, 0, 0.55) 48%, transparent 74%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 18%, rgba(0, 0, 0, 0.55) 48%, transparent 74%);
+  pointer-events: none;
+}
+/* mascot: observed frame is 114 x 235; the asset keeps its own
+   3:4 ratio inside it, top-aligned. Never recolour. */
+.eva-mascot { width: 114px; height: 235px; pointer-events: none; }
+.eva-mascot img { width: 114px; height: auto; display: block; }
+.eva-bubble {
+  position: relative;
+  width: 40px;
+  height: 36px;
+  border-radius: var(--eva-radius-chip);
+  background: var(--eva-action-primary);
+  color: var(--eva-text-inverse);
+  display: grid;
+  place-items: center;
+  padding-bottom: 2px;
+}
+.eva-bubble::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  bottom: -4px;
+  width: 10px;
+  height: 10px;
+  background: var(--eva-action-primary);
+  border-radius: 0 0 3px 0;
+  transform: rotate(18deg) skewX(-8deg);
+}
+.eva-bubble span { position: relative; z-index: 1; }
+
+/* ============================================================
+   SCENARIO RAIL - h 37, gap 8, may clip horizontally
+   ============================================================ */
+.eva-rail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 37px;
+  overflow: hidden; /* MUST NOT wrap - clip or scroll */
+}
+.eva-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 37px;
+  padding: 8px 16px 8px 12px;
+  border-radius: var(--eva-radius-chip);
+  background: var(--eva-surface-primary);
+  border: var(--eva-border-hairline-w) solid var(--eva-border-default);
+  color: var(--eva-text-primary);
+  white-space: nowrap;
+  cursor: pointer;
+  font: inherit;
+}
+.eva-chip:hover { background: var(--eva-surface-subtle); }
+.eva-chip:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
+.eva-rail-next {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: var(--eva-radius-full);
+  background: var(--eva-surface-primary);
+  border: var(--eva-border-hairline-w) solid var(--eva-border-default);
+  box-shadow: var(--eva-shadow-floating);
+  display: grid;
+  place-items: center;
+  color: var(--eva-text-primary);
+  cursor: pointer;
+  padding: 0;
+  margin-left: -20px;
+  position: relative;
+}
+
+/* ============================================================
+   COMPOSER
+   ============================================================ */
+/* optionalWrapper 776 x 166, r 20, subtle surface - home states only */
+.eva-composer-wrap {
+  width: var(--eva-main-col-w);
+  height: 166px;
+  border-radius: var(--eva-radius-window);
+  background: var(--eva-surface-subtle);
+  padding: 4px;
+  position: relative;
+}
+/* panel 768 x 118, r 16, white, 20px blur, floating + hairline */
+.eva-composer {
+  width: 768px;
+  height: 118px;
+  border-radius: var(--eva-radius-panel);
+  background: var(--eva-surface-primary);
+  backdrop-filter: blur(var(--eva-blur-floating));
+  -webkit-backdrop-filter: blur(var(--eva-blur-floating));
+  box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.eva-composer-narrow { width: 362px; }
+.eva-composer-prompt {
+  height: 66px;
+  padding: 14px 16px 0;
+  color: var(--eva-text-primary);
+  overflow: hidden;
+}
+.eva-composer-ph { color: var(--eva-text-muted); }
+/* the @ affordance chip next to the placeholder */
+.eva-at {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--eva-radius-key);
+  background: var(--eva-surface-subtle);
+  color: var(--eva-text-muted);
+  font: 400 12px/1 var(--eva-font-sans);
+  vertical-align: -3px;
+  margin: 0 2px;
+}
+.eva-caret {
+  display: inline-block;
+  width: 1px;
+  height: 17px;
+  background: var(--eva-text-primary);
+  vertical-align: -3px;
+  margin: 0 5px 0 1px;
+}
+.eva-composer-actions {
+  height: 52px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}
+.eva-round {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: var(--eva-radius-full);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+.eva-round-ghost {
+  background: var(--eva-surface-primary);
+  border: 1px solid var(--eva-border-subtle);
+  color: var(--eva-text-primary);
+}
+.eva-round-plain { background: transparent; border: 0; color: var(--eva-text-secondary); }
+.eva-model {
+  height: 32px;
+  min-width: 69px;
+  padding: 0 8px 0 10px;
+  border: 0;
+  background: transparent;
+  border-radius: var(--eva-radius-panel);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--eva-text-secondary);
+  cursor: pointer;
+  font: inherit;
+}
+.eva-model:hover { background: var(--eva-surface-subtle); }
+/* send: disabled uses a NEUTRAL translucent grey, never a faded blue */
+.eva-send {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border: 0;
+  border-radius: var(--eva-radius-full);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  background: var(--eva-action-disabled-fill);
+  color: var(--eva-text-inverse);
+}
+.eva-send[data-state="enabled"],
+.eva-send[data-state="running"] { background: var(--eva-action-primary); }
+.eva-send:disabled { cursor: not-allowed; }
+/* quickSkills belong to the WRAPPER, never to the panel */
+.eva-quickskills {
+  position: absolute;
+  left: 22px;
+  top: 134px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.eva-quick {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--eva-text-secondary);
+  border: 0;
+  background: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* ---- skillMention: text-level, never a filled badge ---- */
+.eva-mention {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--eva-action-primary);
+  vertical-align: baseline;
+}
+.eva-mention + span { margin-left: 6px; }
+
+/* ============================================================
+   SKILL PICKER - 776 x 263.5, r 16
+   ============================================================ */
+.eva-picker {
+  width: var(--eva-main-col-w);
+  height: 263.5px;
+  border-radius: var(--eva-radius-panel);
+  background: var(--eva-surface-primary);
+  backdrop-filter: blur(var(--eva-blur-floating));
+  -webkit-backdrop-filter: blur(var(--eva-blur-floating));
+  box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.eva-picker-head {
+  height: 42.5px;
+  flex: none;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--eva-border-default);
+  color: var(--eva-text-muted);
+}
+.eva-picker-list { padding: 8px 12px; overflow: hidden; }
+/* 34px rows, no row-to-row gap: the 8px in tokens.json is the
+   icon-to-text gap (design.md 9). Six of eight rows fit. */
+.eva-skillrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 6px 8px;
+  border-radius: var(--eva-radius-control);
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+}
+.eva-skillrow:hover,
+.eva-skillrow[data-active="true"] { background: var(--eva-surface-subtle); }
+.eva-skillrow:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
+.eva-skillrow .ic { color: var(--eva-action-primary); }
+.eva-skillrow .nm { flex: none; color: var(--eva-text-primary); }
+/* description truncates on ONE line; row height never grows */
+.eva-skillrow .ds {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--eva-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   OPERATION CARD - 232 x 252, r 12
+   ============================================================ */
+.eva-opcard {
+  width: 232px;
+  height: 252px;
+  border-radius: var(--eva-radius-chip);
+  background: var(--eva-surface-primary);
+  backdrop-filter: blur(var(--eva-blur-floating));
+  -webkit-backdrop-filter: blur(var(--eva-blur-floating));
+  box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.eva-opcard-img {
+  position: relative;
+  width: 220px;
+  height: 130px;
+  border-radius: var(--eva-radius-control);
+  overflow: hidden;
+  flex: none;
+}
+.eva-opcard-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 22px visual, >=32px hit area (design.md 14) */
+.eva-dismiss {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: var(--eva-radius-full);
+  background: var(--eva-overlay-dismiss);
+  backdrop-filter: blur(var(--eva-blur-dismiss));
+  -webkit-backdrop-filter: blur(var(--eva-blur-dismiss));
+  color: var(--eva-text-inverse);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+.eva-dismiss::before { content: ""; position: absolute; inset: -5px; }
+.eva-opcard-copy {
+  width: 220px;
+  height: 108px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.eva-opcard-copy p {
+  margin: 0;
+  color: var(--eva-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* max two lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.eva-opcard-cta {
+  width: 204px;
+  height: 38px;
+  flex: none;
+  border: 0;
+  border-radius: var(--eva-radius-control);
+  background: var(--eva-action-dark);
+  color: var(--eva-text-inverse);
+  cursor: pointer;
+  font: inherit;
+}
+
+/* ============================================================
+   CONVERSATION
+   ============================================================ */
+.eva-topbar {
+  height: var(--eva-topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--eva-surface-primary);
+}
+.eva-topbar .ttl {
+  flex: 0 1 auto; /* shrink-to-fit: the overflow menu sits right after the title */
+  min-width: 0;
+  max-width: 560px;
+  color: var(--eva-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* truncate before the actions */
+}
+.eva-topbar-icons { display: flex; align-items: center; gap: 2px; flex: none; }
+
+.eva-flow { display: flex; flex-direction: column; gap: 16px; }
+.eva-usermsg { display: flex; justify-content: flex-end; }
+.eva-usermsg > div {
+  max-width: 100%;
+  padding: 8px 14px;
+  border-radius: var(--eva-radius-chip);
+  background: var(--eva-surface-subtle);
+}
+.eva-status { display: flex; align-items: center; gap: 4px; color: var(--eva-text-muted); }
+.eva-para { margin: 0; color: var(--eva-text-primary); }
+/* toolEvent: 16px linear icon + one muted line, always single-line */
+.eva-tool {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--eva-text-muted);
+  min-width: 0;
+}
+.eva-tool .tx { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.eva-tool .path { color: var(--eva-text-muted); opacity: 0.85; }
+.eva-tool[data-state="running"] .ic { animation: eva-spin 1.6s linear infinite; }
+@keyframes eva-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .eva-tool[data-state="running"] .ic { animation: none; }
+}
+
+/* resultArtifact - 350 x 71, r 16 */
+.eva-artifact {
+  width: 350px;
+  height: 71px;
+  border: 1px solid var(--eva-border-subtle);
+  border-radius: var(--eva-radius-panel);
+  background: var(--eva-surface-primary);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.eva-filemark {
+  width: 26px;
+  height: 32px;
+  flex: none;
+  border-radius: var(--eva-radius-small);
+  display: grid;
+  place-items: center;
+  color: var(--eva-text-inverse);
+  font: 700 10px/1 var(--eva-font-sans);
+}
+/* Office 文件类型标识色，属于外部品牌资产，不参与 GDS 调色板 */
+.eva-filemark.ppt { background: #d24726; }
+.eva-filemark.doc { background: #2b579a; }
+.eva-artifact .meta { flex: 1 1 auto; min-width: 0; }
+.eva-artifact .nm {
+  color: var(--eva-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* truncate before the trailing action */
+}
+.eva-artifact .sub { color: var(--eva-text-muted); }
+.eva-actionrow { display: flex; align-items: center; gap: 14px; height: 24px; color: var(--eva-text-secondary); }
+.eva-actionrow button {
+  border: 0;
+  background: 0;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  display: grid;
+  place-items: center;
+}
+
+/* ============================================================
+   COMPLETED SHELL 组件 - 390 / 810
+   外壳本身（1200x800）不在此层，见 051-personal-eva-gds.css
+   ============================================================ */
+.eva-cv-col {
+  width: var(--eva-completed-conversation-w);
+  flex: none;
+  position: relative;
+  background: var(--eva-surface-primary);
+}
+.eva-ed-col {
+  /* [D] 规范是固定 810；390+810=1200 假定占满视口，而这里外壳在
+     工作区宿主内（视口 1200 时宿主只有 940）。改成 810 为 flex-basis
+     基线、允许收缩，会话列的 390 保持固定，栏比关系不变。 */
+  flex: 1 1 var(--eva-completed-editor-w);
+  min-width: 0;
+  position: relative;
+  background: var(--eva-surface-primary);
+  border-left: 1px solid var(--eva-border-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+/* editorTabs - bar 52, selected tab 36 high at y 8, r 8 */
+.eva-tabbar { height: 52px; display: flex; align-items: center; gap: 4px; padding: 8px 12px; }
+.eva-tab {
+  height: 36px;
+  max-width: 210px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 0 10px;
+  border-radius: var(--eva-radius-control);
+  background: transparent;
+  border: 0;
+  color: var(--eva-text-primary);
+  cursor: pointer;
+  font: inherit;
+}
+.eva-tab[aria-selected="true"] { background: var(--eva-surface-subtle); }
+.eva-tab .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-tab .cl { color: var(--eva-text-muted); display: grid; place-items: center; }
+.eva-fileheader {
+  height: var(--eva-completed-file-header-h);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+}
+.eva-fileheader .nm { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* slideRail - 230 x 660, subtle surface, pad 16, gap 12 */
+.eva-rail-slides {
+  width: 230px;
+  flex: none;
+  background: var(--eva-surface-subtle);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* [D] 规范 6 张缩略图刚好排满 660 的编辑体；编辑体在宿主内可矮于
+     660 时改成纵向滚动，不静默裁掉后面的页。 */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.eva-sliderow { width: 198px; height: 102.4px; flex: none; display: flex; align-items: flex-start; gap: 8px; }
+.eva-sliderow .no { width: 8px; flex: none; color: var(--eva-text-secondary); text-align: right; padding-top: 2px; }
+.eva-thumb {
+  width: 182px;
+  height: 102.4px;
+  flex: none;
+  border-radius: var(--eva-radius-chip);
+  background: var(--eva-surface-paper);
+  border: 1px solid var(--eva-border-default);
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+}
+/* selected thumbnail: 1px brand blue, and NO extra shadow */
+.eva-thumb[aria-current="true"] { border-color: var(--eva-action-primary); }
+
+/* editorToolbar - 580 x 72 */
+.eva-ed-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.eva-toolbar {
+  height: 72px;
+  flex: none;
+  background: var(--eva-surface-primary);
+  border-bottom: 1px solid var(--eva-border-faint);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 14px;
+  /* [D] 规范工具条宽 580；编辑列可收缩后按钮排不下时横向滚动，
+     不用 overflow:hidden 静默裁掉工具（那样后面的按钮点不到）。 */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.eva-toolbar::-webkit-scrollbar { height: 0; }
+.eva-tool-btn {
+  min-width: 46px;
+  height: 48px;
+  border: 0;
+  background: 0;
+  border-radius: var(--eva-radius-control);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 6px;
+  color: var(--eva-text-secondary);
+  cursor: pointer;
+  font: inherit;
+}
+.eva-tool-btn:hover { background: var(--eva-surface-subtle); }
+.eva-tool-btn .lb { display: inline-flex; align-items: center; gap: 2px; }
+.eva-tool-sep { width: 1px; height: 26px; background: var(--eva-border-faint); margin: 0 8px; flex: none; }
+
+/* canvasViewport 580 x 588, canvas 534 x 300.4 centred, 16:9 */
+.eva-viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--eva-surface-subtle);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.eva-canvas {
+  /* [D] 规范是 534 x 300.4 写死；编辑列可收缩后画布按 16:9 自适应，
+     上限仍是规范的 534。534/300.4 = 1.7776，即 16:9。 */
+  width: min(534px, 100% - 32px);
+  height: auto;
+  aspect-ratio: 16 / 9;
+  max-height: calc(100% - 32px);
+  border-radius: var(--eva-radius-panel);
+  background: var(--eva-surface-paper);
+  border: 1px solid var(--eva-border-default);
+  box-shadow: var(--eva-shadow-canvas);
+  overflow: hidden;
+}
+.eva-statusbar {
+  height: var(--eva-completed-statusbar-h);
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-top: 1px solid var(--eva-border-subtle);
+  background: var(--eva-surface-primary);
+  color: var(--eva-text-secondary);
+}
+.eva-statusbar .sp { flex: 1 1 auto; }
+
+/* ---- slide content: replaceable TASK OUTPUT, not design system ---- */
+.eva-slide {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background:
+    radial-gradient(circle, rgba(0, 0, 0, 0.05) 0.5px, transparent 0.6px) 0 0 / 7px 7px,
+    var(--eva-surface-paper);
+  font-family: "Times New Roman", Georgia, serif;
+  color: #14140f;
+  overflow: hidden;
+}
+.eva-slide .pad { position: absolute; inset: 9% 8%; }
+.eva-slide .kicker {
+  font-family: var(--eva-font-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7b7b70;
+}
+.eva-slide h4 { margin: 0; font-weight: 400; line-height: 1.06; letter-spacing: -0.015em; }
+.eva-slide .by { font-family: var(--eva-font-sans); color: #4a4a44; }
+.eva-slide .by em { font-style: normal; color: #14140f; }
+.eva-slide .hint { font-family: var(--eva-font-sans); color: #8a8a80; }
+.eva-slide .accent { color: #6b4bd6; }
+.eva-slide .rows { display: flex; flex-direction: column; }
+.eva-slide .cols { display: flex; gap: 8%; }
+.eva-slide .cols > div { flex: 1 1 0; }
+/* Slide type scales with the container: font-size is set inline in px,
+   everything below is em, so one markup renders at 182px and 534px. */
+.eva-slide .kicker { font-size: 0.56em; }
+.eva-slide h4 { font-size: 2.3em; }
+.eva-slide h4.sm { font-size: 1.5em; }
+.eva-slide .by { font-size: 0.66em; margin-top: 1.9em; }
+.eva-slide .hint { font-size: 0.62em; margin-top: 0.5em; }
+.eva-slide .rows { gap: 0.55em; font-size: 0.66em; }
+.eva-slide .cols { font-size: 0.66em; margin-top: 1.4em; }
+.eva-slide .cols b { display: block; font-weight: 700; margin-bottom: 0.4em; }
+.eva-slide .cols p { margin: 0; color: #8a8a80; line-height: 1.45; }
+.eva-slide .bullets { font-size: 0.66em; margin-top: 1.2em; display: flex; flex-direction: column; gap: 0.9em; }
+.eva-slide .bullets b { display: block; font-weight: 700; }
+.eva-slide .bullets p { margin: 0.15em 0 0; color: #8a8a80; line-height: 1.4; }
+.eva-slide .dot { color: #6b4bd6; margin-right: 0.4em; }

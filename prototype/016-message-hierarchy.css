@@ -7,13 +7,84 @@ body.eva-message-hierarchy-ready .eva-msg .ch-list {
   background: #f6f7f8;
 }
 
+/* The project is a message-area view, so the route and conversation rail stay intact. */
+body.eva-message-hierarchy-ready .eva-msg .ch-main {
+  position: relative;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .ch-layout {
+  position: relative;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--eva-conversation-rail-current, 260px);
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  background: #fff;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body,
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body .collab-frame {
+  min-height: 0;
+  flex: 1;
+}
+
+/* SpaceFrame is also used as a first-level project page.  In the message
+   surface it must be a normal child of the right-hand pane, never a viewport
+   layer: otherwise its page styles paint over the navigation. */
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel__body > .collab-frame {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* The message rail already provides group navigation. Avoid repeating the
+   project's group-chat tab while the project is embedded beside that rail. */
+body.eva-message-hierarchy-ready
+  .eva-msg
+  .eva-inline-project-panel
+  .collab-tabs__list
+  .collab-tab:nth-child(2) {
+  display: none;
+}
+
 body.eva-message-hierarchy-ready .eva-msg .ch-list__top {
   gap: 8px;
   padding: 14px 14px 10px;
   background: #f6f7f8;
 }
 
+body.eva-message-hierarchy-ready .eva-msg .ch-list-search {
+  width: 100%;
+  border-color: transparent;
+  background: #e9ecef;
+}
 
+body.eva-message-hierarchy-ready .eva-msg .ch-list-search:focus-within {
+  border-color: #6b8fa3;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgb(107 143 163 / 16%);
+}
 
 body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar {
   display: none;
@@ -181,7 +252,8 @@ body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-item--selected {
   background: #f0f1f2;
 }
 
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-drag-handle {
+body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-drag-handle,
+body.eva-message-hierarchy-ready .eva-msg .ch-cat-gear {
   display: none;
 }
 
@@ -488,9 +560,31 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:
   line-height: 18px;
 }
 
-/* The nested list already exposes subzones; the duplicate group-row affordance is unnecessary. */
+/* 群聊名称支持双击收缩／展开子区；右侧用与“我的 AI”相同的折叠方向图标
+   表达当前状态，单击图标也可完成同一操作。 */
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-thread-tag {
   display: none;
+}
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-thread-toggle {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
+  margin-left: 4px;
+  border-radius: 6px;
+  color: #7c8790;
+  cursor: pointer;
+  transition: transform 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-thread-toggle:hover,
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-thread-toggle:focus-visible {
+  background: #e4e7ea;
+  color: #3f4851;
+  outline: none;
+}
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-thread-toggle.is-collapsed {
+  transform: rotate(-90deg);
 }
 
 .eva-msg .eva-space-card .wk-conv-compact-item--thread {
@@ -532,7 +626,10 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card {
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card > .arco-card-header,
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card > .semi-card-header {
   min-height: 30px;
-  padding: 0 6px;
+  /* Project-space headers are level-one peers of My AI's role groups.
+     Do not give the card wrapper an extra inset: it would make this level
+     start one step later than “本地助理 / 云端分身”. */
+  padding: 0;
   border: 0;
   background: transparent !important;
 }
@@ -550,21 +647,42 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .semi-card-header-wrap
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header {
   min-height: 28px;
+  /* Keep the toggle inside its native card title box. A negative inset here
+     can be clipped by the scroll container at wide rail widths. */
+  width: 100%;
+  margin-inline-start: 0;
+  gap: var(--gds-space-1);
   padding: 0;
   border-radius: 6px;
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__arrow {
-  width: 16px;
-  margin-right: 5px;
-  color: #8a929a;
+  /* Keep the same 12px chevron and 4px icon/text gap as the My AI group. */
+  width: var(--gds-icon-size-chevron);
+  margin-right: 0;
+  color: var(--semi-color-text-2, var(--gds-color-text-secondary));
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__arrow svg {
+  width: var(--gds-icon-size-chevron);
+  height: var(--gds-icon-size-chevron);
+}
+
+/* The legacy IM header used a filled triangle. The child icon now uses the
+   exact My AI class and state transform; neutralize legacy wrapper rotation. */
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__arrow {
+  transform: none;
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__arrow--collapsed {
+  transform: none;
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-category-header__name {
-  color: #5f6871;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 20px;
+  color: var(--semi-color-text-2, var(--gds-color-text-secondary));
+  font-size: var(--gds-type-label-medium-font-size);
+  font-weight: var(--gds-font-weight-medium);
+  line-height: var(--gds-type-label-medium-line-height);
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .eva-space-task-button {
@@ -612,7 +730,7 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
   position: relative;
   min-height: 26px;
   margin: 0;
-  padding: 2px 8px 2px 42px;
+  padding: 2px 8px 2px calc(var(--eva-space-thread-indent, 12px) + var(--gds-space-5-5));
   border-radius: 6px;
   color: #68717a;
 }
@@ -620,7 +738,7 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item--thread::before {
   position: absolute;
   top: -1px;
-  left: 20px;
+  left: var(--eva-space-thread-indent, 12px);
   width: 22px;
   height: calc(50% + 1px);
   border-bottom: 1px solid #c6cbd0;
@@ -634,7 +752,7 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
   position: absolute;
   top: 50%;
   bottom: -1px;
-  left: 20px;
+  left: var(--eva-space-thread-indent, 12px);
   border-left: 1px solid #c6cbd0;
   content: '';
   pointer-events: none;
@@ -656,13 +774,275 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item--thread .wk-conv-compact-name {
+  font-size: var(--gds-type-label-font-size);
+  font-weight: var(--gds-font-weight-regular);
+  line-height: var(--gds-type-label-line-height);
+}
+
+/* 项目分组是一级，组内群聊整体右移一级；子区随所属群聊一起移动，
+   继续保留自身的连接线与二级缩进。12px 是两种第二栏共用的层级间距，
+   让每一级的起点明确递进。 */
+body.eva-message-hierarchy-ready
+  .eva-channel-surface:not([data-eva-message-mode="my-ai"])
+  .eva-space-card {
+  --eva-space-group-indent: 12px;
+  --eva-space-thread-indent: 12px;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface:not([data-eva-message-mode="my-ai"])
+  .eva-space-card
+  .wk-conv-compact-item:not(.wk-conv-compact-item--thread) {
+  /* Header chevron occupies 12px; group avatars occupy 24px plus an 8px gap.
+     This inset aligns the visible labels to the shared 12px step. */
+  width: 100%;
+  margin-inline-start: 0;
+  padding-inline-start: calc(var(--eva-space-group-indent) - var(--gds-space-0-5));
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface:not([data-eva-message-mode="my-ai"])
+  .eva-space-card
+  .wk-conv-compact-item--thread {
+  width: 100%;
+  margin-inline-start: 0;
+}
+
+/* The team-message rail and My AI rail use the same GDS list hierarchy:
+   group / primary row = labelMedium, nested row = label, metadata = caption. */
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-name {
+  font-size: var(--gds-type-label-medium-font-size);
+  line-height: var(--gds-type-label-medium-line-height);
+  font-weight: var(--gds-font-weight-medium);
+}
+
+body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-badge {
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+  font-weight: var(--gds-font-weight-regular);
+}
+
+/* Team / My AI: one AI identity owns multiple OpenClaw session previews. */
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .ch-list__top {
+  display: none;
+}
+
+body.eva-message-hierarchy-ready .eva-channel-surface[data-eva-message-mode="my-ai"] .wk-sidebar-tabbar {
+  display: none !important;
+}
+
+/* “我的 AI”不再有独立顶部操作；新会话属于具体助理。助理或其任一
+   session 被选中时才固定显示高亮加号，Hover／键盘焦点时临时显示。 */
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-new-session {
+  display: none;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 8px;
+  line-height: 0;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-new-session svg,
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-toggle svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card:hover .eva-my-ai-identity-new-session,
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card:focus-within .eva-my-ai-identity-new-session,
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-active .eva-my-ai-identity-new-session {
+  display: inline-grid;
+  place-items: center;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-active .eva-my-ai-identity-new-session {
+  background: var(--semi-color-primary, var(--eva-action-primary, #1563eb));
+  color: var(--semi-color-white, #fff);
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .ch-list__scroll {
+  padding: 9px 12px 18px;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card {
+  margin: 4px 0 14px;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card + .eva-space-card {
+  padding-top: 10px;
+  border-top: 1px solid var(--semi-color-border, #e8e9eb);
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card > .semi-card-header {
+  min-height: 42px;
+  padding: 4px 6px;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .wk-category-header {
+  gap: 7px;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .wk-category-header__arrow {
+  display: none;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card .arco-card-header-title {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card .arco-card-header-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  line-height: 0;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-toggle {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--semi-color-text-2, #8a8f99);
+  cursor: pointer;
+  line-height: 0;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-my-ai-identity-toggle:hover {
+  background: var(--semi-color-fill-1, #f2f3f5);
+  color: var(--semi-color-text-0, #1c1f23);
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .wk-category-header__identity-avatar {
+  display: block;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card .wk-category-header__name {
+  color: var(--semi-color-text-0, #1c1f23);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .eva-space-card .wk-conv-compact-item--session {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "name time"
+    "preview time";
+  column-gap: 12px;
+  row-gap: 1px;
+  min-height: 48px;
+  margin: 1px 0;
+  padding: 6px 9px 6px 42px;
+  align-items: center;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .wk-conv-compact-item--session .wk-conv-compact-name {
+  grid-area: name;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--semi-color-text-0, #1c1f23);
   font-size: 13px;
-  font-weight: 450;
+  font-weight: 600;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .wk-conv-compact-session-preview {
+  grid-area: preview;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--semi-color-text-2, #8a8f99);
+  font-size: 12px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .wk-conv-compact-session-time {
+  grid-area: time;
+  align-self: start;
+  padding-top: 2px;
+  color: var(--semi-color-text-2, #8a8f99);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+body.eva-message-hierarchy-ready
+  .eva-channel-surface[data-eva-message-mode="my-ai"]
+  .ch-head .wk-chat-conversation-header-channel-avatar img {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 /* The global drive is a first-level EVA surface. */
 body.eva-message-hierarchy-ready .eva-drive {
-  top: var(--topbar-height, 2.6rem);
+  top: var(--topbar-height, 37px);
   grid-template-columns: minmax(0, 1fr);
   overflow: hidden;
 }
@@ -1367,7 +1747,7 @@ body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab
 body.eva-message-hierarchy-ready .eva-contacts {
   position: fixed;
   z-index: 71;
-  top: var(--topbar-height, 2.6rem);
+  top: var(--topbar-height, 37px);
   right: 0;
   bottom: 0;
   left: var(--eva-drive-left, 260px);
@@ -1384,7 +1764,7 @@ body.eva-message-hierarchy-ready .eva-contacts[hidden] {
 body.eva-message-hierarchy-ready .eva-my-avatar-chat {
   position: fixed;
   z-index: 71;
-  top: var(--topbar-height, 2.6rem);
+  top: var(--topbar-height, 37px);
   right: 0;
   bottom: 0;
   left: var(--eva-drive-left, 260px);

@@ -191,6 +191,14 @@
   }
 
   window.__evaOpenWorkspaceFromTree = function (id, tab) {
+    /* 项目快捷入口位于消息页中时，项目内容属于当前会话的右侧工作区。
+       这里兜底旧监听器和遗留 React 回调，避免它们把消息路由改成 /collab。 */
+    if (String(location.hash || '').indexOf('#/messages') === 0) {
+      window.dispatchEvent(new CustomEvent('eva:open-inline-project', {
+        detail: { projectId: id, tab: tab || 'tasks' }
+      }));
+      return;
+    }
     openWorkspace(id, tab || null);
   };
 
@@ -670,4 +678,3 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, { once: true });
   else initialize();
 })();
-

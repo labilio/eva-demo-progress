@@ -1,6 +1,6 @@
-.eva-settings-portal{position:fixed;inset:var(--topbar-height,2.6rem) 0 0;z-index:1000;pointer-events:none}
+.eva-settings-portal{position:fixed;inset:var(--topbar-height) 0 0;z-index:1000;pointer-events:none}
 .eva-settings-portal .semi-modal-mask,.eva-settings-portal .semi-modal-wrap{position:absolute;inset:0;height:100%;pointer-events:auto}
-.eva-settings-dialog .semi-modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;height:min(640px, calc(100vh - var(--topbar-height,2.6rem) - 64px));max-height:100%;max-width:100%;padding:0}
+.eva-settings-dialog .semi-modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;height:min(640px, calc(100vh - var(--topbar-height) - 64px));max-height:100%;max-width:100%;padding:0}
 .eva-settings-dialog .semi-modal-content{box-sizing:border-box;height:100%;max-height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:0;border-radius:12px}
 .eva-settings-dialog .semi-modal-header{flex-shrink:0;margin:0;padding:16px 20px;border-bottom:1px solid var(--semi-color-border)}
 .eva-settings-portal .eva-settings-dialog{overflow:hidden;padding:0;box-sizing:border-box}
@@ -10,6 +10,8 @@
 .eva-settings-dialog__layout>nav .semi-button{justify-content:flex-start;margin-bottom:4px;font-size:13px;font-weight:500;line-height:20px;min-height:34px;border-radius:var(--gds-radius-control);color:var(--semi-color-text-1)}
 .eva-settings-dialog__layout>nav .semi-button[aria-current="page"]{color:var(--semi-color-primary)}
 .eva-settings-dialog__content{flex:1;min-width:0;overflow:auto;padding:20px 24px}
+.sider-footer.shrink-0{padding-top:4px;padding-bottom:4px}
+.eva-account-switcher.semi-button{min-height:32px;padding-top:0;padding-bottom:0}
 .eva-settings-trigger{flex:none;display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--semi-color-text-2);cursor:pointer}
 .eva-settings-trigger:hover{background:var(--semi-color-fill-0);color:var(--semi-color-text-0)}
 .eva-usage{max-width:960px;margin:0 auto;padding:0}

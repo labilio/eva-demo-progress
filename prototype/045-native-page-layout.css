@@ -11,7 +11,8 @@
 .eva-native-page-host > .eva-drive,
 body.eva-message-hierarchy-ready .eva-native-page-host > .eva-contacts,
 .eva-native-page-host > .eva-personal-feature-page,
-.eva-native-page-host > .eva-personal-chat-surface {
+.eva-native-page-host > .eva-personal-workspace,
+.eva-native-page-host > .eva-digital-employee-page {
   position: relative;
   z-index: auto;
   inset: auto;
@@ -25,10 +26,10 @@ body.eva-message-hierarchy-ready .eva-native-page-host > .eva-contacts,
   grid-template-columns: minmax(0, 1fr);
 }
 
-.eva-native-page-host > .eva-personal-feature-page {
+.eva-native-page-host > .eva-personal-feature-page,
+.eva-native-page-host > .eva-digital-employee-page {
   overflow: auto;
 }
 
-.eva-native-page-host > .eva-personal-chat-surface {
-  display: flex;
-}
+/* 个人 Eva 工作区：六态由 051 的 data-eva-state 控制，宿主只负责铺满。
+   051 自己就是 display:flex 的列容器，这里不再重复声明。 */

@@ -19,13 +19,21 @@ requireText('key:evaMessageMode,source:rt', 'ChannelsView is reused with stale i
 requireText('sidebarVariant:"ai-sessions"', 'My AI does not declare the assistant/session sidebar variant');
 requireText('conversationKind:"openclaw-session"', 'My AI child rows are not identified as OpenClaw sessions');
 requireText('identityAvatarUrl:', 'My AI sessions do not carry their parent AI identity avatar');
+requireText('avatarUrl:', 'My AI identity groups do not provide an avatar');
+requireText('wk-category-header__identity-avatar', 'the shared category header cannot render an AI identity avatar');
+requireText('wk-conv-compact-item--session', 'the shared conversation item has no session-row presentation');
+requireText('eva-my-ai-sidebar-actions', 'My AI is missing separate create-assistant and new-session actions');
+requireText('eva-my-ai-identity-toggle', 'My AI identity expand/collapse control is missing from the right side');
 requireText('function EvaAITeamPage()', 'My AI has no React role controller');
 requireText('!ct?.conversationOnly&&React.createElement', 'My AI mounts the legacy sidebar alongside its role sidebar');
 requireText('key:draftKey,source', 'identity/session changes do not reset shared IM state');
 requireText('store.sendMessage(', 'My AI send does not use the canonical session store');
 requireText('store.setDraft(', 'My AI drafts are not scoped in the canonical store');
 forbidText('eva-ai-team__toolbar', 'My AI must not add an identity toolbar above the shared IM header');
-requireText('eva-ai-team__more', 'identity configuration must use the session rail menu');
+requireText("className:'eva-ai-team__identity-action eva-ai-team__relation'", 'identity configuration is missing its link-icon entry');
+requireText('openDetails(i.id)', 'the identity configuration icon does not open the shared editor');
+forbidText("Dropdown.Item,{onClick:()=>newConversation(i.id)},'新建会话'", 'the identity menu duplicates the dedicated new-session plus action');
+forbidText("Dropdown.Item,{onClick:()=>openDetails(i.id)},'查看配置'", 'identity configuration still uses the obsolete overflow menu');
 requireText('store.subscribe', 'My AI does not observe canonical identity data');
 
 requireText('Sa.identityAppearance?React.createElement(EvaAIIdentityAvatar', 'the shared conversation header loses source and ownership');

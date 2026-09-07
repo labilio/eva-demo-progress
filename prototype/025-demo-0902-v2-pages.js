@@ -136,7 +136,7 @@
           tab.hidden = true;
           tab.setAttribute('aria-hidden', 'true');
         } else {
-          if (['文件', '资料', '团队文件'].indexOf(label) >= 0) tab.textContent = '团队文件';
+          if (['文件', '资料', '团队文件'].indexOf(label) >= 0) tab.textContent = '文件';
           tab.hidden = false;
           tab.removeAttribute('aria-hidden');
         }
@@ -188,7 +188,7 @@
     page = document.createElement('section');
     page.className = 'eva-project-detail-page';
     page.hidden = true;
-    page.innerHTML = '<header class="eva-project-detail-head"><h1></h1><span class="eva-project-tag"></span></header><nav class="eva-project-tabs" aria-label="项目功能"><button class="eva-project-tab is-active" type="button">任务</button><button class="eva-project-tab" type="button">群聊</button><button class="eva-project-tab" type="button">团队文件</button><button class="eva-project-tab" type="button">自动化</button><button class="eva-project-tab" type="button">项目设置</button></nav><div class="eva-project-detail-body"><p class="eva-project-detail-note"></p><div class="eva-project-groups"></div></div>';
+    page.innerHTML = '<header class="eva-project-detail-head"><h1></h1><span class="eva-project-tag"></span></header><nav class="eva-project-tabs" aria-label="项目功能"><button class="eva-project-tab is-active" type="button">任务</button><button class="eva-project-tab" type="button">群聊</button><button class="eva-project-tab" type="button">文件</button><button class="eva-project-tab" type="button">自动化</button><button class="eva-project-tab" type="button">项目设置</button></nav><div class="eva-project-detail-body"><p class="eva-project-detail-note"></p><div class="eva-project-groups"></div></div>';
     var list = document.querySelector('.collab-list-page');
     if (list && list.parentElement) list.parentElement.appendChild(page);
     return page;

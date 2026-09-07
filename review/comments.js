@@ -196,9 +196,9 @@ function ensureUI() {
     }
   };
   bindFloatingDrag(document.querySelector('.eva-review-panel'), document.querySelector('[data-review-drag-handle]'), 'eva-review-panel-position');
-  bindFloatingDrag(document.querySelector('[data-review-launcher]'), document.querySelector('[data-review-launcher]'), 'eva-review-launcher-position-v2');
+  bindFloatingDrag(document.querySelector('[data-review-launcher]'), document.querySelector('[data-review-launcher]'), 'eva-review-launcher-position-v3');
   applySavedPosition(document.querySelector('.eva-review-panel'), 'eva-review-panel-position');
-  applySavedPosition(document.querySelector('[data-review-launcher]'), 'eva-review-launcher-position-v2');
+  applySavedPosition(document.querySelector('[data-review-launcher]'), 'eva-review-launcher-position-v3');
   syncReviewEntryVisibility();
 }
 
