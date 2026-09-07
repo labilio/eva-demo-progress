@@ -21,11 +21,13 @@ requireText("conversationKind: 'ai-private-group'", 'My AI does not use a privat
 requireText('channel_type: 5', 'AI conversations must use Octo topic channels');
 requireText("replyPolicy: 'direct-only'", 'AI private groups must respond directly without a mention setting');
 requireText('ct?.selectedThreadId??Pt', 'AI selection must use the shared topic message path');
-forbidText('eva-ai-team__conversation-breadcrumb', 'AI private conversations must not expose group/topic breadcrumbs');
+requireText('eva-ai-team__conversation-breadcrumb', 'AI conversations must show the selected session after the AI name');
+requireText('title:Sa.sessionTitle', 'AI conversation header does not expose the selected session name');
 requireText('identityAvatarUrl:', 'My AI sessions do not carry their parent AI identity avatar');
 requireText('avatarUrl:', 'My AI identity groups do not provide an avatar');
 requireText('wk-category-header__identity-avatar', 'the shared category header cannot render an AI identity avatar');
 requireText("className:'eva-ai-team__session'", 'My AI is missing its conversation selection rows');
+requireText("roleGroup('assistant','本地助理',localIdentities)", 'My AI does not expose its local assistant group');
 requireText('eva-my-ai-sidebar-actions', 'My AI is missing separate create-assistant and new-session actions');
 requireText('eva-my-ai-identity-toggle', 'My AI identity expand/collapse control is missing from the right side');
 requireText('function EvaAITeamPage()', 'My AI has no React role controller');

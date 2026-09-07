@@ -78,13 +78,12 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
   assert.match(imPatch, /if\(identity\?\.id!==i\.id\)choose\(i\.id,sessions\[0\]\?\.id\|\|null\)/);
   assert.match(imPatch, /collapsedGroups/);
-  assert.doesNotMatch(imPatch, /roleGroup\('assistant',/);
+  assert.match(imPatch, /roleGroup\('assistant','本地助理',localIdentities\)/);
   assert.match(imPatch, /roleGroup\('persona','云端分身',personas\)/);
   assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
   assert.match(imPatch, /className:'eva-ai-team__group-count'/);
   assert.match(imPatch, /EvaAIIdentityAvatar.+eva-ai-team__identity-name.+AiBadge.+eva-ai-team__chevron/s);
-  assert.match(imPatch, /eva-ai-team__conversation-name.+eva-identity-name-text.+Sa\.name.+AiBadge/s);
-  assert.doesNotMatch(imPatch, /eva-ai-team__conversation-breadcrumb/);
+  assert.match(imPatch, /eva-ai-team__conversation-breadcrumb.+Sa\.name.+AiBadge.+Sa\.sessionTitle/s);
   assert.match(imPatch, /AI topic keeps direct title/);
   assert.doesNotMatch(source, /EvaPersonalWorkspacePanel|EvaPersonalAssistantFolder/);
   assert.doesNotMatch(source, /eva-personal-sider-panel|eva-personal-sidebar-actions/);

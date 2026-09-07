@@ -105,6 +105,21 @@ test('review account has two assistants and two independently renameable persona
  s.savePersona({id:'persona-initial',name:'新分身名字'});assert.equal(s.getSnapshot().identities.find(i=>i.id==='persona-initial').name,'新分身名字');
 });
 
+test('隐藏本地助理入口留下的状态会恢复本地身份和独立首会话',()=>{
+ const storage=memory();make({storage});const saved=JSON.parse(storage.getItem());
+ const hiddenIds=new Set(saved.identities.filter(i=>i.role==='assistant').map(i=>i.id));
+ saved.identities=saved.identities.filter(i=>i.role!=='assistant');
+ saved.sessions=saved.sessions.filter(s=>!hiddenIds.has(s.identityId));
+ delete saved.restoredLocalAssistantIdentitiesV1;
+ storage.setItem('',JSON.stringify(saved));
+ const restored=make({storage}).getSnapshot();
+ const locals=restored.identities.filter(i=>i.role==='assistant');
+ assert.equal(locals.length,2);
+ locals.forEach(identity=>assert.ok(restored.sessions.some(session=>session.identityId===identity.id)));
+ const created=make({storage}).createThread(locals[0].id);
+ assert.ok(make({storage}).getSnapshot().sessions.some(session=>session.id===created));
+});
+
 test('independent persona persists and is unaffected by local updates',async()=>{
  const storage=memory(),s=make({storage});const p=await s.createPersona(null,{name:'独立分身',configuration:{identity:'独立设置'}});
  assert.equal(p.sourceAssistantId,null);assert.equal(p.lastSyncedAt,'');
