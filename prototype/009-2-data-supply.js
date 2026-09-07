@@ -143,8 +143,6 @@
     });
   });
 
-  // Four-level decomposition demo, owned by the existing supply-chain project.
-  [[108,null,'关键供应商交付恢复计划','in_progress'],[109,108,'质量验证与放行','in_progress'],[110,109,'完成整改证据复核','in_review'],[111,110,'核对批次与检测记录','done'],[112,110,'补齐连续验证报告','todo'],[113,109,'组织现场放行评审','todo'],[114,108,'排产与交付调整','todo'],[115,114,'确认替代排产方案','todo']].forEach(function(row){supplyIssues.push({...supplyIssues[0],id:'issue-supply-tree-'+row[0],identifier:'SC-'+row[0],number:row[0],title:row[2],description:'供应链多级任务分解示例。按子任务逐项核验证据，业务结果由负责人确认。',status:row[3],parent_issue_id:row[1]?'issue-supply-tree-'+row[1]:null,workspace_id:'prod',project_id:'p-supply',assignee_id:null,assignee_name:null,assignee_type:null,labels:[],attachments:[],position:row[0]});});
   window.__EVA_SUPPLY_CHAIN_DEMO = {
     overview: {
       status: '协作中', period: {start: '2026年9月1日', end: '2026年9月30日'}, stage: '风险处置与证据复核',
