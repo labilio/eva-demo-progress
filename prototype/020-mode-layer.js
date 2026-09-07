@@ -501,13 +501,13 @@
     var shortcutInfo = context.files.shortcutInfo(resource, actor), canOpen = !shortcutInfo || shortcutInfo.status === 'available';
     var open = state.menuId === String(resource.id), items = [];
     if (isTrash) {
-      items.push(rowMenuItemHTML('select', '查看文档详情'));
+      items.push(rowMenuItemHTML('select', '查看文件信息'));
       if (context.files.can('restore', resource.spaceId, actor)) items.push(rowMenuItemHTML('restore', '恢复'));
       if (context.files.can('delete-forever', resource.spaceId, actor)) items.push(rowMenuItemHTML('delete-forever', '永久删除', true));
     } else {
       if (resource.type === 'folder') items.push(rowMenuItemHTML('open-folder', '打开文件夹'));
       else if (canOpen) items.push(rowMenuItemHTML('preview', '预览'));
-      items.push(rowMenuItemHTML('select', '查看文档详情'));
+      items.push(rowMenuItemHTML('select', '查看文件信息'));
       items.push(rowMenuItemHTML('copy-link', '复制内部链接'));
       if (context.files.can('rename', resource.spaceId, actor)) items.push(rowMenuItemHTML('rename', '重命名'));
       if (context.files.can('move', resource.spaceId, actor)) items.push(rowMenuItemHTML('move', '移动'));

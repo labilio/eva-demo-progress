@@ -215,14 +215,14 @@
         const menuButton=(label,onClick,danger)=>h('button',{key:label,type:'button',role:'menuitem',className:danger?'is-danger':undefined,onClick:event=>{event.stopPropagation();closeMenu();onClick();}},label);
         const shortcutInfo=context.files.shortcutInfo(item,actor),canOpen=!shortcutInfo||shortcutInfo.status==='available',items=[];
         if(trashMode){
-          items.push(menuButton('查看文档详情',()=>setSelectedId(item.id)));
+          items.push(menuButton('查看文件信息',()=>setSelectedId(item.id)));
           if(context.files.can('restore',item.spaceId,actor))items.push(menuButton('恢复',()=>{context.files.restore(actor,item.id);setSelectedId(null);}));
           if(context.files.can('delete-forever',item.spaceId,actor))items.push(menuButton('永久删除',()=>setDialog({type:'delete',id:item.id}),true));
         }else{
           if(item.type==='folder')items.push(menuButton('打开文件夹',()=>enterFolder(item)));
           else if(canOpen)items.push(menuButton('预览',()=>openPreview(item)));
           if(item.type!=='folder'&&canOpen)items.push(menuButton('下载',()=>download(item)));
-          items.push(menuButton('查看文档详情',()=>setSelectedId(item.id)));
+          items.push(menuButton('查看文件信息',()=>setSelectedId(item.id)));
           items.push(menuButton('复制内部链接',()=>copyLink(item)));
           if(context.files.can('rename',item.spaceId,actor))items.push(menuButton('重命名',()=>setDialog({type:'rename',id:item.id,value:item.name})));
           if(context.files.can('move',item.spaceId,actor))items.push(menuButton('移动',()=>setDialog({type:'move',id:item.id,parentId:item.parent_id||0})));
