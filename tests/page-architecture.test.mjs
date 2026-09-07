@@ -81,6 +81,8 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /roleGroup\('assistant','个人助理'/);
   assert.match(imPatch, /roleGroup\('persona','云端分身',personas\)/);
   assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
+  assert.match(imPatch, /ConvCompactItem,\{name:'我的 AI 团队',avatarUrl:window\.EvaAvatar\.uri\(\{kind:'group',id:groupStore\.id\}\)/);
+  assert.doesNotMatch(imPatch, /eva-ai-team__fixed-group-tree'\},h\('button'.+ChevronRight/s);
   assert.match(imPatch, /className:'eva-ai-team__group-count'/);
   assert.match(imPatch, /EvaAIIdentityAvatar.+eva-ai-team__identity-name.+AiBadge.+eva-ai-team__chevron/s);
   assert.match(imPatch, /EvaAIIdentityAvatar,\{appearance:evaIdentityAppearance\(i\),size:22\}/);
