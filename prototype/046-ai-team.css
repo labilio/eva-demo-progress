@@ -97,7 +97,7 @@
   color: var(--gds-color-surface-primary);
   flex-shrink: 0;
 }
-.eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-1) var(--gds-space-2-5) var(--gds-space-3); }
+.eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-3) var(--gds-space-2-5) var(--gds-space-3); }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
   /* Match adjacent project groups: whitespace separates sections; a divider
      would make the AI rail look more segmented than the message rail. */
