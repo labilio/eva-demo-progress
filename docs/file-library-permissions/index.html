@@ -1,363 +1,126 @@
-<!-- @startingPoint section="Eva 文件库" subtitle="网盘角色、权限动作与项目文件权限设计" viewport="1440x900" -->
+<!-- @startingPoint section="Eva 文件库" subtitle="网盘角色与动作权限矩阵" viewport="1440x900" -->
 <!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="octo-component-spec" content="2.0">
-  <meta name="description" content="Eva 文件库与项目文件的网盘角色、权限动作、角色矩阵和任务产出鉴权规则。">
-  <title>Eva 文件库角色与权限设计</title>
+  <meta name="description" content="Eva 文件库的网盘角色说明与动作权限矩阵。">
+  <title>Eva 文件库角色与权限矩阵</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./permission-design.css">
 </head>
 <body>
-  <svg class="icon-sprite" aria-hidden="true">
-    <symbol id="icon-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10M9 20v-6h6v6"></path></symbol>
-    <symbol id="icon-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-2a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v2M17 4a4 4 0 0 1 0 8M18 14a5 5 0 0 1 4 5v2"></path></symbol>
-    <symbol id="icon-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"></path><path d="M4 6h.01M4 12h.01M4 18h.01"></path></symbol>
-    <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></symbol>
-    <symbol id="icon-flow" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><path d="M9 6h4a5 5 0 0 1 5 5v4M6 9v9h9"></path></symbol>
-    <symbol id="icon-checklist" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"></path><path d="m3 6 1.5 1.5L7 4M3 12l1.5 1.5L7 10M3 18l1.5 1.5L7 16"></path></symbol>
-    <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M3 6h7l2 3h9v11H3z"></path></symbol>
-    <symbol id="icon-file" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z"></path><path d="M14 2v5h5"></path></symbol>
-    <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 16V3M7 8l5-5 5 5M4 16v4h16v-4"></path></symbol>
-    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></symbol>
-    <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"></path></symbol>
-    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"></path></symbol>
-    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></symbol>
-    <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></symbol>
-    <symbol id="icon-bot" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="3"></rect><path d="M12 3v4M8 12h.01M16 12h.01M9 16h6"></path></symbol>
-    <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7h.01"></path></symbol>
-  </svg>
-
-  <div class="permission-app" data-screen-label="Eva 文件库角色与权限设计">
-    <nav class="nav-rail" aria-label="主导航">
-      <div class="nav-brand" aria-label="Eva">E</div>
-      <button class="wk-icon-button rail-action" type="button" aria-label="文件库设计" aria-current="page" title="文件库设计">
-        <svg class="wk-icon" aria-hidden="true"><use href="#icon-folder"></use></svg>
-      </button>
-      <button class="wk-icon-button rail-action" type="button" aria-label="权限规则" title="权限规则">
-        <svg class="wk-icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
-      </button>
-      <span class="rail-spacer"></span>
-      <button class="wk-icon-button rail-action" type="button" aria-label="关于本文档" title="关于本文档" data-view-jump="overview">
-        <svg class="wk-icon" aria-hidden="true"><use href="#icon-info"></use></svg>
-      </button>
-    </nav>
-
-    <aside class="doc-sidebar" aria-label="设计文档目录">
-      <header class="sidebar-header">
-        <div>
-          <strong>文件库权限</strong>
-          <span>设计提案 v1.0</span>
-        </div>
-      </header>
-      <div class="sidebar-search">
-        <label class="wk-search-wrap">
-          <svg class="wk-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
-          <span class="wk-visually-hidden">搜索权限动作</span>
-          <input class="wk-search" id="globalSearch" type="search" placeholder="搜索权限动作">
-        </label>
-      </div>
-      <nav class="sidebar-nav" aria-label="章节">
-        <button class="doc-nav-item is-active" type="button" data-view="overview" aria-current="page">
-          <svg class="wk-icon" aria-hidden="true"><use href="#icon-home"></use></svg><span>模型总览</span>
-        </button>
-        <button class="doc-nav-item" type="button" data-view="roles">
-          <svg class="wk-icon" aria-hidden="true"><use href="#icon-users"></use></svg><span>角色设计</span>
-        </button>
-        <button class="doc-nav-item" type="button" data-view="actions">
-          <svg class="wk-icon" aria-hidden="true"><use href="#icon-list"></use></svg><span>权限动作</span>
-        </button>
-        <button class="doc-nav-item" type="button" data-view="matrix">
-          <svg class="wk-icon" aria-hidden="true"><use href="#icon-grid"></use></svg><span>角色权限矩阵</span>
-        </button>
-        <button class="doc-nav-item" type="button" data-view="task-flow">
-          <svg class="wk-icon" aria-hidden="true"><use href="#icon-flow"></use></svg><span>任务与 AI</span>
-        </button>
-        <button class="doc-nav-item" type="button" data-view="acceptance">
-          <svg class="wk-icon" aria-hidden="true"><use href="#icon-checklist"></use></svg><span>验收规则</span>
-        </button>
-      </nav>
-      <div class="sidebar-boundary" role="note">
-        <svg class="wk-icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
-        <p><strong>设计边界</strong><span>仅文件空间和本地文件；无在线文档、无只读角色、无单文件外部授权。</span></p>
-      </div>
-    </aside>
-
-    <div class="doc-workspace">
-      <main class="doc-main">
-        <header class="main-header">
-          <div class="main-title-wrap">
-            <h1 id="pageTitle">模型总览</h1>
-            <span class="status-pill">提案</span>
-            <label class="mobile-view-picker"><span class="wk-visually-hidden">切换文档章节</span><select id="mobileViewPicker" aria-label="切换文档章节"><option value="overview">模型总览</option><option value="roles">角色设计</option><option value="actions">权限动作</option><option value="matrix">角色权限矩阵</option><option value="task-flow">任务与 AI</option><option value="acceptance">验收规则</option></select></label>
-          </div>
-          <div class="header-actions">
-            <button class="wk-button wk-button--secondary" id="openCalculator" type="button">权限试算</button>
-            <button class="wk-button wk-button--primary" type="button" data-view-jump="matrix">查看矩阵</button>
-          </div>
-        </header>
-
-        <section class="doc-panel" id="panel-overview" data-panel="overview" aria-labelledby="pageTitle">
-          <div class="page-intro">
-            <p class="eyebrow">Eva 文件库与项目文件</p>
-            <h2>文件库负责聚合，文件空间负责授权</h2>
-            <p>每个本地文件只属于一个真实范围。全局文件库只汇总当前用户有权访问的个人、项目、会话和任务文件，不产生新的权限。</p>
-          </div>
-
-          <div class="principle-grid">
-            <article class="principle-block">
-              <span class="principle-index">01</span>
-              <div><h3>所属空间唯一</h3><p>个人上传归个人空间；项目上传和项目任务产出归项目空间；会话原始附件归会话。</p></div>
-            </article>
-            <article class="principle-block">
-              <span class="principle-index">02</span>
-              <div><h3>角色提供动作</h3><p>项目负责人、管理员、成员分别映射为 Owner、Manager、Editor，权限按动作判断。</p></div>
-            </article>
-            <article class="principle-block">
-              <span class="principle-index">03</span>
-              <div><h3>链接不授予权限</h3><p>复制文件链接只提供定位。每次打开、预览和下载都重新校验所属范围。</p></div>
-            </article>
-            <article class="principle-block">
-              <span class="principle-index">04</span>
-              <div><h3>AI 使用临时委托</h3><p>专家和专家团只能读任务选定输入、写当前任务产出，不成为文件空间成员。</p></div>
-            </article>
-          </div>
-
-          <section class="content-section">
-            <div class="section-heading">
-              <div><span class="section-number">01</span><h3>文件进入系统后的归属</h3></div>
-              <span class="section-caption">统一 FileEntry，不复制权限文本</span>
-            </div>
-            <div class="scope-flow" aria-label="文件归属流程">
-              <div class="scope-source"><svg class="wk-icon" aria-hidden="true"><use href="#icon-upload"></use></svg><span>本地上传</span></div>
-              <svg class="flow-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
-              <div class="scope-node"><strong>个人文件空间</strong><span>本人唯一 Owner</span></div>
-              <div class="scope-or">或</div>
-              <div class="scope-node"><strong>项目文件空间</strong><span>项目角色自动映射</span></div>
-              <svg class="flow-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
-              <div class="scope-result"><strong>文件库</strong><span>仅聚合可访问结果</span></div>
-            </div>
-          </section>
-
-          <section class="content-section">
-            <div class="section-heading"><div><span class="section-number">02</span><h3>来源与默认规则</h3></div></div>
-            <div class="table-wrap">
-              <table class="spec-table">
-                <thead><tr><th>来源</th><th>真实归属</th><th>默认访问者</th><th>进入项目文件的方式</th></tr></thead>
-                <tbody>
-                  <tr><td>全局文件库上传</td><td>用户选择的个人或项目空间</td><td>目标空间有效成员</td><td>目标为项目时直接进入</td></tr>
-                  <tr><td>项目模块上传</td><td>当前项目文件空间</td><td>当前项目全体成员</td><td>直接进入</td></tr>
-                  <tr><td>创建任务时上传</td><td>当前项目文件空间</td><td>当前项目全体成员</td><td>建立任务输入关系</td></tr>
-                  <tr><td>专家/专家团任务产出</td><td>当前项目文件空间</td><td>项目成员；AI 仅获任务委托</td><td>确认后进入正式成果</td></tr>
-                  <tr><td>项目私密群附件</td><td>来源群聊</td><td>来源群有效成员</td><td>明确“保存到项目”后创建共享版本</td></tr>
-                  <tr><td>私聊附件</td><td>私聊会话</td><td>私聊参与者</td><td>复制到个人或有权限的项目</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section class="content-section compact-section">
-            <div class="section-heading"><div><span class="section-number">03</span><h3>统一鉴权公式</h3></div></div>
-            <div class="auth-formula" role="note">
-              <span>系统有效性通过</span><strong>AND</strong><span>主体拥有动作</span><strong>AND</strong><span>关联对象条件通过</span><strong>=</strong><span>允许操作</span>
-            </div>
-            <p class="section-footnote">系统有效性包括账号、租户、对象类型、生命周期、安全扫描和项目成员关系。任何一项失败都不会进入角色判断。</p>
-          </section>
-
-          <section class="content-section compact-section">
-            <div class="section-heading"><div><span class="section-number">04</span><h3>Owner 与记录字段的边界</h3></div></div>
-            <div class="table-wrap">
-              <table class="spec-table">
-                <thead><tr><th>对象 / 字段</th><th>定义</th><th>是否产生权限</th></tr></thead>
-                <tbody>
-                  <tr><td><code>FileSpace.Owner</code></td><td>空间治理角色；个人空间为本人，项目空间为项目负责人</td><td>是，提供空间治理动作</td></tr>
-                  <tr><td><code>FileEntry.space_id</code></td><td>文件唯一所属空间；文件本身不设置 <code>owner_id</code></td><td>是，决定从哪个空间派生权限</td></tr>
-                  <tr><td><code>created_by_actor</code></td><td>上传者或生成者，可记录人类、专家、专家团或数字员工</td><td>否，仅用于来源和审计</td></tr>
-                  <tr><td><code>accountable_user_id</code></td><td>任务产出的业务责任人，必须是项目内人类</td><td>仅提供该任务产出的条件性确认资格</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </section>
-
-        <section class="doc-panel" id="panel-roles" data-panel="roles" aria-labelledby="pageTitle" hidden>
-          <div class="page-intro page-intro--compact">
-            <p class="eyebrow">FileSpace Role</p>
-            <h2>三个角色，由项目身份自动派生</h2>
-            <p>文件模块不维护第二套成员关系。项目角色变化时，文件空间角色实时同步。</p>
-          </div>
-          <div class="role-switch" role="group" aria-label="选择文件空间角色" id="roleSwitch"></div>
-          <section class="role-detail" id="roleDetail" aria-live="polite"></section>
-
-          <section class="content-section">
-            <div class="section-heading"><div><span class="section-number">01</span><h3>项目角色映射</h3></div></div>
-            <div class="mapping-list">
-              <div><span>项目负责人</span><svg class="wk-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg><strong>FileSpace.Owner</strong><small>唯一，由项目负责人转让自动同步</small></div>
-              <div><span>项目管理员</span><svg class="wk-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg><strong>FileSpace.Manager</strong><small>可治理空间，不能改变项目归属</small></div>
-              <div><span>项目成员</span><svg class="wk-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg><strong>FileSpace.Editor</strong><small>最低项目文件角色，可上传和管理内容</small></div>
-            </div>
-          </section>
-
-          <div class="boundary-note" role="note">
-            <svg class="wk-icon" aria-hidden="true"><use href="#icon-info"></use></svg>
-            <div><strong>不存在只读成员</strong><p>有效项目成员的最低文件角色是 Editor；非项目成员没有任何文件空间权限，拿到链接也不能访问。</p></div>
-          </div>
-        </section>
-
-        <section class="doc-panel" id="panel-actions" data-panel="actions" aria-labelledby="pageTitle" hidden>
-          <div class="page-intro page-intro--compact">
-            <p class="eyebrow">Action Catalog</p>
-            <h2>按动作鉴权，不比较“最高角色”</h2>
-            <p>选择分类或搜索动作；打开详情可查看主对象、角色来源、前置条件和结果。</p>
-          </div>
-          <div class="action-toolbar">
-            <label class="wk-search-wrap action-search">
-              <svg class="wk-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
-              <span class="wk-visually-hidden">搜索权限动作</span>
-              <input class="wk-search" id="actionSearch" type="search" placeholder="搜索动作、Action 或条件">
-            </label>
-            <div class="wk-segmented action-filters" role="group" aria-label="动作分类" id="actionFilters"></div>
-          </div>
-          <div class="table-wrap action-table-wrap">
-            <table class="spec-table action-table">
-              <thead><tr><th>动作</th><th>Action</th><th>允许角色</th><th>关键条件</th><th><span class="wk-visually-hidden">详情</span></th></tr></thead>
-              <tbody id="actionRows"></tbody>
-            </table>
-          </div>
-          <div class="empty-state" id="actionEmpty" hidden><svg class="wk-icon" aria-hidden="true"><use href="#icon-search"></use></svg><strong>没有匹配的权限动作</strong><span>请更换关键词或动作分类。</span></div>
-        </section>
-
-        <section class="doc-panel" id="panel-matrix" data-panel="matrix" aria-labelledby="pageTitle" hidden>
-          <div class="page-intro page-intro--compact">
-            <p class="eyebrow">Role × Action</p>
-            <h2>文件空间角色权限矩阵</h2>
-            <p>“条件”表示还需项目治理、来源范围或生命周期校验；破坏性操作统一进入回收站并记录审计。</p>
-          </div>
-          <div class="matrix-legend"><span><i class="legend-dot is-allow"></i>允许</span><span><i class="legend-dot is-condition"></i>条件允许</span><span><i class="legend-dot is-deny"></i>不允许</span></div>
-          <div class="table-wrap matrix-wrap" id="matrixTable"></div>
-          <div class="boundary-note" role="note">
-            <svg class="wk-icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
-            <div><strong>成员资格是访问前提</strong><p>角色只在有效项目成员关系内生效。退出项目后角色来源立即消失；文件链接和快捷方式不会保留访问资格。</p></div>
-          </div>
-        </section>
-
-        <section class="doc-panel" id="panel-task-flow" data-panel="task-flow" aria-labelledby="pageTitle" hidden>
-          <div class="page-intro page-intro--compact">
-            <p class="eyebrow">Task Output</p>
-            <h2>执行方可以是 AI，业务责任必须落在人</h2>
-            <p>任务文件归项目文件空间；专家或专家团是生成者，不是空间成员，也不是文件 owner。若现有产品字段仍叫“任务负责人”，应将它解释为执行方，而不是文件权限归属。</p>
-          </div>
-
-          <div class="task-model">
-            <div class="task-field"><span>执行方</span><strong>人类 / 专家 / 专家团 / 数字员工</strong><small>executor_type + executor_id</small></div>
-            <div class="task-field"><span>业务责任人</span><strong>项目内人类</strong><small>accountable_user_id，AI 执行时必填</small></div>
-            <div class="task-field"><span>验收人</span><strong>项目内人类</strong><small>reviewer_user_id，可选</small></div>
-          </div>
-
-          <section class="content-section">
-            <div class="section-heading"><div><span class="section-number">01</span><h3>示例：SC-103 质量异常任务</h3></div></div>
-            <div class="task-example">
-              <div class="task-example__head"><span class="file-mark"><svg class="wk-icon" aria-hidden="true"><use href="#icon-file"></use></svg></span><div><strong>A-2409来料异常分析报告.pdf</strong><span>项目任务产出 · 待确认 · v1</span></div></div>
-              <dl>
-                <div><dt>所属空间</dt><dd>供应链运营协同</dd></div>
-                <div><dt>关联任务</dt><dd>SC-103 处理关键供应商来料质量异常</dd></div>
-                <div><dt>生成者</dt><dd>SQE运营专家</dd></div>
-                <div><dt>业务责任人</dt><dd>王宜林</dd></div>
-              </dl>
-            </div>
-          </section>
-
-          <section class="content-section">
-            <div class="section-heading"><div><span class="section-number">02</span><h3>AI 任务委托动作</h3></div></div>
-            <div class="table-wrap">
-              <table class="spec-table ai-table">
-                <thead><tr><th>动作</th><th>AI 执行方</th><th>条件</th></tr></thead>
-                <tbody>
-                  <tr><td>读取任务选定输入</td><td><span class="cell-allow">允许</span></td><td>仅 attachment_id 白名单</td></tr>
-                  <tr><td>向当前任务提交产出</td><td><span class="cell-allow">允许</span></td><td>任务有效且执行方匹配</td></tr>
-                  <tr><td>上传自己的产出新版本</td><td><span class="cell-allow">允许</span></td><td>任务未结束、产出未锁定</td></tr>
-                  <tr><td>浏览项目全部文件</td><td><span class="cell-deny">拒绝</span></td><td>AI 不获得 FileSpace Role</td></tr>
-                  <tr><td>移动、删除、分享其他文件</td><td><span class="cell-deny">拒绝</span></td><td>委托不包含治理动作</td></tr>
-                  <tr><td>管理成员与权限</td><td><span class="cell-deny">拒绝</span></td><td>仅限项目人类治理角色</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section class="content-section compact-section">
-            <div class="section-heading"><div><span class="section-number">03</span><h3>产出状态</h3></div></div>
-            <div class="state-flow" aria-label="任务产出状态">
-              <span>生成中</span><svg class="wk-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg><span>待确认</span><svg class="wk-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg><span class="is-final">已确认</span>
-              <span class="state-branch">待确认 → 已退回 → 上传新版本 → 待确认</span>
-            </div>
-            <p class="section-footnote">确认绑定具体版本。上传新版本不会改写旧版本及旧确认记录。</p>
-          </section>
-        </section>
-
-        <section class="doc-panel" id="panel-acceptance" data-panel="acceptance" aria-labelledby="pageTitle" hidden>
-          <div class="page-intro page-intro--compact">
-            <p class="eyebrow">Acceptance</p>
-            <h2>权限与上传验收规则</h2>
-            <p>覆盖全局上传、项目文件、会话转存、AI 任务委托、链接和生命周期。</p>
-          </div>
-          <ol class="acceptance-list" id="acceptanceList">
-            <li><span>01</span><p><strong>角色收敛</strong>系统仅存在 Owner、Manager、Editor 三种文件空间角色，不提供只读角色及赋权入口。</p></li>
-            <li><span>02</span><p><strong>全局上传选目标</strong>在“所有文件”上传时必须选择个人或具备 Editor 以上权限的项目。</p></li>
-            <li><span>03</span><p><strong>项目内直接上传</strong>项目成员可上传文件，目标固定为当前项目文件空间。</p></li>
-            <li><span>04</span><p><strong>链接不授权</strong>非项目成员即使获得文件链接，预览和下载仍被拒绝。</p></li>
-            <li><span>05</span><p><strong>成员退出回收权限</strong>成员退出项目后，项目文件从其全局文件库消失，原链接不可访问。</p></li>
-            <li><span>06</span><p><strong>Owner 自动同步</strong>项目负责人转让时，项目文件空间 Owner 同步变化，无独立转让入口。</p></li>
-            <li><span>07</span><p><strong>私密群不越权</strong>未加入私密项目群的项目负责人或管理员不能访问群内原始附件。</p></li>
-            <li><span>08</span><p><strong>转存形成项目版本</strong>有源群读取权和目标项目 Editor 权限时，可保存项目共享版本，但不会获得来源群权限。</p></li>
-            <li><span>09</span><p><strong>快捷方式不扩权</strong>目标空间快捷方式不能为无源权限成员提供预览或下载。</p></li>
-            <li><span>10</span><p><strong>AI 最小委托</strong>专家只能读取任务明确提供的输入，不能浏览项目文件库。</p></li>
-            <li><span>11</span><p><strong>AI 产出归项目</strong>生成者记录专家或专家团；业务责任人必须是项目内人类。</p></li>
-            <li><span>12</span><p><strong>私有草稿需发布</strong>个人助理产出未经本人明确提交时，项目成员不可见。</p></li>
-            <li><span>13</span><p><strong>删除可恢复</strong>Editor 删除文件进入回收站，只有 Owner/Manager 可以永久删除。</p></li>
-            <li><span>14</span><p><strong>扫描先于访问</strong>安全扫描中或已隔离的文件不能预览、下载、复制链接或提供给 AI。</p></li>
-            <li><span>15</span><p><strong>版本可追溯</strong>新版本不覆盖旧版本及其上传者、任务来源、确认与审计记录。</p></li>
-          </ol>
-        </section>
-      </main>
-
-      <aside class="wk-drawer action-drawer" id="actionDrawer" aria-labelledby="drawerTitle" hidden>
-        <header class="wk-drawer__header">
-          <h2 class="wk-drawer__title" id="drawerTitle">权限动作详情</h2>
-          <button class="wk-icon-button wk-icon-button--xs" id="closeDrawer" type="button" aria-label="关闭权限动作详情">
-            <svg class="wk-icon" aria-hidden="true"><use href="#icon-close"></use></svg>
-          </button>
-        </header>
-        <div class="wk-drawer__body" id="drawerBody"></div>
-      </aside>
+  <header class="page-header">
+    <div class="page-header__inner">
+      <span class="page-mark" aria-hidden="true">E</span>
+      <strong>文件库权限设计</strong>
+      <span>角色与动作矩阵</span>
     </div>
-  </div>
+  </header>
 
-  <dialog class="wk-modal permission-modal" id="permissionCalculator" aria-labelledby="calculatorTitle">
-    <form method="dialog" id="calculatorForm">
-      <header class="wk-modal__header">
-        <h2 class="wk-modal__title" id="calculatorTitle">权限试算</h2>
-        <button class="wk-icon-button wk-icon-button--xs" value="cancel" aria-label="关闭权限试算">
-          <svg class="wk-icon" aria-hidden="true"><use href="#icon-close"></use></svg>
-        </button>
-      </header>
-      <div class="wk-modal__body">
-        <div class="calculator-form">
-          <label class="form-item"><span>当前身份</span><select id="calculatorRole"><option value="Owner">项目负责人 · Owner</option><option value="Manager">项目管理员 · Manager</option><option value="Editor">项目成员 · Editor</option><option value="AI">任务执行 AI</option><option value="none">非项目成员</option></select></label>
-          <label class="form-item"><span>准备执行</span><select id="calculatorAction"></select></label>
-          <div class="calculator-result" id="calculatorResult" role="status" aria-live="polite"></div>
-        </div>
+  <main class="permission-page" data-screen-label="Eva 文件库角色与权限矩阵">
+    <section class="page-intro" aria-labelledby="page-title">
+      <p class="eyebrow">FILE SPACE PERMISSION</p>
+      <h1 id="page-title">三个角色，一张权限矩阵</h1>
+      <p>文件库不维护独立成员，项目角色自动映射为文件空间角色。项目成员最低即 Editor，不设置 Viewer 或单文件只读角色。</p>
+    </section>
+
+    <section aria-labelledby="roles-title">
+      <div class="section-heading">
+        <span>01</span>
+        <h2 id="roles-title">角色</h2>
       </div>
-      <footer class="wk-modal__footer">
-        <button class="wk-button wk-button--secondary" value="cancel">关闭</button>
-        <button class="wk-button wk-button--primary" id="calculatePermission" type="button">开始试算</button>
-      </footer>
-    </form>
-  </dialog>
+      <div class="role-grid">
+        <article class="role-card">
+          <span class="role-mark">O</span>
+          <div>
+            <h3>Owner</h3>
+            <p>个人空间本人，或项目负责人。唯一角色，负责文件空间最终治理。</p>
+          </div>
+        </article>
+        <article class="role-card">
+          <span class="role-mark">M</span>
+          <div>
+            <h3>Manager</h3>
+            <p>项目管理员。可管理全部文件内容、回收站和操作记录，但不能单独改变项目归属。</p>
+          </div>
+        </article>
+        <article class="role-card">
+          <span class="role-mark">E</span>
+          <div>
+            <h3>Editor</h3>
+            <p>普通项目成员。可查看、上传和管理项目文件，但不能永久删除或查看完整操作记录。</p>
+          </div>
+        </article>
+      </div>
 
-  <div class="toast-host" aria-live="polite"><div class="wk-toast wk-toast--info" id="appToast" role="status" hidden><svg class="wk-toast__icon wk-icon" aria-hidden="true"><use href="#icon-check"></use></svg><span id="toastText"></span></div></div>
-  <script src="./app.js"></script>
+      <div class="scope-note" role="note">
+        <strong>任务负责人不是文件 Owner</strong>
+        <p>专家、专家团和数字员工不属于上述角色。执行任务时仅临时读取已选输入、写入当前任务产出；产出归项目文件空间，业务责任仍落到项目内人类。</p>
+      </div>
+    </section>
+
+    <section class="matrix-section" aria-labelledby="matrix-title">
+      <div class="section-heading">
+        <span>02</span>
+        <h2 id="matrix-title">角色权限矩阵</h2>
+      </div>
+      <div class="matrix-legend" aria-label="矩阵图例">
+        <span><i class="legend-dot is-allow"></i>允许</span>
+        <span><i class="legend-dot is-condition"></i>满足条件后允许</span>
+        <span><i class="legend-dot is-deny"></i>不允许</span>
+      </div>
+      <div class="table-wrap" tabindex="0" aria-label="角色权限矩阵，可横向滚动">
+        <table class="permission-matrix">
+          <thead>
+            <tr>
+              <th>动作</th>
+              <th>Owner</th>
+              <th>Manager</th>
+              <th>Editor</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="matrix-group"><th colspan="5">查看与获取</th></tr>
+            <tr><td>浏览、搜索、查看详情</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>只返回当前所属空间内的内容</td></tr>
+            <tr><td>预览文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>文件安全扫描通过且格式支持</td></tr>
+            <tr><td>下载文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>下载时重新校验项目成员身份</td></tr>
+            <tr><td>复制文件内部链接</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>链接只定位文件，不授予访问权限</td></tr>
+
+            <tr class="matrix-group"><th colspan="5">创建与管理</th></tr>
+            <tr><td>上传本地文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>全局上传必须先选择个人或有权限的项目</td></tr>
+            <tr><td>新建文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>文件夹继承所属空间权限，不设独立权限</td></tr>
+            <tr><td>重命名文件或文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>不改变文件归属和历史版本</td></tr>
+            <tr><td>在当前空间内移动</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>跨空间不能直接移动</td></tr>
+            <tr><td>管理文件版本</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>包括查看、上传新版本和恢复历史版本</td></tr>
+            <tr><td>复制文件或文件夹</td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td>同空间直接允许；跨空间还需来源下载权和目标上传权</td></tr>
+            <tr><td>将群文件保存到项目</td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td>同时具备来源群读取权和目标项目上传权</td></tr>
+
+            <tr class="matrix-group"><th colspan="5">删除与治理</th></tr>
+            <tr><td>删除文件或文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>只进入回收站，不立即物理删除</td></tr>
+            <tr><td>从回收站恢复</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>原目录不存在时恢复到空间根目录</td></tr>
+            <tr><td>永久删除</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>必须满足组织留存规则并进行危险确认</td></tr>
+            <tr><td>查看完整操作记录</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>包括上传、下载、移动、版本和删除记录</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <details class="review-note">
+      <summary>动作 Review 结论</summary>
+      <div>
+        <p><strong>补充：</strong>把原先只有“上传新版本”的定义补齐为查看、上传和恢复版本，并补上同空间复制。</p>
+        <p><strong>合并：</strong>发现空间、查看空间、浏览、搜索和元数据读取，统一为“浏览、搜索、查看详情”。</p>
+        <p><strong>不纳入：</strong>查看自身权限、权限来源、Owner 同步属于系统能力；任务输入、任务产出确认属于任务模块；快捷方式和独立空间设置当前没有明确产品入口，暂不设计；排序、筛选和收藏不改变共享权限，无需放入角色矩阵。</p>
+      </div>
+    </details>
+
+    <footer class="page-footnote">
+      <p>统一规则：文件本身不设置独立 Owner；上传者或 AI 生成者只用于来源和审计；项目成员退出后立即失去项目文件访问权。</p>
+    </footer>
+  </main>
 </body>
 </html>
