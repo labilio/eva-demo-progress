@@ -343,7 +343,7 @@
 
 .eva-project-info__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
     margin-top: 16px;
   }
@@ -461,43 +461,6 @@
     font-weight: 600;
   }
 
-.eva-project-info__people {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-  }
-
-  .eva-project-info__people > div {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    gap: 9px;
-  }
-
-  .eva-project-info__people > div > span {
-    display: grid;
-    min-width: 0;
-  }
-
-  .eva-project-info__people strong,
-  .eva-project-info__people small {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .eva-project-info__people strong {
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 18px;
-  }
-
-  .eva-project-info__people small {
-    color: var(--semi-color-text-2);
-    font-size: 11px;
-    line-height: 16px;
-  }
-
   @media (max-width: 900px) {
     .eva-project-info {
       padding-inline: 28px;
@@ -508,7 +471,4 @@
       grid-template-columns: 1fr;
     }
 
-    .eva-project-info__card--milestones {
-      grid-row: auto;
-    }
   }
