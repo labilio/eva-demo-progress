@@ -13,15 +13,16 @@ test('个人页使用当前main的独立宿主，不加载旧历史栏隐藏脚�
   assert.doesNotMatch(read('prototype/044-final-layout-convergence.js'),/eva-history-source|historyDivider/);
 });
 
-test('AI团队筛选排除历史助理且保留分身员工', () => {
+test('AI团队包含个人助理且保留分身员工', () => {
   const source=read('prototype/009-5-patch-im.js');
   const match=source.match(/const teamIdentities\s*=\s*([^;]+);/);
   assert.ok(match,'缺少团队身份过滤');
   const snapshot={identities:[{id:'old',role:'assistant'},{id:'p',role:'persona'},{id:'e',role:'employee'}]};
   const ids=vm.runInNewContext(`(${match[1]}).map(i=>i.id).join(',')`,{snapshot});
-  assert.equal(ids,'p,e');
+  assert.equal(ids,'old,p,e');
   const body=source.slice(source.indexOf('function EvaAITeamPage()'),source.indexOf('\n    const cut',source.indexOf('function EvaAITeamPage()')));
-  assert.doesNotMatch(body,/open\('connect'\)|store\.connectAssistant\(|roleGroup\('assistant'/);
+  assert.doesNotMatch(body,/open\('connect'\)|store\.connectAssistant\(/);
+  assert.match(body,/roleGroup\('assistant','个人助理'/);
   assert.match(body,/requestedIdentityId/);
   assert.match(body,/const identity = teamIdentities\.find/);
 });

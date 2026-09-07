@@ -12,9 +12,21 @@ const memory = () => { let value = null; return { getItem: () => value, setItem:
 test('snapshots are immutable, stable, and notify only mutations', () => {
  const s=make(); const first=s.getSnapshot(); assert.equal(first,s.getSnapshot()); assert.throws(()=>{first.identities[0].name='bad';}); let calls=0; const off=s.subscribe(()=>calls++); s.setDraft('draft:ai-general','hello'); assert.equal(calls,1); assert.equal(first.drafts['draft:ai-general'],undefined); off(); s.setDraft('draft:ai-general','hi'); assert.equal(calls,1);
 });
-test('connecting deduplicates concurrent calls and failed connections leave no identity', async () => {
- const d=deferred(); const s=make({adapter:{connect:()=>d.promise}}); const local=s.saveLocalAssistant({mode:'create',name:'连接测试'}); const a=s.connectAssistant(local.id); const b=s.connectAssistant(local.id); assert.equal(s.getSnapshot().identities.length,4); d.resolve(); assert.equal((await a).id,(await b).id); assert.equal(s.getSnapshot().identities.length,5); assert.equal((await s.connectAssistant(local.id)).id,(await a).id);
- const f=make({adapter:{connect:()=>Promise.reject(Error('demo fail'))}}); await assert.rejects(f.connectAssistant(f.saveLocalAssistant({mode:'create',name:'失败连接'}).id)); assert.equal(f.getSnapshot().identities.length,4);
+test('personal assistants automatically join IM once without a manual connection', async () => {
+ const storage=memory(), s=make({storage,adapter:{connect:()=>{throw Error('manual connection must not run');}}});
+ const local=s.saveLocalAssistant({mode:'create',name:'连接测试'});
+ const identities=s.getSnapshot().identities.filter(i=>i.sourceAssistantId===local.id&&i.role==='assistant');
+ assert.equal(identities.length,1);
+ const [a,b]=await Promise.all([s.connectAssistant(local.id),s.connectAssistant(local.id)]);
+ assert.equal(a.id,b.id); assert.equal(a.id,identities[0].id);
+ const thread=s.createThread(a.id);s.sendMessage(a.id,thread,'IM 专属消息');s.setDraft(thread,'IM 草稿');
+ s.saveLocalAssistant({mode:'edit',id:local.id,name:'改名后的助理'});
+ const restored=make({storage}).getSnapshot();
+ assert.equal(restored.identities.find(i=>i.id===a.id).name,'改名后的助理');
+ assert.equal(restored.identities.filter(i=>i.sourceAssistantId===local.id&&i.role==='assistant').length,1);
+ const saved=restored.sessions.find(t=>t.id===thread);
+ assert.equal(saved.channel_type,5);assert.equal(saved.group_no,'ai-pair:u-wangyilin:'+a.id);
+ assert.equal(saved.messages[0].text,'IM 专属消息'); assert.equal(restored.drafts[thread],'IM 草稿');
 });
 test('multiple personas have distinct names and failed creation leaves no records',async()=>{
  const s=make(); const [a,b]=await Promise.all([s.createPersona('assistant-general'),s.createPersona('assistant-general')]); assert.notEqual(a.id,b.id); assert.notEqual(a.name,b.name); assert.equal(a.role,'persona'); const f=make({adapter:{createPersona:()=>Promise.reject(Error('fail'))}}); await assert.rejects(f.createPersona('assistant-general')); assert.equal(f.getSnapshot().identities.length,4);
@@ -29,13 +41,13 @@ test('storage failure remains usable with visible warning',()=>{
  const s=make({storage:{getItem(){throw Error('denied');},setItem(){throw Error('denied');}}}); assert.ok(s.getSnapshot().storageWarning); assert.ok(s.sendMessage('ai-general',null,'works'));
 });
 test('local edits sanitize configuration, update assistant names, and one-way sync personas',async()=>{
- const s=make(); const persona=s.getSnapshot().identities.find(x=>x.role==='persona'); const l=s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'王宜林的通用助理',configuration:{identity:'测试',personality:'简洁',skills:['文档'],privateContext:'secret'}}); assert.equal(l.version,2); assert.equal(l.configuration.privateContext,undefined); await tick(); const snap=s.getSnapshot(); assert.equal(snap.identities.find(x=>x.id==='ai-general').name,'王宜林的通用助理'); const p=snap.identities.find(x=>x.id===persona.id); assert.equal(p.name,persona.name); assert.equal(p.configVersion,2); assert.equal(p.configuration.identity,'测试'); assert.equal(p.syncStatus,'synced'); const created=s.saveLocalAssistant({mode:'create',name:'新本地'}); assert.ok(created.id); assert.equal(s.getSnapshot().identities.length,4);
+ const s=make(); const persona=s.getSnapshot().identities.find(x=>x.role==='persona'); const l=s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration:{identity:'测试',personality:'简洁',skills:['文档'],privateContext:'secret'}}); assert.equal(l.version,2); assert.equal(l.configuration.privateContext,undefined); await tick(); const snap=s.getSnapshot(); assert.equal(snap.identities.find(x=>x.id==='ai-general').name,'通用助理'); const p=snap.identities.find(x=>x.id===persona.id); assert.equal(p.name,persona.name); assert.equal(p.configVersion,2); assert.equal(p.configuration.identity,'测试'); assert.equal(p.syncStatus,'synced'); const created=s.saveLocalAssistant({mode:'create',name:'新本地'}); assert.ok(created.id); assert.equal(s.getSnapshot().identities.length,5);
 });
 test('offline updates wait and reconnect synchronizes latest configuration',async()=>{
- const s=make(); s.setLocalOnline('assistant-general',false); s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'王宜林的通用助理'}); assert.equal(s.getSnapshot().identities.find(x=>x.id==='persona-initial').syncStatus,'waiting'); s.setLocalOnline('assistant-general',true); await tick(); assert.equal(s.getSnapshot().identities.find(x=>x.id==='persona-initial').configVersion,2);
+ const s=make(); s.setLocalOnline('assistant-general',false); s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理'}); assert.equal(s.getSnapshot().identities.find(x=>x.id==='persona-initial').syncStatus,'waiting'); s.setLocalOnline('assistant-general',true); await tick(); assert.equal(s.getSnapshot().identities.find(x=>x.id==='persona-initial').configVersion,2);
 });
 test('out of order sync cannot overwrite a newer configuration, failure is retryable',async()=>{
- const jobs=[]; const s=make({adapter:{sync:()=>{const d=deferred();jobs.push(d);return d.promise;}}}); s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'王宜林的通用助理'}); s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'王宜林的通用助理'}); await Promise.resolve(); jobs[1].resolve(); await tick(); jobs[0].resolve(); await tick(); assert.equal(s.getSnapshot().identities.find(x=>x.id==='persona-initial').configVersion,3);
+ const jobs=[]; const s=make({adapter:{sync:()=>{const d=deferred();jobs.push(d);return d.promise;}}}); s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理'}); s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理'}); await Promise.resolve(); jobs[1].resolve(); await tick(); jobs[0].resolve(); await tick(); assert.equal(s.getSnapshot().identities.find(x=>x.id==='persona-initial').configVersion,3);
  const f=make({adapter:{sync:()=>Promise.reject(Error('fail'))}}); await assert.rejects(f.syncPersona('persona-initial')); assert.equal(f.getSnapshot().identities.find(x=>x.id==='persona-initial').syncStatus,'error');
 });
 test('refresh converts in-progress sync to retryable state',()=>{
@@ -44,7 +56,7 @@ test('refresh converts in-progress sync to retryable state',()=>{
 test('offline transition invalidates in-flight sync and reconnect uses latest version', async () => {
  const jobs=[];
  const s=make({adapter:{sync:()=>{const d=deferred();jobs.push(d);return d.promise;}}});
- s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'王宜林的通用助理'});
+ s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理'});
  await Promise.resolve(); s.setLocalOnline('assistant-general',false); jobs[0].resolve(); await tick();
  assert.equal(s.getSnapshot().identities.find(i=>i.id==='persona-initial').syncStatus,'waiting');
  assert.equal(s.getSnapshot().identities.find(i=>i.id==='persona-initial').configVersion,1);
@@ -84,7 +96,7 @@ test('product copy migration preserves user text, identities and drafts', () => 
 test('complete editor fields persist and local updates sync to personas without losing tabs', async()=>{
  const storage=memory(), s=make({storage});
  const configuration={identity:'角色',personality:'风格',about:'背景',skills:['整理'],collaboration:'协作说明',description:'简介',model:'Qwen3.7 Plus',toolset:'四两的产品脑袋'};
- s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'王宜林的通用助理',configuration}); await tick();
+ s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration}); await tick();
  const p=s.getSnapshot().identities.find(i=>i.id==='persona-initial'); assert.equal(p.configuration.about,'背景'); assert.equal(p.configuration.collaboration,'协作说明');
  const restored=make({storage}); assert.equal(restored.getSnapshot().localAssistants[0].configuration.toolset,'四两的产品脑袋');
  restored.savePersona({id:p.id,name:'我的分身',configuration:{...configuration,about:'云端背景'}});
@@ -108,7 +120,7 @@ test('review account has two assistants and two independently renameable persona
 test('independent persona persists and is unaffected by local updates',async()=>{
  const storage=memory(),s=make({storage});const p=await s.createPersona(null,{name:'独立分身',configuration:{identity:'独立设置'}});
  assert.equal(p.sourceAssistantId,null);assert.equal(p.lastSyncedAt,'');
- s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'王宜林的通用助理',configuration:{identity:'本地更新'}});await tick();
+ s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration:{identity:'本地更新'}});await tick();
  assert.equal(s.getSnapshot().identities.find(i=>i.id===p.id).configuration.identity,'独立设置');
  assert.equal(make({storage}).getSnapshot().identities.find(i=>i.id===p.id).sourceAssistantId,null);
 });

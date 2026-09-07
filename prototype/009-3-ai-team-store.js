@@ -60,7 +60,7 @@
   });
   function seed(time, options = {}) {
     const ownerName=options.ownerName||window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName||'王宜林';
-    const defaultName=ownerName+'的通用助理';
+    const defaultName=options.profile==='review'?'通用助理':ownerName+'的通用助理';
     const localAssistants = [
       { id: 'assistant-general', name: defaultName, isDefault:true, version: 1, online: true, configuration: configuration({ identity: defaultName, skills: ['沟通', '文档整理'] }) },
       { id: 'assistant-rd', name: 'Eva研发助理', version: 1, online: true, configuration: configuration({ identity: 'Eva研发助理', skills: ['研发资料整理'] }) }
@@ -204,8 +204,21 @@
       state.personaVarietyV2=true;
       try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
     }
+    // Personal assistants automatically have an IM identity, separate from local chats.
+    if (options.profile === 'review') {
+      const general = state.localAssistants.find(item => item.id === 'assistant-general');
+      if (general?.name === '王宜林的通用助理') general.name = '通用助理';
+    }
+    state.localAssistants.forEach(local => {
+      let identity = state.identities.find(item => item.role === 'assistant' && item.sourceAssistantId === local.id);
+      if (!identity) {
+        identity = makeIdentity('ai-local:' + local.id, 'assistant', local.name, local, now());
+        state.identities.push(identity);
+      }
+      identity.name = local.name;
+    });
     // Add the Octo parent/topic relationship without changing local IDs or user content.
-    state.sessions = state.sessions.map(record => state.identities.find(i => i.id === record.identityId)?.role === 'persona'
+    state.sessions = state.sessions.map(record => ['persona', 'assistant'].includes(state.identities.find(i => i.id === record.identityId)?.role)
       ? threadRecord(record.identityId, record) : record);
     state.storageWarning = warning;
     let snapshot = freeze(copy(state));
@@ -290,6 +303,7 @@
       if (input.mode === 'create') {
         local = { id: id('assistant-local'), name: input.name.trim(), version: 1, online: true, configuration: configuration(input.configuration || { identity: input.name.trim() }) };
         state.localAssistants.push(local);
+        state.identities.push(makeIdentity('ai-local:' + local.id, 'assistant', local.name, local, now()));
       } else {
         local = localById(input.id);
         if(local.id==='assistant-general'&&input.name.trim()!==local.name)throw new Error('通用助理不可改名');
@@ -337,7 +351,7 @@
     }
     function createThread(identityId) {
       const identity = identityById(identityId);
-      if (identity.role !== 'persona') throw new Error('请选择云端分身');
+      if (!['persona', 'assistant'].includes(identity.role)) throw new Error('请选择云端分身或个人助理');
       const records = state.sessions.filter(s => s.identityId === identityId);
       let title = '新对话', number = 2;
       while (records.some(s => s.title === title)) title = '新对话 ' + number++;
@@ -364,7 +378,7 @@
       if (!session) {
         session = {id: id(identity.role === 'persona' ? 'team-thread' : 'team-session'), identityId,
           title: Array.from(body).slice(0, 20).join(''), messages: [], updatedAt: time};
-        if (identity.role === 'persona') session = threadRecord(identityId, session);
+        session = threadRecord(identityId, session);
         state.sessions.push(session);
       }
       if (session.autoTitle) {session.title = Array.from(body).slice(0, 20).join(''); session.autoTitle = false;}

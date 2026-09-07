@@ -78,7 +78,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
   assert.match(imPatch, /if\(identity\?\.id!==i\.id\)choose\(i\.id,sessions\[0\]\?\.id\|\|null\)/);
   assert.match(imPatch, /collapsedGroups/);
-  assert.doesNotMatch(imPatch, /roleGroup\('assistant',/);
+  assert.match(imPatch, /roleGroup\('assistant','个人助理'/);
   assert.match(imPatch, /roleGroup\('persona','云端分身',personas\)/);
   assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
   assert.match(imPatch, /className:'eva-ai-team__group-count'/);

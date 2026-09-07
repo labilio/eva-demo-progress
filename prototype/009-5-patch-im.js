@@ -120,7 +120,7 @@ function EvaAITeamPage() {
   reactExports.useSyncExternalStore(digitalStore.subscribe,digitalStore.getSnapshot,digitalStore.getSnapshot);
   const digitalEmployees=digitalStore.teamIds().map(id=>digitalStore.get(id)).filter(Boolean);
   const {search:teamSearch}=useLocation(),requestedIdentityId=new URLSearchParams(teamSearch).get('evaIdentity');
-  const teamIdentities = snapshot.identities.filter(i=>i.role==='persona'||i.role==='employee');
+  const teamIdentities = snapshot.identities.filter(i=>i.role==='persona'||i.role==='assistant'||i.role==='employee');
   const availableIdentities=[...teamIdentities,...digitalEmployees];
   const requestedIdentity=availableIdentities.find(i=>i.id===requestedIdentityId);
   const [selection, setSelection] = reactExports.useState(() => {const id=requestedIdentity?.id||availableIdentities[0]?.id;return {identityId:id,sessionId:snapshot.sessions.find(s=>s.identityId===id)?.id||digitalStore.sessions(id)[0]?.id};});
@@ -221,7 +221,7 @@ function EvaAITeamPage() {
   return h('div',{className:'eva-ai-team'},
     h('aside',{className:'eva-ai-team__sidebar','aria-label':'我的 AI 团队',ref:rail},
       h('div',{className:'eva-conversation-rail-resizer',role:'separator','aria-label':'调整中间栏宽度','aria-orientation':'vertical',tabIndex:0,'data-eva-conversation-rail-resizer':true}),
-      h('div',{className:'eva-ai-team__roles'},roleGroup('persona','云端分身',personas),roleGroup('digital','数字员工',digitalEmployees))),
+      h('div',{className:'eva-ai-team__roles'},roleGroup('persona','云端分身',personas),roleGroup('assistant','个人助理',teamIdentities.filter(i=>i.role==='assistant')),roleGroup('digital','数字员工',digitalEmployees))),
     h('main',{className:'eva-ai-team__main'},
       snapshot.storageWarning&&h('p',{className:'eva-ai-team__notice',role:'status'},snapshot.storageWarning),
       employee?h(ChannelsView,{key:'digital-chat:'+employee.id+':'+(employeeSession?.id||'empty'),source,onOpenTask:()=>{}}):identity?h(React.Fragment,null,
