@@ -71,8 +71,10 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(imPatch, /Dropdown\.Item,\{onClick:\(\)=>newConversation\(i\.id\)\},'新建会话'/);
   assert.doesNotMatch(imPatch, /Dropdown\.Item,\{onClick:\(\)=>openDetails\(i\.id\)\},'查看配置'/);
   assert.doesNotMatch(imPatch, /TooltipComponent,\{position:'right',content:'查看配置'/);
-  assert.match(imPatch, /className:'eva-ai-team__identity-action eva-ai-team__relation'.+openDetails\(i\.id\)/);
-  assert.match(imPatch, /presentation:'ai-team-workspace'/);
+  assert.doesNotMatch(imPatch, /eva-ai-team__relation/);
+  assert.doesNotMatch(imPatch, /const LinkIcon=/);
+  assert.doesNotMatch(imPatch, /const openDetails =/);
+  assert.doesNotMatch(imPatch, /presentation:'ai-team-workspace'/);
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
   assert.match(imPatch, /if\(identity\?\.id!==i\.id\)choose\(i\.id,sessions\[0\]\?\.id\|\|null\)/);
   assert.match(imPatch, /collapsedGroups/);
