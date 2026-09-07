@@ -44,14 +44,14 @@
           <span class="role-mark">M</span>
           <div>
             <h3>Manager</h3>
-            <p>项目管理员。可管理全部文件内容、回收站和操作记录，但不能单独改变项目归属。</p>
+            <p>项目管理员。可管理文件内容、普通成员、空间链接、设置、回收站和审计，但不能任免 Manager 或转移所有权。</p>
           </div>
         </article>
         <article class="role-card">
           <span class="role-mark">E</span>
           <div>
             <h3>Editor</h3>
-            <p>普通项目成员。可查看、上传和整理项目文件，但不能删除文件、进入回收站或查看完整操作记录。</p>
+            <p>普通项目成员。可查看、上传和整理项目文件，但不能治理成员、链接、设置、回收站或审计。</p>
           </div>
         </article>
       </div>
@@ -89,22 +89,30 @@
             <tr><td>预览文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>文件安全扫描通过且格式支持</td></tr>
             <tr><td>下载文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>下载时重新校验项目成员身份</td></tr>
             <tr><td>复制文件内部链接</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>链接只定位文件，不授予访问权限</td></tr>
+            <tr><td>查看空间信息与成员</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>项目空间显示项目成员，个人空间仅显示本人</td></tr>
+            <tr><td>复制空间链接</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>链接只定位空间，非成员打开仍无权访问</td></tr>
 
-            <tr class="matrix-group"><th colspan="5">创建与管理</th></tr>
+            <tr class="matrix-group"><th colspan="5">创建与整理</th></tr>
             <tr><td>上传本地文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>全局上传先选择个人或有权限的项目，文件直接归属所选空间</td></tr>
             <tr><td>新建文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>文件夹继承所属空间权限，不设独立权限</td></tr>
-            <tr><td>重命名文件或文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>不改变文件归属和历史版本</td></tr>
+            <tr><td>重命名文件或文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>只修改名称，不改变文件归属或内容</td></tr>
             <tr><td>在当前空间内移动</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>仅调整当前空间内的目录位置</td></tr>
-            <tr><td>管理文件版本</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>包括查看、上传新版本和恢复历史版本</td></tr>
             <tr><td>在当前空间内复制</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>新副本继承当前空间权限</td></tr>
             <tr><td>将项目群文件保存到项目文件管理</td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td>仅限当前项目；操作者须同时具备来源群读取权和项目成员身份</td></tr>
 
-            <tr class="matrix-group"><th colspan="5">删除与治理</th></tr>
+            <tr class="matrix-group"><th colspan="5">成员与空间</th></tr>
+            <tr><td>邀请、移除普通项目成员</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>复用项目设置中的成员管理，文件库不维护独立成员</td></tr>
+            <tr><td>设置或取消 Manager</td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td><span class="cell deny">—</span></td><td>不能通过普通成员管理改变 Owner</td></tr>
+            <tr><td>管理空间链接</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>包括开启、关闭和调整范围；不向非成员授权</td></tr>
+            <tr><td>修改空间设置</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>修改空间基本设置，不包含所有权转移</td></tr>
+            <tr><td>转移项目空间所有权</td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td><span class="cell deny">—</span></td><td>随项目负责人转让完成，目标须为当前项目的有效人类成员</td></tr>
+
+            <tr class="matrix-group"><th colspan="5">删除与审计</th></tr>
             <tr><td>查看回收站</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>Editor 不显示回收站入口</td></tr>
             <tr><td>删除文件或文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>只进入回收站，不立即物理删除</td></tr>
             <tr><td>从回收站恢复</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>原目录不存在时恢复到空间根目录</td></tr>
             <tr><td>永久删除</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>必须满足组织留存规则并进行危险确认</td></tr>
-            <tr><td>查看完整操作记录</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>包括上传、下载、移动、版本和删除记录</td></tr>
+            <tr><td>查看空间审计日志</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>包括文件、成员、链接、设置和所有权变更记录</td></tr>
           </tbody>
         </table>
       </div>
@@ -113,15 +121,17 @@
     <details class="review-note">
       <summary>动作 Review 结论</summary>
       <div>
-        <p><strong>补充：</strong>把原先只有“上传新版本”的定义补齐为查看、上传和恢复版本，并补上当前空间内复制和查看回收站。</p>
+        <p><strong>删除：</strong>当前文件库不存在在线文档和文件版本管理，不设计查看、上传或恢复历史版本。</p>
+        <p><strong>补充：</strong>增加空间信息、成员、链接、设置、所有权和审计动作，并保留当前空间内复制和查看回收站。</p>
         <p><strong>合并：</strong>发现空间、查看空间、浏览、搜索和元数据读取，统一为“浏览、搜索、查看详情”。</p>
+        <p><strong>继承：</strong>文件库不建立独立成员体系，成员治理复用项目设置；项目空间 Owner 随项目负责人同步。</p>
         <p><strong>保留：</strong>将项目群文件保存到项目文件管理，属于同一项目内的群附件沉淀。保存后生成项目副本，但不会额外开放来源群历史或其他附件。</p>
         <p><strong>不纳入：</strong>项目之间、个人与项目之间的复制或移动；查看自身权限、权限来源、Owner 同步等系统能力；任务输入、任务产出确认等任务模块动作；以及不改变共享权限的排序、筛选和收藏。</p>
       </div>
     </details>
 
     <footer class="page-footnote">
-      <p>统一规则：文件本身不设置独立 Owner；上传者或 AI 生成者只用于来源和审计；项目成员退出后立即失去项目文件访问权。</p>
+      <p>统一规则：文件本身不设置独立 Owner；项目空间角色继承项目角色；链接只定位、不授权；上传者或 AI 生成者只用于来源和审计；项目成员退出后立即失去项目文件访问权。</p>
     </footer>
   </main>
 </body>
