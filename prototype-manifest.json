@@ -198,7 +198,7 @@
       "name": "file-sharing-controller",
       "file": "prototype/009-1-file-sharing.js",
       "role": "prototype",
-      "bytes": 2269
+      "bytes": 20931
     },
     {
       "order": 25,
@@ -301,7 +301,7 @@
       "tag": "script",
       "name": "runtime-patch-general",
       "file": "prototype/009-6-patch-general.js",
-      "bytes": 57957,
+      "bytes": 64341,
       "role": "build-input"
     },
     {
@@ -405,7 +405,7 @@
       "tag": "script",
       "name": "mode-layer",
       "file": "prototype/020-mode-layer.js",
-      "bytes": 34311,
+      "bytes": 74457,
       "role": "prototype"
     },
     {
@@ -413,7 +413,7 @@
       "tag": "script",
       "name": "message-hierarchy",
       "file": "prototype/021-message-hierarchy.js",
-      "bytes": 16910,
+      "bytes": 16913,
       "role": "prototype"
     },
     {
@@ -566,7 +566,7 @@
       "name": "loop-task-create-style",
       "role": "prototype",
       "order": 70,
-      "bytes": 3303
+      "bytes": 5287
     },
     {
       "order": 71,
@@ -671,6 +671,22 @@
       "file": "review/comments.js",
       "bytes": 35019,
       "role": "review-module"
+    },
+    {
+      "order": 84,
+      "tag": "style",
+      "name": "050-file-library-styles",
+      "file": "prototype/050-file-library.css",
+      "bytes": 34933,
+      "role": "prototype"
+    },
+    {
+      "order": 85,
+      "tag": "script",
+      "name": "project-files-ui",
+      "file": "prototype/009-1-project-files-ui.js",
+      "bytes": 28454,
+      "role": "prototype"
     }
   ]
 }
