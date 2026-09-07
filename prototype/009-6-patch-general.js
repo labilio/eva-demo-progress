@@ -150,11 +150,69 @@
         function evaMembers(){return evaMembershipStore||(evaMembershipStore=window.EvaMembership.bootstrap(ORG_PEOPLE,loadSpaces(),CHANNELS_BY_SPACE,ORG_CHANNELS,id=>loadSpaces().find(p=>p.id===id))),evaSharedFileStore||(evaSharedFileStore=window.EvaFileSharing.bootstrap(evaMembershipStore)),evaMembershipComponents||(evaMembershipComponents=window.EvaMembersUI.create({React:reactExports,Button,Select,Modal,Table,Input:ForwardInput,Tag,Checkbox,Radio,Switch,PlusIcon:Plus$c,CloseIcon:X,BackIcon:ArrowLeft$3,MailIcon:Mail$1},evaMembershipStore,evaSharedFileStore)),{store:evaMembershipStore,ui:evaMembershipComponents,files:evaSharedFileStore}}
         function MembersTab({workspaceId:rt}){return React.createElement(evaMembers().ui.Members,{key:rt,scopeId:rt})}`, '项目成员组件');
         source = root.__evaCutAll(source, replacements, '通用补丁');
+
+        /* Loop 任务数据必须以当前项目为边界。兼容运行时原先会从首个 mock
+         * 任务复制字段，并在未传任务 ID 时回退到预置任务，导致新任务继承运行、
+         * 评论等历史。这一层直接替换数据适配器，不让页面组件承担隔离职责。 */
+        source = root.__evaCut(
+          source,
+          'getIssue=rt=>Promise.resolve(issuesOf().find(ct=>ct.id===rt)??MOCK_ISSUES[0])',
+          'getIssue=rt=>{const ct=issuesOf().find(ut=>ut.id===rt||ut.identifier===rt);return ct?Promise.resolve(ct):Promise.reject(new Error("找不到任务"))}',
+          '任务详情按内部 ID 或完整编号读取'
+        );
+        source = root.__evaCut(
+          source,
+          'createIssue=rt=>{const ut={...MOCK_ISSUES[0],...rt,id:`mock-${Date.now().toString(36)}`,identifier:`WS-${issuesOf().length+1}`};return issuesOf().push(ut),Promise.resolve(ut)}',
+          'createIssue=rt=>{const ct=rt??{},ut=ct.workspace_id??currentSpaceId(),pt=loadSpaces().find(Et=>Et.id===ut);if(!pt)throw new Error("项目不存在");const mt=evaMembers().store,gt=mt.snapshot(),St=gt.actorId,Ct=gt.projects?.[ut];if(!Ct||!mt.canRead(ut,St))throw new Error("无权在此项目创建任务");const xt=String(ct.title??"").trim();if(!xt)throw new Error("任务名称不能为空");const Pt=Et=>Ct.humans?.some(Qt=>Qt.id===Et),Nt=Et=>Ct.cloneIds?.includes(Et),Mt=Et=>Ct.employeeIds?.includes(Et),Dt=Et=>mt.projectAgent?.(ut)?.id===Et,Ft=ct.assignee_id;let Qt=null;if(Ft){if(Pt(Ft))Qt={...mt.person(Ft),type:"member"};else if(Nt(Ft))Qt={...mt.clone(Ft),type:"agent"};else if(Mt(Ft))Qt={...mt.employee(Ft),type:"agent"};else if(Dt(Ft))Qt={...mt.projectAgent(ut),type:"agent"};if(!Qt?.id)throw new Error("负责人必须属于当前项目")}if(ct.reviewer_id&&!Pt(ct.reviewer_id))throw new Error("验收人必须是当前项目成员");const Vt=ISSUES_BY_SPACE[ut]??(ISSUES_BY_SPACE[ut]=[]),Ht=ct.parent_issue_id;if(Ht&&!Vt.some(Et=>Et.id===Ht))throw new Error("父任务必须属于当前项目");const jt=evaProjectIssuePrefix(pt),tn=Math.max(0,...Vt.map(Et=>{const Qt=String(Et.identifier??"").match(new RegExp("^"+jt+"-(\\d+)$"));return Qt?Number(Qt[1]):0}))+1,Kt=Array.isArray(ct.attachment_ids)?ct.attachment_ids.map(Et=>evaLoopTaskAttachments.get(Et)).filter(Boolean):[],nn=Kt.map(Et=>"["+String(Et.name??"").replace(/[\\[\\]]/g,"")+"]("+(Et.url??"")+")").filter(Boolean),rn=ct.project_id==="p-supply"&&ut!=="prod"?null:ct.project_id,{attachment_ids:ln,run_id:sn,labels:cn,...Cn}=ct,ir={...Cn,id:"issue-"+ut+"-"+Date.now().toString(36)+"-"+(Vt.length+1),identifier:jt+"-"+tn,workspace_id:ut,project_id:rn,status:ct.status??"todo",title:xt,description:(ct.description??"")+(nn.length?"\\n\\n"+nn.join("\\n"):""),assignee_id:Qt?.id??null,assignee_type:Qt?.type??null,assignee_name:Qt?.name??null,creator_id:St,creator_name:mt.person?.(St)?.name??St,created_at:new Date().toISOString(),attachments:Kt};return Vt.push(ir),Promise.resolve(ir)\n    }',
+          '新任务不继承 mock 数据并按项目编号'
+        );
+        source = root.__evaCut(source, 'createIssue=rt=>{const ct=', 'createIssue=rt=>{try{const ct=', '任务创建失败返回 Promise 拒绝');
+        source = root.__evaCut(source, 'return Vt.push(ir),Promise.resolve(ir)\n    }', 'return Vt.push(ir),Promise.resolve(ir)}catch(Et){return Promise.reject(Et)}\n    }', '任务创建错误边界');
+        source = root.__evaCut(source, 'new RegExp("^"+jt+"-(\\d+)$")', 'new RegExp("^"+jt+"-(\\\\d+)$")', '任务编号数字后缀');
+        source = root.__evaCut(
+          source,
+          'if(rt&&rt!=="mock-1")return Promise.resolve([]);return Promise.resolve(',
+          'if(rt!=="supply-1"||!issuesOf().some(ut=>ut.id===rt))return Promise.resolve([]);return Promise.resolve(',
+          '评论不回退到其他任务或项目的预置内容'
+        );
+        var evaRunsStart = source.indexOf('listRuns=()=>Promise.resolve(');
+        var evaRunsEnd = source.indexOf(',listRunMessages=', evaRunsStart);
+        if (evaRunsStart < 0 || evaRunsEnd < evaRunsStart) throw new Error('任务运行记录适配器边界不匹配');
+        var evaLegacyRuns = source.slice(evaRunsStart, evaRunsEnd);
+        var evaSeededRuns = evaLegacyRuns.slice('listRuns=()=>Promise.resolve('.length, -1);
+        source = root.__evaCut(source, evaLegacyRuns, 'listRuns=rt=>Promise.resolve(rt==="supply-1"?' + evaSeededRuns + ':[])', '任务运行记录按任务隔离');
+        source = root.__evaCut(source, 'listRuns=rt=>Promise.resolve(rt==="supply-1"?', 'listRuns=rt=>Promise.resolve(rt==="supply-1"&&issuesOf().some(ct=>ct.id===rt)?', '任务运行记录不跨项目泄漏');
+        source = root.__evaCut(source, 'if(rt==="supply-1")return Promise.resolve(', 'if(rt==="supply-1"&&issuesOf().some(ut=>ut.id===rt))return Promise.resolve(', '任务评论不跨项目泄漏');
+        source = root.__evaCut(source, 'listChildren=rt=>Promise.resolve(issuesOf().filter(ct=>ct.parent_issue_id===rt))', 'listChildren=rt=>Promise.resolve(issuesOf().some(ct=>ct.id===rt)?issuesOf().filter(ct=>ct.parent_issue_id===rt):[])', '子任务不跨项目泄漏');
+        source = root.__evaCut(source, 'listTimeline=()=>Promise.resolve([])', 'listTimeline=rt=>Promise.resolve([])', '任务动态按任务参数读取');
+        source = root.__evaCut(source, 'Promise.all([getIssue(rt),listComments(rt),listRuns()])', 'Promise.all([getIssue(rt),listComments(rt),listRuns(rt)])', '任务详情初始运行记录');
+        source = root.__evaCut(source, 'listTimeline().then(no=>{Wi()&&sr(no)})', 'listTimeline(rt).then(no=>{Wi()&&sr(no)})', '任务详情初始动态');
+        source = root.__evaCut(source, 'Pa=()=>listRuns().then(mr)', 'Pa=()=>listRuns(rt).then(mr)', '任务重新运行后刷新当前任务');
+
+        /* 批注恢复项目内部 Tab 时必须有可定位的项目与标签状态，不依赖展示文案。 */
+        source = root.__evaCut(
+          source,
+          'className:"collab-frame eva-channel-surface","data-eva-channel-surface":"project"',
+          'className:"collab-frame eva-channel-surface","data-eva-channel-surface":"project","data-eva-project-id":rt.id,"data-eva-project-tab":pt',
+          '项目批注定位属性'
+        );
+        source = root.__evaCut(
+          source,
+          'function CollabPage(){const[rt,ct]=reactExports.useState(()=>loadSpaces()),[ut,pt]=reactExports.useState(null),mt=rt.find(gt=>gt.id===ut)??null;reactExports.useEffect(()=>{const gt=()=>{WKApp$1.routeRight.popAll(),pt(null)};return window.addEventListener("eva:open-project-directory",gt),()=>window.removeEventListener("eva:open-project-directory",gt)},[]);return',
+          'function CollabPage(){const[rt,ct]=reactExports.useState(()=>loadSpaces()),[ut,pt]=reactExports.useState(null),[evaProjectView,setEvaProjectView]=reactExports.useState(null),mt=rt.find(gt=>gt.id===ut)??null;reactExports.useEffect(()=>{const gt=()=>{WKApp$1.routeRight.popAll(),pt(null)},St=Ct=>{const xt=Ct.detail??{};rt.some(Pt=>Pt.id===xt.projectId)&&(WKApp$1.routeRight.popAll(),setEvaProjectView({projectId:xt.projectId,tab:xt.tab||"tasks"}),pt(xt.projectId))};return window.addEventListener("eva:open-project-directory",gt),window.addEventListener("eva:open-project-view",St),()=>{window.removeEventListener("eva:open-project-directory",gt),window.removeEventListener("eva:open-project-view",St)}},[rt]);return',
+          '批注恢复项目内部视图'
+        );
+        source = root.__evaCut(
+          source,
+          'React.createElement(SpaceFrame,{key:mt.id,space:mt,spaces:rt,onSwitch:gt=>pt(gt)})',
+          'React.createElement(SpaceFrame,{key:mt.id+":"+(evaProjectView?.projectId===mt.id?evaProjectView.tab:"tasks"),space:mt,spaces:rt,onSwitch:gt=>pt(gt),initialTab:evaProjectView?.projectId===mt.id?evaProjectView.tab:"tasks"})',
+          '批注进入指定项目标签'
+        );
         source=root.__evaCut(source,'onCreate:gt=>{const St=newSpace(gt),Ct=[...rt,St];','onCreate:(gt,evaClones,evaGoal)=>{const St={...newSpace(gt),desc:evaGoal||""},Ct=[...rt,St];evaMembers().store.createProject(St.id,St.name,evaMembers().store.snapshot().actorId,evaClones,evaGoal);','项目创建成员事务');
 
     source=root.__evaCut(source,'case"channels":return React.createElement(ChannelsView,{onOpenTask:', 'case"channels":return React.createElement(ChannelsView,{key:rt.id,membershipProjectId:rt.id,onManageProject:()=>Pt("settings"),onOpenTask:', '项目 IM 成员上下文');
     source=root.__evaCut(source,'SpaceFrame=({space:rt,spaces:ct,onSwitch:ut})=>{const[pt,mt]=reactExports.useState("tasks")',
-      'SpaceFrame=({space:rt,spaces:ct,onSwitch:ut})=>{const evaProjectMemberStore=evaMembers().store,evaProjectMemberRevision=reactExports.useSyncExternalStore(evaProjectMemberStore.subscribe,evaProjectMemberStore.getSnapshot),evaProjectActor=evaProjectMemberStore.snapshot().actorId;const[pt,mt]=reactExports.useState("tasks")','项目内容访问状态');
+      'SpaceFrame=({space:rt,spaces:ct,onSwitch:ut,initialTab:evaInitialTab="tasks"})=>{const evaProjectMemberStore=evaMembers().store,evaProjectMemberRevision=reactExports.useSyncExternalStore(evaProjectMemberStore.subscribe,evaProjectMemberStore.getSnapshot),evaProjectActor=evaProjectMemberStore.snapshot().actorId;const[pt,mt]=reactExports.useState(evaInitialTab)','项目内容访问状态');
     source=root.__evaCut(source,'Dt=reactExports.useMemo(()=>{switch(pt){case"tasks":return React.createElement(IssuePage',
       'Dt=reactExports.useMemo(()=>{if(!evaProjectMemberStore.canRead(rt.id,evaProjectActor))return React.createElement(MembersTab,{key:rt.id,workspaceId:rt.id});switch(pt){case"tasks":return React.createElement(IssuePage','未加入项目仅显示邀请');
     source=root.__evaCut(source,'}},[pt,xt]);return React.createElement("div",{className:"collab-frame',
@@ -218,7 +276,7 @@
         editable?React.createElement(Button,{theme:'solid',disabled:!name.trim()||!changed,onClick:save},'保存'):React.createElement('p',{className:'eva-members-muted'},'仅项目负责人和管理员可编辑。'));
     }`, '项目名称与共同目标');
     source=root.__evaCut(source,'tab:"通用",itemKey:"general"','tab:"项目信息",itemKey:"general"','项目信息标签');
-    source=root.__evaCut(source,'SpaceFrame=({space:rt,spaces:ct,onSwitch:ut})','SpaceFrame=({space:rt,spaces:ct,onSwitch:ut,onProjectUpdated:evaProjectUpdated})','项目更新回调');
+    source=root.__evaCut(source,'SpaceFrame=({space:rt,spaces:ct,onSwitch:ut,initialTab:evaInitialTab="tasks"})','SpaceFrame=({space:rt,spaces:ct,onSwitch:ut,onProjectUpdated:evaProjectUpdated,initialTab:evaInitialTab="tasks"})','项目更新回调');
     source=root.__evaCut(source,'workspace:{...WORKSPACE,id:rt.id,name:rt.name,slug:rt.id}','workspace:rt,onUpdated:evaProjectUpdated','设置读取当前项目');
     source=root.__evaCut(source,'space:mt,spaces:rt,onSwitch:gt=>pt(gt)','space:mt,spaces:rt,onSwitch:gt=>pt(gt),onProjectUpdated:ct','项目列表刷新');
     source=root.__evaCut(source,'[pt,xt,rt.id,evaProjectMemberRevision]','[pt,xt,rt,evaProjectMemberRevision,evaProjectUpdated]','项目信息更新刷新内容');
