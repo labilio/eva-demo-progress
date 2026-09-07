@@ -155,7 +155,7 @@
 /* Actions share the time slot; sibling buttons avoid nested interactive elements. */
 .eva-ai-team__session-row { position: relative; border-radius: var(--gds-radius-control); }
 .eva-ai-team__session-row:hover { background: var(--eva-rail-hover); }
-.eva-ai-team__session-row.is-selected { background: var(--eva-rail-selected); box-shadow: inset 2px 0 0 var(--gds-color-action-primary); }
+.eva-ai-team__session-row.is-selected { background: var(--eva-rail-selected); }
 .eva-ai-team__session-actions { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; opacity: 0; pointer-events: none; }
 .eva-ai-team__session-actions .semi-button { width: 24px; height: 24px; min-height: 24px; padding: 0; color: var(--eva-rail-time); }
 .eva-ai-team__session-actions .semi-button:hover,
@@ -174,7 +174,7 @@
 .eva-ai-team__session:hover,
 .eva-ai-team__digital-button:hover { background: var(--eva-rail-hover); }
 .eva-ai-team__session.is-selected,
-.eva-ai-team__digital-button.is-selected { background: var(--eva-rail-selected); box-shadow: inset 2px 0 0 var(--gds-color-action-primary); }
+.eva-ai-team__digital-button.is-selected { background: var(--eva-rail-selected); }
 .eva-ai-team__digital-button { display: flex; align-items: center; width: 100%; gap: var(--gds-space-2); padding: var(--gds-space-2); }
 .eva-ai-team__digital-button .eva-ai-team__group-title { padding: 0; }
 .eva-ai-team__digital-button > .eva-ai-team__role-label { margin-left: auto; }
