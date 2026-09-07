@@ -145,10 +145,9 @@
 
   window.__EVA_SUPPLY_CHAIN_DEMO = {
     overview: {
-      status: '协作中', period: '2026年9月', stage: '风险处置与证据复核',
+      status: '协作中', period: {start: '2026年9月1日', end: '2026年9月30日'}, stage: '风险处置与证据复核',
       background: '围绕采购交期、供应商质量与排产风险，集中协同处理影响保供的关键事项。',
       goals: ['明确物料缺口与恢复计划', '完成质量整改证据复核', '同步排产影响与待决策事项'],
-      scope: ['采购', '供应商质量', '排产', '合规'],
       milestones: [['09月04日', '汇总保供风险', 'done'], ['09月07日', '复核整改证据与备选方案', 'active'], ['09月11日', '跟进恢复计划', 'pending']]
     },
     agents: supplyAgents, squads: supplySquads, skills: supplySkills, autopilots: [],

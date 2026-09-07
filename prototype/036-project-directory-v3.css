@@ -288,13 +288,30 @@
     line-height: 34px;
   }
 
-  .eva-project-info__hero p {
+.eva-project-info__hero p {
     max-width: 640px;
     margin: 0;
     color: var(--semi-color-text-1);
     font-size: 14px;
-    line-height: 22px;
-  }
+  line-height: 22px;
+}
+
+.eva-project-info__background {
+  display: grid;
+  gap: 4px;
+  max-width: 640px;
+  margin-top: 18px;
+}
+
+.eva-project-info__background strong {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.eva-project-info__background p {
+  color: var(--semi-color-text-1);
+}
 
   .eva-project-info__facts {
     display: grid;
@@ -324,9 +341,9 @@
     line-height: 20px;
   }
 
-  .eva-project-info__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.8fr);
+.eva-project-info__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
     gap: 16px;
     margin-top: 16px;
   }
@@ -344,13 +361,6 @@
     font-size: 15px;
     font-weight: 600;
     line-height: 22px;
-  }
-
-  .eva-project-info__card--background p {
-    margin: 0;
-    color: var(--semi-color-text-1);
-    font-size: 14px;
-    line-height: 24px;
   }
 
   .eva-project-info__goals {
@@ -382,8 +392,8 @@
     line-height: 22px;
   }
 
-  .eva-project-info__card--milestones {
-    grid-row: span 2;
+.eva-project-info__card--milestones {
+  grid-row: auto;
   }
 
   .eva-project-info__timeline {
@@ -451,26 +461,7 @@
     font-weight: 600;
   }
 
-  .eva-project-info__scope {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .eva-project-info__scope span {
-    padding: 5px 9px;
-    border-radius: 6px;
-    background: var(--semi-color-fill-0);
-    color: var(--semi-color-text-1);
-    font-size: 12px;
-    line-height: 18px;
-  }
-
-  .eva-project-info__people-title {
-    margin-top: 24px !important;
-  }
-
-  .eva-project-info__people {
+.eva-project-info__people {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;

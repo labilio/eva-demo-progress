@@ -287,9 +287,12 @@ test('项目内项目信息位于项目设置前并展示核心项目档案', ()
   assert.match(projectCss, /\.eva-project-info\s*\{[^}]*height:\s*100%[^}]*overflow-y:\s*auto/s);
   assert.match(patch, /key:\"project-info\",label:\"项目信息\"\},\{key:\"settings\",label:\"项目设置\"/);
   assert.match(source, /case\"project-info\":return React\.createElement\(EvaProjectInfoPage/);
-  for (const section of ['发起背景', '项目目标', '项目周期', '关键里程碑', '协作范围', '关键协作人']) {
+  for (const section of ['项目背景', '项目目标', '项目周期', '关键里程碑', '关键协作人']) {
     assert.ok(source.includes(section), `项目信息缺少：${section}`);
   }
+  assert.doesNotMatch(source, /协作范围/);
+  assert.match(source, /evaMeta\.period\.start,evaMeta\.period\.end/);
+  assert.match(projectCss, /grid-template-columns:\s*minmax\(0, 1fr\)/);
 });
 
 test('个人 Eva 六态挂在路由宿主内，不使用全屏或 fixed 根节点', () => {
