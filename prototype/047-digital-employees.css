@@ -66,3 +66,6 @@
 
 .eva-persona-request { display:flex; align-items:center; gap:16px; padding:12px 0; border-bottom:1px solid var(--semi-color-border); }
 .eva-persona-request [role="status"] { margin-left:auto; color:var(--semi-color-text-2); }
+
+/* The overlay host is click-through; interactive popup descendants are not. */
+.eva-digital-center__modal .semi-portal { pointer-events: auto; }

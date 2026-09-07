@@ -23,7 +23,7 @@ const run=fn=>{try{fn();setError('');}catch(e){setError(e.message);}};
 const open=(kind,a)=>{setDialog({kind,a});setChosen([]);setProjectQuery('');setError('');};
 const allProjects=Object.values(ms.projects).filter(p=>members.canRead(p.id,actor));
 const projectName=p=>p.name|| (p.id==='prod'?'供应链运营协同':p.id);
-const select=(key,options)=>h(Select,{value:draft[key],onChange:v=>update(key,v),optionList:options.map(o=>typeof o==='string'?{value:o,label:o}:o),getPopupContainer:popup});
+const select=(key,options,extra={})=>h(Select,{...extra,value:draft[key]||undefined,onChange:v=>update(key,v),optionList:options.map(o=>typeof o==='string'?{value:o,label:o}:o),getPopupContainer:popup});
 const input=(key,placeholder,more={})=>h(Input,{value:draft[key]||'',onChange:v=>update(key,v),placeholder,...more});
 const textarea=(key,placeholder)=>h(TextArea,{value:draft[key]||'',onChange:v=>update(key,v),placeholder,autosize:{minRows:3,maxRows:12}});
 const checks=(key,items)=>h('div',{className:'eva-digital-center__filters'},items.map(value=>h(Checkbox,{key:value,checked:(draft[key]||[]).includes(value),onChange:e=>update(key,e.target.checked?[...(draft[key]||[]),value]:(draft[key]||[]).filter(x=>x!==value))},value)));
@@ -61,7 +61,7 @@ function configPane(){
   if(type==='persona'&&tab==='basic')return h(R.Fragment,null,
     h('p',null,'填写分身信息并配置能力，提交后由 IT 审核与开通云端资源。'),
     field('分身名称',input('name','例如：采购协作分身')),
-    field('业务域',select('domain',[{value:'',label:'请选择业务域'},...data.businessDomains])),
+    field('业务域',select('domain',data.businessDomains,{placeholder:'请选择业务域',filter:true,showClear:true,'aria-label':'业务域'})),
     field('一句话定位',input('one','说明分身负责的沟通与工作交接')),
     field('详细介绍',textarea('description','它能处理什么、不能处理什么、需要什么输入')),
     h('p',null,'审核通过并完成资源开通后可使用；业务决定与结果确认由本人负责。'));
