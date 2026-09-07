@@ -1,6 +1,37 @@
 /* Eva My AI team: local demo data only; adapters never contact a live service. */
 (function (window) {
   'use strict';
+  // Octo Thread DTO adapter (octo-web c2e2aeed, datasource.threadCreate/threadUpdate).
+  // Stable identity -> private two-member group; each conversation is a topic (type 5).
+  // `sessions` remains the persisted legacy collection name, never an OpenClaw session.
+  const privateGroup = identityId => ({
+    id: 'ai-pair:u-wangyilin:' + identityId, chatType: 'group', channel_type: 2,
+    identityId, ownerId: 'u-wangyilin', memberIds: ['u-wangyilin', identityId],
+    members: 2, presentation: 'ai-direct', replyPolicy: 'direct-only'
+  });
+  const threadRecord = (identityId, record) => {
+    const group = privateGroup(identityId);
+    return {...record, group_no: group.id, short_id: record.id,
+      channel_id: group.id + '____' + record.id, channel_type: 5};
+  };
+  const threadSource = ({identityId, name, appearance, records, selectedId, messages}) => {
+    const group = privateGroup(identityId);
+    const rows = records.length ? records : [{id: 'draft:' + identityId, title: '新对话', messages: []}];
+    const threads = rows.map(record => {
+      const dto = threadRecord(identityId, record);
+      return {...dto, id: dto.channel_id, name: record.title, status: 1,
+        member_count: 2, creator_uid: group.ownerId, created_at: record.updatedAt,
+        updated_at: record.updatedAt};
+    });
+    const selected = threads.find(t => t.short_id === selectedId) || threads[0];
+    return {sidebarVariant: 'ai-sessions', conversationOnly: true, presentation: 'ai-direct',
+      selectedThreadId: selected.id, channels: [{...group, name, threads, unread: 0,
+        sessionTitle: selected.name, identityName: name, identityAppearance: appearance,
+        identityAvatarUrl: appearance.logo, conversationKind: 'ai-private-group'}],
+      cats: [], messages: {}, threadMessages: Object.fromEntries(threads.map(t => [t.id, messages(t.short_id)])),
+      scopeNameOf: {}};
+  };
+  window.EvaAIPrivateConversations = Object.freeze({group: privateGroup, threadRecord, source: threadSource});
   const STORAGE_KEY = 'eva:ai-team:v2';
   const copy = value => JSON.parse(JSON.stringify(value));
   function freeze(value) {
@@ -173,6 +204,9 @@
       state.personaVarietyV2=true;
       try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
     }
+    // Add the Octo parent/topic relationship without changing local IDs or user content.
+    state.sessions = state.sessions.map(record => state.identities.find(i => i.id === record.identityId)?.role === 'persona'
+      ? threadRecord(record.identityId, record) : record);
     state.storageWarning = warning;
     let snapshot = freeze(copy(state));
     const listeners = new Set(), connections = new Map(), syncTokens = new Map();
@@ -301,6 +335,25 @@
       delete state.drafts[sessionId];
       publish();
     }
+    function createThread(identityId) {
+      const identity = identityById(identityId);
+      if (identity.role !== 'persona') throw new Error('请选择云端分身');
+      const records = state.sessions.filter(s => s.identityId === identityId);
+      let title = '新对话', number = 2;
+      while (records.some(s => s.title === title)) title = '新对话 ' + number++;
+      const record = threadRecord(identityId, {id: id('team-thread-' + (window.crypto?.randomUUID?.() || Date.now())), identityId, title,
+        autoTitle: true, messages: [], updatedAt: now()});
+      state.sessions.push(record);
+      publish();
+      return record.id;
+    }
+    function renameThread(identityId, threadId, name) {
+      const record = state.sessions.find(s => s.id === threadId && s.identityId === identityId);
+      if (!record) throw new Error('会话已删除或不属于当前 AI');
+      const title = String(name || '').trim();
+      if (!title || Array.from(title).length > 50) throw new Error('请输入 1–50 个字符的会话名称');
+      record.title = title; record.autoTitle = false; publish();
+    }
     function sendMessage(identityId, sessionId, text) {
       if (typeof text !== 'string' || !text.trim()) return null;
       const identity = identityById(identityId);
@@ -308,14 +361,20 @@
       let session = sessionId ? state.sessions.find(s => s.id === sessionId && s.identityId === identityId) : null;
       if (sessionId && !session) throw new Error('会话不属于当前 AI 身份');
       const time = now(), body = text.trim();
-      if (!session) { session = { id: id('team-session'), identityId, title: Array.from(body).slice(0, 20).join(''), messages: [], updatedAt: time }; state.sessions.push(session); }
+      if (!session) {
+        session = {id: id(identity.role === 'persona' ? 'team-thread' : 'team-session'), identityId,
+          title: Array.from(body).slice(0, 20).join(''), messages: [], updatedAt: time};
+        if (identity.role === 'persona') session = threadRecord(identityId, session);
+        state.sessions.push(session);
+      }
+      if (session.autoTitle) {session.title = Array.from(body).slice(0, 20).join(''); session.autoTitle = false;}
       const base = session.id + '-' + session.messages.length;
       session.messages.push({ id: base + '-self', kind: 'text', sender: { uid: 'self', name: '我', color: '#1563EB', ai: false }, time, text: body });
       session.messages.push({ id: base + '-receipt', kind: 'text', sender: { uid: identity.id, name: identity.name, color: '#1563EB', ai: true }, time, text: identity.role === 'persona' ? '收到，我会跟进这项请求。' : '收到，我会协助你整理。' });
       session.updatedAt = time;
       delete state.drafts[sessionId || 'draft:' + identityId]; publish(); return session.id;
     }
-    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, sendMessage, setSessionFlag, deleteSession });
+    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, setSessionFlag, deleteSession });
   }
   window.EvaAITeam = Object.freeze({ ...createStore({profile:'review'}), createStore });
 })(window);
