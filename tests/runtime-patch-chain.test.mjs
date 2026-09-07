@@ -38,6 +38,9 @@ test('manifest 声明数据入口和构建期运行时补丁', () => {
 
   const membershipFiles = ['prototype/009-2-membership.js', 'prototype/009-1-file-sharing.js', 'prototype/009-2-picker-preview.js',
     'prototype/009-2-picker-preview.css',
+    'prototype/009-3-contact-identities.js',
+    'prototype/009-3-identity-card.js',
+    'prototype/009-3-identity-card.css',
     'prototype/009-2-chat-settings.js',
     'prototype/009-2-chat-settings.css',
     'prototype/009-2-members-ui.js', 'prototype/009-2-members.css'];

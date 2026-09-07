@@ -94,19 +94,6 @@
     return String(location.hash || '').indexOf('#/contacts') === 0;
   }
 
-  function ensureContactsRoot(host) {
-    var root = document.getElementById('eva-contacts-root');
-    if (!root) {
-      root = document.createElement('section');
-      root.id = 'eva-contacts-root';
-      root.className = 'eva-contacts';
-      root.setAttribute('aria-label', '通讯录');
-      root.innerHTML = '<header class="eva-contacts__header"><strong>通讯录</strong></header><div class="eva-contacts__empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 13a3 3 0 1 0-6 0"></path><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"></path><path d="M9 18h6"></path></svg></div>';
-    }
-    if (host && root.parentElement !== host) host.appendChild(root);
-    return root;
-  }
-
   function buildSpaceTree() {
     var tree = document.getElementById('eva-space-tree');
     if (tree) tree.remove();
@@ -392,18 +379,6 @@
   } else {
     queueTune();
   }
-
-  window.__evaNativePages.register('contacts', function (host) {
-    var root = ensureContactsRoot(host);
-    root.hidden = false;
-    if (typeof window.__evaEnhanceContacts === 'function') {
-      window.__evaEnhanceContacts();
-      requestAnimationFrame(window.__evaEnhanceContacts);
-    }
-    return function () {
-      if (root.parentElement === host) root.remove();
-    };
-  });
 
   function mutationNeedsTune(mutation) {
     var target = mutation.target && mutation.target.nodeType === 1

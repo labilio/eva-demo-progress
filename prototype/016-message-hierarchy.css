@@ -1737,23 +1737,6 @@ body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab
   background: rgb(255 255 255 / 62%);
 }
 
-body.eva-message-hierarchy-ready .eva-contacts {
-  position: fixed;
-  z-index: 71;
-  top: var(--topbar-height, 37px);
-  right: 0;
-  bottom: 0;
-  left: var(--eva-drive-left, 260px);
-  min-width: 0;
-  color: var(--semi-color-text-0, #1c1f23);
-  background: var(--semi-color-bg-0, #fff);
-  font-family: inherit;
-}
-
-body.eva-message-hierarchy-ready .eva-contacts[hidden] {
-  display: none;
-}
-
 body.eva-message-hierarchy-ready .eva-my-avatar-chat {
   position: fixed;
   z-index: 71;

@@ -6,7 +6,7 @@
 (function(root){
 'use strict';
 root.EvaChatSettings={create(ui,store){
- const {React:R,Button,Modal,Input,Switch,PlusIcon,CloseIcon,BackIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,humanItems,cloneItems,useState}=ui,h=R.createElement;
+ const {React:R,Button,Modal,Input,Switch,PlusIcon,CloseIcon,BackIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,humanItems,cloneItems,useState,IdentityCard}=ui,h=R.createElement;
  function Row({title,value,onClick,danger=false}){return h(onClick?'button':'div',{type:onClick?'button':undefined,className:'eva-chat-setting-row'+(danger?' is-danger':''),onClick},h('span',null,title),value!==undefined&&h('span',{className:'eva-chat-setting-value'},value));}
  function Toggle({title,value,onChange}){return h('div',{className:'eva-chat-setting-row'},h('span',null,title),h(Switch,{'aria-label':title,checked:!!value,onChange,size:'small'}));}
  function EditRow({title,value='',maxLength=50,multiline=false,allowEmpty=true,onSave,readOnly=false}){
@@ -23,14 +23,14 @@ root.EvaChatSettings={create(ui,store){
   const run=fn=>{try{fn();setError('');return true;}catch(e){setError(e.message);return false;}};
   const update=patch=>store.setChatSettings(id,actor,patch),personal=patch=>store.setChatPreferences(id,actor,patch);
   const members=allowed?store.groupMembers(id):[],humans=allowed?humanItems(g.humans.map(m=>({...store.person(m.id),...m})),g.projectId||sid):[],ordered=[...humans.map(p=>({...p,kind:'human'})),...members.filter(p=>p.kind!=='human')];
-  const person=store.person(channel.personId)||s.people.find(p=>p.name===channel.name),bot=store.clone(channel.identityId)||s.clones.find(c=>c.name===channel.name),name=settings.name||channel.name;
+  const person=store.person(channel.personId),bot=store.clone(channel.identityId),name=settings.name||channel.name;
   const identity=p=>p.identityAppearance?h('span',{className:'eva-members-human-identity'},root.EvaAIIdentity.avatar(p.identityAppearance,32,h),h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-members-human-name eva-identity-name-text',title:p.name},p.name),root.EvaAIIdentity.badge(h))):['project-agent','employee'].includes(p.kind)?h(ProjectAgentIdentity,{agent:p}):p.kind==='clone'?h(CloneIdentity,{clone:p}):h(HumanIdentity,{id:p.id});
   const section=(...children)=>h('section',{className:'eva-chat-setting-section'},...children);
   const prefRows=section(h(Toggle,{title:'消息免打扰',value:prefs.mute,onChange:v=>run(()=>personal({mute:v}))}),h(Toggle,{title:'聊天置顶',value:conversationActions?conversationActions.pinned:prefs.top,onChange:v=>run(()=>conversationActions?conversationActions.togglePinned(v):personal({top:v}))}));
   const title=page==='main'?(group?'聊天信息（'+members.length+'）':'聊天信息'):({members:'群聊成员（'+members.length+'）',manage:'群聊管理'})[page];
   const role=p=>p.id===g?.ownerId?'群主':p.kind==='human'&&store.manager(sid,p.id)?'管理员':null;
   const eligibleRemove=p=>p.kind==='project-agent'?false:p.kind==='employee'?(manage||p.by===actor):p.kind==='clone'?(manage||p.ownerId===actor):(manage&&p.id!==g.ownerId&&p.id!==actor);
-  return h('aside',{className:'eva-chat-settings','aria-label':'聊天信息管理',onKeyDown:e=>{if(e.key==='Escape'&&!picker&&!confirm){e.stopPropagation();page==='main'?onClose():setPage('main');}}},
+  return h('aside',{className:'eva-chat-settings','aria-label':'聊天信息管理',onKeyDown:e=>{if(e.key==='Escape'&&!picker&&!confirm&&!profile){e.stopPropagation();page==='main'?onClose():setPage('main');}}},
    h('header',{className:'eva-chat-settings-head'},h('button',{ref:closeRef,type:'button','aria-label':page==='main'?'关闭聊天信息':'返回聊天信息',onClick:()=>page==='main'?onClose():setPage('main')},h(page==='main'?CloseIcon:BackIcon,{size:20})),h('h3',null,title)),
    h('div',{className:'eva-chat-settings-body'},error&&h('p',{role:'alert',className:'eva-members-error'},error),
     page==='main'&&h(R.Fragment,null,
@@ -45,7 +45,7 @@ root.EvaChatSettings={create(ui,store){
    h(MemberPicker,{visible:picker==='invite',title:'邀请群聊成员',items:allowed&&!all?[...humanItems(store.candidates(id,actor),g.projectId,true).map(p=>{const pending=s.invitations.find(i=>i.scopeId===id&&i.inviteeId===p.id&&i.status.startsWith('pending'));return {...p,disabled:!!pending,selectionHint:pending?'邀请处理中':p.selectionHint};}),...cloneItems(actor,g.projectId,id)]:[],onCancel:()=>setPicker(null),onSubmit:chosen=>{store.transaction(staged=>chosen.forEach(p=>p.kind==='clone'?staged.addClone(id,actor,p.id):staged.invite(id,actor,p.id)));setPicker(null);}}),
    h(MemberPicker,{visible:picker==='transfer',title:'转让群主',single:true,submit:'确认转让',items:humans.filter(p=>p.id!==actor),onCancel:()=>setPicker(null),onSubmit:chosen=>{store.transfer(id,actor,chosen[0].id);setPicker(null);}}),
    h(Modal,{className:'eva-members-modal',title:'群头像',visible:picker==='avatar',footer:null,onCancel:()=>setPicker(null)},h('input',{type:'file',accept:'image/png,image/jpeg,image/webp','aria-label':'上传群头像',onChange:e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>1024*1024){setError('头像请小于 1 MB');return;}const reader=new FileReader();reader.onload=()=>{if(run(()=>update({avatar:reader.result})))setPicker(null);};reader.readAsDataURL(f);}}),h(Button,{theme:'borderless',onClick:()=>{if(run(()=>update({avatar:''})))setPicker(null);}},'恢复默认头像')),
-   h(Modal,{className:'eva-members-modal',title:profile?.name||'个人信息',visible:!!profile,onCancel:()=>setProfile(null),footer:null},profile&&(profile.kind==='external'?h('strong',null,profile.name):identity(profile)),profile?.kind==='project-agent'&&h('p',null,'归属：本项目。项目分身在云端运行，了解项目目标、成员、群聊和共享资料。每位成员都可以 @它；不可移除。'),profile?.kind==='clone'&&h('p',null,'归属：'+(store.person(profile.ownerId)?.name||''))),
+   h(IdentityCard,{identity:profile,onClose:()=>setProfile(null)}),
    h(Modal,{className:'eva-members-modal',title:'确认操作',visible:!!confirm,onCancel:()=>setConfirm(null),okText:'确认',cancelText:'取消',onOk:()=>{if(run(()=>{if(confirm==='clear')onClear();else if(confirm==='leave'){store.remove(id,actor,actor);onClose();}else if(confirm==='dissolve'){store.dissolveGroup(id,actor);onClose();}else if(confirm?.remove){const p=confirm.remove;p.kind==='employee'?store.removeEmployee(id,actor,p.id):p.kind==='clone'?store.removeClone(id,actor,p.id):store.remove(id,actor,p.id);}}))setConfirm(null);}},h('p',null,confirm==='clear'?'清空你在此设备的聊天记录，其他成员的记录不受影响。':confirm==='leave'?'退出后，你的分身也将离开本群。':confirm==='dissolve'?'解散后，群聊及子区将不再可访问。':confirm?.remove?'确认移除 '+confirm.remove.name+'？':''),confirm?.remove&&identity(confirm.remove),error&&h('p',{role:'alert',className:'eva-members-error'},error)));
  }
  return ChatSettings;

@@ -152,9 +152,13 @@
 })();
 
 // Contacts demo: additional personas of existing colleagues; no new people or projects.
-window.__EVA_CONTACT_EXTRA_PERSONAS = {
-  '林晓': [{id:'contact-clone:lin:quality',name:'质量追踪员'}, {id:'contact-clone:lin:report',name:'复测报告整理员'}]
-};
+window.__EVA_CONTACT_PERSONAS = [
+  {id:'clone-zhouyuan',ownerId:'u-zhouyuan',name:'飞行员M号'},
+  {id:'clone-suhang',ownerId:'u-suhang',name:'正在休假的预言家'},
+  {id:'contact-clone:lin:quality',ownerId:'u-linxiao',name:'质量追踪员'},
+  {id:'contact-clone:lin:report',ownerId:'u-linxiao',name:'复测报告整理员'}
+];
+window.__EVA_CONTACT_IDENTITY_ALIASES = {'b-wangyilin':'persona-initial','b-pilot':'persona-pilot'};
 
 window.__EVA_IM_MARKDOWN_UPGRADES = {
   "已归为三项：成员权限、群文件共享、入口切换。每项都补了触发条件和预期结果。\n优先验证：未入群不能读历史；转存文件不授予来源群权限；切换会话不残留上一条草稿。": "### 评审意见 → 可验收清单\n\n| 范围 | 触发条件 | 预期结果 |\n| --- | --- | --- |\n| 成员权限 | 未加入整改群的成员打开会话 | 不可读取群历史 |\n| 文件共享 | 报告转存到项目团队文件 | 可读共享文件，不获得来源群权限 |\n| 入口切换 | 消息与我的 AI 团队往返 | 选中态正确，草稿不串会话 |\n\n**优先级**：先核对访问边界，再检查入口状态。以上是验收标准，不表示检查已通过。",

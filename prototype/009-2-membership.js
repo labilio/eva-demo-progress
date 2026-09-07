@@ -37,6 +37,22 @@
       snapshot:()=>JSON.parse(JSON.stringify(state)),person,clone,employee,manager,projectAgent:agentFor,
       addEmployee(id,uid,eid){requireHuman(uid);const sid=id.startsWith("all:")?id.slice(4):id,s=state.projects[sid]||fail("数字员工只能放进项目，不能拉进群聊"),a=employee(eid)||fail("数字员工不存在");if(!member(sid,uid))fail("请先加入项目");if((a.ownership==="personal"||a.scope==="self")&&a.by!==uid)fail("只有创建者能邀请自己的数字员工");if(a.ownership==="project"&&a.projectId!==projectId(sid))fail("项目助手只能在所属项目中使用");s.employeeIds=[...new Set([...(s.employeeIds||[]),eid])];notify();},
       removeEmployee(id,uid,eid){const s=writable(id),a=employee(eid)||fail("数字员工不存在");if(!member(id,uid)||(!manager(id,uid)&&a.by!==uid))fail("无移除权限");s.employeeIds=(s.employeeIds||[]).filter(x=>x!==eid);if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.employeeIds=(g.employeeIds||[]).filter(x=>x!==eid);});notify();},
+      openDirect(uid,target){
+        requireHuman(uid);const p=requireHuman(target);if(uid===target)fail('不能给自己发消息');
+        state.directConversations||={};
+        const existing=Object.values(state.directConversations).find(c=>c.memberIds.includes(uid)&&c.memberIds.includes(target));if(existing)return existing.id;
+        const id=uid==='u-wangyilin'?'dm-'+target.replace(/^u-/, ''):'dm-pair:'+JSON.stringify([uid,target].sort());
+        state.directConversations[id]||={id,memberIds:[uid,target],lastAt:new Date().toISOString(),messages:[]};notify();return id;
+      },
+      directChannels(uid){return Object.values(state.directConversations||{}).filter(c=>c.memberIds.includes(uid)).map(c=>{const p=person(c.memberIds.find(id=>id!==uid));return p?{id:c.id,personId:p.id,name:p.name,chatType:'direct',members:2,unread:0,threads:[],lastAt:c.lastAt,identityAvatarUrl:p.id==='u-wangyilin'?root.__EVA_CURRENT_USER_PORTRAIT:root.EvaAvatar?.personUri(p.id)}:null;}).filter(Boolean);},
+      directMessages(uid,base={}){return {...base,...Object.fromEntries(Object.values(state.directConversations||{}).filter(c=>c.memberIds.includes(uid)).map(c=>[c.id,[...(base[c.id]||[]),...JSON.parse(JSON.stringify(c.messages))]]))};},
+      directDraft(id,uid){const c=state.directConversations?.[id];return c?.memberIds.includes(uid)?c.drafts?.[uid]||'':'';},
+      setDirectDraft(id,uid,text){const c=state.directConversations?.[id];if(!c||!c.memberIds.includes(uid))fail('无私聊访问权限');if((c.drafts?.[uid]||'')===text)return;c.drafts||={};c.drafts[uid]=text;notify();},
+      sendDirect(id,uid,text){
+        requireHuman(uid);const c=state.directConversations?.[id];if(!c||!c.memberIds.includes(uid))fail('无私聊访问权限');
+        if(!person(c.memberIds.find(p=>p!==uid)))fail('对方账号不可用');if(!text.trim())return false;
+        c.drafts||={};c.drafts[uid]='';c.lastAt=new Date().toISOString();c.messages.push({kind:'text',sender:{...person(uid),uid},time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text});notify();return true;
+      },
       transaction(fn){const staged=create(state,undefined,resolveProjectInfo);fn(staged);state=staged.snapshot();notify();},
       renameProject(id,uid,name){requireHuman(uid);if(!state.projects[id]||!manager(id,uid))fail('仅项目负责人或管理员可修改');if(!name.trim()||name.length>50)fail('项目名称须为 1–50 个字符');state.projects[id].name=name.trim();notify();},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
@@ -172,6 +188,11 @@
     if(!saved.seededOrgGroups){
       saved.seededOrgGroups=true;
       for(const g of orgChannels){saved.groups[g.id]={id:g.id,name:g.name,projectId:null,ownerId:'u-wangyilin',humans:[{id:'u-wangyilin',role:'member'}],cloneIds:[]};for(const t of g.threads||[])saved.threads[t.id]=g.id;}
+    }
+    // Reconcile only retired demo defaults; preserve user-edited names and active flags.
+    for(const [id,oldName] of [['b-wangyilin','王宜林的分身'],['clone-linxiao','林晓的分身'],['clone-hejing','何静的分身']]){
+      const c=saved.clones?.find(c=>c.id===id),seed=root.__EVA_MEMBERSHIP_CLONES?.find(c=>c.id===id);
+      if(c?.name===oldName&&seed)c.name=seed.name;
     }
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
     store.seedSupplyChatContent();store.seedProjectAgents();return store;
