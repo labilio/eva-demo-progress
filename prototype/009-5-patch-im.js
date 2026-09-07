@@ -94,6 +94,10 @@ function EvaAssistantEditor({request,host,onClose}) {
     ? ReactDOM.createPortal(h('div',{className:'eva-assistant-editor-inline'},editor),inlineTarget)
     : h(Modal,{visible:true,title:null,footer:null,closable:false,closeOnEsc:!busy,maskClosable:!busy,onCancel:()=>!busy&&onClose(),width:920,className:'eva-editor-dialog',getPopupContainer:()=>host.current},editor);
 }
+// Mirrors Octo ChatComposer.buildPlaceholder and its zh-CN translation keys.
+function evaIMPlaceholder(name) {
+  return name ? '发送给 ' + name : '发送消息';
+}
 function evaTeamThreadSource(snapshot, identity, selected) {
   const records=snapshot.sessions.filter(record=>record.identityId===identity.id);
   // An unselected identity gets an empty draft topic, not another conversation's history.
@@ -437,9 +441,9 @@ function EvaAITeamPage() {
       'channel:ct?.presentation==="ai-direct"?{...Sa,id:va,chatType:"direct"}:Sa,conversationActions:ct?.conversationActions,sessionInfoOnly:!!ct?.conversationOnly', 'AI settings topic identity and actions');
     // Octo directWithName copy applies to every IM target; AI topics display the AI identity.
     cut('placeholder:ct?.composerDisabled?"本地助理离线":Sa.chatType==="direct"?`发送给 ${Sa.name}…`:`在 ${fa?fa.name:Sa.name} 中回复…`',
-      'placeholder:`发送给 ${ct?.presentation==="ai-direct"?Sa.name:(fa?.name??Sa.name)}`', 'Unified recipient placeholder');
+      'placeholder:evaIMPlaceholder(ct?.presentation==="ai-direct"?Sa.name:(fa?.name??Sa.name))', 'Unified recipient placeholder');
     cut('placeholder:`在 ${Es.name} 中回复…`',
-      'placeholder:`发送给 ${Es.name}`', 'Thread side composer recipient placeholder');
-    return evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+      'placeholder:evaIMPlaceholder(Es.name)', 'Thread side composer recipient placeholder');
+    return evaIMPlaceholder.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

@@ -191,6 +191,15 @@ git diff --check
 - 所有应用图标继续使用既有 Lucide 组件与语义。Lucide 图标允许重复使用：同一语义应优先复用同一图标，不同语义只在确实会造成识别混淆时调整；禁止把“每个图标只能出现一次”当作规则。
 - 禁止手写 SVG、Unicode 图形或 CSS 图形替代已有 Lucide 图标。若当前 bundle 没有所需导出，使用项目既有的 `createLucideIcon` 和 Lucide 官方节点定义创建组件，并保留标准 Lucide 类名、尺寸和 `currentColor` 行为。
 
+## 项目级 IM 输入提示规则
+
+- 所有 IM 输入框直接遵循 Octo-Web `ChatComposer.buildPlaceholder`，共用 `evaIMPlaceholder`，不得由业务入口另写文案或模板。
+- 有对象名称时显示 `发送给 xxx`：“发送给”后恰好一个半角空格，再接对象名称，不追加省略号、冒号、快捷键或其他说明；名称缺失时按 Octo 原逻辑显示 `发送消息`。
+- 覆盖人类私聊、AI 私聊外观入口、群聊、子区及子区侧栏。对象名称从当前会话数据推导，切换或改名后同步更新，不缓存第二份名称。
+- 我的 AI 团队始终使用 AI 身份名称，不泄露底层两人群或子区名称；普通群聊使用群名，普通子区使用子区名。
+- 离线、禁用或其他状态沿用状态组件及发送权限，不通过替换输入提示表达。不得回退为“在 xxx 中回复…”等入口特有文案。
+- 参考版本：Octo-Web `c2e2aeed2d7027e3aa25f8c726798eb7cdba2463` 的 `packages/dmworkbase/src/features/chat-composer/ui/ChatComposer.tsx` 与 `i18n/locales/zh-CN.json` 中的 `messageInput.placeholder.directWithName`、`messageInput.placeholder.direct`。
+
 ## UI 状态归属与迁移规则
 
 - 新增或修改 UI 状态前，必须明确三个信息：唯一所有者、可推导的数据源、组件切换时的重置边界。能够从路由或业务数据推导的视觉状态，不得再保存第二份 DOM、`window` 全局变量或 `body` class 状态。
