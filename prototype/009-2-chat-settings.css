@@ -39,3 +39,15 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-tile-caption>span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 
 .eva-chat-settings-note { color:var(--wk-text-secondary,#767a80); font-size:12px; line-height:1.6; }
+
+/* Octo private-chat variant: one identity row, then separate setting sections.
+   Avatar geometry remains entirely owned by EvaAIIdentity. */
+.eva-chat-settings--ai-direct .eva-chat-settings-head { gap:0; padding:8px 13px; box-sizing:border-box; }
+.eva-chat-settings--ai-direct .eva-chat-settings-head button { width:44px; height:44px; flex:none; border-radius:50%; }
+.eva-chat-settings--ai-direct .eva-chat-settings-head h3 { margin-left:22px; font-size:18px; font-weight:500; }
+.eva-chat-settings--ai-direct .eva-chat-settings-body { padding:8px 16px 16px; background:var(--wk-bg-surface,#f5f6f7); }
+.eva-chat-settings--ai-direct .eva-chat-setting-section { margin-bottom:8px; background:var(--wk-bg-base,#fff); }
+.eva-chat-direct-identity { display:flex; align-items:center; gap:10px; padding:15px; min-width:0; }
+.eva-chat-direct-identity > .eva-identity-name-row { min-width:0; font-size:16px; font-weight:500; color:var(--wk-text-primary,#202127); }
+.eva-chat-setting-row--truncate > span:first-child { flex-shrink:0; white-space:nowrap; }
+.eva-chat-setting-row--truncate .eva-chat-setting-value { min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
