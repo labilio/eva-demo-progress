@@ -154,6 +154,13 @@
         const view=(g,id,isAll)=>{const original=base.find(c=>c.id===id)||{};return {...original,id,name:isAll?'全员群':g.name,lastAt:original.lastAt||root.__EVA_DEMO_TIME?.T1||'2026-09-02T10:00:00+08:00',color:original.color||'var(--semi-color-primary)',unread:original.unread||0,threads:[...(original.threads||[]).map(t=>({...t,...state.threadDetails[t.id]})),...Object.entries(state.threads).filter(([tid,gid])=>gid===id&&state.threadDetails[tid]&&!(original.threads||[]).some(t=>t.id===tid)).map(([tid])=>state.threadDetails[tid])].filter(t=>!t.deleted).map(t=>({...t,updated_at:t.updated_at||t.created_at||root.__EVA_DEMO_TIME?.T1||'2026-09-02T10:00:00+08:00'})),members:g.humans.length+g.cloneIds.length+(g.employeeIds||[]).length+(p?1:0),systemAICount:p?1:0,humanCount:g.humans.length,cloneCount:g.cloneIds.length,employeeCount:(g.employeeIds||[]).length,allMembers:isAll,projectId:pid};};
         return [...(p?[view(p,'all:'+pid,true)]:[]),...Object.values(state.groups).filter(g=>g.projectId===pid&&api.canRead(g.id,uid)).map(g=>view(g,g.id,false))];
       },
+      conversationContext(id,uid){
+        const gid=state.threads[id]||id,sid=gid?.startsWith('all:')?gid.slice(4):gid;
+        const pid=state.projects[sid]?sid:state.groups[sid]?.projectId;
+        if(!pid||!api.canRead(id,uid)||!api.canRead(pid,uid))return null;
+        const name=projectInfo(pid).name||'',groupName=gid.startsWith('all:')?'全员群':state.chatSettings[gid]?.name||state.groups[gid]?.name||'';
+        return {projectId:pid,projectName:name,groupId:gid,groupName,path:state.threads[id]?[name,groupName].filter(Boolean).join(' / '):name};
+      },
       candidates(id,uid){const s=writable(id);if(!member(id,uid))fail('请先加入');return state.people.filter(p=>p.active!==false&&!member(id,p.id)&&(!s.projectId||member(s.projectId,p.id)));},
       addMember(id,uid,target){
         requireHuman(uid);requireHuman(target);const s=writable(id);

@@ -73,7 +73,7 @@
       return h(Modal,{className:'eva-members-modal',title:'提及成员',visible,onCancel:onClose,footer:null},h('p',{className:'eva-members-muted'},'每位成员都可以提及项目 AI；所有人只通知人类。'),h('div',{className:'eva-members-mention-list'},h(Button,{onClick:()=>{onChoose('所有人');onClose();}},'所有人（'+members.filter(m=>m.kind==='human').length+' 位人类）'),members.map(m=>h(Button,{key:m.id,theme:'borderless',onClick:()=>{onChoose(m.name);onClose();}},['project-agent','employee'].includes(m.kind)?h(ProjectAgentIdentity,{agent:m}):m.kind==='clone'?h(CloneIdentity,{clone:store.clone(m.id)}):h(HumanIdentity,{id:m.id})))));
     }
     const cards=root.EvaIdentityCard.create({React:R,Modal,Button,BackIcon,useNavigate},store);
-    const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,PlusIcon,CloseIcon,BackIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard},store);
+    const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,PlusIcon,CloseIcon,BackIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,useNavigate},store);
     return {...cards,HumanIdentity,ChatSettings,AccountSwitcher,Members,CloneChoice,ActorPicker,useState,CreateGroup,FileTransfer,MentionPicker};
   }};
 })(window);

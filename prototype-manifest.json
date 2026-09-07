@@ -189,7 +189,7 @@
       "tag": "script",
       "name": "membership-controller",
       "file": "prototype/009-2-membership.js",
-      "bytes": 26424,
+      "bytes": 26994,
       "role": "prototype"
     },
     {
@@ -245,7 +245,7 @@
       "tag": "script",
       "name": "chat-settings",
       "file": "prototype/009-2-chat-settings.js",
-      "bytes": 11486,
+      "bytes": 11828,
       "role": "prototype"
     },
     {
@@ -261,7 +261,7 @@
       "tag": "script",
       "name": "membership-components",
       "file": "prototype/009-2-members-ui.js",
-      "bytes": 18080,
+      "bytes": 18092,
       "role": "prototype"
     },
     {
@@ -293,7 +293,7 @@
       "tag": "script",
       "name": "runtime-patch-im",
       "file": "prototype/009-5-patch-im.js",
-      "bytes": 78961,
+      "bytes": 80170,
       "role": "build-input"
     },
     {
@@ -525,7 +525,7 @@
       "tag": "style",
       "name": "team-message-project-recent",
       "file": "prototype/039-team-message-project-recent.css",
-      "bytes": 4207,
+      "bytes": 4698,
       "role": "prototype"
     },
     {
@@ -549,7 +549,7 @@
       "tag": "style",
       "name": "ai-team",
       "role": "prototype",
-      "bytes": 24819,
+      "bytes": 24978,
       "order": 68
     },
     {

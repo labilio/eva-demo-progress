@@ -51,3 +51,10 @@ test('旧待处理记录按当前范围迁移，已拒绝与失效记录不授�
  const restored=windowlessRestore(seed);assert.equal(restored.canRead('g','b'),true);assert.equal(restored.canRead('p','bb'),false);assert.equal(restored.canRead('p','c'),false);assert.equal(restored.canRead('p','inactive'),false);assert.equal(restored.snapshot().invitations,undefined);
  restored.remove('p','a','b');assert.equal(windowlessRestore(restored.snapshot()).canRead('p','b'),false);
 });
+
+test('会话项目路径按父群解析并遵守访问范围，改名即时更新',()=>{
+ const s=setup();s.createProject('p','项目甲','a',[]);s.createGroup('g','工作群','p','a',[]);s.createThread('t','g');
+ assert.equal(s.conversationContext('all:p','a').path,'项目甲');assert.equal(s.conversationContext('g','a').path,'项目甲');assert.equal(s.conversationContext('t','a').path,'项目甲 / 工作群');assert.equal(s.conversationContext('t','b'),null);
+ s.renameProject('p','a','项目乙');s.setChatSettings('g','a',{name:'整改群'});assert.equal(s.conversationContext('t','a').path,'项目乙 / 整改群');
+ s.createGroup('outside','非项目群',null,'a',[]);assert.equal(s.conversationContext('outside','a'),null);assert.equal(s.conversationContext('dm-b','a'),null);
+});
