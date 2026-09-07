@@ -41,3 +41,7 @@ test('AI assignment stays todo and human avatars use stable identity ids',async(
   const h=harness();h.fill();const label=h.find('执行负责人').props.optionList[0].label;assert.equal(label.children[0].props.src,'avatar:u1');
   h.find('执行负责人').props.onChange('c1');h.render();await h.button('创建任务').props.onClick();assert.equal(h.calls[0].assignee_type,'agent');assert.equal(h.calls[0].status,'todo');
 });
+test('创建人和创建时间以只读系统字段展示',()=>{
+  const h=harness();const labels=h.all().filter(n=>n.props.className==='eva-loop-task-create__system-label').map(n=>n.children[0]);assert.ok(labels.includes('创建人'));assert.ok(labels.includes('创建时间'));
+  const readonly=h.all().filter(n=>n.props.className==='eva-loop-task-create__readonly');assert.ok(readonly.some(n=>n.children.includes('创建后自动记录')));assert.ok(readonly.some(n=>n.children.some(child=>child?.props?.className==='eva-loop-task-create__identity')));
+});

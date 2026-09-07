@@ -24,6 +24,7 @@
       const projectAgent=scope?members.projectAgent(pid):null;
       const candidates=[...humans.map(p=>({...p,type:'member'})),...clones.map(p=>({...p,type:'agent'})),...employees.map(p=>({...p,type:'agent'})),...(projectAgent?[{...projectAgent,type:'agent'}]:[])];
       const selected=candidates.find(p=>p.id===form.assignee),patch=(key,value)=>setForm(old=>({...old,[key]:value}));
+      const creator=snapshot.people.find(p=>p.id===snapshot.actorId);
       const popup=()=>host.current;
       function identity(person){
         if(person.type!=='agent'&&deps.HumanIdentity)return h(deps.HumanIdentity,{id:person.id,compact:true});
@@ -54,6 +55,7 @@
       }
       const disabled=busy||!!created.current;
       const selector=(key,options,placeholder,more={})=>h(Select,{value:form[key]||undefined,onChange:value=>patch(key,value||''),optionList:options,getPopupContainer:popup,disabled,placeholder,'aria-label':placeholder,...more});
+      const systemField=(title,content)=>h('div',{className:'eva-loop-task-create__system-field'},h('span',{className:'eva-loop-task-create__system-label'},title),h('div',{className:'eva-loop-task-create__readonly'},content));
       const attachmentField=h(R.Fragment,null,
         h('input',{type:'file',multiple:true,hidden:true,ref:fileInput,onChange:e=>{setFiles(old=>[...old,...Array.from(e.target.files||[])]);e.target.value='';}}),
         h('p',{className:'eva-loop-task-create__hint'},'任务与附件保留在当前原型页面内，附件未上传至服务端。'),
@@ -72,6 +74,7 @@
         field('优先级',selector('priority',[['urgent','紧急'],['high','高'],['medium','中'],['low','低'],['none','无']].map(([value,label])=>({value,label})),'优先级')),
         field('截止日期',h(Input,{type:'date',value:form.due,onChange:value=>patch('due',value),disabled,'aria-label':'截止日期'})),
         field('验收人',selector('reviewer',humans.map(p=>({value:p.id,label:identity({...p,type:'member'})})),'验收人',{showClear:true})),
+        h('div',{className:'eva-loop-task-create__system-fields'},systemField('创建人',creator?identity({...creator,type:'member'}):'当前用户'),systemField('创建时间','创建后自动记录')),
         labels.length>0&&field('标签',selector('labels',labels.map(label=>({value:label.id,label:label.name})),'标签',{multiple:true})),
         field('初始状态',h('span',null,'待办'),'完成后按任务流程提交验收。')
       );
