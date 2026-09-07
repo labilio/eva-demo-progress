@@ -435,8 +435,11 @@ function EvaAITeamPage() {
       'className:"ch-right-panel ch-right-panel--overlay"},fa&&ct?.presentation!=="ai-direct"?React.createElement', 'AI topics reuse direct chat settings');
     cut('channel:Sa,sessionInfoOnly:!!ct?.conversationOnly',
       'channel:ct?.presentation==="ai-direct"?{...Sa,id:va,chatType:"direct"}:Sa,conversationActions:ct?.conversationActions,sessionInfoOnly:!!ct?.conversationOnly', 'AI settings topic identity and actions');
-    cut('placeholder:ct?.composerDisabled?"本地助理离线":Sa.chatType==="direct"?',
-      'placeholder:ct?.composerDisabled?"本地助理离线":ct?.presentation==="ai-direct"||Sa.chatType==="direct"?', 'AI direct composer copy');
+    // Octo directWithName copy applies to every IM target; AI topics display the AI identity.
+    cut('placeholder:ct?.composerDisabled?"本地助理离线":Sa.chatType==="direct"?`发送给 ${Sa.name}…`:`在 ${fa?fa.name:Sa.name} 中回复…`',
+      'placeholder:`发送给 ${ct?.presentation==="ai-direct"?Sa.name:(fa?.name??Sa.name)}`', 'Unified recipient placeholder');
+    cut('placeholder:`在 ${Es.name} 中回复…`',
+      'placeholder:`发送给 ${Es.name}`', 'Thread side composer recipient placeholder');
     return evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);
