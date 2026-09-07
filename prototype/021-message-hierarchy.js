@@ -247,7 +247,7 @@
 
   function openDrive() {
     if (typeof window.__evaOpenDrive === 'function') {
-      window.__evaOpenDrive('global', null, 'owned');
+      window.__evaOpenDrive('global', null, 'personal');
       return;
     }
     var driveNav = document.getElementById('eva-drive-nav');

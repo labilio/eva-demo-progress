@@ -198,7 +198,7 @@
       "name": "file-sharing-controller",
       "file": "prototype/009-1-file-sharing.js",
       "role": "prototype",
-      "bytes": 2269
+      "bytes": 20931
     },
     {
       "order": 25,
@@ -301,7 +301,7 @@
       "tag": "script",
       "name": "runtime-patch-general",
       "file": "prototype/009-6-patch-general.js",
-      "bytes": 48557,
+      "bytes": 64341,
       "role": "build-input"
     },
     {
@@ -405,7 +405,7 @@
       "tag": "script",
       "name": "mode-layer",
       "file": "prototype/020-mode-layer.js",
-      "bytes": 34311,
+      "bytes": 72588,
       "role": "prototype"
     },
     {
@@ -413,7 +413,7 @@
       "tag": "script",
       "name": "message-hierarchy",
       "file": "prototype/021-message-hierarchy.js",
-      "bytes": 16910,
+      "bytes": 16913,
       "role": "prototype"
     },
     {
@@ -574,7 +574,7 @@
       "name": "loop-task-create-style",
       "role": "prototype",
       "order": 71,
-      "bytes": 3217
+      "bytes": 5287
     },
     {
       "order": 72,
@@ -645,7 +645,7 @@
       "tag": "style",
       "name": "sites-page",
       "file": "prototype/053-sites-page.css",
-      "bytes": 0,
+      "bytes": 2976,
       "role": "prototype"
     },
     {
@@ -653,7 +653,7 @@
       "tag": "script",
       "name": "sites-page",
       "file": "prototype/053-sites-page.js",
-      "bytes": 0,
+      "bytes": 1861,
       "role": "prototype"
     },
     {
@@ -679,6 +679,22 @@
       "file": "review/comments.js",
       "bytes": 35019,
       "role": "review-module"
+    },
+    {
+      "order": 85,
+      "tag": "style",
+      "name": "050-file-library-styles",
+      "file": "prototype/050-file-library.css",
+      "bytes": 34873,
+      "role": "prototype"
+    },
+    {
+      "order": 86,
+      "tag": "script",
+      "name": "project-files-ui",
+      "file": "prototype/009-1-project-files-ui.js",
+      "bytes": 27138,
+      "role": "prototype"
     }
   ]
 }

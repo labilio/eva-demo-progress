@@ -1,0 +1,1532 @@
+/* File library convergence: GDS tokens + the repository's existing Semi UI shell. */
+.eva-native-page-host > .eva-drive,
+body.eva-message-hierarchy-ready .eva-native-page-host > .eva-drive {
+  position: relative;
+  inset: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: 216px minmax(0, 1fr);
+  overflow: hidden;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  background: var(--gds-color-surface-primary, #fff);
+  font-family: var(--gds-font-family-sans, "PingFang SC", sans-serif);
+}
+
+body.eva-message-hierarchy-ready .eva-native-page-host > .eva-drive .eva-drive__side {
+  display: flex;
+}
+
+.eva-drive__side {
+  border-right-color: var(--gds-color-border-faint, #ebebeb);
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive__side-head {
+  height: 60px;
+  padding: 0 16px;
+  border-bottom-color: var(--gds-color-border-faint, #ebebeb);
+}
+
+.eva-drive__side-head strong {
+  color: var(--gds-color-text-strong, #1e1e1e);
+  font-size: var(--gds-type-header-font-size, 16px);
+  line-height: var(--gds-type-header-line-height, 24px);
+}
+
+.eva-drive__side-search {
+  box-sizing: border-box;
+  min-height: 34px;
+  margin: 12px;
+  border: 1px solid transparent;
+  border-radius: var(--gds-radius-control, 8px);
+  background: var(--gds-color-surface-paper, #fff);
+}
+
+.eva-drive__side-search:focus-within {
+  border-color: var(--gds-color-border-focus, #1563eb);
+  box-shadow: 0 0 0 2px rgb(21 99 235 / 12%);
+}
+
+.eva-drive__tree {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 2px 8px 12px;
+}
+
+.eva-drive__tree-group {
+  margin: 14px 8px 5px;
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: var(--gds-type-caption-font-size, 12px);
+  line-height: var(--gds-type-caption-line-height, 16px);
+}
+
+.eva-drive__tree button {
+  min-height: 34px;
+  border-radius: var(--gds-radius-control, 8px);
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  font-size: var(--gds-type-label-font-size, 14px);
+}
+
+.eva-drive__tree button:hover {
+  background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
+}
+
+.eva-drive__tree button[aria-current="page"] {
+  color: var(--gds-color-action-primary, #1563eb);
+  background: rgb(21 99 235 / 9%);
+  font-weight: var(--gds-font-weight-medium, 500);
+}
+
+.eva-drive__tree button.is-child {
+  padding-left: 34px;
+  font-size: 13px;
+}
+
+.eva-drive__tree-spacer {
+  flex: 1;
+}
+
+body.eva-message-hierarchy-ready .eva-drive__main,
+.eva-drive__main {
+  grid-column: 2;
+  overflow: hidden;
+}
+
+.eva-drive__header {
+  min-height: 60px;
+  height: auto;
+  padding: 9px 24px;
+  border-bottom-color: var(--gds-color-border-faint, #ebebeb);
+}
+
+.eva-drive__header > div:first-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.eva-drive__header strong {
+  font-size: var(--gds-type-header-font-size, 16px);
+  line-height: var(--gds-type-header-line-height, 24px);
+}
+
+.eva-drive__header > div:first-child > span {
+  overflow: hidden;
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: var(--gds-type-caption-font-size, 12px);
+  line-height: var(--gds-type-caption-line-height, 16px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-drive__header .eva-drive__role,
+.eva-file-role-badge {
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--gds-color-border-subtle, #dbdbdb);
+  border-radius: var(--gds-radius-full, 999px);
+  display: inline-flex;
+  align-items: center;
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  background: var(--gds-color-surface-primary, #fff);
+  font-size: var(--gds-type-caption-font-size, 12px);
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+body.eva-message-hierarchy-ready .eva-drive__scroll,
+.eva-drive__scroll {
+  padding: 20px 24px 8px;
+  flex: 0 0 auto;
+}
+
+body.eva-message-hierarchy-ready .eva-drive__actions,
+.eva-drive__actions {
+  margin: 0;
+  display: flex;
+  gap: 8px;
+}
+
+body.eva-message-hierarchy-ready .eva-drive__action,
+.eva-drive__action {
+  box-sizing: border-box;
+  width: auto;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--gds-color-border-default, #ccc);
+  border-radius: var(--gds-radius-control, 8px);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  background: var(--gds-color-surface-primary, #fff);
+  box-shadow: none;
+  font: inherit;
+  font-size: var(--gds-type-label-font-size, 14px);
+  cursor: pointer;
+}
+
+body.eva-message-hierarchy-ready .eva-drive__action:hover,
+.eva-drive__action:hover {
+  border-color: var(--gds-color-text-muted, #6b7280);
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive__action--primary,
+body.eva-message-hierarchy-ready .eva-drive__action--primary {
+  border-color: var(--gds-color-action-primary, #1563eb);
+  color: var(--gds-color-action-primary-text, #fff);
+  background: var(--gds-color-action-primary, #1563eb);
+}
+
+.eva-drive__action--primary:hover,
+body.eva-message-hierarchy-ready .eva-drive__action--primary:hover {
+  border-color: #0e54ca;
+  background: #0e54ca;
+}
+
+.eva-drive__action > .eva-drive-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.eva-drive__breadcrumbs {
+  min-height: 26px;
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gds-color-text-muted, #6b7280);
+}
+
+.eva-drive__pathbar {
+  min-height: 30px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eva-drive__pathbar .eva-drive__breadcrumbs {
+  min-width: 0;
+  min-height: 26px;
+  margin-top: 0;
+  overflow: hidden;
+}
+
+.eva-drive__back-button {
+  min-height: 28px;
+  padding: 0 9px 0 7px;
+  border: 1px solid var(--gds-color-border-default, #ccc);
+  border-radius: var(--gds-radius-control, 8px);
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  background: var(--gds-color-surface-primary, #fff);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.eva-drive__back-button:hover {
+  border-color: var(--gds-color-text-muted, #6b7280);
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive__back-button .eva-drive-icon {
+  width: 14px;
+  height: 14px;
+  transform: rotate(180deg);
+}
+
+.eva-drive__breadcrumbs button {
+  padding: 2px 4px;
+  border: 0;
+  border-radius: var(--gds-radius-small, 4px);
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.eva-drive__breadcrumbs button:not([aria-current="page"]):hover {
+  color: var(--gds-color-action-primary, #1563eb);
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive__breadcrumbs button[aria-current="page"] {
+  color: var(--gds-color-text-primary, #1e1e1e);
+  cursor: default;
+}
+
+.eva-drive__section-head {
+  min-height: 70px;
+  padding: 8px 24px 12px;
+}
+
+.eva-drive__section-head h1 {
+  font-size: var(--gds-type-header-font-size, 16px);
+  line-height: var(--gds-type-header-line-height, 24px);
+}
+
+.eva-drive__section-head p {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: var(--gds-type-caption-font-size, 12px);
+}
+
+.eva-drive__section-head .eva-drive__side-search {
+  width: min(300px, 40%);
+  margin: 0;
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+body.eva-message-hierarchy-ready .eva-drive__table--with-source,
+.eva-drive__table {
+  min-width: 900px;
+  margin: 0 24px 24px;
+  overflow: auto;
+  border-top: 1px solid var(--gds-color-border-faint, #ebebeb);
+}
+
+body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__table-head,
+body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__row,
+.eva-drive__table-head,
+.eva-drive__row {
+  grid-template-columns: minmax(250px, 1.45fr) 104px minmax(190px, 1.05fr) 76px 124px 36px;
+  gap: 14px;
+}
+
+.eva-drive__table-head {
+  min-height: 38px;
+  padding: 0 10px;
+  color: var(--gds-color-text-muted, #6b7280);
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive__row {
+  min-height: 58px;
+  padding: 0 10px;
+  border-bottom-color: var(--gds-color-border-faint, #ebebeb);
+  background: var(--gds-color-surface-primary, #fff);
+}
+
+.eva-drive__row:hover {
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive__row[aria-selected="true"] {
+  background: rgb(21 99 235 / 7%);
+}
+
+.eva-drive__name-cell {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.eva-drive__file-mark {
+  position: relative;
+  border-radius: var(--gds-radius-control, 8px);
+}
+
+.eva-drive__file-mark.is-shortcut {
+  color: #315b92;
+  background: #edf4ff;
+}
+
+.eva-drive__file-mark.is-shortcut::after {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 17px;
+  height: 17px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--gds-color-action-primary, #1563eb);
+  content: "↗";
+  font-size: 10px;
+  line-height: 1;
+}
+
+.eva-drive__name-copy strong {
+  color: var(--gds-color-text-primary, #1e1e1e);
+  font-size: var(--gds-type-label-font-size, 14px);
+}
+
+.eva-drive__name-tags {
+  min-width: 0;
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.eva-file-tag,
+.eva-file-type,
+.eva-file-readonly {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: 20px;
+  padding: 1px 7px;
+  border-radius: var(--gds-radius-full, 999px);
+  display: inline-flex !important;
+  align-items: center;
+  overflow: hidden;
+  color: #315b92 !important;
+  background: #edf4ff;
+  font-size: 11px !important;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-file-type {
+  color: var(--gds-color-text-secondary, #4a4a4a) !important;
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-file-tag {
+  color: var(--gds-color-text-secondary, #4a4a4a) !important;
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-file-tag.is-more,
+.eva-relation-more {
+  flex: 0 0 auto;
+  color: var(--gds-color-text-muted, #6b7280) !important;
+}
+
+.eva-file-muted,
+.eva-file-location-cell {
+  overflow: hidden;
+  color: var(--gds-color-text-muted, #6b7280) !important;
+  font-size: 12px !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-relation-cell {
+  min-width: 0;
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.eva-relation-chip {
+  box-sizing: border-box;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  color: var(--gds-color-text-secondary, #4a4a4a) !important;
+  font-size: 11px !important;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-relation-chip .eva-drive-icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  color: var(--gds-color-text-muted, #6b7280);
+}
+
+.eva-relation-chip.is-restricted {
+  color: var(--gds-color-text-muted, #6b7280) !important;
+}
+
+.eva-created-cell {
+  min-width: 0;
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start !important;
+  gap: 2px;
+}
+
+.eva-created-cell strong,
+.eva-created-cell small {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-created-cell strong {
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  font-size: 12px;
+  font-weight: var(--gds-font-weight-medium, 500);
+}
+
+.eva-created-cell small {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: 11px;
+}
+
+.eva-drive__name-copy span,
+.eva-drive__row > span {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: var(--gds-type-caption-font-size, 12px);
+}
+
+.eva-drive__source-cell > span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.eva-drive__source-cell strong,
+.eva-drive__source-cell small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-drive__source-cell strong {
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  font-size: 12px;
+  font-weight: var(--gds-font-weight-medium, 500);
+}
+
+.eva-drive__source-cell small {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: 11px;
+}
+
+.eva-drive__row-more {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--gds-radius-control, 8px);
+  display: grid;
+  place-items: center;
+  color: var(--gds-color-text-muted, #6b7280);
+  background: transparent;
+  cursor: pointer;
+}
+
+.eva-drive__row-more:hover,
+.eva-drive__row-more[aria-expanded="true"] {
+  background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
+}
+
+.eva-drive__row-more .eva-drive-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.eva-drive__row-actions {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: block !important;
+  overflow: visible !important;
+}
+
+.eva-drive__row-menu {
+  position: absolute;
+  z-index: 120;
+  top: 32px;
+  right: 0;
+  box-sizing: border-box;
+  width: 168px;
+  padding: 4px;
+  border: 1px solid var(--gds-color-border-subtle, #dbdbdb);
+  border-radius: 10px;
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch !important;
+  overflow: hidden;
+  background: var(--gds-color-surface-primary, #fff);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 14%);
+}
+
+.eva-drive__row-menu > button {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.eva-drive__row-menu > button:hover {
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive__row-menu > button.is-danger {
+  color: #c53b3b;
+}
+
+.eva-drive-projects {
+  margin: 0 24px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 12px;
+}
+
+.eva-drive-project-card {
+  min-width: 0;
+  min-height: 104px;
+  padding: 16px;
+  border: 1px solid var(--gds-color-border-subtle, #dbdbdb);
+  border-radius: var(--gds-radius-panel, 12px);
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto 18px;
+  align-items: center;
+  gap: 12px;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  background: var(--gds-color-surface-primary, #fff);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.eva-drive-project-card:hover {
+  border-color: var(--gds-color-border-default, #ccc);
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive-project-card__mark {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--gds-radius-panel, 12px);
+  display: grid;
+  place-items: center;
+  color: var(--gds-color-action-primary-text, #fff);
+  background: var(--gds-color-action-primary, #1563eb);
+  font-weight: var(--gds-font-weight-semibold, 600);
+}
+
+.eva-drive-project-card--shared .eva-drive-project-card__mark {
+  background: #168570;
+}
+
+.eva-drive-project-card--shared:hover {
+  border-color: #9bcfc4;
+  background: #f1faf8;
+}
+
+.eva-drive-project-card__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.eva-drive-project-card__copy strong,
+.eva-drive-project-card__copy small,
+.eva-drive-project-card__copy > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-drive-project-card__copy strong {
+  font-size: var(--gds-type-label-font-size, 14px);
+  font-weight: var(--gds-font-weight-semibold, 600);
+}
+
+.eva-drive-project-card__copy small,
+.eva-drive-project-card__copy > span {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: var(--gds-type-caption-font-size, 12px);
+  line-height: var(--gds-type-caption-line-height, 16px);
+}
+
+.eva-drive-project-card__role {
+  padding: 3px 8px;
+  border-radius: var(--gds-radius-full, 999px);
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+  font-size: var(--gds-type-caption-font-size, 12px);
+}
+
+body.eva-message-hierarchy-ready .eva-drive__inspector,
+.eva-drive__inspector {
+  position: absolute;
+  z-index: 82;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 400px;
+  padding: 20px;
+  overflow: auto;
+  border-left: 1px solid var(--gds-color-border-faint, #ebebeb);
+  display: block;
+  background: var(--gds-color-surface-primary, #fff);
+  box-shadow: -12px 0 28px rgb(31 35 41 / 10%);
+  transform: translateX(102%);
+  visibility: hidden;
+  transition: transform 160ms ease, visibility 160ms ease;
+}
+
+body.eva-message-hierarchy-ready .eva-drive--inspector-open .eva-drive__inspector,
+.eva-drive--inspector-open .eva-drive__inspector {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.eva-drive__inspector-head h2 {
+  font-size: var(--gds-type-header-font-size, 16px);
+  line-height: var(--gds-type-header-line-height, 24px);
+}
+
+.eva-drive__inspector-close {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--gds-radius-control, 8px);
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  background: transparent;
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.eva-drive__inspector-close:hover {
+  background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
+}
+
+.eva-file-detail__identity {
+  min-width: 0;
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.eva-file-detail__identity > span:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.eva-file-detail__identity strong,
+.eva-file-detail__identity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-file-detail__identity strong {
+  font-size: 14px;
+  font-weight: var(--gds-font-weight-semibold, 600);
+}
+
+.eva-file-detail__identity small {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: 12px;
+}
+
+.eva-drive__preview {
+  height: 128px;
+  border-color: var(--gds-color-border-faint, #ebebeb);
+  border-radius: var(--gds-radius-panel, 12px);
+  color: var(--gds-color-action-primary, #1563eb);
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive__management-actions {
+  margin: 12px 0 4px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.eva-drive__management-actions button,
+.eva-drive-dialog button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--gds-color-border-default, #ccc);
+  border-radius: var(--gds-radius-control, 8px);
+  color: var(--gds-color-text-primary, #1e1e1e);
+  background: var(--gds-color-surface-primary, #fff);
+  font: inherit;
+  cursor: pointer;
+}
+
+.eva-drive__management-actions button:hover,
+.eva-drive-dialog button:hover {
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive__management-actions button.is-danger,
+.eva-drive-dialog button.is-danger {
+  border-color: #f0b8b8;
+  color: #c53b3b;
+}
+
+.eva-file-detail__section {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gds-color-border-faint, #ebebeb);
+}
+
+.eva-file-detail__section-head {
+  min-height: 26px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eva-file-detail__section-head h3 {
+  margin: 0;
+  flex: 1;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  font-size: 13px;
+  font-weight: var(--gds-font-weight-semibold, 600);
+}
+
+.eva-file-detail__section-head button {
+  min-height: 26px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: var(--gds-radius-control, 8px);
+  color: var(--gds-color-action-primary, #1563eb);
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.eva-file-detail__section-head button:hover {
+  background: rgb(21 99 235 / 7%);
+}
+
+.eva-file-readonly {
+  color: var(--gds-color-text-muted, #6b7280) !important;
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-file-detail__classification {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.eva-file-relations {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eva-file-relation {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--gds-color-border-faint, #ebebeb);
+  border-radius: var(--gds-radius-control, 8px);
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 9px;
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-file-relation__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  color: var(--gds-color-action-primary, #1563eb);
+  background: #fff;
+}
+
+.eva-file-relation__icon .eva-drive-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.eva-file-relation > span:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.eva-file-relation small,
+.eva-file-relation strong,
+.eva-file-relation em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-file-relation small,
+.eva-file-relation em {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.eva-file-relation strong {
+  color: var(--gds-color-text-primary, #1e1e1e);
+  font-size: 12px;
+  font-weight: var(--gds-font-weight-medium, 500);
+}
+
+.eva-file-detail__empty {
+  margin: 0;
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.eva-drive__meta {
+  gap: 12px;
+  border-top: 0;
+}
+
+.eva-drive__meta dt {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: var(--gds-type-caption-font-size, 12px);
+}
+
+.eva-drive__meta dd {
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  font-size: var(--gds-type-caption-font-size, 12px);
+  overflow-wrap: anywhere;
+}
+
+.eva-drive-dialog {
+  position: absolute;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.eva-drive-dialog .eva-drive-dialog__mask,
+.eva-drive-dialog .eva-drive-dialog__mask:hover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgb(15 23 42 / 28%);
+  cursor: default;
+}
+
+.eva-drive-dialog__panel {
+  position: relative;
+  width: min(420px, calc(100% - 40px));
+  border: 1px solid var(--gds-color-border-subtle, #dbdbdb);
+  border-radius: var(--gds-radius-panel, 12px);
+  background: var(--gds-color-surface-primary, #fff);
+  box-shadow: var(--gds-shadow-floating, 0 12px 30px rgb(0 0 0 / 15%));
+}
+
+.eva-drive-dialog__panel header,
+.eva-drive-dialog__panel footer {
+  min-height: 54px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+}
+
+.eva-drive-dialog__panel header {
+  border-bottom: 1px solid var(--gds-color-border-faint, #ebebeb);
+}
+
+.eva-drive-dialog__panel header h2 {
+  margin: 0;
+  flex: 1;
+  font-size: var(--gds-type-header-font-size, 16px);
+}
+
+.eva-drive-dialog__panel header button {
+  width: 32px;
+  padding: 0;
+  border: 0;
+  font-size: 20px;
+}
+
+.eva-drive-dialog__body {
+  padding: 18px;
+}
+
+.eva-drive-dialog__body p {
+  margin: 0;
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  font-size: var(--gds-type-body-font-size, 14px);
+  line-height: var(--gds-type-body-line-height, 22px);
+}
+
+.eva-drive-preview-dialog__panel {
+  width: min(900px, calc(100% - 40px));
+  overflow: hidden;
+}
+
+.eva-drive-preview-dialog__panel .eva-drive-dialog__body {
+  height: min(680px, calc(100vh - 140px));
+  min-height: 360px;
+  padding: 0;
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-drive-preview-dialog__frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #fff;
+}
+
+.eva-drive-preview-dialog__image {
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  object-fit: contain;
+}
+
+.eva-drive-preview-dialog__empty {
+  height: 100%;
+  padding: 28px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--gds-color-text-muted, #6b7280);
+  text-align: center;
+}
+
+.eva-drive-preview-dialog__empty > .eva-drive__file-mark {
+  width: 54px;
+  height: 54px;
+}
+
+.eva-drive-preview-dialog__empty > strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-drive-preview-dialog__empty > span,
+.eva-drive-preview-dialog__empty > p {
+  color: var(--gds-color-text-muted, #6b7280) !important;
+  font-size: 12px !important;
+}
+
+.eva-shortcut-source {
+  min-width: 0;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--gds-color-border-faint, #ebebeb);
+  border-radius: var(--gds-radius-control, 8px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-shortcut-source span,
+.eva-shortcut-source small {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: 11px;
+}
+
+.eva-shortcut-source strong {
+  overflow: hidden;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  font-size: 13px;
+  font-weight: var(--gds-font-weight-medium, 500);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-drive-dialog__field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.eva-drive-dialog__field + .eva-drive-dialog__field {
+  margin-top: 14px;
+}
+
+.eva-drive-dialog__field span {
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  font-size: var(--gds-type-caption-font-size, 12px);
+}
+
+.eva-drive-dialog__field input,
+.eva-drive-dialog__field select,
+.eva-drive-dialog__field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--gds-color-border-default, #ccc);
+  border-radius: var(--gds-radius-control, 8px);
+  color: var(--gds-color-text-primary, #1e1e1e);
+  background: var(--gds-color-surface-primary, #fff);
+  font: inherit;
+}
+
+.eva-drive-dialog__field textarea {
+  min-height: 80px;
+  padding: 9px 10px;
+  line-height: 20px;
+  resize: vertical;
+}
+
+.eva-drive-dialog__intro {
+  margin-bottom: 12px !important;
+}
+
+.eva-drive-member-list {
+  overflow: hidden;
+  border: 1px solid var(--gds-color-border-faint, #ebebeb);
+  border-radius: var(--gds-radius-control, 8px);
+}
+
+.eva-drive-member-add {
+  margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.eva-drive-member-add select {
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--gds-color-border-default, #ccc);
+  border-radius: var(--gds-radius-control, 8px);
+  background: var(--gds-color-surface-primary, #fff);
+  font: inherit;
+}
+
+.eva-drive-member-add__empty {
+  margin: 0 0 12px !important;
+  color: var(--gds-color-text-muted, #6b7280) !important;
+  font-size: 12px !important;
+}
+
+.eva-drive-member-list__row {
+  min-height: 56px;
+  padding: 8px 10px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+}
+
+.eva-drive-member-list__row + .eva-drive-member-list__row {
+  border-top: 1px solid var(--gds-color-border-faint, #ebebeb);
+}
+
+.eva-drive-member-list__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #155f54;
+  background: #def4ef;
+  font-size: 13px;
+  font-weight: var(--gds-font-weight-semibold, 600);
+}
+
+.eva-drive-member-list__row > span:nth-child(2) {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.eva-drive-member-list__row strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-drive-member-list__row small {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: 11px;
+}
+
+.eva-drive-member-list__row select,
+.eva-drive-member-list__role {
+  min-width: 86px;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--gds-color-border-subtle, #dbdbdb);
+  border-radius: var(--gds-radius-control, 8px);
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  background: var(--gds-color-surface-primary, #fff);
+  font: inherit;
+  font-size: 12px;
+}
+
+.eva-drive-member-list__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.eva-drive-member-list__controls > button {
+  min-height: 30px;
+  padding: 0 7px;
+  color: #c53b3b;
+  font-size: 12px;
+}
+
+.eva-drive-member-list__role {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eva-drive-audit {
+  display: flex;
+  flex-direction: column;
+}
+
+.eva-drive-audit > div {
+  position: relative;
+  min-height: 54px;
+  padding: 8px 0 8px 20px;
+  border-bottom: 1px solid var(--gds-color-border-faint, #ebebeb);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.eva-drive-audit > div::before {
+  position: absolute;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #168570;
+  content: "";
+}
+
+.eva-drive-audit strong {
+  font-size: 13px;
+  font-weight: var(--gds-font-weight-medium, 500);
+}
+
+.eva-drive-audit span {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: 12px;
+}
+
+.eva-drive-governance {
+  overflow: hidden;
+  border: 1px solid var(--gds-color-border-faint, #ebebeb);
+  border-radius: var(--gds-radius-control, 8px);
+}
+
+.eva-drive-governance > button {
+  width: 100%;
+  min-height: 60px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "title arrow"
+    "description arrow";
+  align-items: center;
+  gap: 4px 8px;
+  text-align: left;
+}
+
+.eva-drive-governance > button + button {
+  border-top: 1px solid var(--gds-color-border-faint, #ebebeb);
+}
+
+.eva-drive-governance > button > span {
+  grid-area: title;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eva-drive-governance > button small {
+  grid-area: description;
+  min-width: 0;
+  padding-left: 24px;
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: 11px;
+  line-height: 18px;
+  white-space: normal;
+}
+
+.eva-drive-governance > button.is-danger strong {
+  color: #c53b3b;
+}
+
+.eva-drive-governance .eva-drive-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.eva-drive-governance > button > .eva-drive-icon:last-child {
+  grid-area: arrow;
+  justify-self: end;
+}
+
+.eva-drive-dialog__hint {
+  margin-top: 10px !important;
+  color: var(--gds-color-text-muted, #6b7280) !important;
+  font-size: var(--gds-type-caption-font-size, 12px) !important;
+}
+
+.eva-drive-dialog__panel footer {
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid var(--gds-color-border-faint, #ebebeb);
+}
+
+.eva-drive-dialog button.is-primary {
+  border-color: var(--gds-color-action-primary, #1563eb);
+  color: var(--gds-color-action-primary-text, #fff);
+  background: var(--gds-color-action-primary, #1563eb);
+}
+
+/* Project > Team Files uses the same file primitives without the global space tree. */
+.eva-project-files {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  background: var(--gds-color-surface-primary, #fff);
+}
+
+.eva-project-files__header {
+  min-height: 72px;
+  padding: 16px 24px 10px;
+  border-bottom: 1px solid var(--gds-color-border-faint, #ebebeb);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eva-project-files__header > div:first-child {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.eva-project-files__header h1 {
+  margin: 0;
+  color: var(--gds-color-text-strong, #1e1e1e);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: var(--gds-font-weight-semibold, 600);
+}
+
+.eva-project-files__header p {
+  margin: 1px 0 0;
+  overflow: hidden;
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: var(--gds-type-caption-font-size, 12px);
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-project-files__toolbar {
+  min-height: 58px;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eva-project-files__toolbar .eva-drive__side-search {
+  width: min(320px, 42%);
+  margin: 0 0 0 auto;
+  border-color: var(--gds-color-border-faint, #ebebeb);
+  background: var(--gds-color-surface-subtle, #f5f5f5);
+}
+
+.eva-project-files__content {
+  min-height: 0;
+  overflow: auto;
+  flex: 1;
+}
+
+.eva-project-files__table,
+body.eva-message-hierarchy-ready .eva-project-files__table {
+  min-width: 760px;
+  margin: 0 24px 24px;
+}
+
+.eva-project-files > .eva-drive__breadcrumbs {
+  flex: 0 0 auto;
+  margin: 0 24px 10px;
+}
+
+.eva-project-files > .eva-drive__pathbar {
+  flex: 0 0 auto;
+  margin: 0 24px 10px;
+}
+
+.eva-project-files__empty {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: var(--gds-type-body-font-size, 14px);
+}
+
+.eva-project-files__inspector {
+  position: absolute;
+  z-index: 82;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 400px;
+  padding: 20px;
+  overflow: auto;
+  border-left: 1px solid var(--gds-color-border-faint, #ebebeb);
+  background: var(--gds-color-surface-primary, #fff);
+  box-shadow: -12px 0 28px rgb(31 35 41 / 10%);
+}
+
+.eva-project-files__inspector .eva-drive__inspector-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.eva-project-files__inspector .eva-drive__inspector-actions > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.eva-project-files__inspector .eva-drive__management-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.eva-project-files-dialog {
+  position: absolute;
+  z-index: 110;
+}
+
+.eva-project-files-dialog__panel--wide {
+  width: min(900px, calc(100% - 48px));
+}
+
+.eva-project-files-dialog__panel--wide .eva-drive-dialog__body {
+  max-height: min(680px, calc(100vh - 180px));
+  overflow: auto;
+}
+
+.eva-project-files__error {
+  margin-top: 6px;
+  color: #c53b3b;
+  font-size: 12px;
+}
+
+.eva-project-file-preview {
+  min-height: 360px;
+}
+
+.eva-file-trash-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.eva-file-trash-row {
+  min-height: 58px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gds-color-border-faint, #ebebeb);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.eva-file-trash-row > div:first-child {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.eva-file-trash-row strong {
+  overflow: hidden;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  font-size: var(--gds-type-label-font-size, 14px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-file-trash-row small {
+  color: var(--gds-color-text-muted, #6b7280);
+  font-size: var(--gds-type-caption-font-size, 12px);
+}
+
+.collab-drive-head {
+  gap: 8px;
+}
+
+@media (max-width: 1080px) {
+  .eva-native-page-host > .eva-drive,
+  body.eva-message-hierarchy-ready .eva-native-page-host > .eva-drive {
+    grid-template-columns: 184px minmax(0, 1fr);
+  }
+
+  .eva-drive__header > div:first-child > span {
+    display: none;
+  }
+
+  body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__table-head,
+  body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__row,
+  .eva-drive__table-head,
+  .eva-drive__row {
+    grid-template-columns: minmax(210px, 1.4fr) 88px minmax(145px, .9fr) 62px 108px 32px;
+    gap: 10px;
+  }
+}

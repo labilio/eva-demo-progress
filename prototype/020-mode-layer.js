@@ -16,27 +16,20 @@
     };
   });
 
-  /* Global drive and Workspace files always read and mutate this same collection. */
-  var resources = [
-    { id: 'outside-group-brief', name: '合作伙伴联合方案.docx', kind: 'word', owner: '何静', permission: '可编辑', modified: '今天 14:20', size: '386 KB', workspaceIds: [], area: 'group', source: '项目外群聊 · 合作伙伴沟通群', description: '项目外群聊中共享的联合方案' },
-    { id: 'dm-brand', name: '品牌视觉素材.zip', kind: 'archive', owner: '何静', permission: '可下载', modified: '昨天 18:05', size: '24.6 MB', workspaceIds: [], area: 'dm', source: '私聊 · 何静', description: '由何静在私聊中发送的品牌素材压缩包' },
-    { id: 'prod-folder', name: '供应链运营资料', kind: 'folder', owner: '王宜林', permission: '可管理', modified: '今天 14:20', size: '—', workspaceIds: ['prod'], area: 'workspace', description: '采购、质量与合规工作的共享资料' },
-    { id: 'prod-ia', name: '本季度间接采购需求清单.xlsx', kind: 'sheet', owner: '王宜林', permission: '可管理', modified: '今天 13:48', size: '2.8 MB', workspaceIds: ['prod'], area: 'workspace', description: '各部门提交的采购数量、预算与期望到货时间' },
-    { id: 'prod-research', name: 'A-2409来料异常分析报告.pdf', kind: 'pdf', owner: '林晓', permission: '可编辑', modified: '今天 11:32', size: '412 KB', workspaceIds: ['prod'], area: 'workspace', description: '关键供应商来料异常的根因、措施与验证记录' },
-    { id: 'prod-agents', name: '新供应商准入合规材料.zip', kind: 'archive', owner: '周远', permission: '可编辑', modified: '昨天 17:26', size: '18 MB', workspaceIds: ['prod'], area: 'workspace', description: '供应商资质、关联关系声明与准入审核材料' },
-    { id: 'client-folder', name: '交付资料', kind: 'folder', owner: '苏航', permission: '可管理', modified: '今天 09:50', size: '—', workspaceIds: ['lab'], area: 'workspace', description: '客户联合交付的共享文件夹' },
-    { id: 'client-scope', name: '客户XX公司资料.pdf', kind: 'pdf', owner: '苏航', permission: '可编辑', modified: '今天 09:18', size: '1.4 MB', workspaceIds: ['lab'], area: 'workspace', source: '消息 · 客户联合交付群', description: '项目消息中发送的客户 XX 公司背景与需求资料' },
-    { id: 'client-script', name: '客户XX公司销售话术.docx', kind: 'word', owner: '王宜林的 Eva 助理', permission: '可编辑', modified: '今天 09:26', size: '128 KB', workspaceIds: ['lab'], area: 'workspace', source: 'Loop 产出 · 客户销售准备', description: 'Loop 任务读取客户资料后产出的针对性销售话术' },
-    { id: 'client-plan', name: '联合交付计划.xlsx', kind: 'sheet', owner: '客户项目组', permission: '可编辑', modified: '昨天 16:40', size: '732 KB', workspaceIds: ['lab'], area: 'workspace', source: '消息 · 客户联合交付群', description: '内部团队与客户共同维护的交付计划' }
-  ];
-
   var state = {
     mode: config.defaultMode || 'collaboration',
     workspaceId: config.defaultWorkspaceId || 'prod',
+    sharedSpaceId: 'shared:brand',
     driveEntry: 'global',
-    driveScope: 'all',
+    driveScope: 'personal',
     selectedId: null,
     query: '',
+    parentId: 0,
+    crumbs: [],
+    dialog: null,
+    previewId: null,
+    menuId: null,
+    uploadTarget: null,
     pendingWorkspaceId: null,
     pendingTab: null,
     toastTimer: null
@@ -50,7 +43,7 @@
   }
 
   function driveScopeForMode(mode) {
-    return 'all';
+    return 'personal';
   }
 
   function escapeHTML(value) {
@@ -239,59 +232,121 @@
     state.pendingWorkspaceId = null;
     state.pendingTab = null;
     if (!tab) return;
-    if (tab === 'files') {
-      openDrive('workspace', workspace.id, 'workspace');
-      return;
-    }
-    var labels = { projects: '项目', tasks: '任务', channels: '群聊', experts: '专家', squads: '专家团', skills: '技能', automation: '自动化', settings: '设置' };
+    var labels = { projects: '项目', tasks: '任务', channels: '群聊', files: '团队文件', experts: '专家', squads: '专家团', skills: '技能', automation: '自动化', settings: '设置' };
     var target = Array.from(frame.querySelectorAll('.collab-tab')).find(function (button) {
       return button.textContent.trim().replace(/\d+$/, '') === labels[tab];
     });
     if (target) target.click();
   }
 
+  function fileContext() {
+    return typeof window.__evaGetFileContext === 'function' ? window.__evaGetFileContext() : null;
+  }
+
+  function fileActor() {
+    var context = fileContext();
+    return context ? context.store.snapshot().actorId : 'u-wangyilin';
+  }
+
+  function personalSpaceId() {
+    var context = fileContext();
+    return context ? context.files.personalSpace(fileActor()) : 'personal:' + fileActor();
+  }
+
+  function workspaceName(id) {
+    var workspace = WORKSPACES.find(function (item) { return item.id === id; });
+    return workspace ? workspace.name : '项目';
+  }
+
+  function joinedSharedSpaces() {
+    var context = fileContext();
+    return context && context.files.sharedSpaces ? context.files.sharedSpaces(fileActor()) : [];
+  }
+
+  function sharedSpaceById(id) {
+    return joinedSharedSpaces().find(function (space) { return space.id === id; }) || null;
+  }
+
+  function sharedSpaceName(id) {
+    var space = sharedSpaceById(id);
+    return space ? space.name : '共享空间';
+  }
+
+  function spaceName(id) {
+    if (String(id || '').startsWith('personal:')) return '个人空间';
+    if (String(id || '').startsWith('shared:')) return sharedSpaceName(id);
+    return workspaceName(id);
+  }
+
+  function formatDriveBytes(value) {
+    if (!value) return '—';
+    var units = ['B', 'KB', 'MB', 'GB'];
+    var size = Number(value), index = 0;
+    while (size >= 1024 && index < units.length - 1) { size /= 1024; index += 1; }
+    return (size >= 10 || index === 0 ? Math.round(size) : Math.round(size * 10) / 10) + ' ' + units[index];
+  }
+
+  function formatDriveTime(value) {
+    if (!value) return '—';
+    var date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(date).replace('/', '-');
+  }
+
+  function scopeSpaceId() {
+    if (state.driveScope === 'personal') return personalSpaceId();
+    if (state.driveScope === 'shared-space') return state.sharedSpaceId;
+    if (state.driveScope === 'workspace') return state.workspaceId;
+    return null;
+  }
+
   function resourcesForScope() {
-    var list;
-    if (state.driveScope === 'all') {
-      list = resources.slice();
-    } else if (state.driveScope === 'workspace') {
-      list = resources.filter(function (resource) { return resource.workspaceIds.indexOf(state.workspaceId) >= 0; });
-    } else if (state.driveScope === 'shared-all') {
-      list = resources.filter(function (resource) { return resource.area === 'group' || resource.area === 'dm' || resource.area === 'workspace'; });
-    } else {
-      list = resources.filter(function (resource) { return resource.area === state.driveScope; });
+    var context = fileContext();
+    if (!context) return [];
+    var actor = fileActor(), all = context.files.all(actor), list = [];
+    if (state.driveScope === 'personal') list = context.files.list(personalSpaceId(), actor);
+    if (state.driveScope === 'workspace') list = context.files.list(state.workspaceId, actor);
+    if (state.driveScope === 'shared-space') list = context.files.list(state.sharedSpaceId, actor);
+    if (state.driveScope === 'trash') {
+      list = [];
+      [personalSpaceId()].concat(joinedSharedSpaces().map(function (item) { return item.id; }), WORKSPACES.map(function (item) { return item.id; })).forEach(function (spaceId) {
+        if (context.files.can('view-trash', spaceId, actor)) list = list.concat(context.files.trashList(spaceId, actor));
+      });
+    } else if (scopeSpaceId() && !state.query.trim()) {
+      list = list.filter(function (resource) { return resource.parent_id === state.parentId; });
     }
     var query = state.query.trim().toLowerCase();
-    if (query) {
-      list = list.filter(function (resource) {
-        return resource.name.toLowerCase().indexOf(query) >= 0 || resource.owner.toLowerCase().indexOf(query) >= 0;
+    if (query) list = list.filter(function (resource) {
+      return [resource.name, resource.creator, resourceFileType(resource)].concat(resource.tags || [], relationsFor(resource).map(function (relation) { return relation.label; })).some(function (value) {
+        return String(value || '').toLowerCase().includes(query);
       });
-    }
-    return list;
+    });
+    return list.sort(function (left, right) { return left.type === right.type ? String(right.deletedAt || right.createdAt).localeCompare(String(left.deletedAt || left.createdAt)) : left.type === 'folder' ? -1 : 1; });
   }
 
   function fileIconName(resource) {
-    if (resource.kind === 'folder') return 'folder';
-    if (resource.kind === 'sheet') return 'sheet';
+    if (resource.type === 'folder') return 'folder';
+    if (resource.type === 'shortcut') return 'file';
+    if (['xlsx', 'xls', 'csv'].includes(resource.extension)) return 'sheet';
     return 'file';
   }
 
   function fileMarkClass(resource) {
-    if (resource.kind === 'folder') return 'is-folder';
-    if (resource.kind === 'pdf') return 'is-pdf';
-    if (resource.kind === 'sheet') return 'is-sheet';
+    if (resource.type === 'folder') return 'is-folder';
+    if (resource.type === 'shortcut') return 'is-shortcut';
+    if (resource.extension === 'pdf') return 'is-pdf';
+    if (['xlsx', 'xls', 'csv'].includes(resource.extension)) return 'is-sheet';
     return '';
   }
 
   function scopeCopy() {
-    if (state.driveScope === 'workspace') {
-      return {
-        title: workspaceById(state.workspaceId).name,
-        subtitle: '仅属于当前项目，汇集消息文件与 Loop 任务产出',
-        section: '团队文件'
-      };
-    }
-    return { title: '文件库', subtitle: '汇集所有项目、项目外群聊与私聊中的文件', section: '全部文件' };
+    if (state.driveScope === 'personal') return { title: '个人空间', section: '个人文件', subtitle: '仅你可访问，可用于上传和整理个人资料' };
+    if (state.driveScope === 'projects') return { title: '项目空间', section: '我的项目空间', subtitle: '选择一个已加入的项目后浏览和整理团队文件' };
+    if (state.driveScope === 'workspace') return { title: workspaceName(state.workspaceId), section: '团队文件', subtitle: '权限继承项目角色，任务产出与群文件副本归属项目空间' };
+    if (state.driveScope === 'shared') return { title: '共享空间', section: '我的共享空间', subtitle: '选择一个已加入的共享空间后浏览和整理文件' };
+    if (state.driveScope === 'shared-space') return { title: sharedSpaceName(state.sharedSpaceId), section: sharedSpaceName(state.sharedSpaceId), subtitle: (sharedSpaceById(state.sharedSpaceId) || {}).description || '独立维护成员与角色的共享文件空间' };
+    if (state.driveScope === 'trash') return { title: '回收站', section: '回收站', subtitle: '仅显示你有管理权限的空间中已删除的文件' };
+    return { title: '个人空间', section: '个人文件', subtitle: '仅你可访问，可用于上传和整理个人资料' };
   }
 
   function ensureDriveRoot(host) {
@@ -308,103 +363,344 @@
 
   function inspectorHTML(resource) {
     if (!resource) {
-      return '<div class="eva-drive__inspector-head"><h2>文件详情</h2></div><div class="eva-drive__empty">选择一个文件查看详情</div>';
+      return '<div class="eva-drive__inspector-head"><h2>文件详情</h2></div><div class="eva-drive__empty">选择文件后，在这里查看来源和操作</div>';
     }
-    var workspace = resource.workspaceIds.length ? workspaceById(resource.workspaceIds[0]) : null;
-    var location = state.driveScope === 'workspace' ? workspaceById(state.workspaceId).name + ' / 团队文件' : scopeCopy().title + ' / ' + resource.name;
-    var bridgeLabel = state.driveEntry === 'workspace' ? '在文件库中查看' : (workspace ? '在项目中打开' : '分享');
-    var bridgeAction = workspace ? 'bridge' : 'share';
+    var context = fileContext(), actor = fileActor();
+    var canEdit = context.files.can('rename', resource.spaceId, actor);
+    var canEditTags = resource.type !== 'folder' && context.files.can('edit-tags', resource.spaceId, actor);
+    var canTrash = context.files.can('trash', resource.spaceId, actor);
+    var isTrash = Boolean(resource.deletedAt);
     return [
-      '<div class="eva-drive__inspector-head"><h2>' + escapeHTML(resource.name) + '</h2><button class="eva-drive__text-button" type="button" data-drive-action="more" aria-label="更多操作">' + icon('more') + '</button></div>',
-      '<div class="eva-drive__preview">' + icon(fileIconName(resource)) + '</div>',
+      '<div class="eva-drive__inspector-head"><h2>文件详情</h2><button class="eva-drive__inspector-close" type="button" data-eva-drive-inspector-close="true" aria-label="关闭文件详情">×</button></div>',
+      '<div class="eva-file-detail__identity"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(resourceFileType(resource) + (resource.type === 'folder' ? '' : ' · ' + formatDriveBytes(resource.size))) + '</small></span></div>',
       '<div class="eva-drive__inspector-actions">',
-      '<button class="eva-drive__ghost-button" type="button" data-drive-action="share">' + icon('link') + '分享</button>',
-      '<button class="eva-drive__text-button" type="button" data-drive-action="' + bridgeAction + '">' + icon('external') + escapeHTML(bridgeLabel) + '</button>',
+      !isTrash ? '<button class="eva-drive__ghost-button" type="button" data-drive-action="copy-link">' + icon('link') + '复制内部链接</button>' : '',
+      resource.projectId && !isTrash ? '<button class="eva-drive__text-button" type="button" data-drive-action="open-project">' + icon('external') + '在项目中打开</button>' : '',
       '</div>',
-      '<dl class="eva-drive__meta">',
-      '<div><dt>描述</dt><dd>' + escapeHTML(resource.description) + '</dd></div>',
-      '<div><dt>所有者</dt><dd>' + escapeHTML(resource.owner) + '</dd></div>',
-      '<div><dt>我的权限</dt><dd>' + escapeHTML(resource.permission) + '</dd></div>',
-      '<div><dt>大小</dt><dd>' + escapeHTML(resource.size) + '</dd></div>',
-      '<div><dt>位置</dt><dd>' + escapeHTML(location) + '</dd></div>',
-      '</dl>'
+      isTrash ? '<div class="eva-drive__management-actions"><button type="button" data-drive-action="restore">恢复</button><button class="is-danger" type="button" data-drive-action="delete-forever">永久删除</button></div>' : '',
+      canEdit && !isTrash ? '<div class="eva-drive__management-actions"><button type="button" data-drive-action="rename">重命名</button><button type="button" data-drive-action="move">移动</button>' + (resource.type !== 'shortcut' ? '<button type="button" data-drive-action="copy">创建副本</button>' : '') + (resource.type !== 'shortcut' && resource.type !== 'folder' ? '<button type="button" data-drive-action="create-shortcut">创建快捷方式</button>' : '') + (canTrash ? '<button class="is-danger" type="button" data-drive-action="trash">移至回收站</button>' : '') + '</div>' : '',
+      resource.type !== 'folder' ? '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>标签</h3>' + (canEditTags && !isTrash ? '<button type="button" data-drive-action="tags">编辑</button>' : '') + '</div><div class="eva-file-detail__classification">' + (tagsHTML(resource) || '<span class="eva-file-muted">暂无标签</span>') + '</div></section>' : '',
+      resource.type !== 'folder' ? '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>系统关联</h3><span class="eva-file-readonly">只读</span></div>' + relationDetailsHTML(resource) + '</section>' : '',
+      resource.type === 'shortcut' ? shortcutDetailsHTML(resource) : '',
+      '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>文件信息</h3></div><dl class="eva-drive__meta">',
+      '<div><dt>文件类型</dt><dd>' + escapeHTML(resourceFileType(resource)) + '</dd></div>',
+      '<div><dt>所在位置</dt><dd>' + escapeHTML(isTrash ? originalLocationLabel(resource) : resourceLocationLabel(resource)) + '</dd></div>',
+      '<div><dt>产生方式</dt><dd>' + escapeHTML(resourceSourceLabel(resource)) + '</dd></div>',
+      '<div><dt>创建者</dt><dd>' + escapeHTML(resource.creator || '—') + '</dd></div>',
+      '<div><dt>创建时间</dt><dd>' + escapeHTML(formatDriveTime(resource.createdAt)) + '</dd></div>',
+      '<div><dt>大小</dt><dd>' + escapeHTML(resource.type === 'folder' ? '—' : formatDriveBytes(resource.size)) + '</dd></div>',
+      '</dl></section>'
     ].join('');
   }
 
   function resourceSourceLabel(resource) {
-    if (resource.source) return resource.source;
-    if (resource.area === 'workspace' && resource.workspaceIds.length) return '项目 · ' + workspaceById(resource.workspaceIds[0]).name;
-    if (resource.area === 'group') return '项目外群聊';
-    if (resource.area === 'dm') return '私聊 · ' + resource.owner;
-    return '';
+    var context = fileContext();
+    if (context && context.files.sourceLabelFor) return context.files.sourceLabelFor(resource, fileActor());
+    if (resource.source && resource.source.label) return resource.source.label;
+    if (resource.area === 'project') return '项目 · ' + workspaceName(resource.projectId);
+    if (resource.area === 'personal') return '个人空间';
+    return '共享空间 · ' + sharedSpaceName(resource.spaceId);
+  }
+
+  function resourceFileType(resource) {
+    var context = fileContext();
+    return context && context.files.fileTypeFor ? context.files.fileTypeFor(resource, fileActor()) : resource.type === 'folder' ? '文件夹' : '其他';
+  }
+
+  function relationsFor(resource) {
+    var context = fileContext();
+    return context && context.files.relationsFor ? context.files.relationsFor(resource, fileActor()) : [];
+  }
+
+  function relationIconName(type) {
+    return type === 'task' ? 'task' : type === 'group' || type === 'chat' ? 'users' : 'file';
+  }
+
+  function relationTypeLabel(type) {
+    return type === 'task' ? '任务' : type === 'group' ? '群聊' : type === 'chat' ? '私聊' : '来源文件';
+  }
+
+  function tagsHTML(resource) {
+    var tags = resource.tags || [];
+    if (!tags.length) return resource.type === 'folder' ? '<span class="eva-file-muted">文件夹</span>' : '';
+    return '<span class="eva-drive__name-tags">' + tags.slice(0, 2).map(function (tag) { return '<span class="eva-file-tag">' + escapeHTML(tag) + '</span>'; }).join('') + (tags.length > 2 ? '<span class="eva-file-tag is-more">+' + (tags.length - 2) + '</span>' : '') + '</span>';
+  }
+
+  function relationCellHTML(resource) {
+    var relations = relationsFor(resource);
+    if (!relations.length) return '<span class="eva-file-muted">—</span>';
+    return '<span class="eva-relation-cell">' + relations.slice(0, 2).map(function (relation) {
+      return '<span class="eva-relation-chip' + (relation.restricted ? ' is-restricted' : '') + '" title="' + escapeHTML(relation.meta || relation.label) + '">' + icon(relationIconName(relation.type)) + escapeHTML(relation.label) + '</span>';
+    }).join('') + (relations.length > 2 ? '<span class="eva-relation-more">+' + (relations.length - 2) + '</span>' : '') + '</span>';
+  }
+
+  function relationDetailsHTML(resource) {
+    var relations = relationsFor(resource);
+    if (!relations.length) return '<p class="eva-file-detail__empty">当前文件没有系统关联</p>';
+    return '<div class="eva-file-relations">' + relations.map(function (relation) {
+      return '<div class="eva-file-relation"><span class="eva-file-relation__icon">' + icon(relationIconName(relation.type)) + '</span><span><small>' + relationTypeLabel(relation.type) + '</small><strong>' + escapeHTML(relation.label) + '</strong>' + (relation.meta ? '<em>' + escapeHTML(relation.meta) + '</em>' : '') + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  function shortcutDetailsHTML(resource) {
+    var info = fileContext().files.shortcutInfo(resource, fileActor());
+    if (!info) return '';
+    return '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>快捷方式信息</h3></div><dl class="eva-drive__meta"><div><dt>访问状态</dt><dd>' + escapeHTML(info.statusLabel) + '</dd></div>' + (info.status === 'available' ? '<div><dt>源文件</dt><dd>' + escapeHTML(info.sourceName) + '</dd></div><div><dt>来源空间</dt><dd>' + escapeHTML(info.sourceSpaceName) + '</dd></div>' : '<div><dt>权限说明</dt><dd>快捷方式不会授予源文件权限</dd></div>') + '</dl></section>';
+  }
+
+  function spaceRootLabel(resource) {
+    if (resource.area === 'personal') return '个人空间';
+    if (resource.area === 'project') return workspaceName(resource.projectId) + ' / 团队文件';
+    return sharedSpaceName(resource.spaceId);
+  }
+
+  function resourceLocationLabel(resource) {
+    var snapshot = fileContext().files.snapshot(fileActor()), names = [], current = resource;
+    while (current && current.parent_id) {
+      current = snapshot.find(function (item) { return item.id === current.parent_id; });
+      if (current) names.unshift(current.name);
+    }
+    return [spaceRootLabel(resource)].concat(names).join(' / ');
+  }
+
+  function originalLocationLabel(resource) {
+    var parent = fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === resource.originalParentId; });
+    return spaceRootLabel(resource) + (parent ? ' / ' + parent.name : ' / 根目录');
+  }
+
+  function rowMenuItemHTML(action, label, danger) {
+    return '<button type="button" role="menuitem" data-drive-action="' + action + '"' + (danger ? ' class="is-danger"' : '') + '>' + escapeHTML(label) + '</button>';
+  }
+
+  function rowActionsHTML(resource) {
+    var context = fileContext(), actor = fileActor(), isTrash = state.driveScope === 'trash';
+    var shortcutInfo = context.files.shortcutInfo(resource, actor), canOpen = !shortcutInfo || shortcutInfo.status === 'available';
+    var open = state.menuId === String(resource.id), items = [];
+    if (isTrash) {
+      items.push(rowMenuItemHTML('select', '查看文档详情'));
+      if (context.files.can('restore', resource.spaceId, actor)) items.push(rowMenuItemHTML('restore', '恢复'));
+      if (context.files.can('delete-forever', resource.spaceId, actor)) items.push(rowMenuItemHTML('delete-forever', '永久删除', true));
+    } else {
+      if (resource.type === 'folder') items.push(rowMenuItemHTML('open-folder', '打开文件夹'));
+      else if (canOpen) items.push(rowMenuItemHTML('preview', '预览'));
+      items.push(rowMenuItemHTML('select', '查看文档详情'));
+      items.push(rowMenuItemHTML('copy-link', '复制内部链接'));
+      if (context.files.can('rename', resource.spaceId, actor)) items.push(rowMenuItemHTML('rename', '重命名'));
+      if (context.files.can('move', resource.spaceId, actor)) items.push(rowMenuItemHTML('move', '移动'));
+      if (resource.type !== 'shortcut' && context.files.can('copy', resource.spaceId, actor)) items.push(rowMenuItemHTML('copy', '创建副本'));
+      if (resource.type !== 'folder' && resource.type !== 'shortcut' && context.files.can('create-shortcut', resource.spaceId, actor)) items.push(rowMenuItemHTML('create-shortcut', '创建快捷方式'));
+      if (resource.type !== 'folder' && context.files.can('edit-tags', resource.spaceId, actor)) items.push(rowMenuItemHTML('tags', '编辑标签'));
+      if (context.files.can('trash', resource.spaceId, actor)) items.push(rowMenuItemHTML('trash', '移至回收站', true));
+    }
+    return '<span class="eva-drive__row-actions"><button class="eva-drive__row-more" type="button" data-drive-action="row-menu" aria-label="更多操作：' + escapeHTML(resource.name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + icon('more') + '</button>' + (open ? '<span class="eva-drive__row-menu" role="menu" aria-label="' + escapeHTML(resource.name) + '的操作">' + items.join('') + '</span>' : '') + '</span>';
   }
 
   function tableHTML(list) {
     if (!list.length) {
       var emptyCopy = state.query.trim()
         ? '没有匹配的文件'
-        : state.driveScope === 'workspace' ? '当前项目暂无文件' : '暂无文件';
+        : state.driveScope === 'workspace' ? '当前项目暂无文件' : state.driveScope === 'shared-space' ? '当前共享空间暂无文件' : '暂无文件';
       return '<div class="eva-drive__empty">' + emptyCopy + '</div>';
     }
-    var showSource = state.driveEntry !== 'workspace';
     return [
-      '<div class="eva-drive__table' + (showSource ? ' eva-drive__table--with-source' : '') + '" role="table" aria-label="文件列表">',
-      '<div class="eva-drive__table-head" role="row"><span>名称</span>' + (showSource ? '<span>来源</span>' : '') + '<span>所有者</span><span>我的权限</span><span>修改时间</span><span></span></div>',
+      '<div class="eva-drive__table eva-drive__table--with-source' + (state.driveScope === 'trash' ? ' eva-drive__table--trash' : '') + '" role="table" aria-label="文件列表">',
+      '<div class="eva-drive__table-head" role="row"><span>名称</span><span>文件类型</span><span>' + (state.driveScope === 'trash' ? '原位置' : '关联内容') + '</span><span>大小</span><span>' + (state.driveScope === 'trash' ? '删除信息' : '创建信息') + '</span><span>操作</span></div>',
       list.map(function (resource) {
         return [
-          '<button class="eva-drive__row" type="button" role="row" data-resource-id="' + resource.id + '" aria-selected="' + (resource.id === state.selectedId ? 'true' : 'false') + '">',
-          '<span class="eva-drive__name-cell"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-drive__name-copy"><strong>' + escapeHTML(resource.name) + '</strong><span>' + escapeHTML(resource.kind === 'folder' ? '文件夹' : resource.size) + '</span></span></span>',
-          showSource ? '<span class="eva-drive__source-cell">' + icon(resource.area === 'workspace' ? 'workspace' : 'users', 'eva-drive__source-icon') + '<span>' + escapeHTML(resourceSourceLabel(resource)) + '</span></span>' : '',
-          '<span>' + escapeHTML(resource.owner) + '</span>',
-          '<span>' + escapeHTML(resource.permission) + '</span>',
-          '<span>' + escapeHTML(resource.modified) + '</span>',
-          icon('chevron'),
-          '</button>'
+          '<div class="eva-drive__row" role="row" data-resource-id="' + resource.id + '" aria-selected="' + (resource.id === state.selectedId ? 'true' : 'false') + '">',
+          '<button class="eva-drive__name-cell" type="button" data-drive-action="' + (resource.type === 'folder' && state.driveScope !== 'trash' ? 'open-folder' : state.driveScope === 'trash' ? 'select' : 'preview') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-drive__name-copy"><strong>' + escapeHTML(resource.name) + '</strong>' + tagsHTML(resource) + '</span></button>',
+          '<span><span class="eva-file-type">' + escapeHTML(resourceFileType(resource)) + '</span></span>',
+          state.driveScope === 'trash' ? '<span class="eva-file-location-cell">' + escapeHTML(originalLocationLabel(resource)) + '</span>' : relationCellHTML(resource),
+          '<span>' + escapeHTML(resource.type === 'folder' ? '—' : formatDriveBytes(resource.size)) + '</span>',
+          '<span class="eva-created-cell"><strong>' + escapeHTML(state.driveScope === 'trash' ? resource.deletedBy || '—' : resource.creator || '—') + '</strong><small>' + escapeHTML(formatDriveTime(state.driveScope === 'trash' ? resource.deletedAt : resource.createdAt)) + '</small></span>',
+          rowActionsHTML(resource),
+          '</div>'
         ].join('');
       }).join(''),
       '</div>'
     ].join('');
   }
 
-  function treeButton(scope, label, iconName, child, workspaceId) {
-    var current = state.driveScope === scope && (!workspaceId || state.workspaceId === workspaceId);
-    return '<button type="button" class="' + (child ? 'is-child' : '') + '" data-drive-scope="' + scope + '"' + (workspaceId ? ' data-workspace-id="' + workspaceId + '"' : '') + ' aria-current="' + (current ? 'page' : 'false') + '">' + icon(iconName, 'eva-drive-icon ' + (iconName === 'folder' ? 'is-folder' : '')) + '<span>' + escapeHTML(label) + '</span></button>';
+  function treeButton(scope, label, iconName, child, spaceId) {
+    var current = state.driveScope === scope && (!spaceId || (scope === 'shared-space' ? state.sharedSpaceId === spaceId : state.workspaceId === spaceId));
+    var spaceAttribute = !spaceId ? '' : scope === 'shared-space' ? ' data-shared-space-id="' + escapeHTML(spaceId) + '"' : ' data-workspace-id="' + escapeHTML(spaceId) + '"';
+    return '<button type="button" class="' + (child ? 'is-child' : '') + '" data-drive-scope="' + scope + '"' + spaceAttribute + ' aria-current="' + (current ? 'page' : 'false') + '">' + icon(iconName, 'eva-drive-icon ' + (iconName === 'folder' ? 'is-folder' : '')) + '<span>' + escapeHTML(label) + '</span></button>';
+  }
+
+  function targetOptionsHTML(selectedSpaceId) {
+    var context = fileContext(), actor = fileActor();
+    var personal = [{ id: personalSpaceId(), label: '个人空间' }];
+    var shared = joinedSharedSpaces().map(function (space) {
+      return { id: space.id, label: space.name };
+    });
+    var projects = [];
+    WORKSPACES.forEach(function (workspace) {
+      var role = context.files.role(workspace.id, actor);
+      if (role) projects.push({ id: workspace.id, label: workspace.name });
+    });
+    function options(label, spaces) {
+      return '<optgroup label="' + label + '">' + spaces.map(function (space) { return '<option value="' + escapeHTML(space.id) + '"' + (space.id === selectedSpaceId ? ' selected' : '') + '>' + escapeHTML(space.label) + '</option>'; }).join('') + '</optgroup>';
+    }
+    return options('个人空间', personal) + options('共享空间', shared) + options('项目空间', projects);
+  }
+
+  function shortcutTargetOptionsHTML(sourceSpaceId, selectedSpaceId) {
+    return fileContext().files.writableSpaces(fileActor(), sourceSpaceId).map(function (space) {
+      var prefix = space.kind === 'personal' ? '个人空间' : space.kind === 'shared' ? '共享空间' : '项目空间';
+      return '<option value="' + escapeHTML(space.id) + '"' + (space.id === selectedSpaceId ? ' selected' : '') + '>' + escapeHTML(prefix + ' · ' + space.name) + '</option>';
+    }).join('');
+  }
+
+  function shortcutFolderOptionsHTML(spaceId, selectedParentId) {
+    if (!spaceId) return '<option value="0">根目录</option>';
+    var folders = fileContext().files.list(spaceId, fileActor()).filter(function (item) { return item.type === 'folder'; });
+    return '<option value="0">根目录</option>' + folders.map(function (folder) {
+      return '<option value="' + escapeHTML(folder.id) + '"' + (folder.id === selectedParentId ? ' selected' : '') + '>' + escapeHTML(folder.name) + '</option>';
+    }).join('');
+  }
+
+  function dialogHTML() {
+    if (!state.dialog) return '';
+    var type = state.dialog.type, resource = state.dialog.id ? fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === state.dialog.id; }) : null;
+    var currentShared = sharedSpaceById(state.sharedSpaceId);
+    var title = type === 'new-folder' ? '新建文件夹' : type === 'target-upload' ? '选择上传位置' : type === 'new-shared-space' ? '新建共享空间' : type === 'shared-manage' ? '管理共享空间' : type === 'shared-members' ? '成员与角色' : type === 'shared-settings' ? '空间设置' : type === 'shared-audit' ? '空间审计' : type === 'transfer-shared' ? '转移空间所有权' : type === 'create-shortcut' ? '创建快捷方式' : type === 'tags' ? '编辑标签' : type === 'rename' ? '重命名' : type === 'move' ? '移动到' : type === 'trash' ? '移至回收站' : '永久删除';
+    var content = '';
+    if (type === 'new-folder') content = '<label class="eva-drive-dialog__field"><span>文件夹名称</span><input id="eva-drive-dialog-name" value="" placeholder="请输入文件夹名称" autofocus></label><label class="eva-drive-dialog__field"><span>所属空间</span><select id="eva-drive-dialog-space">' + targetOptionsHTML(state.dialog.spaceId || scopeSpaceId() || personalSpaceId()) + '</select></label>';
+    if (type === 'target-upload') content = '<label class="eva-drive-dialog__field"><span>上传到</span><select id="eva-drive-dialog-space">' + targetOptionsHTML(state.dialog.spaceId || personalSpaceId()) + '</select></label><p class="eva-drive-dialog__hint">上传后文件继承目标空间的角色权限。</p>';
+    if (type === 'new-shared-space') content = '<label class="eva-drive-dialog__field"><span>空间名称</span><input id="eva-drive-dialog-name" placeholder="例如：销售资料共享" autofocus></label><label class="eva-drive-dialog__field"><span>空间说明</span><textarea id="eva-drive-dialog-description" rows="3" placeholder="说明该空间存放什么资料、供谁协作"></textarea></label><p class="eva-drive-dialog__hint">创建后你将成为该共享空间的 Owner。</p>';
+    if (type === 'shared-manage' && currentShared) {
+      var files = fileContext().files, actor = fileActor();
+      content = '<div class="eva-drive-governance">' +
+        (files.can('manage-members', currentShared.id, actor) ? '<button type="button" data-drive-action="shared-members"><span>' + icon('users') + '<strong>成员与角色</strong></span><small>管理普通成员；Owner 可设置 Manager</small>' + icon('chevron') + '</button>' : '') +
+        (files.can('manage-links', currentShared.id, actor) ? '<button type="button" data-drive-action="shared-link"><span>' + icon('link') + '<strong>复制空间链接</strong></span><small>链接只定位空间，不会授予访问权限</small></button>' : '') +
+        (files.can('manage-settings', currentShared.id, actor) ? '<button type="button" data-drive-action="shared-settings"><span>' + icon('more') + '<strong>空间设置</strong></span><small>修改空间名称与说明</small>' + icon('chevron') + '</button>' : '') +
+        (files.can('view-audit', currentShared.id, actor) ? '<button type="button" data-drive-action="shared-audit"><span>' + icon('task') + '<strong>查看审计</strong></span><small>查看空间内关键操作记录</small>' + icon('chevron') + '</button>' : '') +
+        (files.can('transfer-ownership', currentShared.id, actor) && currentShared.members.length > 1 ? '<button class="is-danger" type="button" data-drive-action="transfer-shared"><span>' + icon('external') + '<strong>转移空间所有权</strong></span><small>仅当前 Owner 可以执行</small>' + icon('chevron') + '</button>' : '') +
+        '</div>';
+    }
+    if (type === 'shared-settings' && currentShared) content = '<label class="eva-drive-dialog__field"><span>空间名称</span><input id="eva-drive-dialog-name" value="' + escapeHTML(currentShared.name) + '" autofocus></label><label class="eva-drive-dialog__field"><span>空间说明</span><textarea id="eva-drive-dialog-description" rows="3">' + escapeHTML(currentShared.description) + '</textarea></label><p class="eva-drive-dialog__hint">只有 Owner 与 Manager 可以修改空间设置。</p>';
+    if (type === 'shared-members' && currentShared) {
+      var memberFiles = fileContext().files, memberActor = fileActor(), canSetManager = memberFiles.can('set-manager', currentShared.id, memberActor), availableMembers = memberFiles.sharedMemberCandidates(currentShared.id, memberActor);
+      var addMember = availableMembers.length ? '<div class="eva-drive-member-add"><select id="eva-drive-dialog-add-member">' + availableMembers.map(function (member) { return '<option value="' + escapeHTML(member.id) + '">' + escapeHTML(member.name) + '</option>'; }).join('') + '</select><button type="button" data-drive-action="add-shared-member">添加为 Editor</button></div>' : '<p class="eva-drive-member-add__empty">所有可选成员均已加入</p>';
+      content = '<p class="eva-drive-dialog__intro">成员在此空间内统一使用 Owner、Manager、Editor 三种角色。</p>' + addMember + '<div class="eva-drive-member-list">' + memberFiles.sharedMembers(currentShared.id, memberActor).map(function (member) {
+        var roleLabel = member.role === 'owner' ? 'Owner' : member.role === 'manager' ? 'Manager' : 'Editor';
+        var roleControl = member.role === 'owner' || !canSetManager ? '<span class="eva-drive-member-list__role">' + roleLabel + '</span>' : '<select data-drive-member-role="' + escapeHTML(member.id) + '"><option value="editor"' + (member.role === 'editor' ? ' selected' : '') + '>Editor</option><option value="manager"' + (member.role === 'manager' ? ' selected' : '') + '>Manager</option></select>';
+        var canRemove = member.id !== currentShared.ownerId && member.id !== memberActor && (member.role === 'editor' || canSetManager);
+        var control = '<span class="eva-drive-member-list__controls">' + roleControl + (canRemove ? '<button type="button" data-drive-action="remove-shared-member" data-drive-member-remove="' + escapeHTML(member.id) + '">移除</button>' : '') + '</span>';
+        return '<div class="eva-drive-member-list__row"><span class="eva-drive-member-list__avatar">' + escapeHTML((member.name || member.id).slice(0, 1)) + '</span><span><strong>' + escapeHTML(member.name || member.id) + '</strong><small>' + (member.id === memberActor ? '你' : '空间成员') + '</small></span>' + control + '</div>';
+      }).join('') + '</div><p class="eva-drive-dialog__hint">Manager 可管理普通成员；只有 Owner 可以设置 Manager。</p>';
+    }
+    if (type === 'shared-audit' && currentShared) content = '<div class="eva-drive-audit"><div><strong>王宜林上传了文件</strong><span>秋季发布会素材清单.xlsx · 今天 09:15</span></div><div><strong>何静更新了文件</strong><span>品牌使用说明.pdf · 昨天 18:05</span></div><div><strong>空间角色已校验</strong><span>当前成员权限无异常 · 09-05 16:20</span></div></div>';
+    if (type === 'transfer-shared' && currentShared) {
+      var candidates = fileContext().files.sharedMembers(currentShared.id, fileActor()).filter(function (member) { return member.id !== currentShared.ownerId; });
+      content = '<label class="eva-drive-dialog__field"><span>新 Owner</span><select id="eva-drive-dialog-member">' + candidates.map(function (member) { return '<option value="' + escapeHTML(member.id) + '">' + escapeHTML(member.name + ' · ' + (member.role === 'manager' ? 'Manager' : 'Editor')) + '</option>'; }).join('') + '</select></label><p class="eva-drive-dialog__hint">转移后，你将变为 Manager。只有当前 Owner 可以执行此操作。</p>';
+    }
+    if (type === 'rename') content = '<label class="eva-drive-dialog__field"><span>新名称</span><input id="eva-drive-dialog-name" value="' + escapeHTML(resource ? resource.name : '') + '" autofocus></label>';
+    if (type === 'tags' && resource) content = '<label class="eva-drive-dialog__field"><span>自定义标签</span><input id="eva-drive-dialog-tags" value="' + escapeHTML((resource.tags || []).join('，')) + '" placeholder="多个标签用逗号分隔" autofocus></label><p class="eva-drive-dialog__hint">最多 8 个标签，每个标签最多 20 个字符。标签只用于当前文件或快捷方式，不影响权限。</p>';
+    if (type === 'create-shortcut' && resource) {
+      var shortcutSpaces = fileContext().files.writableSpaces(fileActor(), resource.spaceId);
+      content = shortcutSpaces.length ? '<div class="eva-shortcut-source"><span>源文件</span><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(spaceRootLabel(resource)) + '</small></div><label class="eva-drive-dialog__field"><span>目标空间</span><select id="eva-drive-dialog-shortcut-space">' + shortcutTargetOptionsHTML(resource.spaceId, state.dialog.targetSpaceId) + '</select></label><label class="eva-drive-dialog__field"><span>目标文件夹</span><select id="eva-drive-dialog-shortcut-parent">' + shortcutFolderOptionsHTML(state.dialog.targetSpaceId, state.dialog.targetParentId || 0) + '</select></label><p class="eva-drive-dialog__hint">快捷方式不复制文件，也不会向目标空间成员授予源文件权限。</p>' : '<p>没有其他可写入的空间，暂时无法创建跨空间快捷方式。</p>';
+    }
+    if (type === 'move') {
+      var folders = fileContext().files.list(resource.spaceId, fileActor()).filter(function (item) { return item.type === 'folder' && item.id !== resource.id; });
+      content = '<label class="eva-drive-dialog__field"><span>目标文件夹</span><select id="eva-drive-dialog-parent"><option value="0">根目录</option>' + folders.map(function (item) { return '<option value="' + escapeHTML(item.id) + '">' + escapeHTML(item.name) + '</option>'; }).join('') + '</select></label><p class="eva-drive-dialog__hint">仅允许在当前空间内移动。</p>';
+    }
+    if (type === 'trash') content = '<p>将“' + escapeHTML(resource.name) + '”移至回收站？Owner 或 Manager 可恢复。</p>';
+    if (type === 'delete-forever') content = '<p>永久删除“' + escapeHTML(resource.name) + '”后不可恢复。</p>';
+    var confirmLabel = type === 'target-upload' ? '选择文件' : type === 'new-shared-space' ? '创建空间' : type === 'shared-settings' ? '保存设置' : type === 'transfer-shared' ? '确认转移' : type === 'create-shortcut' ? '创建快捷方式' : type === 'tags' ? '保存' : type === 'trash' ? '移至回收站' : type === 'delete-forever' ? '永久删除' : '确认';
+    var noShortcutTarget = type === 'create-shortcut' && !fileContext().files.writableSpaces(fileActor(), resource.spaceId).length;
+    var confirm = type === 'shared-manage' || type === 'shared-members' || type === 'shared-audit' || noShortcutTarget ? '' : '<button class="' + (type === 'delete-forever' || type === 'trash' || type === 'transfer-shared' ? 'is-danger' : 'is-primary') + '" type="button" data-drive-action="dialog-confirm">' + confirmLabel + '</button>';
+    return '<div class="eva-drive-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-drive-dialog-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="dialog-close" aria-label="关闭"></button><section class="eva-drive-dialog__panel"><header><h2 id="eva-drive-dialog-title">' + title + '</h2><button type="button" data-drive-action="dialog-close" aria-label="关闭">×</button></header><div class="eva-drive-dialog__body">' + content + '</div><footer><button type="button" data-drive-action="dialog-close">' + (confirm ? '取消' : '关闭') + '</button>' + confirm + '</footer></section></div>';
+  }
+
+  function previewHTML() {
+    if (!state.previewId) return '';
+    var context = fileContext(), actor = fileActor();
+    var resource = context.files.snapshot(actor).find(function (item) { return item.id === state.previewId; });
+    if (!resource) return '';
+    var target;
+    try { target = context.files.resolveFile(resource, actor); } catch (error) { return ''; }
+    var sampleURL = window.__EVA_FILE_SAMPLE_URLS && window.__EVA_FILE_SAMPLE_URLS[target.name];
+    var extension = String(target.extension || target.name.split('.').pop() || '').toLowerCase();
+    var content = sampleURL && extension === 'pdf'
+      ? '<iframe class="eva-drive-preview-dialog__frame" src="' + escapeHTML(sampleURL) + '" title="' + escapeHTML(target.name + '预览') + '"></iframe>'
+      : sampleURL && ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)
+        ? '<img class="eva-drive-preview-dialog__image" src="' + escapeHTML(sampleURL) + '" alt="' + escapeHTML(target.name) + '">'
+        : '<div class="eva-drive-preview-dialog__empty"><span class="eva-drive__file-mark ' + fileMarkClass(target) + '">' + icon(fileIconName(target)) + '</span><strong>' + escapeHTML(target.name) + '</strong><span>' + escapeHTML(context.files.fileTypeFor(target, actor) + ' · ' + formatDriveBytes(target.size)) + '</span><p>此演示文件暂无可展示的示例内容。</p></div>';
+    return '<div class="eva-drive-dialog eva-drive-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-drive-preview-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="preview-close" aria-label="关闭预览"></button><section class="eva-drive-dialog__panel eva-drive-preview-dialog__panel"><header><h2 id="eva-drive-preview-title">' + escapeHTML(resource.name) + '</h2><button type="button" data-drive-action="preview-close" aria-label="关闭预览">×</button></header><div class="eva-drive-dialog__body">' + content + '</div></section></div>';
+  }
+
+  function projectSpacesHTML() {
+    var context = fileContext(), actor = fileActor(), all = context.files.all(actor);
+    var projects = WORKSPACES.map(function (workspace) {
+      var role = context.files.role(workspace.id, actor);
+      if (!role) return null;
+      var records = all.filter(function (resource) { return resource.projectId === workspace.id; });
+      return { workspace: workspace, role: role, fileCount: records.filter(function (resource) { return resource.type !== 'folder'; }).length, folderCount: records.filter(function (resource) { return resource.type === 'folder'; }).length };
+    }).filter(Boolean);
+    if (!projects.length) return '<div class="eva-drive__empty">你还没有加入任何项目空间</div>';
+    return '<div class="eva-drive-projects">' + projects.map(function (item) {
+      var roleLabel = item.role === 'owner' ? 'Owner' : item.role === 'manager' ? 'Manager' : 'Editor';
+      return '<button type="button" class="eva-drive-project-card" data-drive-scope="workspace" data-workspace-id="' + escapeHTML(item.workspace.id) + '"><span class="eva-drive-project-card__mark">' + escapeHTML(item.workspace.mark || item.workspace.name.slice(0, 1)) + '</span><span class="eva-drive-project-card__copy"><strong>' + escapeHTML(item.workspace.name) + '</strong><small>' + escapeHTML(item.workspace.description || '项目团队文件') + '</small><span>' + item.folderCount + ' 个文件夹 · ' + item.fileCount + ' 个文件</span></span><span class="eva-drive-project-card__role">' + roleLabel + '</span>' + icon('chevron') + '</button>';
+    }).join('') + '</div>';
+  }
+
+  function sharedSpacesHTML() {
+    var context = fileContext(), actor = fileActor(), all = context.files.all(actor), query = state.query.trim().toLowerCase();
+    var spaces = joinedSharedSpaces().filter(function (space) { return !query || space.name.toLowerCase().includes(query) || String(space.description || '').toLowerCase().includes(query); }).map(function (space) {
+      var role = context.files.role(space.id, actor);
+      var records = all.filter(function (resource) { return resource.spaceId === space.id; });
+      return { space: space, role: role, fileCount: records.filter(function (resource) { return resource.type !== 'folder'; }).length, folderCount: records.filter(function (resource) { return resource.type === 'folder'; }).length };
+    });
+    if (!spaces.length) return '<div class="eva-drive__empty">' + (query ? '没有匹配的共享空间' : '你还没有加入任何共享空间') + '</div>';
+    return '<div class="eva-drive-projects eva-drive-projects--shared">' + spaces.map(function (item) {
+      var roleLabel = item.role === 'owner' ? 'Owner' : item.role === 'manager' ? 'Manager' : 'Editor';
+      return '<button type="button" class="eva-drive-project-card eva-drive-project-card--shared" data-drive-scope="shared-space" data-shared-space-id="' + escapeHTML(item.space.id) + '"><span class="eva-drive-project-card__mark">' + escapeHTML(item.space.mark || item.space.name.slice(0, 1)) + '</span><span class="eva-drive-project-card__copy"><strong>' + escapeHTML(item.space.name) + '</strong><small>' + escapeHTML(item.space.description || '团队共享文件空间') + '</small><span>' + item.space.members.length + ' 位成员 · ' + item.folderCount + ' 个文件夹 · ' + item.fileCount + ' 个文件</span></span><span class="eva-drive-project-card__role">' + roleLabel + '</span>' + icon('chevron') + '</button>';
+    }).join('') + '</div>';
   }
 
   function driveHTML(list, selected) {
     var copy = scopeCopy();
-    var workspace = workspaceById(state.workspaceId);
-    var bridgeLabel = state.driveEntry === 'workspace' ? '在文件库中查看' : (state.driveScope === 'workspace' ? '在项目中打开' : '');
+    var context = fileContext(), actor = fileActor(), currentSpace = scopeSpaceId();
+    var role = currentSpace ? context.files.role(currentSpace, actor) : null;
+    var roleLabel = role === 'owner' ? 'Owner' : role === 'manager' ? 'Manager' : role === 'editor' ? 'Editor' : '';
+    var crumbs = currentSpace && state.crumbs.length ? [{ id: 0, name: copy.section }].concat(state.crumbs) : [];
     return [
       '<aside class="eva-drive__side" aria-label="文件导航">',
-      '<div class="eva-drive__side-head">' + icon('drive') + '<strong>' + escapeHTML(state.driveEntry === 'workspace' ? '团队文件' : '文件库') + '</strong></div>',
-      '<label class="eva-drive__side-search">' + icon('search') + '<input type="search" data-drive-search="side" value="' + escapeHTML(state.query) + '" placeholder="搜索文件"></label>',
+      '<div class="eva-drive__side-head">' + icon('drive') + '<strong>文件库</strong></div>',
+      '<label class="eva-drive__side-search">' + icon('search') + '<input type="search" data-drive-search="side" value="' + escapeHTML(state.query) + '" placeholder="搜索当前范围"></label>',
       '<nav class="eva-drive__tree">',
-      '<div class="eva-drive__tree-group">全部来源</div>',
-      treeButton('all', '所有文件', 'folder', false),
-      '<div class="eva-drive__tree-group">项目文件</div>',
+      '<div class="eva-drive__tree-group">文件空间</div>',
+      treeButton('personal', '个人空间', 'file', false),
+      treeButton('shared', '共享空间', 'users', false),
+      joinedSharedSpaces().map(function (item) { return treeButton('shared-space', item.name, 'users', true, item.id); }).join(''),
+      treeButton('projects', '项目空间', 'workspace', false),
       WORKSPACES.map(function (item) { return treeButton('workspace', item.name, 'workspace', true, item.id); }).join(''),
+      '<div class="eva-drive__tree-spacer"></div>',
+      '<div class="eva-drive__tree-group">管理</div>',
+      treeButton('trash', '回收站', 'folder', false),
       '</nav>',
       '</aside>',
       '<main class="eva-drive__main">',
-      '<header class="eva-drive__header"><strong>' + escapeHTML(state.driveEntry === 'workspace' ? workspace.name + ' / 团队文件' : '文件库') + '</strong><span>' + escapeHTML(copy.subtitle) + '</span><span class="eva-drive__header-spacer"></span>',
-      bridgeLabel ? '<button class="eva-drive__text-button" type="button" data-drive-action="bridge">' + icon('external') + escapeHTML(bridgeLabel) + '</button>' : '',
+      '<header class="eva-drive__header"><div><strong>' + escapeHTML(copy.title) + '</strong><span>' + escapeHTML(copy.subtitle) + '</span></div><span class="eva-drive__header-spacer"></span>',
+      roleLabel ? '<span class="eva-drive__role">' + roleLabel + '</span>' : '',
+      state.driveScope === 'shared-space' && context.files.can('manage-settings', currentSpace, actor) ? '<button class="eva-drive__text-button" type="button" data-drive-action="shared-manage">' + icon('users') + '管理空间</button>' : '',
+      state.driveScope === 'workspace' ? '<button class="eva-drive__text-button" type="button" data-drive-action="open-project">' + icon('external') + '进入项目</button>' : '',
       '</header>',
       '<div class="eva-drive__scroll">',
-      '<div class="eva-drive__eyebrow">' + escapeHTML(state.driveEntry === 'workspace' ? '当前项目' : '跨场景文件管理') + '</div>',
-      '<div class="eva-drive__actions">',
-      '<div class="eva-drive__action" role="button" tabindex="0" data-menu-target="new"><span class="eva-drive__action-icon">' + icon('plus') + '</span><span class="eva-drive__action-copy"><strong>新建</strong><span>新建文件夹</span></span>' + icon('arrow') + '<span class="eva-drive__action-menu" data-action-menu="new" hidden><button type="button" data-drive-action="new-folder">' + icon('folder') + '新建文件夹</button></span></div>',
-      '<div class="eva-drive__action" role="button" tabindex="0" data-menu-target="upload"><span class="eva-drive__action-icon">' + icon('upload') + '</span><span class="eva-drive__action-copy"><strong>上传</strong><span>上传文件或文件夹到当前位置</span></span>' + icon('arrow') + '<span class="eva-drive__action-menu" data-action-menu="upload" hidden><button type="button" data-drive-action="upload-file">' + icon('file') + '上传文件</button><button type="button" data-drive-action="upload-folder">' + icon('folder') + '上传文件夹</button></span></div>',
-      '<div class="eva-drive__action" role="button" tabindex="0" data-menu-target="add"><span class="eva-drive__action-icon">' + icon('link') + '</span><span class="eva-drive__action-copy"><strong>添加</strong><span>添加已有文件的快捷入口</span></span>' + icon('arrow') + '<span class="eva-drive__action-menu" data-action-menu="add" hidden><button type="button" data-drive-action="add-file-shortcut">' + icon('file') + '添加文件快捷入口</button><button type="button" data-drive-action="add-folder-shortcut">' + icon('folder') + '添加文件夹快捷入口</button></span></div>',
+      state.driveScope === 'shared' ? '<div class="eva-drive__actions"><button class="eva-drive__action eva-drive__action--primary" type="button" data-drive-action="new-shared-space">' + icon('plus') + '<span>新建共享空间</span></button></div>' : '',
+      currentSpace && state.driveScope !== 'trash' ? '<div class="eva-drive__actions"><button class="eva-drive__action" type="button" data-drive-action="new-folder">' + icon('plus') + '<span>新建文件夹</span></button><button class="eva-drive__action eva-drive__action--primary" type="button" data-drive-action="upload-file">' + icon('upload') + '<span>上传本地文件</span></button></div>' : '',
+      crumbs.length ? '<div class="eva-drive__pathbar"><button class="eva-drive__back-button" type="button" data-drive-action="up-folder">' + icon('chevron') + '<span>返回上一级</span></button><nav class="eva-drive__breadcrumbs" aria-label="文件路径">' + crumbs.map(function (crumb, index) { return '<button type="button" data-drive-action="breadcrumb" data-breadcrumb-index="' + index + '"' + (index === crumbs.length - 1 ? ' aria-current="page"' : '') + '>' + escapeHTML(crumb.name) + '</button>'; }).join('<span>/</span>') + '</nav></div>' : '',
       '</div>',
       '<div class="eva-drive__section-head"><div><h1>' + escapeHTML(copy.section) + '</h1><p>' + escapeHTML(copy.subtitle) + '</p></div><label class="eva-drive__side-search">' + icon('search') + '<input type="search" data-drive-search="main" value="' + escapeHTML(state.query) + '" placeholder="搜索当前位置"></label></div>',
-      tableHTML(list),
+      state.driveScope === 'projects' ? projectSpacesHTML() : state.driveScope === 'shared' ? sharedSpacesHTML() : tableHTML(list),
       '</div>',
       '<input id="eva-file-upload" type="file" multiple hidden>',
-      '<input id="eva-folder-upload" type="file" webkitdirectory multiple hidden>',
       '</main>',
       '<aside class="eva-drive__inspector" aria-label="文件详情">' + inspectorHTML(selected) + '</aside>',
-      '<div class="eva-drive__toast" role="status" aria-live="polite" hidden></div>'
+      '<div class="eva-drive__toast" role="status" aria-live="polite" hidden></div>',
+      dialogHTML(),
+      previewHTML()
     ].join('');
   }
 
@@ -414,10 +710,13 @@
     if (!state.selectedId || !list.some(function (resource) { return resource.id === state.selectedId; })) {
       state.selectedId = null;
     }
-    var selected = resources.find(function (resource) { return resource.id === state.selectedId; }) || null;
+    var context = fileContext();
+    var selected = context ? context.files.snapshot(fileActor()).find(function (resource) { return resource.id === state.selectedId; }) || null : null;
     root.innerHTML = driveHTML(list, selected);
     root.dataset.evaDriveScope = state.driveScope;
     root.dataset.evaWorkspaceId = state.workspaceId;
+    root.dataset.evaSharedSpaceId = state.sharedSpaceId;
+    root.classList.toggle('eva-drive--inspector-open', Boolean(selected));
     root.hidden = false;
     syncDriveLeft();
   }
@@ -426,9 +725,13 @@
     if (entry === 'workspace') state.mode = 'collaboration';
     state.driveEntry = entry || 'global';
     if (workspaceId) state.workspaceId = workspaceId;
-    state.driveScope = scope || (entry === 'workspace' ? 'workspace' : state.driveScope || 'all');
+    state.driveScope = scope || (entry === 'workspace' ? 'workspace' : state.driveScope || 'personal');
     state.query = '';
     state.selectedId = null;
+    state.parentId = 0;
+    state.crumbs = [];
+    state.dialog = null;
+    state.previewId = null;
     if (String(location.hash || '').indexOf('#/drive') !== 0) location.hash = '#/drive';
     else {
       renderDrive();
@@ -438,6 +741,7 @@
 
   function closeDrive() {
     var root = document.getElementById('eva-drive-root');
+    state.previewId = null;
     if (root) root.hidden = true;
   }
 
@@ -456,86 +760,206 @@
     state.toastTimer = setTimeout(function () { toast.hidden = true; }, 1800);
   }
 
-  function addResource(kind, name, description) {
-    var item = {
-      id: 'resource-' + Date.now().toString(36),
-      name: name,
-      kind: kind,
-      owner: '王宜林',
-      permission: '可管理',
-      modified: '刚刚',
-      size: kind === 'folder' ? '—' : '0 KB',
-      workspaceIds: state.driveScope === 'workspace' ? [state.workspaceId] : [],
-      area: state.driveScope === 'workspace' ? 'workspace' : 'owned',
-      description: description
-    };
-    resources.unshift(item);
-    state.selectedId = item.id;
+  function selectedResource() {
+    var context = fileContext();
+    return context ? context.files.snapshot(fileActor()).find(function (resource) { return resource.id === state.selectedId; }) || null : null;
+  }
+
+  function openDialog(type, resource, spaceId) {
+    state.dialog = { type: type, id: resource ? resource.id : null, spaceId: spaceId || null };
+    if (type === 'create-shortcut' && resource) {
+      var target = fileContext().files.writableSpaces(fileActor(), resource.spaceId)[0];
+      state.dialog.targetSpaceId = target ? target.id : null;
+      state.dialog.targetParentId = 0;
+    }
     renderDrive();
   }
 
-  function toggleActionMenu(target) {
-    var root = document.getElementById('eva-drive-root');
-    if (!root) return;
-    root.querySelectorAll('[data-action-menu]').forEach(function (menu) {
-      menu.hidden = menu.dataset.actionMenu !== target || !menu.hidden;
-    });
+  function closeDialog() {
+    state.dialog = null;
+    renderDrive();
+  }
+
+  function confirmDialog() {
+    if (!state.dialog) return;
+    var dialog = state.dialog, context = fileContext(), actor = fileActor();
+    var resource = dialog.id ? context.files.snapshot(actor).find(function (item) { return item.id === dialog.id; }) : null;
+    var nameInput = document.getElementById('eva-drive-dialog-name');
+    var descriptionInput = document.getElementById('eva-drive-dialog-description');
+    var spaceInput = document.getElementById('eva-drive-dialog-space');
+    var parentInput = document.getElementById('eva-drive-dialog-parent');
+    var memberInput = document.getElementById('eva-drive-dialog-member');
+    var tagsInput = document.getElementById('eva-drive-dialog-tags');
+    var shortcutSpaceInput = document.getElementById('eva-drive-dialog-shortcut-space');
+    var shortcutParentInput = document.getElementById('eva-drive-dialog-shortcut-parent');
+    try {
+      state.dialog = null;
+      if (dialog.type === 'new-folder') {
+        var targetSpace = spaceInput ? spaceInput.value : dialog.spaceId || scopeSpaceId();
+        state.selectedId = context.files.createFolder(actor, targetSpace, nameInput ? nameInput.value : '', targetSpace === scopeSpaceId() ? state.parentId : 0);
+      }
+      if (dialog.type === 'target-upload') {
+        state.uploadTarget = spaceInput.value;
+        renderDrive();
+        setTimeout(function () { var input = document.getElementById('eva-file-upload'); if (input) input.click(); }, 0);
+        return;
+      }
+      if (dialog.type === 'new-shared-space') {
+        state.sharedSpaceId = context.files.createSharedSpace(actor, { name: nameInput ? nameInput.value : '', description: descriptionInput ? descriptionInput.value : '' });
+        state.driveScope = 'shared-space';
+        state.parentId = 0;
+        state.crumbs = [];
+      }
+      if (dialog.type === 'shared-settings') context.files.updateSharedSpace(actor, state.sharedSpaceId, { name: nameInput.value, description: descriptionInput.value });
+      if (dialog.type === 'transfer-shared') context.files.transferSharedOwnership(actor, state.sharedSpaceId, memberInput.value);
+      if (dialog.type === 'tags') context.files.updateTags(actor, resource.id, tagsInput.value);
+      if (dialog.type === 'create-shortcut') context.files.createShortcut(actor, resource.id, shortcutSpaceInput.value, shortcutParentInput.value === '0' ? 0 : shortcutParentInput.value);
+      if (dialog.type === 'rename') context.files.rename(actor, resource.id, nameInput.value);
+      if (dialog.type === 'move') context.files.move(actor, resource.id, parentInput.value === '0' ? 0 : parentInput.value);
+      if (dialog.type === 'trash') { context.files.trash(actor, resource.id); state.selectedId = null; }
+      if (dialog.type === 'delete-forever') { context.files.removeForever(actor, resource.id); state.selectedId = null; }
+      renderDrive();
+      if (dialog.type === 'create-shortcut') showToast('快捷方式已创建，源文件权限保持不变');
+    } catch (error) {
+      state.dialog = dialog;
+      renderDrive();
+      showToast(error.message || '操作失败');
+    }
   }
 
   function bridgeSelectedResource() {
-    var selected = resources.find(function (resource) { return resource.id === state.selectedId; });
-    if (selected && selected.workspaceIds.length) state.workspaceId = selected.workspaceIds[0];
-    if (state.driveEntry === 'workspace') {
-      state.driveEntry = 'global';
-      state.driveScope = 'workspace';
-      renderDrive();
-    } else {
-      state.driveEntry = 'workspace';
-      state.driveScope = 'workspace';
-      renderDrive();
-      state.pendingWorkspaceId = state.workspaceId;
-      state.pendingTab = null;
-      if (location.hash !== '#/collab') location.hash = '#/collab';
-    }
+    var selected = selectedResource();
+    var projectId = selected && selected.projectId ? selected.projectId : state.workspaceId;
+    if (projectId) openWorkspace(projectId, 'files');
   }
 
   function handleDriveClick(event) {
     var row = event.target.closest('[data-resource-id]');
-    if (row) {
-      state.selectedId = row.dataset.resourceId;
-      renderDrive();
-      return;
-    }
+    var resource = row ? fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === row.dataset.resourceId; }) : selectedResource();
 
     var scopeButton = event.target.closest('[data-drive-scope]');
     if (scopeButton) {
       state.driveScope = scopeButton.dataset.driveScope;
       if (scopeButton.dataset.workspaceId) state.workspaceId = scopeButton.dataset.workspaceId;
+      if (scopeButton.dataset.sharedSpaceId) state.sharedSpaceId = scopeButton.dataset.sharedSpaceId;
       state.driveEntry = 'global';
       state.query = '';
+      state.parentId = 0;
+      state.crumbs = [];
+      state.selectedId = null;
+      state.menuId = null;
       renderDrive();
       return;
     }
 
-    var menuTarget = event.target.closest('[data-menu-target]');
-    if (menuTarget && !event.target.closest('[data-drive-action]')) {
-      toggleActionMenu(menuTarget.dataset.menuTarget);
+    var action = event.target.closest('[data-drive-action]');
+    if (!action && row) {
+      state.selectedId = row.dataset.resourceId;
+      state.menuId = null;
+      renderDrive();
       return;
     }
-
-    var action = event.target.closest('[data-drive-action]');
     if (!action) return;
     event.preventDefault();
     event.stopPropagation();
     var name = action.dataset.driveAction;
-    if (name === 'new-folder') addResource('folder', '新建文件夹', '当前目录中的新文件夹');
-    if (name === 'upload-file') document.getElementById('eva-file-upload').click();
-    if (name === 'upload-folder') document.getElementById('eva-folder-upload').click();
-    if (name === 'add-file-shortcut') addResource('file', '文件快捷入口', '指向已有文件的快捷入口');
-    if (name === 'add-folder-shortcut') addResource('folder', '文件夹快捷入口', '指向已有文件夹的快捷入口');
-    if (name === 'share') showToast('分享入口已打开');
-    if (name === 'more') showToast('更多文件操作');
-    if (name === 'bridge') bridgeSelectedResource();
+    if (name === 'row-menu') {
+      state.menuId = state.menuId === String(resource.id) ? null : String(resource.id);
+      renderDrive();
+      return;
+    }
+    if (state.menuId) {
+      state.menuId = null;
+      renderDrive();
+    }
+    if (name === 'select') { state.selectedId = resource.id; renderDrive(); }
+    if (name === 'preview') {
+      try {
+        fileContext().files.resolveFile(resource, fileActor());
+        state.previewId = resource.id;
+        state.selectedId = null;
+        renderDrive();
+      } catch (error) {
+        state.selectedId = resource.id;
+        renderDrive();
+        showToast(error.message || '当前文件无法预览');
+      }
+    }
+    if (name === 'preview-close') { state.previewId = null; renderDrive(); }
+    if (name === 'open-folder') {
+      if (resource.area === 'personal') state.driveScope = 'personal';
+      if (resource.area === 'project') { state.driveScope = 'workspace'; state.workspaceId = resource.projectId; }
+      if (resource.area === 'shared') { state.driveScope = 'shared-space'; state.sharedSpaceId = resource.spaceId; }
+      state.parentId = resource.id;
+      state.crumbs = [{ id: resource.id, name: resource.name }];
+      state.query = '';
+      state.selectedId = null;
+      renderDrive();
+    }
+    if (name === 'breadcrumb') {
+      var index = Number(action.dataset.breadcrumbIndex);
+      state.parentId = index === 0 ? 0 : state.crumbs[index - 1].id;
+      state.crumbs = state.crumbs.slice(0, index);
+      state.selectedId = null;
+      renderDrive();
+    }
+    if (name === 'up-folder') {
+      state.crumbs = state.crumbs.slice(0, -1);
+      state.parentId = state.crumbs.length ? state.crumbs[state.crumbs.length - 1].id : 0;
+      state.query = '';
+      state.selectedId = null;
+      renderDrive();
+    }
+    if (name === 'new-folder') openDialog('new-folder', null, scopeSpaceId());
+    if (name === 'new-shared-space') openDialog('new-shared-space');
+    if (name === 'upload-file') {
+      var spaceId = scopeSpaceId();
+      if (spaceId) { state.uploadTarget = spaceId; document.getElementById('eva-file-upload').click(); }
+      else openDialog('target-upload');
+    }
+    if (name === 'copy-link') {
+      var internalLink = location.origin + location.pathname + '#/drive?file=' + encodeURIComponent(resource.id);
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(internalLink).catch(function () {});
+      showToast('已复制内部链接，不会改变访问权限');
+    }
+    if (name === 'shared-link') {
+      var spaceLink = location.origin + location.pathname + '#/drive?space=' + encodeURIComponent(state.sharedSpaceId);
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(spaceLink).catch(function () {});
+      showToast('已复制空间链接，链接本身不会授予权限');
+    }
+    if (name === 'shared-manage') openDialog('shared-manage');
+    if (name === 'shared-members') openDialog('shared-members');
+    if (name === 'add-shared-member') {
+      try {
+        var addMemberInput = document.getElementById('eva-drive-dialog-add-member');
+        fileContext().files.addSharedMember(fileActor(), state.sharedSpaceId, addMemberInput.value);
+        state.dialog = { type: 'shared-members', id: null, spaceId: state.sharedSpaceId };
+        renderDrive();
+        showToast('成员已加入，共享空间角色为 Editor');
+      } catch (error) { renderDrive(); showToast(error.message || '添加成员失败'); }
+    }
+    if (name === 'remove-shared-member') {
+      try {
+        fileContext().files.removeSharedMember(fileActor(), state.sharedSpaceId, action.dataset.driveMemberRemove);
+        state.dialog = { type: 'shared-members', id: null, spaceId: state.sharedSpaceId };
+        renderDrive();
+        showToast('成员已移出共享空间');
+      } catch (error) { renderDrive(); showToast(error.message || '移除成员失败'); }
+    }
+    if (name === 'shared-settings') openDialog('shared-settings');
+    if (name === 'shared-audit') openDialog('shared-audit');
+    if (name === 'transfer-shared') openDialog('transfer-shared');
+    if (name === 'open-project') bridgeSelectedResource();
+    if (name === 'tags') openDialog('tags', resource);
+    if (name === 'create-shortcut') openDialog('create-shortcut', resource);
+    if (name === 'rename') openDialog('rename', resource);
+    if (name === 'move') openDialog('move', resource);
+    if (name === 'copy') { fileContext().files.copy(fileActor(), resource.id); showToast('已在当前空间创建副本'); }
+    if (name === 'trash') openDialog('trash', resource);
+    if (name === 'restore') { fileContext().files.restore(fileActor(), resource.id); state.selectedId = null; showToast('已恢复到原位置'); }
+    if (name === 'delete-forever') openDialog('delete-forever', resource);
+    if (name === 'dialog-close') closeDialog();
+    if (name === 'dialog-confirm') confirmDialog();
   }
 
   function handleDriveInput(event) {
@@ -549,14 +973,29 @@
       }
     }
     if (event.type === 'change' && event.target.id === 'eva-file-upload' && event.target.files.length) {
-      var file = event.target.files[0];
-      addResource('file', file.name, '刚刚上传的文件');
-      showToast('已添加 ' + file.name);
+      var context = fileContext(), actor = fileActor(), targetSpace = state.uploadTarget || scopeSpaceId() || personalSpaceId();
+      var parentId = targetSpace === scopeSpaceId() ? state.parentId : 0;
+      Array.from(event.target.files).forEach(function (file) { state.selectedId = context.files.upload(actor, targetSpace, file, parentId); });
+      state.uploadTarget = null;
+      event.target.value = '';
+      renderDrive();
+      showToast('文件已上传到' + spaceName(targetSpace));
     }
-    if (event.type === 'change' && event.target.id === 'eva-folder-upload' && event.target.files.length) {
-      var folderName = event.target.files[0].webkitRelativePath.split('/')[0] || '上传的文件夹';
-      addResource('folder', folderName, '刚刚上传的文件夹');
-      showToast('已添加 ' + folderName);
+    if (event.type === 'change' && event.target.id === 'eva-drive-dialog-shortcut-space') {
+      state.dialog.targetSpaceId = event.target.value;
+      state.dialog.targetParentId = 0;
+      renderDrive();
+    }
+    if (event.type === 'change' && event.target.matches('[data-drive-member-role]')) {
+      try {
+        fileContext().files.setSharedMemberRole(fileActor(), state.sharedSpaceId, event.target.dataset.driveMemberRole, event.target.value);
+        state.dialog = { type: 'shared-members', id: null, spaceId: state.sharedSpaceId };
+        renderDrive();
+        showToast('成员角色已更新');
+      } catch (error) {
+        renderDrive();
+        showToast(error.message || '角色更新失败');
+      }
     }
   }
 
@@ -634,6 +1073,10 @@
 
     document.addEventListener('click', function (event) {
       if (event.target.closest('#eva-drive-root')) handleDriveClick(event);
+      else if (state.menuId && document.getElementById('eva-drive-root')) {
+        state.menuId = null;
+        renderDrive();
+      }
     });
     document.addEventListener('input', function (event) {
       if (event.target.closest('#eva-drive-root')) handleDriveInput(event);
@@ -645,11 +1088,8 @@
       if (event.key === 'Escape') {
         var menu = document.querySelector('.eva-space-picker__menu:not([hidden])');
         if (menu) menu.hidden = true;
-      }
-      var actionCard = event.target.closest('[data-menu-target]');
-      if (actionCard && !event.target.closest('[data-drive-action]') && (event.key === 'Enter' || event.key === ' ')) {
-        event.preventDefault();
-        toggleActionMenu(actionCard.dataset.menuTarget);
+        if (state.menuId) { state.menuId = null; renderDrive(); }
+        if (state.dialog) closeDialog();
       }
     });
     window.addEventListener('resize', syncDriveLeft);
@@ -668,6 +1108,11 @@
         closeDrive();
         if (root.parentElement === host) root.remove();
       };
+    });
+    var context = fileContext();
+    if (context) context.files.subscribe(function () {
+      var root = document.getElementById('eva-drive-root');
+      if (root && !root.hidden) renderDrive();
     });
     var observer = new MutationObserver(scheduleEnhance);
     observer.observe(document.getElementById('root') || document.body, { childList: true, subtree: true });
