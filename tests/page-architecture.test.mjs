@@ -190,6 +190,12 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(aiTeamCss, /--eva-rail-secondary:\s*#68717a/);
   assert.match(aiTeamCss, /--eva-rail-hover:\s*#eceff1/);
   assert.match(aiTeamCss, /--eva-rail-selected:\s*#e4e7ea/);
+  assert.match(aiTeamCss, /--eva-rail-group-hover:\s*#e8ebed/);
+  assert.match(aiTeamCss, /--eva-rail-group-radius:\s*7px/);
+  assert.match(aiTeamCss, /--eva-rail-primary-row-radius:\s*7px/);
+  assert.match(aiTeamCss, /--eva-rail-nested-row-radius:\s*6px/);
+  assert.match(aiTeamCss, /eva-ai-team__identity-heading:hover,[^}]*eva-ai-team__identity-heading:focus-within\s*\{\s*background:\s*var\(--eva-rail-hover\)/s);
+  assert.match(aiTeamCss, /eva-ai-team__session-row\.is-selected,[^}]*eva-ai-team__session-row\.is-selected:hover\s*\{[^}]*background:\s*var\(--eva-rail-selected\)[^}]*box-shadow:\s*none/s);
   assert.match(aiTeamCss, /eva-ai-team__chevron\s*\{[^}]*flex:\s*0 0 12px/s);
   assert.match(aiTeamCss, /eva-ai-team__chevron\.is-expanded\s*\{\s*transform:\s*rotate\(90deg\)/);
   assert.match(aiTeamCss, /eva-ai-team__role-group \+ \.eva-ai-team__role-group\s*\{[^}]*margin-top:\s*6px[^}]*\}/s);

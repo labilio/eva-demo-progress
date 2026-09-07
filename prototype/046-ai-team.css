@@ -26,7 +26,8 @@
   --eva-rail-time: #8d95a1;
   --eva-rail-hover: #eceff1;
   --eva-rail-selected: #e4e7ea;
-  --eva-rail-group-radius: 6px;
+  --eva-rail-group-hover: #e8ebed;
+  --eva-rail-group-radius: 7px;
   --eva-rail-primary-row-radius: 7px;
   --eva-rail-nested-row-radius: 6px;
   --eva-rail-name-size: var(--gds-type-label-medium-font-size);
@@ -102,18 +103,19 @@
 .eva-ai-team__group-toggle {
   display: flex;
   width: 100%;
-  min-height: 28px;
+  min-height: 32px;
   align-items: center;
   gap: var(--gds-space-1);
-  padding: 0;
+  padding: 0 var(--gds-space-2);
   border: 0;
   border-radius: var(--eva-rail-group-radius);
   background: transparent;
   color: var(--eva-rail-caption);
   text-align: left;
   cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
 }
-.eva-ai-team__group-toggle:hover { color: var(--eva-rail-primary); }
+.eva-ai-team__group-toggle:hover { background: var(--eva-rail-group-hover); color: var(--eva-rail-primary); }
 .eva-ai-team__group-toggle:focus-visible { outline: 2px solid var(--gds-color-action-primary); outline-offset: -2px; }
 .eva-ai-team__group-title {
   min-width: 0;
@@ -128,7 +130,17 @@
 .eva-ai-team__group-chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__group-content { margin-top: 0; }
 .eva-ai-team__identity + .eva-ai-team__identity { margin-top: 0; }
-.eva-ai-team__identity-heading { display: flex; align-items: center; gap: var(--gds-space-1); margin-bottom: 0; }
+.eva-ai-team__identity-heading {
+  display: flex;
+  min-height: var(--eva-rail-identity-height);
+  align-items: center;
+  gap: var(--gds-space-1);
+  margin-bottom: 0;
+  border-radius: var(--eva-rail-primary-row-radius);
+  transition: background-color 120ms ease;
+}
+.eva-ai-team__identity-heading:hover,
+.eva-ai-team__identity-heading:focus-within { background: var(--eva-rail-hover); }
 .eva-ai-team__identity-button,
 .eva-ai-team__session,
 .eva-ai-team__digital-button {
@@ -163,9 +175,10 @@
   border-radius: var(--eva-rail-nested-row-radius);
 }
 /* Actions share the time slot; sibling buttons avoid nested interactive elements. */
-.eva-ai-team__session-row { position: relative; border-radius: var(--eva-rail-nested-row-radius); }
+.eva-ai-team__session-row { position: relative; min-height: var(--eva-rail-session-height); border-radius: var(--eva-rail-nested-row-radius); transition: background-color 120ms ease; }
 .eva-ai-team__session-row:hover { background: var(--eva-rail-hover); }
-.eva-ai-team__session-row.is-selected { background: var(--eva-rail-selected); }
+.eva-ai-team__session-row.is-selected,
+.eva-ai-team__session-row.is-selected:hover { background: var(--eva-rail-selected); box-shadow: none; }
 .eva-ai-team__session-actions { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; opacity: 0; pointer-events: none; }
 .eva-ai-team__session-actions .semi-button { width: 24px; height: 24px; min-height: 24px; padding: 0; color: var(--eva-rail-time); }
 .eva-ai-team__session-actions .semi-button:hover,
@@ -180,9 +193,10 @@
 .eva-ai-team__session-title { grid-column: 1; font-size: var(--eva-rail-label-size); line-height: var(--gds-type-label-line-height); font-weight: var(--gds-font-weight-regular); color: var(--eva-rail-secondary); }
 .eva-ai-team__session.is-selected .eva-ai-team__session-title { color: var(--eva-rail-secondary); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__session-time { grid-column: 2; grid-row: 1; align-self: center; white-space: nowrap; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); }
-.eva-ai-team__identity-button:hover,
 .eva-ai-team__session:hover,
 .eva-ai-team__digital-button:hover { background: var(--eva-rail-hover); }
+.eva-ai-team__identity-heading .eva-ai-team__identity-button:hover,
+.eva-ai-team__session-row > .eva-ai-team__session:hover { background: transparent; }
 .eva-ai-team__session.is-selected,
 .eva-ai-team__digital-button.is-selected { background: var(--eva-rail-selected); }
 .eva-ai-team__digital-button { display: flex; align-items: center; width: 100%; gap: var(--gds-space-2); padding: var(--gds-space-2); border-radius: var(--eva-rail-primary-row-radius); }
