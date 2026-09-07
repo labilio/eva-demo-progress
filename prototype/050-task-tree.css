@@ -1,0 +1,25 @@
+.eva-task-tree{margin:24px 0;border:1px solid var(--semi-color-border);border-radius:12px;overflow:hidden}
+.eva-task-tree header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.eva-task-tree button{font:inherit;cursor:pointer;color:inherit}
+.eva-task-tree header button,.eva-task-tree nav button,.eva-task-tree__actions button{border:0;background:var(--semi-color-fill-0);border-radius:6px;padding:4px 8px}
+.eva-task-tree nav{padding:0 16px 12px;font-size:12px;color:var(--semi-color-text-2)}
+.eva-task-tree nav [aria-current]{color:var(--semi-color-primary);font-weight:600}
+.eva-task-tree__viewport{height:380px;overflow:auto;background:var(--semi-color-fill-0)}
+.eva-task-tree ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:20px}
+.eva-task-tree .eva-task-tree__root{padding:24px;width:max-content;min-width:100%;box-sizing:border-box}
+.eva-task-tree__branch{display:flex;align-items:center;position:relative;gap:40px}
+.eva-task-tree__branch>ul{padding-left:0;position:relative}
+.eva-task-tree__branch>ul:before{content:'';position:absolute;left:-20px;top:0;bottom:0;border-left:1px solid var(--semi-color-border)}
+.eva-task-tree__branch>ul>.eva-task-tree__branch:before{content:'';position:absolute;width:20px;left:-20px;border-top:1px solid var(--semi-color-border)}
+.eva-task-tree__node{width:230px;flex-shrink:0;position:relative;border:1px solid var(--semi-color-border);border-radius:10px;background:var(--semi-color-bg-0);box-shadow:var(--semi-shadow-elevated)}
+.eva-task-tree__branch:has(>ul)>.eva-task-tree__node:after{content:'';position:absolute;right:-21px;top:50%;width:20px;border-top:1px solid var(--semi-color-border)}
+.eva-task-tree__node.is-current{border:2px solid var(--semi-color-primary);background:var(--semi-color-primary-light-default)}
+.eva-task-tree__node.is-ancestor{border-color:var(--semi-color-primary)}
+.eva-task-tree__open{display:flex;flex-direction:column;gap:10px;width:100%;padding:12px;text-align:left;border:0;background:none}
+.eva-task-tree__open strong{font-size:13px;line-height:1.5}
+.eva-task-tree__meta{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--semi-color-text-2)}
+.eva-task-tree__meta>span{margin-left:auto}
+.eva-task-tree__current{font-size:11px;color:var(--semi-color-primary);font-weight:600}
+.eva-task-tree__actions{display:flex;align-items:center;gap:6px;padding:0 12px 12px;font-size:11px}
+.eva-task-tree__actions small{margin-right:auto;color:var(--semi-color-text-2)}
+.eva-task-tree__actions button{display:inline-flex;align-items:center;gap:3px}
