@@ -288,6 +288,12 @@ body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-i
   min-width: 0;
   overflow: hidden;
 }
+body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-info:has(.eva-chat-project-context) {
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
 
 body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-info-name {
   display: flex;

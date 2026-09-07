@@ -100,7 +100,9 @@ body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-drag-handle:active,
 .eva-follow-category-title > .wk-category-header { flex: 1; min-width: 0; }
 .eva-follow-category-title .eva-space-task-button { flex: none; }
 
-.eva-msg .wk-conv-breadcrumb { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.eva-chat-project-context { display: block; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--semi-color-text-2); font-size: 12px; line-height: 18px; font-weight: 400; }
+.eva-msg .wk-conv-breadcrumb { display: flex; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-chat-project-context { display: flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--semi-color-text-2); font-size: 12px; line-height: 18px; font-weight: 400; }
 
-.eva-msg .wk-chat-conversation-header-channel-info:has(.eva-chat-project-context) { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+
+.eva-chat-project-context svg, .eva-msg .wk-conv-breadcrumb svg { flex: none; }
+.eva-chat-project-context > span, .eva-msg .wk-conv-breadcrumb > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

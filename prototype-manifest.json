@@ -293,7 +293,7 @@
       "tag": "script",
       "name": "runtime-patch-im",
       "file": "prototype/009-5-patch-im.js",
-      "bytes": 80170,
+      "bytes": 80426,
       "role": "build-input"
     },
     {
@@ -373,7 +373,7 @@
       "tag": "style",
       "name": "message-hierarchy",
       "file": "prototype/016-message-hierarchy.css",
-      "bytes": 52761,
+      "bytes": 52954,
       "role": "prototype"
     },
     {
@@ -525,7 +525,7 @@
       "tag": "style",
       "name": "team-message-project-recent",
       "file": "prototype/039-team-message-project-recent.css",
-      "bytes": 4698,
+      "bytes": 4843,
       "role": "prototype"
     },
     {
