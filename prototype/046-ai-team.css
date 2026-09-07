@@ -18,30 +18,30 @@
 .eva-ai-team__sidebar {
   /* Match existing personal Eva list typography and message rail surfaces. */
   --eva-rail-divider: var(--color-border-2, var(--semi-color-border, #e5e6eb));
-  --eva-rail-caption: var(--semi-color-text-2, #8f959e);
-  --eva-rail-primary: #1f2329;
+  --eva-rail-caption: var(--wk-icon-default, rgba(28, 28, 35, .6));
+  --eva-rail-primary: var(--wk-text-strong, rgba(28, 28, 35, .9));
   /* These row-state values deliberately mirror the final message-rail rules
      in 016. A session is the My AI equivalent of a group-chat subzone. */
-  --eva-rail-secondary: #68717a;
-  --eva-rail-time: #8d95a1;
-  --eva-rail-hover: #eceff1;
-  --eva-rail-selected: #e4e7ea;
-  --eva-rail-group-hover: #e8ebed;
+  --eva-rail-secondary: var(--wk-icon-default, rgba(28, 28, 35, .6));
+  --eva-rail-time: var(--wk-icon-muted, rgba(28, 28, 35, .4));
+  --eva-rail-hover: var(--wk-bg-item-hover, rgba(46, 50, 56, .09));
+  --eva-rail-selected: #f0f1f2;
+  --eva-rail-group-hover: var(--wk-bg-item-hover, rgba(46, 50, 56, .09));
   --eva-rail-group-radius: 7px;
-  --eva-rail-primary-row-radius: 7px;
-  --eva-rail-nested-row-radius: 6px;
-  --eva-rail-name-size: var(--gds-type-label-medium-font-size);
-  --eva-rail-label-size: var(--gds-type-label-font-size);
-  --eva-rail-line-height: var(--gds-type-label-medium-line-height);
-  /* Match the message rail's primary group rows: 24px identity avatar,
-     14/22 label and an 8px icon/text gap. */
-  --eva-rail-identity-avatar-size: 24px;
-  --eva-rail-identity-height: 34px;
-  --eva-rail-session-height: 26px;
+  --eva-rail-primary-row-radius: var(--wk-r-xs, 3px);
+  --eva-rail-nested-row-radius: var(--wk-r-xs, 3px);
+  --eva-rail-name-size: 13px;
+  --eva-rail-label-size: 13px;
+  --eva-rail-line-height: 1.4;
+  /* Match the message rail's primary group rows: 22px identity avatar,
+     13px label and an 8px icon/text gap. */
+  --eva-rail-identity-avatar-size: 22px;
+  --eva-rail-identity-height: 32px;
+  --eva-rail-session-height: 28px;
   --eva-rail-level-indent: 12px;
   box-sizing: border-box;
   /* Group title → assistant label → session label advances by 12px.
-     The session has no leading avatar, so its start includes the 24px avatar
+     The session has no leading avatar, so its start includes the 22px avatar
      and 8px icon/text gap that precede an assistant label. */
   --eva-rail-session-indent: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-2) + var(--eva-rail-level-indent));
   position: relative;
@@ -121,9 +121,9 @@
   min-width: 0;
   flex: 1;
   margin: 0;
-  font-size: var(--gds-type-label-medium-font-size);
-  line-height: var(--gds-type-label-medium-line-height);
-  font-weight: var(--gds-font-weight-medium);
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: var(--gds-font-weight-semibold);
 }
 .eva-ai-team__group-count { min-width: 18px; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); text-align: right; }
 .eva-ai-team__group-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
@@ -190,8 +190,9 @@
 .eva-ai-team__session-row .eva-ai-team__session { grid-template-columns: minmax(0, 1fr) 50px; }
 .eva-ai-team__session-row .eva-ai-team__session-time { justify-self: end; }
 .eva-ai-team__session-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.eva-ai-team__session-title { grid-column: 1; font-size: var(--eva-rail-label-size); line-height: var(--gds-type-label-line-height); font-weight: var(--gds-font-weight-regular); color: var(--eva-rail-secondary); }
-.eva-ai-team__session.is-selected .eva-ai-team__session-title { color: var(--eva-rail-secondary); font-weight: var(--gds-font-weight-regular); }
+.eva-ai-team__session-title { grid-column: 1; font-size: var(--eva-rail-label-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-regular); color: var(--eva-rail-secondary); }
+.eva-ai-team__session.is-selected .eva-ai-team__session-title,
+.eva-ai-team__session-row.is-selected .eva-ai-team__session-title { color: var(--eva-rail-primary); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__session-time { grid-column: 2; grid-row: 1; align-self: center; white-space: nowrap; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__session:hover,
 .eva-ai-team__digital-button:hover { background: var(--eva-rail-hover); }
