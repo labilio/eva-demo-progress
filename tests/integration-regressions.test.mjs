@@ -6,16 +6,11 @@ import {createPatchedRuntime} from '../tools/build-runtime.mjs';
 const read = path => fs.readFileSync(path, 'utf8');
 const runtime = createPatchedRuntime().source;
 
-test('历史栏识别不把可滚动的一级导航隐藏', () => {
-  const source=read('prototype/042-personal-conversation-columns.js');
-  const start=source.indexOf('  function historyIn('), end=source.indexOf('  function isPersonalConversation',start);
-  assert.ok(start>=0&&end>start);
-  const ctx={}; vm.runInNewContext(source.slice(start,end),ctx);
-  const node=(nav,history)=>({className:'flex-1 overflow-y-auto',querySelector:s=>s.includes('eva-nav-section')?nav:history});
-  const navigation=node(true,false), unrelated=node(false,false), history=node(false,true);
-  assert.equal(ctx.historyIn({children:[navigation,unrelated]}),null);
-  assert.equal(ctx.historyIn({children:[navigation,history]}),history);
-  assert.equal(ctx.historyIn(null),null);
+test('个人页使用当前main的独立宿主，不加载旧历史栏隐藏脚本', () => {
+  const entry=read('index.html');
+  assert.match(entry,/052-personal-eva-gds\.js/);
+  assert.doesNotMatch(entry,/042-personal-conversation-columns\.js/);
+  assert.doesNotMatch(read('prototype/044-final-layout-convergence.js'),/eva-history-source|historyDivider/);
 });
 
 test('AI团队筛选排除历史助理且保留分身员工', () => {
