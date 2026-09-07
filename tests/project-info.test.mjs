@@ -46,3 +46,11 @@ test('旧预设仅迁移一次且不按名称覆盖自建项目',async()=>{
 });
 
 test('任务前缀规范化、跨项目冲突与旧调用兼容',()=>{const s=setup();s.ctx.evaSaveProjectInfo('p',{name:'项目',goal:'',issuePrefix:' sc '});assert.equal(s.read()[0].issue_prefix,'SC');s.ctx.evaSaveProjectInfo('p',{name:'更名',goal:''});assert.equal(s.read()[0].issue_prefix,'SC');assert.throws(()=>s.ctx.evaSaveProjectInfo('q',{name:'其他',goal:'',issuePrefix:'SC'}),/已被其他项目/);assert.throws(()=>s.ctx.evaSaveProjectInfo('q',{name:'其他',goal:'',issuePrefix:'123'}),/英文字母/);});
+
+test('概览字段按项目持久化，空编辑行不写入并且不会影响其他项目',()=>{
+ const s=setup();
+ s.ctx.evaSaveProjectInfo('p',{name:'原项目',goal:'原目标',overview:{status:' 协作中 ',background:' 处理交期风险 ',period:{start:'2026年9月1日',end:'2026年9月30日'},stage:' 证据复核 ',goals:[' 明确恢复计划 ',''],milestones:[['09月07日',' 复核整改证据 ','active'],['','','pending']]}});
+ assert.deepEqual(s.read()[0].overview,{status:'协作中',background:'处理交期风险',period:{start:'2026年9月1日',end:'2026年9月30日'},stage:'证据复核',goals:['明确恢复计划'],milestones:[['09月07日','复核整改证据','active']]});
+ assert.equal(s.read()[1].overview,undefined);
+ assert.throws(()=>s.ctx.evaSaveProjectInfo('p',{name:'原项目',goal:'原目标',overview:{period:{start:'2026年9月1日',end:''}}}),/同时填写/);
+});
