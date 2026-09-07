@@ -27,7 +27,7 @@ test('project transition ignores stale creation result and resets fields',async(
   let resolve;const h=harness({createIssue:()=>new Promise(r=>resolve=r)});h.fill();const pending=h.button('创建任务').props.onClick();h.deps.project={id:'other'};h.render();h.render();resolve({id:'SC101'});await pending;assert.equal(h.find('任务标题').props.value,'');assert.equal(h.calls.length,0);
 });
 test('label retry never recreates an already-created issue',async()=>{
-  let attempts=0;const h=harness({attachLabel:async()=>{if(++attempts===1)throw new Error('标签失败');}});h.fill();await new Promise(resolve=>setImmediate(resolve));h.render();h.find('添加或编辑任务标签').props.onChange(['l1']);h.render();await h.button('创建任务').props.onClick();h.render();assert.ok(h.button('补存标签'));await h.button('补存标签').props.onClick();assert.equal(h.calls.filter(x=>typeof x==='object').length,1);assert.equal(attempts,2);
+  let attempts=0;const h=harness({attachLabel:async()=>{if(++attempts===1)throw new Error('标签失败');}});h.fill();await new Promise(resolve=>setImmediate(resolve));h.render();h.find('添加或编辑任务标签').props.onChange('标签');h.render();await h.find('添加或编辑任务标签').props.onEnterPress();h.render();await h.button('创建任务').props.onClick();h.render();assert.ok(h.button('补存标签'));await h.button('补存标签').props.onClick();assert.equal(h.calls.filter(x=>typeof x==='object').length,1);assert.equal(attempts,2);
 });
 test('unauthorized project refuses submission',async()=>{
   const h=harness();h.fill();h.deps.members.canRead=()=>false;h.render();await h.button('创建任务').props.onClick();assert.equal(h.calls.length,0);
@@ -45,7 +45,7 @@ test('创建人和创建时间以只读系统字段展示',()=>{
   const h=harness();const labels=h.all().filter(n=>n.props.className==='eva-loop-task-create__system-label').map(n=>n.children[0]);assert.ok(labels.includes('创建人'));assert.ok(labels.includes('创建时间'));
   const readonly=h.all().filter(n=>n.props.className==='eva-loop-task-create__readonly');assert.ok(readonly.some(n=>n.children.includes('创建后自动记录')));assert.ok(readonly.some(n=>n.children.some(child=>child?.props?.className==='eva-loop-task-create__identity')));
 });
-test('任务标签可添加新标签，初始状态不再显示',async()=>{
-  const h=harness();await new Promise(resolve=>setImmediate(resolve));h.render();h.find('新建标签').props.onChange('风险');h.render();await h.button('添加').props.onClick();h.render();
-  const tags=h.find('添加或编辑任务标签');assert.ok(tags.props.optionList.some(tag=>tag.value==='new-风险'));assert.deepEqual(Array.from(tags.props.value),['new-风险']);assert.equal(h.all().some(n=>n.children.includes?.('初始状态')),false);
+test('任务标签可在下拉框内直接新建，初始状态不再显示',async()=>{
+  const h=harness();await new Promise(resolve=>setImmediate(resolve));h.render();const tags=h.find('添加或编辑任务标签');assert.equal(tags.props.placeholder,'选择或输入任务标签');tags.props.onChange('风险');h.render();await h.find('添加或编辑任务标签').props.onEnterPress();h.render();
+  assert.ok(h.all().some(n=>n.props['aria-label']==='移除标签 风险'));assert.equal(h.find('新建标签'),undefined);assert.equal(h.button('添加'),undefined);assert.equal(h.all().some(n=>n.children.includes?.('初始状态')),false);
 });

@@ -55,8 +55,17 @@
 .eva-loop-task-create__system-field { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 8px; }
 .eva-loop-task-create__system-label { color: var(--semi-color-text-0); font-size: 13px; font-weight: 500; line-height: 20px; }
 .eva-loop-task-create__readonly { display: flex; align-items: center; min-height: 32px; padding: 5px 8px; border: 1px solid var(--semi-color-border); border-radius: var(--gds-radius-control); color: var(--semi-color-text-1); font-size: 13px; line-height: 20px; }
-.eva-loop-task-create__tag-create { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; margin-top: 8px; }
-.eva-loop-task-create__tag-create .semi-input-wrapper { min-width: 0; }
+.eva-loop-task-create__tag-combobox { position: relative; display: grid; gap: 6px; }
+.eva-loop-task-create__tag-selected { display: flex; flex-wrap: wrap; gap: 6px; }
+.eva-loop-task-create__tag-chip { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; padding: 2px 6px 2px 8px; border: 0; border-radius: var(--gds-radius-control); background: var(--semi-color-fill-0); color: var(--semi-color-text-0); font: inherit; line-height: 20px; cursor: pointer; }
+.eva-loop-task-create__tag-chip:hover { background: var(--semi-color-fill-1); }
+.eva-loop-task-create__tag-menu { position: absolute; z-index: 2; top: 38px; right: 0; left: 0; overflow: hidden; border: 1px solid var(--semi-color-border); border-radius: var(--gds-radius-control); background: var(--semi-color-bg-0); box-shadow: var(--semi-shadow-elevated); }
+.eva-loop-task-create__tag-menu button,
+.eva-loop-task-create__tag-menu p { display: block; box-sizing: border-box; width: 100%; min-height: 32px; margin: 0; padding: 6px 10px; border: 0; background: transparent; color: var(--semi-color-text-0); font: inherit; line-height: 20px; text-align: left; }
+.eva-loop-task-create__tag-menu button { cursor: pointer; }
+.eva-loop-task-create__tag-menu button:hover { background: var(--semi-color-fill-0); }
+.eva-loop-task-create__tag-menu .eva-loop-task-create__tag-create-option { color: var(--semi-color-primary); }
+.eva-loop-task-create__tag-menu p { color: var(--semi-color-text-2); }
 .eva-loop-task-create .semi-input,
 .eva-loop-task-create .semi-input-textarea,
 .eva-loop-task-create .semi-select,

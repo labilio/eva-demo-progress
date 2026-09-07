@@ -10,11 +10,11 @@
       R.useSyncExternalStore(members.subscribe,members.getSnapshot,members.getSnapshot);
       const snapshot=members.snapshot(),pid=project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id),scope=snapshot.projects[pid];
       const empty=()=>({title:'',goal:'',criteria:'',context:'',priority:'medium',due:'',assignee:'',reviewer:'',labels:[]});
-      const [form,setForm]=R.useState(empty),[labels,setLabels]=R.useState([]),[tagDraft,setTagDraft]=R.useState(''),[files,setFiles]=R.useState([]),[busy,setBusy]=R.useState(false),[error,setError]=R.useState('');
+      const [form,setForm]=R.useState(empty),[labels,setLabels]=R.useState([]),[tagQuery,setTagQuery]=R.useState(''),[tagMenuOpen,setTagMenuOpen]=R.useState(false),[files,setFiles]=R.useState([]),[busy,setBusy]=R.useState(false),[error,setError]=R.useState('');
       const lock=R.useRef(false),host=R.useRef(null),fileInput=R.useRef(null),generation=R.useRef(0),created=R.useRef(null),uploaded=R.useRef(new Map()),attached=R.useRef(new Set());
       R.useEffect(()=>{
         const token=++generation.current;
-        setForm(empty());setTagDraft('');setFiles([]);setError('');setBusy(false);lock.current=false;created.current=null;uploaded.current.clear();attached.current.clear();setLabels([]);
+        setForm(empty());setTagQuery('');setTagMenuOpen(false);setFiles([]);setError('');setBusy(false);lock.current=false;created.current=null;uploaded.current.clear();attached.current.clear();setLabels([]);
         if(visible)Promise.resolve().then(()=>listLabels()).then(rows=>{if(generation.current===token)setLabels(Array.isArray(rows)?rows:rows?.items||[]);}).catch(()=>{if(generation.current===token)setError('标签暂时无法加载，其他内容仍可填写。');});
         return()=>{generation.current++;};
       },[visible,project?.id,parentIssueId]);
@@ -56,23 +56,26 @@
       const disabled=busy||!!created.current;
       const selector=(key,options,placeholder,more={})=>h(Select,{value:form[key]||undefined,onChange:value=>patch(key,value||''),optionList:options,getPopupContainer:popup,disabled,placeholder,'aria-label':placeholder,...more});
       const systemField=(title,content)=>h('div',{className:'eva-loop-task-create__system-field'},h('span',{className:'eva-loop-task-create__system-label'},title),h('div',{className:'eva-loop-task-create__readonly'},content));
-      async function addTaskLabel(){
-        const name=tagDraft.trim();if(!name||disabled)return;
+      async function addTaskLabel(value){
+        const name=String(value||'').trim();if(!name||disabled)return;
         const existing=labels.find(label=>label.name===name);
         try{
           const label=existing||await createLabel(name);if(!label?.id)throw new Error('标签创建失败，请重试。');
-          setLabels(rows=>rows.some(row=>row.id===label.id)?rows:[...rows,label]);patch('labels',[...new Set([...form.labels,label.id])]);setTagDraft('');
+          setLabels(rows=>rows.some(row=>row.id===label.id)?rows:[...rows,label]);patch('labels',[...new Set([...form.labels,label.id])]);setTagQuery('');
         }catch(e){setError(e?.message||'标签创建失败，请重试。');}
       }
+      function selectTaskLabel(id){patch('labels',[...new Set([...form.labels,id])]);setTagQuery('');}
       const attachmentField=h(R.Fragment,null,
         h('input',{type:'file',multiple:true,hidden:true,ref:fileInput,onChange:e=>{setFiles(old=>[...old,...Array.from(e.target.files||[])]);e.target.value='';}}),
         h('p',{className:'eva-loop-task-create__hint'},'任务与附件保留在当前原型页面内，附件未上传至服务端。'),
         h(Button,{theme:'borderless',icon:h(icons.Paperclip,{size:16}),disabled,onClick:()=>fileInput.current?.click()},'添加附件'),
         files.map((file,index)=>h('div',{className:'eva-loop-task-create__attachment',key:index},h('span',null,file.name),h(Button,{theme:'borderless',icon:h(icons.Trash2,{size:14}),'aria-label':'移除 '+file.name,disabled,onClick:()=>setFiles(old=>old.filter((_,i)=>i!==index))})))
       );
-      const taskLabels=h(R.Fragment,null,
-        selector('labels',labels.map(label=>({value:label.id,label:label.name})),'添加或编辑任务标签',{multiple:true,showClear:true,maxTagCount:2}),
-        h('div',{className:'eva-loop-task-create__tag-create'},h(Input,{value:tagDraft,onChange:setTagDraft,onEnterPress:addTaskLabel,placeholder:'新建标签',maxLength:20,disabled,'aria-label':'新建标签'}),h(Button,{theme:'borderless',type:'tertiary',disabled:disabled||!tagDraft.trim(),onClick:addTaskLabel},'添加'))
+      const normalizedTagQuery=tagQuery.trim().toLowerCase(),tagOptions=labels.filter(label=>!normalizedTagQuery||label.name.toLowerCase().includes(normalizedTagQuery)),hasExactTag=labels.some(label=>label.name.toLowerCase()===normalizedTagQuery);
+      const taskLabels=h('div',{className:'eva-loop-task-create__tag-combobox'},
+        form.labels.length?h('div',{className:'eva-loop-task-create__tag-selected'},form.labels.map(id=>{const label=labels.find(item=>item.id===id);return label&&h('button',{type:'button',className:'eva-loop-task-create__tag-chip',key:id,'aria-label':'移除标签 '+label.name,disabled,onClick:()=>patch('labels',form.labels.filter(item=>item!==id))},label.name,h(icons.X,{size:12}));})):null,
+        h(Input,{value:tagQuery,onChange:setTagQuery,onFocus:()=>setTagMenuOpen(true),onBlur:()=>setTimeout(()=>setTagMenuOpen(false),120),onEnterPress:()=>addTaskLabel(tagQuery),placeholder:'选择或输入任务标签',maxLength:20,disabled,'aria-label':'添加或编辑任务标签'}),
+        tagMenuOpen&&h('div',{className:'eva-loop-task-create__tag-menu',role:'listbox'},tagOptions.map(label=>h('button',{type:'button',key:label.id,role:'option','aria-selected':form.labels.includes(label.id),onMouseDown:event=>event.preventDefault(),onClick:()=>selectTaskLabel(label.id)},label.name)),normalizedTagQuery&&!hasExactTag&&h('button',{type:'button',className:'eva-loop-task-create__tag-create-option','aria-label':'新建标签：'+tagQuery,onMouseDown:event=>event.preventDefault(),onClick:()=>addTaskLabel(tagQuery)},'新建“'+tagQuery.trim()+'”'),!tagOptions.length&&!normalizedTagQuery&&h('p',null,'暂无任务标签'))
       );
       const main=h('div',{className:'eva-loop-task-create__main'},
         field('任务标题 *',h(Input,{value:form.title,onChange:value=>patch('title',value),placeholder:'需要完成什么任务',maxLength:200,disabled,'aria-label':'任务标题','aria-required':true})),
@@ -86,7 +89,7 @@
         field('优先级',selector('priority',[['urgent','紧急'],['high','高'],['medium','中'],['low','低'],['none','无']].map(([value,label])=>({value,label})),'优先级')),
         field('截止日期',h(Input,{type:'date',value:form.due,onChange:value=>patch('due',value),disabled,'aria-label':'截止日期'})),
         field('验收人',selector('reviewer',humans.map(p=>({value:p.id,label:identity({...p,type:'member'})})),'验收人',{showClear:true})),
-        field('任务标签',taskLabels,'可添加、移除或新建当前项目的任务标签。'),
+        field('任务标签',taskLabels,'可选择，或直接输入后按回车新建当前项目的任务标签。'),
         h('div',{className:'eva-loop-task-create__system-fields'},systemField('创建人',creator?identity({...creator,type:'member'}):'当前用户'),systemField('创建时间','创建后自动记录'))
       );
       return h(R.Fragment,null,
