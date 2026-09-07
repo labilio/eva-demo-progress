@@ -146,8 +146,10 @@
 .eva-ai-team__identity-button > .ai-badge,
 .eva-ai-team__identity-button > .eva-identity-avatar { flex-shrink: 0; }
 .eva-ai-team__identity-button > .eva-identity-name-row { flex: 1; }
-.eva-ai-team__chevron { color: var(--gds-color-text-secondary); }
-.eva-ai-team__chevron.is-expanded { transform: rotate(90deg); }
+/* Assistant rows and group-chat rows share the same 16px down-chevron
+   language. A collapsed assistant points right; an expanded one points down. */
+.eva-ai-team__chevron { flex: 0 0 16px; color: var(--gds-color-text-secondary); transform: rotate(-90deg); transition: transform 120ms ease; }
+.eva-ai-team__chevron.is-expanded { transform: none; }
 .eva-ai-team__role-label { flex-shrink: 0; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); color: var(--gds-color-text-secondary); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__identity-status { margin: 0 0 var(--gds-space-2) var(--gds-space-8); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); }
 .eva-ai-team__session {
