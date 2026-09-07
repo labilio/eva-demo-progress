@@ -69,7 +69,6 @@
       </div>
       <div class="matrix-legend" aria-label="矩阵图例">
         <span><i class="legend-dot is-allow"></i>允许</span>
-        <span><i class="legend-dot is-condition"></i>满足条件后允许</span>
         <span><i class="legend-dot is-deny"></i>不允许</span>
       </div>
       <div class="table-wrap" tabindex="0" aria-label="角色权限矩阵，可横向滚动">
@@ -98,7 +97,7 @@
             <tr><td>重命名文件或文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>只修改名称，不改变文件归属或内容</td></tr>
             <tr><td>在当前空间内移动</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>仅调整当前空间内的目录位置</td></tr>
             <tr><td>在当前空间内复制</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>新副本继承当前空间权限</td></tr>
-            <tr><td>将项目群文件保存到项目文件管理</td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td>仅限当前项目；操作者须同时具备来源群读取权和项目成员身份</td></tr>
+            <tr><td>将项目群文件保存到项目文件管理</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>项目群成员均可执行；保存后生成项目副本，不扩大来源群权限</td></tr>
 
             <tr class="matrix-group"><th colspan="5">成员与空间</th></tr>
             <tr><td>邀请、移除普通项目成员</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>复用项目设置中的成员管理，文件库不维护独立成员</td></tr>
@@ -125,7 +124,7 @@
         <p><strong>补充：</strong>增加空间信息、成员、链接、设置、所有权和审计动作，并保留当前空间内复制和查看回收站。</p>
         <p><strong>合并：</strong>发现空间、查看空间、浏览、搜索和元数据读取，统一为“浏览、搜索、查看详情”。</p>
         <p><strong>继承：</strong>文件库不建立独立成员体系，成员治理复用项目设置；项目空间 Owner 随项目负责人同步。</p>
-        <p><strong>保留：</strong>将项目群文件保存到项目文件管理，属于同一项目内的群附件沉淀。保存后生成项目副本，但不会额外开放来源群历史或其他附件。</p>
+        <p><strong>保留：</strong>将项目群文件保存到项目文件管理，项目群内所有成员均可执行。保存后生成项目副本，但不会额外开放来源群历史或其他附件。</p>
         <p><strong>不纳入：</strong>项目之间、个人与项目之间的复制或移动；查看自身权限、权限来源、Owner 同步等系统能力；任务输入、任务产出确认等任务模块动作；以及不改变共享权限的排序、筛选和收藏。</p>
       </div>
     </details>
