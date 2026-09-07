@@ -125,8 +125,8 @@
     return '<aside class="eva-personal-sider-panel" aria-label="Eva 助理与对话">'
       + '<div class="eva-personal-sider-panel__body"><div class="eva-assistant-tree">'
       + '<div class="eva-my-ai-sidebar-actions eva-personal-sidebar-actions">'
-      + '<button type="button" class="eva-assistant-tree__create eva-my-ai-sidebar-actions__create-assistant" aria-label="创建助理">'
-      + icon('plus', 16, 'eva-i') + '<span>创建助理</span></button></div>'
+      + '<a href="#/eva-stub/Agent创建中心?evaCreate=mine" class="eva-assistant-tree__create eva-my-ai-sidebar-actions__create-assistant" aria-label="创建助理">'
+      + icon('plus', 16, 'eva-i') + '<span>创建助理</span></a></div>'
       + assistants.map(function (assistant) {
         var collapsed = collapsedAssistants.has(assistant.id);
         var selected = selectedAssistantId === assistant.id;

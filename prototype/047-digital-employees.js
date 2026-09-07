@@ -12,7 +12,7 @@ const btn=(label,onClick,extra={})=>h(Button,{onClick,...extra},label);
 const identity=(a,badge=false,showNo=true)=>h('span',{className:'eva-digital-center__identity'},root.EvaAIIdentity.avatar(store.appearance(a),32,h),h('span',null,h('span',{className:'eva-identity-name-row'},h('strong',{className:'eva-identity-name-text',title:a.name},a.name),badge&&root.EvaAIIdentity.badge(h)),showNo&&a.no&&h('small',null,a.no)));
 const field=(label,content,hint)=>h('div',{className:'eva-digital-center__field'},h('label',null,label),content,hint&&h('small',{className:'eva-digital-center__muted'},hint));
 const defaults=()=>({name:'',one:'',description:'',target:'prod',role:'记录员',skills:data.skills.slice(0,3).map(a=>a.name),conn:data.connections.slice(0,2).map(a=>a.id),formats:['卡片化','表格优先','中文'],memory:'项目记忆',memoryParts:['我负责的项目进展','我发过的结论'],retention:'永久保留',visibility:'只有我',permissions:['读取资料','起草内容'],audit:'记录全部调用与产出（推荐）',publication:'mine',directory:'是，作为 AI 同事出现在所属部门下',difyEndpoint:'https://dify.geely.internal/v1',response:'streaming',timeout:'30 秒超时，失败重试 1 次',auth:'appKey + JWT Key（GBOP 标准）',capabilities:['缺陷归因分析','质量数据查询'],egress:'仅本项目数据（推荐）',tier:'small'});
-return function DigitalCenter({view='market',navigate,employeeId}){
+return function DigitalCenter({view='market',navigate,employeeId,initialType}){
 R.useSyncExternalStore(store.subscribe,store.getSnapshot);R.useSyncExternalStore(members.subscribe,members.getSnapshot);
 const ms=members.snapshot(),actor=ms.actorId;
 const [bucket,setBucket]=R.useState('all'),[query,setQuery]=R.useState(''),[domain,setDomain]=R.useState(null),[expanded,setExpanded]=R.useState(null),[type,setType]=R.useState(null),[tab,setTab]=R.useState('basic'),[draft,setDraft]=R.useState(defaults),[picker,setPicker]=R.useState({}),[dialog,setDialog]=R.useState(null),[chosen,setChosen]=R.useState([]),[projectQuery,setProjectQuery]=R.useState(''),[error,setError]=R.useState('');
@@ -30,6 +30,11 @@ const input=(key,placeholder,more={})=>h(Input,{value:draft[key]||'',onChange:v=
 const textarea=(key,placeholder)=>h(TextArea,{value:draft[key]||'',onChange:v=>update(key,v),placeholder,autosize:{minRows:3,maxRows:12}});
 const checks=(key,items)=>h('div',{className:'eva-digital-center__filters'},items.map(value=>h(Checkbox,{key:value,checked:(draft[key]||[]).includes(value),onChange:e=>update(key,e.target.checked?[...(draft[key]||[]),value]:(draft[key]||[]).filter(x=>x!==value))},value)));
 function start(rt){setType(rt.key);setTab(rt.cfg[0]);setDraft({...defaults(),...store.draft(rt.key)});setPicker({});setError('');}
+// The personal entry opens the same creator form as its Start button.
+R.useEffect(()=>{
+  if(view==='create'&&initialType==='mine') start(data.runtimes.find(item=>item.key==='mine'));
+  else if(view==='create') setType(null);
+},[view,initialType]);
 function save(){run(()=>{
   if(!draft.name.trim())throw new Error('请填写名称');
   if(type==='dify'&&!draft.difyApp)throw new Error('请先识别 Dify 应用');
