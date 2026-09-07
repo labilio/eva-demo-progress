@@ -319,14 +319,15 @@
   height: 20px;
   padding: 0 2px;
   display: grid;
-  grid-template-columns: minmax(6px, 1fr) auto minmax(6px, 1fr);
+  grid-template-columns: minmax(2px, 1fr) auto minmax(2px, 1fr);
   align-items: center;
-  gap: 5px;
+  gap: 3px;
   color: var(--semi-color-text-0, #1d2129);
   font-size: 12px;
   font-weight: 700;
   line-height: 16px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .eva-nav-section.is-collapsed .eva-nav-section__title::before,
@@ -513,13 +514,6 @@
 
 .eva-personal-entry.is-collapsed .eva-personal-entry__plus {
   display: none;
-}
-
-
-@media (prefers-reduced-motion: reduce) {
-  .layout-sider.eva-sider-hidden {
-    transition: none !important;
-  }
 }
 
 /* Pure-file drive copied from the supplied Octo layout and restyled with EVA tokens. */

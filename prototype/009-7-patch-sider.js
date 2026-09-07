@@ -11,7 +11,7 @@
           ],
           [
             'Layout$1=({sider:rt,onSessionClick:ct})=>{const[ut,pt]=reactExports.useState(!1),[mt,gt]=reactExports.useState(!1),',
-            'Layout$1=({sider:rt,onSessionClick:ct})=>{const[ut,pt]=reactExports.useState(!1),[evaSiderHidden,setEvaSiderHidden]=reactExports.useState(!1),[mt,gt]=reactExports.useState(!1),'
+            'Layout$1=({sider:rt,onSessionClick:ct})=>{const[ut,pt]=reactExports.useState(!1),[mt,gt]=reactExports.useState(!1),'
           ],
           [
             'storageKey:"sider-width-px"',
@@ -27,35 +27,36 @@
           ],
           [
             'style:{"--eva-sider-w":`${ut?0:Ir}px`}',
-            'style:{"--eva-sider-w":`${evaSiderHidden?0:ut?mt?0:DESKTOP_COLLAPSED_WIDTH:Ir}px`}'
+            'style:{"--eva-sider-w":`${ut?DESKTOP_COLLAPSED_WIDTH:Ir}px`}'
           ],
           [
             'React.createElement(LayoutComponent.Sider,{collapsedWidth:0,collapsed:ut,width:Ir,',
-            'React.createElement(LayoutComponent.Sider,{collapsedWidth:mt?0:DESKTOP_COLLAPSED_WIDTH,collapsed:ut,width:Ir,'
+            'React.createElement(LayoutComponent.Sider,{collapsedWidth:DESKTOP_COLLAPSED_WIDTH,collapsed:ut,width:Ir,'
           ],
           [
             'value:{isMobile:mt,siderCollapsed:ut,setSiderCollapsed:pt}',
-            'value:{isMobile:mt,siderCollapsed:ut,setSiderCollapsed:pt,siderHidden:evaSiderHidden,setSiderHidden:setEvaSiderHidden}'
+            'value:{isMobile:mt,siderCollapsed:ut,setSiderCollapsed:pt}'
           ],
           [
+            /* 标题栏左上角按钮在桌面端切换窄版(80px)/宽版(180px)，不再整体隐藏侧栏。 */
             'ir=!!Pt?.setSiderCollapsed&&!(Pt?.isMobile&&sn)',
-            'ir=!!(Pt?.isMobile?Pt?.setSiderCollapsed:Pt?.setSiderHidden)&&!(Pt?.isMobile&&sn)'
+            'ir=!!Pt?.setSiderCollapsed&&!(Pt?.isMobile&&sn)'
           ],
           [
             'pr=Pt?.siderCollapsed?ct("common.expandMore",{defaultValue:"Expand sidebar"}):ct("common.collapse",{defaultValue:"Collapse sidebar"})',
-            'pr=(Pt?.isMobile?Pt?.siderCollapsed:Pt?.siderHidden)?ct("common.expandMore",{defaultValue:"Expand sidebar"}):ct("common.collapse",{defaultValue:"Collapse sidebar"})'
+            'pr=Pt?.siderCollapsed?ct("common.expandMore",{defaultValue:"Expand sidebar"}):ct("common.collapse",{defaultValue:"Collapse sidebar"})'
           ],
           [
             'ur=()=>{!ir||!Pt?.setSiderCollapsed||Pt.setSiderCollapsed(!Pt.siderCollapsed)}',
-            'ur=()=>{if(!ir)return;Pt?.isMobile?Pt?.setSiderCollapsed?.(!Pt.siderCollapsed):Pt?.setSiderHidden?.(!Pt.siderHidden)}'
+            'ur=()=>{if(!ir)return;Pt?.setSiderCollapsed?.(!Pt.siderCollapsed)}'
           ],
           [
             '}:{position:"relative",overflow:"visible"};return React.createElement(LayoutContext.Provider',
-            '}:{position:"relative",overflow:"visible",marginLeft:evaSiderHidden?-(ut?DESKTOP_COLLAPSED_WIDTH:Ir):0,transition:"margin-left 180ms ease",willChange:"margin-left",pointerEvents:evaSiderHidden?"none":"auto"};return React.createElement(LayoutContext.Provider'
+            '}:{position:"relative",overflow:"visible"};return React.createElement(LayoutContext.Provider'
           ],
           [
             'className:classNames("!bg-2 layout-sider",{collapsed:ut})',
-            'className:classNames("!bg-2 layout-sider",{collapsed:ut,"eva-sider-hidden":!mt&&evaSiderHidden})'
+            'className:classNames("!bg-2 layout-sider",{collapsed:ut})'
           ],
           [
             'if(isPrimaryApplicationShortcut(gt,{key:"b",targetGuard:"embedded-editor"})){gt.preventDefault(),ct();return}',
