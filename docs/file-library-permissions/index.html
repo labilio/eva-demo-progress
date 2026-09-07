@@ -51,7 +51,7 @@
           <span class="role-mark">E</span>
           <div>
             <h3>Editor</h3>
-            <p>普通项目成员。可查看、上传和管理项目文件，但不能永久删除或查看完整操作记录。</p>
+            <p>普通项目成员。可查看、上传和整理项目文件，但不能删除文件、进入回收站或查看完整操作记录。</p>
           </div>
         </article>
       </div>
@@ -91,17 +91,18 @@
             <tr><td>复制文件内部链接</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>链接只定位文件，不授予访问权限</td></tr>
 
             <tr class="matrix-group"><th colspan="5">创建与管理</th></tr>
-            <tr><td>上传本地文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>全局上传必须先选择个人或有权限的项目</td></tr>
+            <tr><td>上传本地文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>全局上传先选择个人或有权限的项目，文件直接归属所选空间</td></tr>
             <tr><td>新建文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>文件夹继承所属空间权限，不设独立权限</td></tr>
             <tr><td>重命名文件或文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>不改变文件归属和历史版本</td></tr>
-            <tr><td>在当前空间内移动</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>跨空间不能直接移动</td></tr>
+            <tr><td>在当前空间内移动</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>仅调整当前空间内的目录位置</td></tr>
             <tr><td>管理文件版本</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>包括查看、上传新版本和恢复历史版本</td></tr>
-            <tr><td>复制文件或文件夹</td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td>同空间直接允许；跨空间还需来源下载权和目标上传权</td></tr>
-            <tr><td>将群文件保存到项目</td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td>同时具备来源群读取权和目标项目上传权</td></tr>
+            <tr><td>在当前空间内复制</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>新副本继承当前空间权限</td></tr>
+            <tr><td>将项目群文件保存到项目文件管理</td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td><span class="cell condition">条件</span></td><td>仅限当前项目；操作者须同时具备来源群读取权和项目成员身份</td></tr>
 
             <tr class="matrix-group"><th colspan="5">删除与治理</th></tr>
-            <tr><td>删除文件或文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>只进入回收站，不立即物理删除</td></tr>
-            <tr><td>从回收站恢复</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>原目录不存在时恢复到空间根目录</td></tr>
+            <tr><td>查看回收站</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>Editor 不显示回收站入口</td></tr>
+            <tr><td>删除文件或文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>只进入回收站，不立即物理删除</td></tr>
+            <tr><td>从回收站恢复</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>原目录不存在时恢复到空间根目录</td></tr>
             <tr><td>永久删除</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>必须满足组织留存规则并进行危险确认</td></tr>
             <tr><td>查看完整操作记录</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell deny">—</span></td><td>包括上传、下载、移动、版本和删除记录</td></tr>
           </tbody>
@@ -112,9 +113,10 @@
     <details class="review-note">
       <summary>动作 Review 结论</summary>
       <div>
-        <p><strong>补充：</strong>把原先只有“上传新版本”的定义补齐为查看、上传和恢复版本，并补上同空间复制。</p>
+        <p><strong>补充：</strong>把原先只有“上传新版本”的定义补齐为查看、上传和恢复版本，并补上当前空间内复制和查看回收站。</p>
         <p><strong>合并：</strong>发现空间、查看空间、浏览、搜索和元数据读取，统一为“浏览、搜索、查看详情”。</p>
-        <p><strong>不纳入：</strong>查看自身权限、权限来源、Owner 同步属于系统能力；任务输入、任务产出确认属于任务模块；快捷方式和独立空间设置当前没有明确产品入口，暂不设计；排序、筛选和收藏不改变共享权限，无需放入角色矩阵。</p>
+        <p><strong>保留：</strong>将项目群文件保存到项目文件管理，属于同一项目内的群附件沉淀。保存后生成项目副本，但不会额外开放来源群历史或其他附件。</p>
+        <p><strong>不纳入：</strong>项目之间、个人与项目之间的复制或移动；查看自身权限、权限来源、Owner 同步等系统能力；任务输入、任务产出确认等任务模块动作；以及不改变共享权限的排序、筛选和收藏。</p>
       </div>
     </details>
 
