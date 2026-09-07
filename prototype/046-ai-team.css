@@ -27,16 +27,17 @@
   --eva-rail-name-size: var(--gds-type-label-medium-font-size);
   --eva-rail-label-size: var(--gds-type-label-font-size);
   --eva-rail-line-height: var(--gds-type-label-medium-line-height);
-  /* The identity label is 14/22. Keep the circular avatar below that line height. */
-  --eva-rail-identity-avatar-size: 20px;
+  /* Match the message rail's primary group rows: 24px identity avatar,
+     14/22 label and an 8px icon/text gap. */
+  --eva-rail-identity-avatar-size: 24px;
   --eva-rail-identity-height: 34px;
-  --eva-rail-session-height: 38px;
+  --eva-rail-session-height: 26px;
   --eva-rail-level-indent: 12px;
   box-sizing: border-box;
   /* Group title → assistant label → session label advances by 12px.
-     The session has no leading avatar, so its start includes the 20px avatar
-     and 4px icon/text gap that precede an assistant label. */
-  --eva-rail-session-indent: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-1) + var(--eva-rail-level-indent));
+     The session has no leading avatar, so its start includes the 24px avatar
+     and 8px icon/text gap that precede an assistant label. */
+  --eva-rail-session-indent: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-2) + var(--eva-rail-level-indent));
   position: relative;
   flex: 0 0 var(--eva-conversation-rail-current);
   width: var(--eva-conversation-rail-current);
@@ -87,19 +88,19 @@
   color: var(--gds-color-surface-primary);
   flex-shrink: 0;
 }
-.eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-2) var(--gds-space-3) var(--gds-space-4); }
+.eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-1) var(--gds-space-2-5) var(--gds-space-3); }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: var(--gds-space-2-5);
+  padding-top: var(--gds-space-2-5);
   border-top: 1px solid var(--eva-rail-divider);
 }
 .eva-ai-team__group-toggle {
   display: flex;
   width: 100%;
-  min-height: 30px;
+  min-height: 28px;
   align-items: center;
   gap: var(--gds-space-1);
-  padding: 4px 0;
+  padding: 0;
   border: 0;
   border-radius: var(--gds-radius-control);
   background: transparent;
@@ -120,9 +121,9 @@
 .eva-ai-team__group-count { min-width: 18px; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); text-align: right; }
 .eva-ai-team__group-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
 .eva-ai-team__group-chevron.is-expanded { transform: rotate(90deg); }
-.eva-ai-team__group-content { margin-top: var(--gds-space-2); }
-.eva-ai-team__identity + .eva-ai-team__identity { margin-top: 6px; }
-.eva-ai-team__identity-heading { display: flex; align-items: center; gap: var(--gds-space-1); margin-bottom: var(--gds-space-1); }
+.eva-ai-team__group-content { margin-top: 0; }
+.eva-ai-team__identity + .eva-ai-team__identity { margin-top: 0; }
+.eva-ai-team__identity-heading { display: flex; align-items: center; gap: var(--gds-space-1); margin-bottom: 0; }
 .eva-ai-team__identity-button,
 .eva-ai-team__session,
 .eva-ai-team__digital-button {
@@ -135,7 +136,7 @@
   font: inherit;
   cursor: pointer;
 }
-.eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-1); min-height: var(--eva-rail-identity-height); padding: 0; flex: 1; }
+.eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-2); min-height: var(--eva-rail-identity-height); padding: 0; flex: 1; }
 .eva-ai-team__identity-name { min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-medium); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-button > svg,
 .eva-ai-team__identity-button > .ai-badge,
@@ -152,7 +153,7 @@
   gap: var(--gds-space-1) var(--gds-space-2);
   min-height: var(--eva-rail-session-height);
   align-items: center;
-  padding: 4px 8px 4px var(--eva-rail-session-indent);
+  padding: 2px var(--gds-space-2) 2px var(--eva-rail-session-indent);
 }
 /* Actions share the time slot; sibling buttons avoid nested interactive elements. */
 .eva-ai-team__session-row { position: relative; border-radius: var(--gds-radius-control); }
