@@ -70,29 +70,29 @@ body:has(.eva-members-modal) .semi-modal-mask,.semi-modal-wrap:has(.eva-members-
 .eva-account-options{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow:auto;margin-bottom:12px}
 .eva-account-options>.semi-button{height:auto;min-height:44px;justify-content:space-between;padding:6px 12px}
 
-.eva-project-settings-info{box-sizing:border-box;width:100%;max-width:1120px;margin:0 auto;padding:28px 40px 56px;color:var(--semi-color-text-0)}
-.eva-project-settings-info .eva-project-info-field{width:100%;display:flex;flex-direction:column;gap:8px}
-.eva-project-settings-info .eva-project-info-field label{font-size:13px;font-weight:600;line-height:20px;color:var(--semi-color-text-0)}
-.eva-project-settings-info .eva-project-info-field textarea{box-sizing:border-box;width:100%;min-height:72px;resize:vertical;padding:8px 10px;border:1px solid var(--semi-color-border);border-radius:var(--semi-border-radius-small);background:var(--semi-color-bg-0);color:var(--semi-color-text-0);font:inherit;font-size:14px;line-height:22px}
-.eva-project-settings-info .eva-project-info-field textarea:focus-visible{outline:2px solid var(--semi-color-primary);outline-offset:2px}
+.eva-project-settings-info{box-sizing:border-box;width:100%;max-width:1120px;margin:0 auto;padding:28px 40px 56px;color:var(--gds-color-text-primary);font-family:var(--gds-font-family-sans)}
+.eva-project-settings-info .eva-project-info-field{width:100%;display:flex;flex-direction:column;gap:var(--gds-space-2)}
+.eva-project-settings-info .eva-project-info-field label{font-size:var(--gds-type-label-medium-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-label-medium-line-height);color:var(--gds-color-text-primary)}
+.eva-project-settings-info .eva-project-info-field textarea{box-sizing:border-box;width:100%;min-height:72px;resize:vertical;padding:var(--gds-space-2) var(--gds-space-2-5);border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary);color:var(--gds-color-text-primary);font:inherit;font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
+.eva-project-settings-info .eva-project-info-field textarea:focus-visible{outline:var(--gds-border-focus) solid var(--gds-color-border-focus);outline-offset:2px}
 .eva-project-settings-info .eva-project-info-field p{margin:0}
 .eva-project-settings-info__hero{align-items:start}
 .eva-project-settings-info__hero .eva-project-info__eyebrow{align-items:end}
 .eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field{width:132px;gap:3px}
-.eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field label{font-size:12px;font-weight:500;color:var(--semi-color-text-2)}
+.eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field label{font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height);color:var(--gds-color-text-secondary-accessible)}
 .eva-project-settings-info__hero .eva-project-info-field{margin-top:14px}
 .eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field{margin-top:0}
 .eva-project-settings-info__hero .eva-project-info-field .semi-input-wrapper{background:var(--semi-color-bg-0)}
-.eva-project-settings-info__hero .eva-project-info-field .semi-input{font-size:14px;line-height:22px}
-.eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input{height:34px;padding:0;font-size:24px;font-weight:600;line-height:34px}
+.eva-project-settings-info__hero .eva-project-info-field .semi-input{font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
+.eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input{height:40px;padding:0;color:var(--gds-color-text-strong);font-size:32px;font-weight:var(--gds-font-weight-semibold);line-height:40px}
 .eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input-wrapper{padding-inline:0;border:0;background:transparent}
 .eva-project-settings-info__facts{min-width:280px}
 .eva-project-settings-info__facts dt{margin-bottom:6px}
-.eva-project-settings-info__facts label{font-size:12px;font-weight:500;color:var(--semi-color-text-2)}
+.eva-project-settings-info__facts label{font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height);color:var(--gds-color-text-secondary-accessible)}
 .eva-project-settings-info__facts .semi-input-wrapper{min-width:0;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__facts dd{font-weight:400}
 .eva-project-settings-info__period{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center}
-.eva-project-settings-info__period>span{color:var(--semi-color-text-2);font-size:12px}
+.eva-project-settings-info__period>span{color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-caption-line-height)}
 .eva-project-settings-info__grid{margin-top:16px}
 .eva-project-settings-info__card-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
 .eva-project-settings-info__card-title h2{margin:0}
@@ -104,9 +104,9 @@ body:has(.eva-members-modal) .semi-modal-mask,.semi-modal-wrap:has(.eva-members-
 .eva-project-settings-info__timeline .eva-project-info__milestone{grid-template-columns:88px minmax(0,1fr) auto;min-height:72px}
 .eva-project-settings-info__timeline .semi-input-wrapper{min-width:0;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__milestone-copy{display:grid;min-width:0;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center}
-.eva-project-settings-info__milestone-copy select{height:30px;padding:0 24px 0 8px;border:1px solid var(--semi-color-border);border-radius:var(--semi-border-radius-small);background:var(--semi-color-bg-0);color:var(--semi-color-text-1);font:inherit;font-size:12px}
-.eva-project-settings-info__empty{margin:0;color:var(--semi-color-text-2);font-size:13px;line-height:22px}
-.eva-project-settings-info__advanced{margin-top:16px;padding:18px 24px;border:1px solid var(--semi-color-border);border-radius:12px;background:var(--semi-color-bg-0)}
+.eva-project-settings-info__milestone-copy select{height:30px;padding:0 24px 0 8px;border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary);color:var(--gds-color-text-secondary);font:inherit;font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-caption-line-height)}
+.eva-project-settings-info__empty{margin:0;color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
+.eva-project-settings-info__advanced{margin-top:16px;padding:18px 24px;border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-panel);background:var(--gds-color-surface-primary)}
 .eva-project-settings-info__advanced .eva-project-info-field{max-width:440px}
 .eva-project-settings-info__actions{display:flex;min-height:40px;align-items:center;justify-content:space-between;gap:16px;margin-top:20px}
 .eva-project-settings-info__actions p{margin:0}

@@ -1,5 +1,5 @@
 
-  /* 项目任务页：只整理工具栏层级与间距，不改动现有颜色。 */
+  /* 项目任务页：使用 GDS 的工具栏层级；项目任务仍保留高密度布局。 */
   .loop-page__toolbar:has(.eva-task-view-switcher) {
     min-height: 32px;
     gap: 0;
@@ -12,7 +12,8 @@
     flex: 0 0 auto;
     margin-right: 6px;
     padding: 3px;
-    border-radius: 8px;
+    border-radius: var(--gds-radius-control);
+    background: var(--gds-color-surface-subtle);
   }
 
   .eva-task-view-switcher .loop-seg__btn {
@@ -24,16 +25,19 @@
     height: 26px;
     padding: 0 12px;
     gap: 6px;
-    border-radius: 6px;
-    font-size: 13px;
-    line-height: 26px;
+    border-radius: var(--gds-radius-key);
+    color: var(--gds-color-text-secondary);
+    font-family: var(--gds-font-family-sans);
+    font-size: var(--gds-type-label-font-size);
+    font-weight: var(--gds-font-weight-regular);
+    line-height: var(--gds-type-label-line-height);
     white-space: nowrap;
   }
 
   .eva-task-view-switcher .loop-seg__btn svg,
   .loop-page__toolbar:has(.eva-task-view-switcher) .loop-toolbtn svg {
-    width: 14px;
-    height: 14px;
+    width: var(--gds-icon-size-content);
+    height: var(--gds-icon-size-content);
     flex: none;
   }
 
@@ -42,9 +46,41 @@
     height: 32px;
     padding: 0 12px;
     gap: 6px;
-    border-radius: 8px;
-    font-size: 13px;
-    line-height: 30px;
+    border-radius: var(--gds-radius-control);
+    color: var(--gds-color-text-secondary);
+    font-family: var(--gds-font-family-sans);
+    font-size: var(--gds-type-label-font-size);
+    font-weight: var(--gds-font-weight-regular);
+    line-height: var(--gds-type-label-line-height);
+  }
+
+  .eva-task-view-switcher .loop-seg__btn:hover,
+  .loop-page__toolbar:has(.eva-task-view-switcher) .loop-toolbtn:hover {
+    background: var(--gds-color-surface-primary);
+    color: var(--gds-color-text-primary);
+  }
+
+  .eva-task-view-switcher .loop-seg__btn.is-active {
+    background: var(--gds-color-surface-primary);
+    color: var(--gds-color-action-primary);
+    font-weight: var(--gds-font-weight-medium);
+  }
+
+  .eva-task-view-switcher .loop-seg__btn:focus-visible,
+  .loop-page__toolbar:has(.eva-task-view-switcher) .loop-toolbtn:focus-visible {
+    outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .loop-page:has(.eva-task-view-switcher) .loop-btn--primary {
+    border-color: var(--gds-color-action-primary);
+    background: var(--gds-color-action-primary);
+    color: var(--gds-color-action-primary-text);
+  }
+
+  .loop-page:has(.eva-task-view-switcher) .loop-btn--primary:hover {
+    border-color: var(--eva-action-primary-hover);
+    background: var(--eva-action-primary-hover);
   }
 
   .loop-page__toolbar:has(.eva-task-view-switcher) > button:last-child {

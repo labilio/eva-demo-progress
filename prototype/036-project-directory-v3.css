@@ -47,16 +47,18 @@
 
   .eva-project-directory-heading h2 {
     margin: 0;
-    color: var(--semi-color-text-0, #1c1f23);
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 24px;
+    color: var(--gds-color-text-primary);
+    font-family: var(--gds-font-family-sans);
+    font-size: var(--gds-type-header-font-size);
+    font-weight: var(--gds-font-weight-medium);
+    line-height: var(--gds-type-header-line-height);
   }
 
   .eva-project-directory-heading__title > span {
-    color: var(--semi-color-text-2, #8a8f99);
-    font-size: 12px;
-    line-height: 18px;
+    color: var(--gds-color-text-secondary-accessible);
+    font-family: var(--gds-font-family-sans);
+    font-size: var(--gds-type-caption-font-size);
+    line-height: var(--gds-type-caption-line-height);
   }
 
   .eva-project-pinned-grid {
@@ -67,7 +69,7 @@
 
   .eva-project-pinned-card,
   .eva-project-directory-list {
-    border-radius: 10px;
+    border-radius: var(--gds-radius-panel);
   }
 
   .eva-project-card-title {
@@ -88,10 +90,11 @@
   .eva-project-card-title .name > span:first-child,
   .eva-project-list-title > span:first-child {
     overflow: hidden;
-    color: var(--semi-color-text-0, #1c1f23);
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 20px;
+    color: var(--gds-color-text-primary);
+    font-family: var(--gds-font-family-sans);
+    font-size: var(--gds-type-label-medium-font-size);
+    font-weight: var(--gds-font-weight-medium);
+    line-height: var(--gds-type-label-medium-line-height);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -103,7 +106,7 @@
     flex: 0 0 34px;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: var(--gds-radius-control);
   }
 
   .eva-project-directory-icon svg {
@@ -115,9 +118,10 @@
     overflow: hidden;
     min-height: 40px;
     margin: 0;
-    color: var(--semi-color-text-1, #4e5969);
-    font-size: 13px;
-    line-height: 20px;
+    color: var(--gds-color-text-secondary);
+    font-family: var(--gds-font-family-sans);
+    font-size: var(--gds-type-label-font-size);
+    line-height: var(--gds-type-label-line-height);
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
@@ -127,17 +131,17 @@
     min-height: 76px;
     align-items: center;
     justify-content: center;
-    border: 1px dashed var(--semi-color-border, #dfe1e6);
-    border-radius: 10px;
-    background: var(--semi-color-fill-0, #f7f8fa);
-    color: var(--semi-color-text-2, #8a8f99);
-    font-size: 13px;
+    border: 1px dashed var(--gds-color-border-subtle);
+    border-radius: var(--gds-radius-panel);
+    background: var(--gds-color-surface-subtle);
+    color: var(--gds-color-text-secondary-accessible);
+    font: var(--gds-font-weight-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--gds-font-family-sans);
   }
 
   .eva-project-directory-list {
     overflow: hidden;
-    border-color: var(--semi-color-border, #dfe1e6);
-    background: var(--semi-color-bg-0, #fff);
+    border-color: var(--gds-color-border-subtle);
+    background: var(--gds-color-surface-primary);
   }
 
   .eva-project-list-item {
@@ -152,11 +156,11 @@
   }
 
   .eva-project-list-item + .eva-project-list-item {
-    border-top: 1px solid var(--semi-color-border, #dfe1e6);
+    border-top: 1px solid var(--gds-color-border-subtle);
   }
 
   .eva-project-list-item:hover {
-    background: var(--semi-color-fill-0, #f7f8fa);
+    background: var(--gds-color-surface-subtle);
   }
 
   .eva-project-list-main {
@@ -166,9 +170,8 @@
   .eva-project-list-description {
     overflow: hidden;
     margin-top: 4px;
-    color: var(--semi-color-text-1, #4e5969);
-    font-size: 13px;
-    line-height: 20px;
+    color: var(--gds-color-text-secondary);
+    font: var(--gds-font-weight-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--gds-font-family-sans);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -213,14 +216,14 @@
 
   .eva-project-list-empty {
     padding: 36px 16px;
-    color: var(--semi-color-text-2, #8a8f99);
-    font-size: 13px;
+    color: var(--gds-color-text-secondary-accessible);
+    font: var(--gds-font-weight-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--gds-font-family-sans);
     text-align: center;
   }
 
   .eva-project-pinned-card:focus-visible,
   .eva-project-list-item:focus-visible {
-    outline: 2px solid var(--semi-color-text-0, #1c1f23);
+    outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
     outline-offset: 2px;
   }
 
@@ -235,6 +238,89 @@
 
   }
 
+  /* 项目入口与项目壳层复用 GDS 主行动/选中态；不影响团队 IM 内容区。 */
+  .collab-btn-primary,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .loop-btn--primary,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-drive-head .loop-btn--primary {
+    border-color: var(--gds-color-action-primary);
+    border-radius: var(--gds-radius-control);
+    background: var(--gds-color-action-primary);
+    color: var(--gds-color-action-primary-text);
+    font: var(--gds-font-weight-medium) var(--gds-type-label-medium-font-size)/var(--gds-type-label-medium-line-height) var(--gds-font-family-sans);
+    box-shadow: none;
+  }
+
+  .collab-btn-primary:hover,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .loop-btn--primary:hover,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-drive-head .loop-btn--primary:hover {
+    border-color: var(--eva-action-primary-hover);
+    background: var(--eva-action-primary-hover);
+  }
+
+  .collab-btn-primary:focus-visible,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .loop-btn--primary:focus-visible {
+    outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tab {
+    color: var(--gds-color-text-secondary);
+    font: var(--gds-font-weight-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--gds-font-family-sans);
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tab:hover {
+    color: var(--gds-color-text-primary);
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tab.is-active,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tab[aria-selected="true"] {
+    color: var(--gds-color-action-primary);
+    font-weight: var(--gds-font-weight-medium);
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tab.is-active::after,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tab[aria-selected="true"]::after {
+    background: var(--gds-color-action-primary);
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tab:focus-visible {
+    outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
+    outline-offset: -2px;
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-drive-pills .pill {
+    border-radius: var(--gds-radius-control);
+    color: var(--gds-color-text-secondary);
+    font: var(--gds-font-weight-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--gds-font-family-sans);
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-drive-pills .pill.is-on {
+    background: var(--gds-color-action-primary);
+    color: var(--gds-color-action-primary-text);
+    font-weight: var(--gds-font-weight-medium);
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-drive-pills .pill:focus-visible {
+    outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .semi-tabs-tab {
+    color: var(--gds-color-text-secondary);
+    font: var(--gds-font-weight-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--gds-font-family-sans);
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .semi-tabs-tab-active {
+    border-bottom-color: var(--gds-color-action-primary);
+    color: var(--gds-color-action-primary);
+    font-weight: var(--gds-font-weight-medium);
+  }
+
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .semi-tabs-tab-active::before,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .semi-tabs-tab-active::after {
+    background-color: var(--gds-color-action-primary);
+  }
+
   .eva-project-info {
     box-sizing: border-box;
     height: 100%;
@@ -246,7 +332,7 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: 28px 40px 56px;
-    color: var(--semi-color-text-0);
+    color: var(--gds-color-text-primary);
   }
 
   .eva-project-info__hero {
@@ -254,9 +340,9 @@
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 48px;
     padding: 28px 30px;
-    border: 1px solid var(--semi-color-border);
-    border-radius: 12px;
-    background: var(--semi-color-bg-0);
+    border: 1px solid var(--gds-color-border-subtle);
+    border-radius: var(--gds-radius-panel);
+    background: var(--gds-color-surface-primary);
   }
 
   .eva-project-info__hero-main {
@@ -267,33 +353,30 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    color: var(--semi-color-text-2);
-    font-size: 12px;
-    line-height: 20px;
+    color: var(--gds-color-text-secondary-accessible);
+    font: var(--gds-font-weight-regular) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--gds-font-family-sans);
   }
 
   .eva-project-info__status {
     display: inline-flex;
     padding: 1px 9px;
     border-radius: 999px;
-    background: var(--semi-color-primary-light-default);
-    color: var(--semi-color-primary);
-    font-weight: 600;
+    background: color-mix(in srgb, var(--gds-color-action-primary) 8%, var(--gds-color-surface-primary));
+    color: var(--gds-color-action-primary);
+    font-weight: var(--gds-font-weight-medium);
   }
 
   .eva-project-info__hero h1 {
     margin: 12px 0 8px;
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 34px;
+    color: var(--gds-color-text-strong);
+    font: var(--gds-font-weight-semibold) 32px/40px var(--gds-font-family-sans);
   }
 
 .eva-project-info__hero p {
     max-width: 640px;
     margin: 0;
-    color: var(--semi-color-text-1);
-    font-size: 14px;
-  line-height: 22px;
+    color: var(--gds-color-text-secondary);
+    font: var(--gds-font-weight-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--gds-font-family-sans);
 }
 
 .eva-project-info__background {
@@ -304,13 +387,11 @@
 }
 
 .eva-project-info__background strong {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 20px;
+  font: var(--gds-font-weight-medium) var(--gds-type-label-medium-font-size)/var(--gds-type-label-medium-line-height) var(--gds-font-family-sans);
 }
 
 .eva-project-info__background p {
-  color: var(--semi-color-text-1);
+  color: var(--gds-color-text-secondary);
 }
 
   .eva-project-info__facts {
@@ -325,20 +406,18 @@
   }
 
   .eva-project-info__facts > div + div {
-    border-top: 1px solid var(--semi-color-border);
+    border-top: 1px solid var(--gds-color-border-subtle);
   }
 
   .eva-project-info__facts dt {
     margin-bottom: 3px;
-    color: var(--semi-color-text-2);
-    font-size: 12px;
+    color: var(--gds-color-text-secondary-accessible);
+    font: var(--gds-font-weight-regular) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--gds-font-family-sans);
   }
 
   .eva-project-info__facts dd {
     margin: 0;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 20px;
+    font: var(--gds-font-weight-medium) var(--gds-type-label-medium-font-size)/var(--gds-type-label-medium-line-height) var(--gds-font-family-sans);
   }
 
 .eva-project-info__grid {
@@ -351,16 +430,14 @@
   .eva-project-info__card {
     min-width: 0;
     padding: 22px 24px;
-    border: 1px solid var(--semi-color-border);
-    border-radius: 12px;
-    background: var(--semi-color-bg-0);
+    border: 1px solid var(--gds-color-border-subtle);
+    border-radius: var(--gds-radius-panel);
+    background: var(--gds-color-surface-primary);
   }
 
   .eva-project-info__card h2 {
     margin: 0 0 14px;
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 22px;
+    font: var(--gds-font-weight-medium) var(--gds-type-header-font-size)/var(--gds-type-header-line-height) var(--gds-font-family-sans);
   }
 
   .eva-project-info__goals {
@@ -379,17 +456,14 @@
   }
 
   .eva-project-info__goals li > span {
-    color: var(--semi-color-primary);
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 22px;
+    color: var(--gds-color-action-primary);
+    font: var(--gds-font-weight-medium) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--gds-font-family-sans);
   }
 
   .eva-project-info__goals p {
     margin: 0;
-    color: var(--semi-color-text-1);
-    font-size: 13px;
-    line-height: 22px;
+    color: var(--gds-color-text-secondary);
+    font: var(--gds-font-weight-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--gds-font-family-sans);
   }
 
 .eva-project-info__card--milestones {
@@ -416,7 +490,7 @@
     bottom: -9px;
     left: 4px;
     width: 1px;
-    background: var(--semi-color-border);
+    background: var(--gds-color-border-subtle);
     content: '';
   }
 
@@ -426,39 +500,35 @@
     left: 0;
     width: 9px;
     height: 9px;
-    border: 2px solid var(--semi-color-bg-0);
+    border: 2px solid var(--gds-color-surface-primary);
     border-radius: 50%;
-    background: var(--semi-color-border);
-    box-shadow: 0 0 0 1px var(--semi-color-border);
+    background: var(--gds-color-border-subtle);
+    box-shadow: 0 0 0 1px var(--gds-color-border-subtle);
   }
 
   .eva-project-info__milestone.is-done .eva-project-info__milestone-dot,
   .eva-project-info__milestone.is-active .eva-project-info__milestone-dot {
-    background: var(--semi-color-primary);
-    box-shadow: 0 0 0 1px var(--semi-color-primary);
+    background: var(--gds-color-action-primary);
+    box-shadow: 0 0 0 1px var(--gds-color-action-primary);
   }
 
   .eva-project-info__milestone time {
-    color: var(--semi-color-text-2);
-    font-size: 12px;
-    line-height: 20px;
+    color: var(--gds-color-text-secondary-accessible);
+    font: var(--gds-font-weight-regular) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--gds-font-family-sans);
   }
 
   .eva-project-info__milestone strong {
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 20px;
+    font: var(--gds-font-weight-medium) var(--gds-type-label-medium-font-size)/var(--gds-type-label-medium-line-height) var(--gds-font-family-sans);
   }
 
   .eva-project-info__milestone-state {
-    color: var(--semi-color-text-2);
-    font-size: 11px;
-    line-height: 20px;
+    color: var(--gds-color-text-secondary-accessible);
+    font: var(--gds-font-weight-regular) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--gds-font-family-sans);
   }
 
   .eva-project-info__milestone.is-active .eva-project-info__milestone-state {
-    color: var(--semi-color-primary);
-    font-weight: 600;
+    color: var(--gds-color-action-primary);
+    font-weight: var(--gds-font-weight-medium);
   }
 
   @media (max-width: 900px) {
