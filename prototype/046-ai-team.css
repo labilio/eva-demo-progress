@@ -1,5 +1,5 @@
 /* AI Team-specific surfaces use GDS semantic tokens. The conversation remains Octo IM.
- * The 336px rail is Eva's existing team rail, not GDS's personal 260px shell. */
+ * The rail follows the shared 260px default and 220–480px resize contract. */
 .eva-ai-team {
   display: flex;
   position: relative;
@@ -188,9 +188,7 @@
   overflow: hidden;
 }
 .eva-ai-team__main > .ch-layout { flex: 1; min-height: 0; }
-.eva-ai-team__conversation-breadcrumb .wk-chat-conversation-header-parent-group {
-  cursor: default;
-}
+.eva-ai-team__conversation-name { min-width: 0; font-weight: var(--gds-font-weight-medium); }
 .eva-ai-team__empty {
   display: flex;
   flex: 1;
