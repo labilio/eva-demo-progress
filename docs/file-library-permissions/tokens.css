@@ -1,0 +1,292 @@
+:root {
+  color-scheme: light;
+
+  /* Primitive — canonical values from component-gallery.html. */
+  --wk-ink: #1c1c23;
+  --wk-white: #ffffff;
+  --wk-color-accent: #7f3bf5;
+  --wk-color-accent-hover: #6d2fe3;
+  --wk-color-error: #f54a45;
+  --wk-color-info: #4954e6;
+  --wk-color-success: #00bf34;
+  --wk-color-switch-on: #55cf5d;
+  --wk-color-switch-on-disabled: #a3e7a5;
+  --wk-color-warning: #ff8800;
+
+  /* Ink alpha scale. */
+  --wk-ink-alpha-02: rgba(28, 28, 35, 0.02);
+  --wk-ink-alpha-03: rgba(28, 28, 35, 0.03);
+  --wk-ink-alpha-04: rgba(28, 28, 35, 0.04);
+  --wk-ink-alpha-05: rgba(28, 28, 35, 0.05);
+  --wk-ink-alpha-06: rgba(28, 28, 35, 0.06);
+  --wk-ink-alpha-08: rgba(28, 28, 35, 0.08);
+  --wk-ink-alpha-09: rgba(46, 46, 56, 0.09);
+  --wk-ink-alpha-10: rgba(28, 28, 35, 0.10);
+  --wk-ink-alpha-12: rgba(28, 28, 35, 0.12);
+  --wk-ink-alpha-15: rgba(28, 28, 35, 0.15);
+  --wk-ink-alpha-20: rgba(28, 28, 35, 0.20);
+  --wk-ink-alpha-25: rgba(28, 28, 35, 0.25);
+  --wk-ink-alpha-28: rgba(28, 28, 35, 0.28);
+  --wk-ink-alpha-30: rgba(28, 28, 35, 0.30);
+  --wk-ink-alpha-35: rgba(28, 28, 35, 0.35);
+  --wk-ink-alpha-40: rgba(28, 28, 35, 0.40);
+  --wk-ink-alpha-45: rgba(28, 28, 35, 0.45);
+  --wk-ink-alpha-50: rgba(28, 28, 35, 0.50);
+  --wk-ink-alpha-55: rgba(28, 28, 35, 0.55);
+  --wk-ink-alpha-60: rgba(28, 28, 35, 0.60);
+  --wk-ink-alpha-70: rgba(28, 28, 35, 0.70);
+  --wk-ink-alpha-75: rgba(28, 28, 35, 0.75);
+  --wk-ink-alpha-80: rgba(28, 28, 35, 0.80);
+  --wk-ink-alpha-90: rgba(28, 28, 35, 0.90);
+
+  /* Accent and status alpha scale. */
+  --wk-accent-alpha-02: rgba(127, 59, 245, 0.02);
+  --wk-accent-alpha-06: rgba(127, 59, 245, 0.06);
+  --wk-accent-alpha-07: rgba(127, 59, 245, 0.07);
+  --wk-accent-alpha-10: rgba(127, 59, 245, 0.10);
+  --wk-accent-alpha-20: rgba(127, 59, 245, 0.20);
+  --wk-accent-alpha-30: rgba(127, 59, 245, 0.30);
+  --wk-error-alpha-06: rgba(245, 74, 69, 0.06);
+  --wk-error-alpha-10: rgba(245, 74, 69, 0.10);
+  --wk-error-alpha-15: rgba(245, 74, 69, 0.15);
+  --wk-success-alpha-12: rgba(0, 191, 52, 0.12);
+  --wk-warning-alpha-12: rgba(255, 136, 0, 0.12);
+
+  /* Neutral alpha for masks, shadows, and translucent white cards. */
+  --wk-black-alpha-06: rgba(0, 0, 0, 0.06);
+  --wk-black-alpha-10: rgba(0, 0, 0, 0.10);
+  --wk-black-alpha-12: rgba(0, 0, 0, 0.12);
+  --wk-black-alpha-14: rgba(0, 0, 0, 0.14);
+  --wk-black-alpha-40: rgba(0, 0, 0, 0.40);
+  --wk-white-alpha-40: rgba(255, 255, 255, 0.40);
+  --wk-white-alpha-60: rgba(255, 255, 255, 0.60);
+  --wk-white-alpha-70: rgba(255, 255, 255, 0.70);
+  --wk-white-alpha-80: rgba(255, 255, 255, 0.80);
+
+  /* Approved gradients only. */
+  --wk-gradient-ai: linear-gradient(90deg, #41dfff, #6e7cf7, #7f3bf5);
+  --wk-gradient-card-selected: linear-gradient(180deg, rgba(127, 59, 245, 0.10) 0%, rgba(127, 59, 245, 0.02) 60%, rgba(127, 59, 245, 0) 100%);
+  --wk-gradient-ai-surface: linear-gradient(180deg, #fcf3ff 0%, #ffffff 49%, #ffffff 100%);
+  --wk-gradient-spinner: conic-gradient(from 90deg, rgba(127, 59, 245, 1) 0deg, rgba(127, 59, 245, 0) 108deg, rgba(127, 59, 245, 0) 168deg, rgba(127, 59, 245, 1) 360deg);
+
+  /* Semantic surfaces and text. */
+  --wk-bg-base: #f6f7f9;
+  --wk-bg-sidebar: #f5f6f7;
+  --wk-bg-surface: var(--wk-white);
+  --wk-bg-subtle: var(--wk-ink-alpha-04);
+  --wk-bg-hover: var(--wk-ink-alpha-03);
+  --wk-bg-selected: var(--wk-ink-alpha-06);
+  --wk-bg-selected-accent: var(--wk-accent-alpha-07);
+  --wk-text-primary: var(--wk-ink);
+  --wk-text-secondary: var(--wk-ink-alpha-80);
+  --wk-text-tertiary: var(--wk-ink-alpha-60);
+  --wk-text-muted: var(--wk-ink-alpha-40);
+  --wk-text-placeholder: var(--wk-ink-alpha-30);
+  --wk-text-disabled: var(--wk-ink-alpha-15);
+  --wk-text-inverse: var(--wk-white);
+  --wk-text-accent: var(--wk-color-accent);
+  --wk-text-link: var(--wk-color-info);
+
+  /* Semantic controls, borders, and feedback. */
+  --wk-input-bg: var(--wk-ink-alpha-04);
+  --wk-input-bg-hover: var(--wk-ink-alpha-06);
+  --wk-input-error-bg: var(--wk-error-alpha-10);
+  --wk-control-disabled: var(--wk-ink-alpha-06);
+  --wk-control-secondary: var(--wk-white);
+  --wk-control-secondary-hover: var(--wk-ink-alpha-03);
+  --wk-border-subtle: var(--wk-ink-alpha-08);
+  --wk-border-default: var(--wk-ink-alpha-12);
+  --wk-border-strong: var(--wk-ink-alpha-15);
+  --wk-border-focus: var(--wk-ink);
+  --wk-icon-muted: var(--wk-ink-alpha-40);
+  --wk-icon-default: var(--wk-ink-alpha-60);
+  --wk-icon-hover: var(--wk-ink);
+  --wk-unread-bg: var(--wk-color-error);
+  --wk-danger-soft: var(--wk-error-alpha-10);
+  --wk-overlay-mask: var(--wk-black-alpha-40);
+
+  /* Card semantic aliases. */
+  --wk-card-surface: var(--wk-bg-surface);
+  --wk-card-surface-subtle: var(--wk-bg-subtle);
+  --wk-card-border: var(--wk-border-subtle);
+  --wk-card-border-hover: var(--wk-border-default);
+  --wk-card-divider: var(--wk-border-subtle);
+  --wk-card-selected-border: var(--wk-color-accent);
+  --wk-card-selected-bg: var(--wk-accent-alpha-07);
+  --wk-card-success-surface: var(--wk-success-alpha-12);
+  --wk-card-warning-surface: var(--wk-warning-alpha-12);
+  --wk-card-error-surface: var(--wk-error-alpha-10);
+
+  /* Typography. */
+  --wk-font-sans: "PingFang SC", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --wk-font-number: "Inter", var(--wk-font-sans);
+  --wk-font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+  --wk-text-10: 10px;
+  --wk-text-12: 12px;
+  --wk-text-14: 14px;
+  --wk-text-16: 16px;
+  --wk-text-18: 18px;
+  --wk-text-24: 24px;
+  --wk-leading-16: 16px;
+  --wk-leading-18: 18px;
+  --wk-leading-20: 20px;
+  --wk-leading-22: 22px;
+  --wk-leading-24: 24px;
+  --wk-leading-32: 32px;
+  --wk-font-regular: 400;
+  --wk-font-medium: 500;
+  --wk-font-semibold: 600;
+  --wk-font-bold: 700;
+
+  /* Spacing. 2/6/10 are approved component-internal exceptions. */
+  --wk-sp-0-5: 2px;
+  --wk-sp-1: 4px;
+  --wk-sp-1-5: 6px;
+  --wk-sp-2: 8px;
+  --wk-sp-2-5: 10px;
+  --wk-sp-3: 12px;
+  --wk-sp-4: 16px;
+  --wk-sp-5: 20px;
+  --wk-sp-6: 24px;
+  --wk-sp-8: 32px;
+  --wk-sp-10: 40px;
+  --wk-sp-12: 48px;
+
+  /* Radius. */
+  --wk-r-xs: 3px;
+  --wk-r-input: 6px;
+  --wk-r-md: 8px;
+  --wk-r-overlay: 12px;
+  --wk-r-lg: 16px;
+  --wk-r-full: 9999px;
+  --wk-r-circle: 50%;
+
+  /* Shadow and motion. */
+  --wk-shadow-card: 0 4px 12px var(--wk-black-alpha-06), 0 0 0 1px var(--wk-black-alpha-06);
+  --wk-shadow-overlay: 0 8px 24px var(--wk-black-alpha-12), 0 0 0 1px var(--wk-black-alpha-06);
+  --wk-shadow-drawer: -8px 0 40px var(--wk-black-alpha-10);
+  --wk-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --wk-duration-fast: 150ms;
+  --wk-duration-normal: 200ms;
+  --wk-duration-slow: 350ms;
+
+  /* Canonical component and layout sizes. */
+  --wk-button-height: 28px;
+  --wk-button-height-xs: 24px;
+  --wk-input-height: 32px;
+  --wk-tab-height: 40px;
+  --wk-header-height: 48px;
+  --wk-nav-rail-width: 56px;
+  --wk-sidebar-width: 240px;
+  --wk-feed-width: 760px;
+  --wk-composer-width: 1112px;
+  --wk-drawer-width-sm: 336px;
+  --wk-drawer-width: 480px;
+  --wk-drawer-width-lg: 664px;
+  --wk-z-dropdown: 100;
+  --wk-z-modal: 200;
+  --wk-z-toast: 300;
+  --wk-z-tooltip: 400;
+
+  /* Transitional aliases for older Octo prototypes. New markup must use the
+     canonical tokens above; the checker reports every legacy-token use. */
+  --wk-brand-primary: var(--wk-ink);
+  --wk-brand-primary-hover: #2e3238;
+  --wk-brand-primary-active: var(--wk-ink);
+  --wk-brand-alpha-03: var(--wk-ink-alpha-03);
+  --wk-brand-alpha-04: var(--wk-ink-alpha-04);
+  --wk-brand-alpha-06: var(--wk-ink-alpha-06);
+  --wk-brand-alpha-08: var(--wk-ink-alpha-08);
+  --wk-brand-alpha-10: var(--wk-ink-alpha-10);
+  --wk-brand-alpha-12: var(--wk-ink-alpha-12);
+  --wk-brand-alpha-15: var(--wk-ink-alpha-15);
+  --wk-brand-alpha-20: var(--wk-ink-alpha-20);
+  --wk-brand-alpha-35: var(--wk-ink-alpha-35);
+  --wk-brand-alpha-40: var(--wk-ink-alpha-40);
+  --wk-brand-alpha-60: var(--wk-ink-alpha-60);
+  --wk-brand-alpha-70: var(--wk-ink-alpha-70);
+  --wk-brand-alpha-90: var(--wk-ink-alpha-90);
+  --wk-brand-ring: var(--wk-ink-alpha-20);
+  --wk-color-accent-soft: var(--wk-accent-alpha-10);
+  --wk-ai-surface: var(--wk-accent-alpha-02);
+  --wk-ai-tag-bg: var(--wk-accent-alpha-10);
+  --wk-ai-border: var(--wk-accent-alpha-20);
+  --wk-card-ai-surface: var(--wk-ai-surface);
+  --wk-card-ai-border: var(--wk-ai-border);
+
+  /* Component-spec v1 compatibility. Remove only after migrated prototypes
+     no longer report these names through COMPONENT-COMPATIBILITY.json. */
+  --wk-accent-alpha-03: rgba(127, 59, 245, 0.03);
+  --wk-accent-alpha-04: rgba(127, 59, 245, 0.04);
+  --wk-accent-alpha-08: var(--wk-accent-alpha-07);
+  --wk-accent-alpha-12: var(--wk-accent-alpha-10);
+  --wk-accent-alpha-25: var(--wk-accent-alpha-20);
+  --wk-color-teal: #0b867d;
+  --wk-squad-tone-delivery: #53657d;
+  --wk-squad-tone-marketing: #8a6270;
+  --wk-squad-tone-office: #65758b;
+  --wk-squad-tone-data: #4e776f;
+  --wk-squad-tone-product: #5e7380;
+  --wk-squad-tone-incident: #8a684f;
+  --wk-black-alpha-05: rgba(0, 0, 0, 0.05);
+  --wk-black-alpha-08: rgba(0, 0, 0, 0.08);
+  --wk-black-alpha-30: rgba(0, 0, 0, 0.30);
+  --wk-black-alpha-50: rgba(0, 0, 0, 0.50);
+  --wk-white-alpha-04: rgba(255, 255, 255, 0.04);
+  --wk-white-alpha-06: rgba(255, 255, 255, 0.06);
+  --wk-white-alpha-07: rgba(255, 255, 255, 0.07);
+  --wk-white-alpha-08: rgba(255, 255, 255, 0.08);
+  --wk-white-alpha-12: rgba(255, 255, 255, 0.12);
+  --wk-neutral-item-alpha-09: var(--wk-ink-alpha-09);
+  --wk-bg-elevated: var(--wk-ink-alpha-05);
+  --wk-bg-active: var(--wk-bg-selected);
+  --wk-bg-selected-hover: var(--wk-accent-alpha-10);
+  --wk-bg-self-message: var(--wk-ink-alpha-06);
+  --wk-bg-other-message: var(--wk-bg-surface);
+  --wk-bg-ai: var(--wk-accent-alpha-02);
+  --wk-text-strong: var(--wk-ink-alpha-90);
+  --wk-control-secondary-active: var(--wk-bg-selected);
+  --wk-ai-focus-ring: var(--wk-accent-alpha-20);
+  --wk-success-alpha-08: var(--wk-success-alpha-12);
+  --wk-success-alpha-10: var(--wk-success-alpha-12);
+  --wk-warning-alpha-08: var(--wk-warning-alpha-12);
+  --wk-warning-alpha-10: var(--wk-warning-alpha-12);
+  --wk-error-alpha-08: var(--wk-error-alpha-10);
+  --wk-info-alpha-08: rgba(73, 84, 230, 0.08);
+  --wk-info-alpha-10: rgba(73, 84, 230, 0.10);
+  --wk-color-danger-soft: var(--wk-danger-soft);
+  --wk-card-info-surface: var(--wk-info-alpha-08);
+  --wk-text-13: var(--wk-text-14);
+  --wk-text-22: var(--wk-text-24);
+  --wk-text-28: var(--wk-text-24);
+  --wk-r-sm: var(--wk-r-input);
+  --wk-r-xl: var(--wk-r-lg);
+  --wk-shadow-sm: var(--wk-shadow-card);
+  --wk-shadow-md: var(--wk-shadow-card);
+  --wk-sidebar-min: var(--wk-sidebar-width);
+  --wk-sidebar-max: var(--wk-sidebar-width);
+  --wk-content-min: 0px;
+  --wk-conversation-width: var(--wk-feed-width);
+  --wk-task-rail-width: var(--wk-drawer-width-sm);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: var(--wk-font-sans);
+  font-size: var(--wk-text-14);
+  line-height: var(--wk-leading-20);
+  color: var(--wk-text-primary);
+  background: var(--wk-bg-base);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--wk-border-focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
