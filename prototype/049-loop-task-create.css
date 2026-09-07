@@ -13,49 +13,31 @@
   pointer-events: auto;
 }
 .eva-loop-task-create-portal .eva-loop-task-create { overflow: hidden; padding: 0; }
+/* Loop's original .loop-ci classes own the editor and property-pill styling. */
 .eva-loop-task-create .semi-modal {
-  box-sizing: border-box;
-  top: 0;
-  width: 720px;
-  max-width: calc(100vw - 32px);
-  max-height: calc(100vh - var(--topbar-height) - 32px);
-  margin: 16px auto;
-  padding: 0;
+  width: 600px; max-width: calc(100vw - 32px);
+  margin: 32px auto; padding: 0;
 }
 .eva-loop-task-create .semi-modal-content {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - var(--topbar-height) - 32px);
-  overflow: hidden;
-  padding: 20px;
-  border-radius: var(--gds-radius-panel);
-  color: var(--semi-color-text-0);
-  font-family: var(--gds-font-family-sans);
-  font-size: 13px;
-  line-height: 20px;
+  padding: 0; overflow: hidden; border-radius: 12px;
+  max-height: calc(100vh - var(--topbar-height) - 64px);
 }
-.eva-loop-task-create .semi-modal-header,
-.eva-loop-task-create .semi-modal-footer { flex-shrink: 0; }
-.eva-loop-task-create .semi-modal-title { font-size: 18px; font-weight: 600; line-height: 26px; }
-.eva-loop-task-create .semi-modal-body { min-height: 0; overflow: auto; margin: 0; }
-.eva-loop-task-create .semi-modal-footer { padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--semi-color-border); }
-.eva-loop-task-create__layout { display: grid; grid-template-columns: minmax(0, 1fr) 216px; gap: 20px; }
-.eva-loop-task-create__main,
-.eva-loop-task-create__properties { min-width: 0; }
-.eva-loop-task-create__properties { padding-left: 16px; border-left: 1px solid var(--semi-color-border); }
-.eva-loop-task-create__field { display: flex; flex-direction: column; min-width: 0; gap: 8px; margin-bottom: 16px; }
-.eva-loop-task-create__field:last-child { margin-bottom: 0; }
-.eva-loop-task-create__label,
-.eva-loop-task-create__field > label { display: block; color: var(--semi-color-text-0); font-size: 13px; font-weight: 500; line-height: 20px; }
-.eva-loop-task-create__hint { margin: 0; color: var(--semi-color-text-2); font-size: 12px; line-height: 18px; }
-.eva-loop-task-create__field .semi-select,
-.eva-loop-task-create__field .semi-datepicker { width: 100%; min-width: 0; }
-.eva-loop-task-create__system-fields { display: grid; gap: 6px; margin-bottom: 16px; }
-.eva-loop-task-create__system-field { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 8px; }
-.eva-loop-task-create__system-label { color: var(--semi-color-text-0); font-size: 13px; font-weight: 500; line-height: 20px; }
-.eva-loop-task-create__readonly { display: flex; align-items: center; min-height: 32px; padding: 5px 8px; border: 1px solid var(--semi-color-border); border-radius: var(--gds-radius-control); color: var(--semi-color-text-1); font-size: 13px; line-height: 20px; }
-.eva-loop-task-create__tag-combobox { position: relative; display: grid; gap: 6px; }
+.eva-loop-task-create .semi-modal-body { margin: 0; overflow: auto; }
+.eva-loop-task-create .loop-ci__desc { min-height: 84px; }
+.eva-loop-task-create .loop-ci__title, .eva-loop-task-create .loop-ci__desc { box-sizing: border-box; }
+.eva-loop-task-create__assignee.semi-select {
+  width: auto; min-width: 100px; max-width: 240px; height: 28px;
+  border: 1px solid var(--semi-color-border); border-radius: 999px;
+  background: transparent;
+}
+.eva-loop-task-create__identity { display: inline-flex; align-items: center; gap: 4px; }
+.eva-loop-task-create__attachments { padding: 0 16px 12px; }
+.eva-loop-task-create__attachment { display: flex; align-items: center; gap: 8px; }
+.eva-loop-task-create__attachment > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-loop-task-create__error { padding: 0 16px; color: var(--semi-color-danger); }
+.eva-loop-task-create .loop-ci__toolbar { flex-wrap: wrap; }
+.eva-loop-task-create .loop-ci__labels { position: relative; }
+.eva-loop-task-create__tag-combobox { flex: 1; min-width: 0; position: relative; display: grid; gap: 6px; }
 .eva-loop-task-create__tag-selected { display: flex; flex-wrap: wrap; gap: 6px; }
 .eva-loop-task-create__tag-chip { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; padding: 2px 6px 2px 8px; border: 0; border-radius: var(--gds-radius-control); background: var(--semi-color-fill-0); color: var(--semi-color-text-0); font: inherit; line-height: 20px; cursor: pointer; }
 .eva-loop-task-create__tag-chip:hover { background: var(--semi-color-fill-1); }
@@ -66,15 +48,3 @@
 .eva-loop-task-create__tag-menu button:hover { background: var(--semi-color-fill-0); }
 .eva-loop-task-create__tag-menu .eva-loop-task-create__tag-create-option { color: var(--semi-color-primary); }
 .eva-loop-task-create__tag-menu p { color: var(--semi-color-text-2); }
-.eva-loop-task-create .semi-input,
-.eva-loop-task-create .semi-input-textarea,
-.eva-loop-task-create .semi-select,
-.eva-loop-task-create .semi-button { font-size: 13px; }
-.eva-loop-task-create__actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-.eva-loop-task-create__error { margin: 12px 0 0; color: var(--semi-color-danger); font-size: 12px; line-height: 18px; }
-.eva-loop-task-create .eva-identity-name-row { display: inline-flex; align-items: center; min-width: 0; gap: 4px; }
-.eva-loop-task-create__properties h3 { margin: 0 0 16px; font-size: 13px; font-weight: 500; line-height: 20px; }
-@media (max-width: 700px) {
-  .eva-loop-task-create__layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .eva-loop-task-create__properties { padding: 16px 0 0; border-left: 0; border-top: 1px solid var(--semi-color-border); }
-}

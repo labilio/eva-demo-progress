@@ -27,14 +27,16 @@
   --eva-rail-name-size: var(--gds-type-label-medium-font-size);
   --eva-rail-label-size: var(--gds-type-label-font-size);
   --eva-rail-line-height: var(--gds-type-label-medium-line-height);
+  /* The identity label is 14/22. Keep the circular avatar below that line height. */
+  --eva-rail-identity-avatar-size: 20px;
   --eva-rail-identity-height: 34px;
   --eva-rail-session-height: 38px;
   --eva-rail-level-indent: 12px;
   box-sizing: border-box;
   /* Group title → assistant label → session label advances by 12px.
-     The session has no leading avatar, so its start includes the 24px avatar
+     The session has no leading avatar, so its start includes the 20px avatar
      and 4px icon/text gap that precede an assistant label. */
-  --eva-rail-session-indent: calc(24px + var(--gds-space-1) + var(--eva-rail-level-indent));
+  --eva-rail-session-indent: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-1) + var(--eva-rail-level-indent));
   position: relative;
   flex: 0 0 var(--eva-conversation-rail-current);
   width: var(--eva-conversation-rail-current);

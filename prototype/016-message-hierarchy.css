@@ -252,7 +252,6 @@ body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-item--selected {
   background: #f0f1f2;
 }
 
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-drag-handle,
 body.eva-message-hierarchy-ready .eva-msg .ch-cat-gear {
   display: none;
 }

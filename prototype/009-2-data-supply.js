@@ -166,14 +166,13 @@ window.__EVA_MEMBERSHIP_CLONES = [
 // Review scenario belongs to the existing collaboration workspace (prod).
 // p-supply is its task-board project, not its membership scope.
 window.__EVA_SUPPLY_MEMBER_DEMO = {
-  projectId:'prod', version:1,
-  humans:[{id:'u-wangyilin',role:'owner'},{id:'u-linxiao',role:'member'},{id:'u-zhouyuan',role:'admin'}],
+  projectId:'prod', version:2,
+  humans:[{id:'u-wangyilin',role:'owner'},{id:'u-linxiao',role:'member'},{id:'u-zhouyuan',role:'admin'},{id:'u-hejing',role:'member'}],
   cloneIds:['b-wangyilin','clone-linxiao'],
   group:{id:'supply-demo-rectification',name:'供应商整改协同',ownerId:'u-wangyilin',humans:[{id:'u-wangyilin',role:'member'},{id:'u-linxiao',role:'member'}],cloneIds:['clone-linxiao']},
   thread:{id:'supply-demo-evidence',name:'A-2409整改证据',status:1,created_at:'2026-09-02T10:00:00+08:00',creator_name:'林晓',message_count:1,member_count:2,unread:0},
-  invitation:{scopeId:'prod',inviterId:'u-linxiao',inviteeId:'u-hejing',status:'pending_approval'},
   messages:[
-    {kind:'text',senderId:'u-linxiao',time:'10:00',text:'A-2409 来料异常已隔离，整改证据已整理。已发起邀请何静加入项目，请负责人审批。'},
+    {kind:'text',senderId:'u-linxiao',time:'10:00',text:'A-2409 来料异常已隔离，整改证据已整理。何静已加入项目，可以查看共享的整改资料。'},
     {kind:'text',senderId:'u-wangyilin',time:'10:02',text:'先将分析报告共享给项目成员。是否对供应商承诺执行，由人类负责人确认。'},
     {kind:'file',senderId:'u-linxiao',time:'10:03',file:{name:'A-2409来料异常分析报告.pdf',size:42000,extension:'pdf',version:1,taskId:'SC-103'}}
   ]
@@ -242,7 +241,7 @@ window.__EVA_SUPPLY_CHAT_CONTENT = [
     ['u-linxiao','10:13','供应商提供了设备调整记录，但还没有调整后的连续生产验证。我把这项列为证据缺口，暂不建议关闭异常。'],
     ['u-wangyilin','10:18','按这个口径推进。今天先完成复测和影响范围确认，不直接承诺恢复供货。'],
     ['u-linxiao','10:24','待办已明确：我跟进复测记录和现场照片；供应商补连续验证数据；你确认临时放行条件。文件集中放子区，不在多个群重复传。'],
-    ['u-wangyilin','10:28','可以。何静加入项目后先看共享的分析报告；需要参与整改讨论时，再单独邀请进这个群。']
+    ['u-wangyilin','10:28','可以。何静加入项目后先看共享的分析报告；需要参与整改讨论时，再单独添加进这个群。']
   ]},
   {scopeId:'supply-demo-evidence',messages:[
     ['u-linxiao','10:08','证据清单：① 来料抽检原始记录；② 批次隔离与标识照片；③ 设备调整记录；④ 调整后连续生产验证。前两项已收齐，后两项待补。'],

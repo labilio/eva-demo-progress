@@ -11,7 +11,7 @@ function setup() {
   vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js', import.meta.url), 'utf8'), { window });
   const store = window.EvaMembership.create({ people: [{ id: 'owner', name: '负责人' }, { id: 'member', name: '成员' }] });
   store.createProject('p', '项目', 'owner', []);
-  store.accept(store.invite('p', 'owner', 'member').id, 'member', []);
+  store.addMember('p', 'owner', 'member');
   store.createGroup('project-group', '项目群', 'p', 'owner', []);
   store.createGroup('org-group', '非项目群', null, 'owner', []);
   return store;
