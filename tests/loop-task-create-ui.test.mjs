@@ -7,7 +7,7 @@ function harness(overrides={}){
   const hooks=[],effects=[];let cursor=0,tree;
   const R={Fragment:'Fragment',createElement:(type,props,...children)=>({type,props:props||{},children:children.flat(Infinity)}),useSyncExternalStore:()=>{},useState(init){const i=cursor++;hooks[i]??={value:typeof init==='function'?init():init};return[hooks[i].value,value=>{hooks[i].value=typeof value==='function'?value(hooks[i].value):value;}];},useRef(value){const i=cursor++;return hooks[i]??={current:value};},useEffect(fn,deps){const i=cursor++,old=hooks[i];if(!old||deps.some((v,n)=>v!==old.deps[n])){effects.push(()=>{old?.cleanup?.();hooks[i]={deps,cleanup:fn()};});}}};
   const state={actorId:'u1',people:[{id:'u1',name:'甲'},{id:'u2',name:'乙'}],clones:[{id:'c1',name:'甲分身',ownerId:'u1'}],projects:{prod:{humans:[{id:'u1'}],cloneIds:['c1'],employeeIds:[]},other:{humans:[{id:'u2'}],cloneIds:[],employeeIds:[]}}};
-  const calls=[],deps={React:R,Modal:'Modal',Button:'Button',Input:'Input',TextArea:'TextArea',Select:'Select',icons:{Paperclip:'Paperclip',Trash2:'Trash2'},members:{subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
+  const calls=[],deps={React:R,Modal:'Modal',Button:'Button',Input:'Input',TextArea:'TextArea',Select:'Select',icons:{Paperclip:'Paperclip',Trash2:'Trash2'},members:{subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],createLabel:async name=>({id:'new-'+name,name}),uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
   const root={EvaAIIdentity:{avatar:()=> 'ai-avatar',badge:()=> 'ai-badge'},EvaAvatar:{personUri:id=>'avatar:'+id}};vm.runInNewContext(code,{window:root});
   const props={visible:true,onClose:()=>calls.push('closed'),onCreated:()=>calls.push('created')};
   const render=()=>{cursor=0;const el=root.EvaLoopTaskCreateUI.render(props,deps);tree=el.type(el.props);while(effects.length)effects.shift()();return tree;};
@@ -27,7 +27,7 @@ test('project transition ignores stale creation result and resets fields',async(
   let resolve;const h=harness({createIssue:()=>new Promise(r=>resolve=r)});h.fill();const pending=h.button('创建任务').props.onClick();h.deps.project={id:'other'};h.render();h.render();resolve({id:'SC101'});await pending;assert.equal(h.find('任务标题').props.value,'');assert.equal(h.calls.length,0);
 });
 test('label retry never recreates an already-created issue',async()=>{
-  let attempts=0;const h=harness({attachLabel:async()=>{if(++attempts===1)throw new Error('标签失败');}});h.fill();await new Promise(resolve=>setImmediate(resolve));h.render();h.find('标签').props.onChange(['l1']);h.render();await h.button('创建任务').props.onClick();h.render();assert.ok(h.button('补存标签'));await h.button('补存标签').props.onClick();assert.equal(h.calls.filter(x=>typeof x==='object').length,1);assert.equal(attempts,2);
+  let attempts=0;const h=harness({attachLabel:async()=>{if(++attempts===1)throw new Error('标签失败');}});h.fill();await new Promise(resolve=>setImmediate(resolve));h.render();h.find('添加或编辑任务标签').props.onChange(['l1']);h.render();await h.button('创建任务').props.onClick();h.render();assert.ok(h.button('补存标签'));await h.button('补存标签').props.onClick();assert.equal(h.calls.filter(x=>typeof x==='object').length,1);assert.equal(attempts,2);
 });
 test('unauthorized project refuses submission',async()=>{
   const h=harness();h.fill();h.deps.members.canRead=()=>false;h.render();await h.button('创建任务').props.onClick();assert.equal(h.calls.length,0);
@@ -44,4 +44,8 @@ test('AI assignment stays todo and human avatars use stable identity ids',async(
 test('创建人和创建时间以只读系统字段展示',()=>{
   const h=harness();const labels=h.all().filter(n=>n.props.className==='eva-loop-task-create__system-label').map(n=>n.children[0]);assert.ok(labels.includes('创建人'));assert.ok(labels.includes('创建时间'));
   const readonly=h.all().filter(n=>n.props.className==='eva-loop-task-create__readonly');assert.ok(readonly.some(n=>n.children.includes('创建后自动记录')));assert.ok(readonly.some(n=>n.children.some(child=>child?.props?.className==='eva-loop-task-create__identity')));
+});
+test('任务标签可添加新标签，初始状态不再显示',async()=>{
+  const h=harness();await new Promise(resolve=>setImmediate(resolve));h.render();h.find('新建标签').props.onChange('风险');h.render();await h.button('添加').props.onClick();h.render();
+  const tags=h.find('添加或编辑任务标签');assert.ok(tags.props.optionList.some(tag=>tag.value==='new-风险'));assert.deepEqual(Array.from(tags.props.value),['new-风险']);assert.equal(h.all().some(n=>n.children.includes?.('初始状态')),false);
 });

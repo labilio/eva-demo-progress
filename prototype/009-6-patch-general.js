@@ -243,14 +243,28 @@
     }`,'项目任务完整编号');
     const evaCreateStart=source.indexOf('function CreateIssueModal('),evaCreateEnd=source.indexOf('const{Text:Text$c}=Typography;',evaCreateStart);
     if(evaCreateStart<0||evaCreateEnd<evaCreateStart)throw new Error('新建 Loop 任务组件边界不匹配');
-    source=root.__evaCut(source,source.slice(evaCreateStart,evaCreateEnd),String.raw`const evaLoopTaskAttachments=new Map();
+    source=root.__evaCut(source,source.slice(evaCreateStart,evaCreateEnd),String.raw`const evaLoopTaskAttachments=new Map(),evaLoopTaskLabelsByProject=new Map();
+    function evaTaskLabels(project){
+      const key=project?.id;if(!key)return[];
+      if(!evaLoopTaskLabelsByProject.has(key)){const seed=(window.__EVA_SUPPLY_CHAIN_DEMO?.taskLabels||[]).filter(label=>label.project_id===key||(key==='prod'&&label.project_id==='p-supply'));evaLoopTaskLabelsByProject.set(key,seed.map(label=>({...label})));}
+      return evaLoopTaskLabelsByProject.get(key);
+    }
+    function evaCreateTaskLabel(project,name){
+      const normalized=String(name||'').trim();if(!normalized||normalized.length>20)throw new Error('标签名称须为 1–20 个字符');
+      const labels=evaTaskLabels(project),existing=labels.find(label=>label.name===normalized);if(existing)return existing;
+      const labelProjectId=project.id==='prod'?'p-supply':project.id,label={id:'task-label:'+labelProjectId+':'+Date.now().toString(36)+':'+Math.random().toString(36).slice(2,7),project_id:labelProjectId,name:normalized};labels.push(label);return label;
+    }
+    function evaAttachTaskLabel(project,pid,issueId,labelId){
+      const label=evaTaskLabels(project).find(item=>item.id===labelId),issue=(ISSUES_BY_SPACE[pid]||[]).find(item=>item.id===issueId);if(!label||!issue)throw new Error('标签或任务不存在');
+      issue.labels=issue.labels||[];if(!issue.labels.some(item=>item.id===label.id))issue.labels.push({id:label.id,name:label.name});return issue;
+    }
     function CreateIssueModal(props){
       const store=evaMembers().store;reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot);
       const project=loadSpaces().find(p=>p.id===(props.projectId||currentSpaceId()));
       return window.EvaLoopTaskCreateUI.render(props,{React:reactExports,Modal,Button,Input:ForwardInput,TextArea,Select,icons:{X,Paperclip:Paperclip$3,Trash2},members:store,HumanIdentity:evaMembers().ui.HumanIdentity,project,getPrefix:()=>project?evaProjectIssuePrefix(project):'',createIssue:payload=>props.canCreate&&!props.canCreate()?Promise.reject(new Error('已失去当前会话或项目的访问权限')):createIssue(payload),uploadAttachment:file=>{
         if(!file||file.size>20*1024*1024)return Promise.reject(new Error('单个附件不能超过 20 MB'));
         const record={id:'task-file:'+crypto.randomUUID(),name:file.name,size:file.size,mime_type:file.type,url:URL.createObjectURL(file)};evaLoopTaskAttachments.set(record.id,record);return Promise.resolve(record);
-      },listLabels,attachLabel});
+      },listLabels:()=>Promise.resolve(evaTaskLabels(project)),createLabel:name=>Promise.resolve(evaCreateTaskLabel(project,name)),attachLabel:(issueId,labelId)=>Promise.resolve(evaAttachTaskLabel(project,project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id),issueId,labelId))});
     }`,'项目 Loop 任务完整创建表单');
     source=root.__evaCut(source,'const evaProjectMemberStore=evaMembers().store,evaProjectMemberRevision=', 'const evaTaskLocation=useLocation();reactExports.useEffect(()=>{if(new URLSearchParams(evaTaskLocation.search).get("evaTab")==="tasks"){WKApp$1.routeRight.popAll();mt("tasks");}},[rt.id,evaTaskLocation.key]);const evaProjectMemberStore=evaMembers().store,evaProjectMemberRevision=', '项目 Loop 路由标签');
     source=root.__evaCut(source,'getIssue=rt=>Promise.resolve(issuesOf().find(ct=>ct.id===rt)??MOCK_ISSUES[0])','getIssue=rt=>{const issue=issuesOf().find(ct=>ct.id===rt||ct.identifier===rt);return issue?Promise.resolve(issue):Promise.reject(new Error("当前项目找不到任务："+rt))}','按完整任务编号查找');

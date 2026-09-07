@@ -55,6 +55,8 @@
 .eva-loop-task-create__system-field { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 8px; }
 .eva-loop-task-create__system-label { color: var(--semi-color-text-0); font-size: 13px; font-weight: 500; line-height: 20px; }
 .eva-loop-task-create__readonly { display: flex; align-items: center; min-height: 32px; padding: 5px 8px; border: 1px solid var(--semi-color-border); border-radius: var(--gds-radius-control); color: var(--semi-color-text-1); font-size: 13px; line-height: 20px; }
+.eva-loop-task-create__tag-create { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; margin-top: 8px; }
+.eva-loop-task-create__tag-create .semi-input-wrapper { min-width: 0; }
 .eva-loop-task-create .semi-input,
 .eva-loop-task-create .semi-input-textarea,
 .eva-loop-task-create .semi-select,

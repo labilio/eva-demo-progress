@@ -123,6 +123,13 @@
     supplyTask(7, '完成到期采购合同续签检查', 'done', 'medium', 'agent', 'ag-supply-contract', '供应链合同管理专家', '核对三份到期合同的履约情况、价格调整、续签期限和终止条件。')
   ];
 
+  var supplyTaskLabels = [
+    {id: 'task-label-procurement', project_id: 'p-supply', name: '采购'},
+    {id: 'task-label-quality', project_id: 'p-supply', name: '质量'},
+    {id: 'task-label-supply-risk', project_id: 'p-supply', name: '供应风险'},
+    {id: 'task-label-compliance', project_id: 'p-supply', name: '合规'}
+  ];
+
   var supplyAgentTasks = {};
   supplyAgents.forEach(function (agent) {
     supplyAgentTasks[agent.id] = supplyIssues.filter(function (issue) { return issue.assignee_id === agent.id; }).map(function (issue, index) {
@@ -145,7 +152,7 @@
       milestones: [['09月04日', '汇总保供风险', 'done'], ['09月07日', '复核整改证据与备选方案', 'active'], ['09月11日', '跟进恢复计划', 'pending']]
     },
     agents: supplyAgents, squads: supplySquads, skills: supplySkills, autopilots: [],
-    projects: supplyProjects, issues: supplyIssues, agentTasks: supplyAgentTasks
+    projects: supplyProjects, issues: supplyIssues, taskLabels: supplyTaskLabels, agentTasks: supplyAgentTasks
   };
 })();
 
