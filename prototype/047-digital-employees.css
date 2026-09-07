@@ -47,3 +47,19 @@
 
 .eva-digital-dialog .semi-modal-footer{margin:16px 0 0;padding:16px 0 0;border-top:1px solid var(--semi-color-border)}
 .eva-digital-dialog .semi-modal-footer .eva-picker-footer{margin:0;padding:0;border:0;justify-content:flex-end}
+
+/* Five entry points: personal identities above, shared capabilities below. */
+.eva-creator-catalog { padding: 28px 32px; }
+.eva-creator-catalog > .eva-digital-center__head { margin-bottom: 24px; }
+.eva-creator-grid--self { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.eva-creator-grid--public { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.eva-creator-card { gap: 8px; border-radius: var(--gds-radius-panel); }
+.eva-creator-card__heading { display: flex; align-items: center; gap: 10px; }
+.eva-creator-card__heading h3 { margin: 0; font-size: 16px; }
+.eva-creator-card p { margin: 0; }
+.eva-creator-card .eva-creator-card__tag { color: var(--semi-color-text-1); }
+.eva-creator-card .eva-creator-card__boundary { font-size: 12px; padding-top: 8px; border-top: 1px solid var(--semi-color-border); }
+.eva-creator-card > .semi-button { margin-top: auto; }
+.eva-creator-catalog > .eva-digital-center__section > p { margin-bottom: 12px; }
+@media(max-width:1000px){.eva-creator-grid--public{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:760px){.eva-creator-catalog{padding:20px 16px;}.eva-creator-grid{grid-template-columns:1fr;}}
