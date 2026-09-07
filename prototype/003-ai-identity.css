@@ -1,4 +1,4 @@
-/* Project-wide geometry: contacts 32 / 14 / 1 / -1. */
+/* Project-wide AI avatar geometry. Each identity supplies one circular image. */
   .eva-identity-avatar {
     position: relative;
     display: inline-flex;
@@ -16,21 +16,6 @@
     background: var(--semi-color-fill-0, #f2f3f5);
     object-fit: cover;
   }
-
-  .eva-identity-avatar__owner {
-    position: absolute;
-    box-sizing: border-box;
-    right: calc(var(--eva-identity-avatar-size, 32px) * -0.03125);
-    bottom: calc(var(--eva-identity-avatar-size, 32px) * -0.03125);
-    display: block;
-    width: calc(var(--eva-identity-avatar-size, 32px) * 0.4375);
-    height: calc(var(--eva-identity-avatar-size, 32px) * 0.4375);
-    border: calc(var(--eva-identity-avatar-size, 32px) * 0.03125) solid var(--semi-color-bg-0, #fff);
-    border-radius: 50%;
-    background: var(--semi-color-fill-0, #f2f3f5);
-    object-fit: cover;
-  }
-
 
 /* Placement belongs to the name row; badge appearance stays with Octo. */
 .wk-chat-conversation-header-channel-info > .ai-badge { margin-inline-start: 6px; }

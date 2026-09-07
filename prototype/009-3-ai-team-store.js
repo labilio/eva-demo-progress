@@ -27,7 +27,7 @@
     return {sidebarVariant: 'ai-sessions', conversationOnly: true, presentation: 'ai-direct',
       selectedThreadId: selected.id, channels: [{...group, name, threads, unread: 0,
         sessionTitle: selected.name, identityName: name, identityAppearance: appearance,
-        identityAvatarUrl: appearance.logo, conversationKind: 'ai-private-group'}],
+        identityAvatarUrl: appearance.avatar || appearance.logo, conversationKind: 'ai-private-group'}],
       cats: [], messages: {}, threadMessages: Object.fromEntries(threads.map(t => [t.id, messages(t.short_id)])),
       scopeNameOf: {}};
   };
@@ -50,7 +50,8 @@
     toolset: typeof value?.toolset === 'string' ? value.toolset : '四两的产品脑袋',
     identity: typeof value?.identity === 'string' ? value.identity : '通用助理',
     personality: typeof value?.personality === 'string' ? value.personality : '清晰、友善',
-    skills: Array.isArray(value?.skills) ? value.skills.filter(x => typeof x === 'string') : []
+    skills: Array.isArray(value?.skills) ? value.skills.filter(x => typeof x === 'string') : [],
+    avatar: typeof value?.avatar === 'string' && /^(?:https:\/\/\S+|data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+)$/.test(value.avatar.trim()) ? value.avatar.trim() : ''
   });
   const makeIdentity = (id, role, name, local, time) => ({
     id, role, name, sourceAssistantId: local.id,
@@ -299,7 +300,10 @@
         await simulate('sync', { identityId, sourceAssistantId: local.id, version, configuration: config });
         if (syncTokens.get(identityId) !== token) return freeze(copy(identity));
         if (!localById(local.id).online) { identity.syncStatus = 'waiting'; publish(); return freeze(copy(identity)); }
-        identity.configVersion = version; identity.configuration = config; identity.syncStatus = 'synced'; identity.lastSyncedAt = now(); publish();
+        identity.configVersion = version;
+        // A persona is its own AI identity. Keep its chosen avatar when source settings refresh.
+        identity.configuration = configuration({...config, avatar: identity.configuration.avatar || config.avatar});
+        identity.syncStatus = 'synced'; identity.lastSyncedAt = now(); publish();
       } catch (error) {
         if (syncTokens.get(identityId) === token) { identity.syncStatus = localById(local.id).online ? 'error' : 'waiting'; publish(); }
         throw error;

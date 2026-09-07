@@ -83,13 +83,16 @@ test('product copy migration preserves user text, identities and drafts', () => 
 });
 test('complete editor fields persist and local updates sync to personas without losing tabs', async()=>{
  const storage=memory(), s=make({storage});
- const configuration={identity:'角色',personality:'风格',about:'背景',skills:['整理'],collaboration:'协作说明',description:'简介',model:'Qwen3.7 Plus',toolset:'四两的产品脑袋'};
+ const configuration={identity:'角色',personality:'风格',about:'背景',skills:['整理'],collaboration:'协作说明',description:'简介',model:'Qwen3.7 Plus',toolset:'四两的产品脑袋',avatar:'https://example.test/local.png'};
  s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'王宜林的通用助理',configuration}); await tick();
  const p=s.getSnapshot().identities.find(i=>i.id==='persona-initial'); assert.equal(p.configuration.about,'背景'); assert.equal(p.configuration.collaboration,'协作说明');
- const restored=make({storage}); assert.equal(restored.getSnapshot().localAssistants[0].configuration.toolset,'四两的产品脑袋');
- restored.savePersona({id:p.id,name:'我的分身',configuration:{...configuration,about:'云端背景'}});
+ const restored=make({storage}); assert.equal(restored.getSnapshot().localAssistants[0].configuration.toolset,'四两的产品脑袋'); assert.equal(restored.getSnapshot().localAssistants[0].configuration.avatar,'https://example.test/local.png');
+ restored.savePersona({id:p.id,name:'我的分身',configuration:{...configuration,about:'云端背景',avatar:'https://example.test/persona.png'}});
  assert.equal(restored.getSnapshot().identities.find(i=>i.id===p.id).configuration.about,'云端背景');
+ assert.equal(restored.getSnapshot().identities.find(i=>i.id===p.id).configuration.avatar,'https://example.test/persona.png');
  assert.equal(restored.getSnapshot().localAssistants[0].configuration.about,'背景');
+ restored.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'王宜林的通用助理',configuration:{avatar:'https://example.test/local-next.png'}}); await tick();
+ assert.equal(restored.getSnapshot().identities.find(i=>i.id===p.id).configuration.avatar,'https://example.test/persona.png');
  const created=await restored.createPersona('assistant-general',{name:'导入分身',configuration}); assert.equal(created.name,'导入分身'); assert.equal(created.configuration.description,'简介');
 });
 

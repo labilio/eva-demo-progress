@@ -35,7 +35,7 @@ test('项目设置与概览使用独立根类，设置字段样式可以命中',
   assert.match(css,/\.eva-project-settings-info \.eva-project-info-field textarea\s*\{[^}]*width:100%/);
 });
 
-test('AI名称与标记共用身份行，标题不扩大组合头像子图', () => {
+test('AI名称与标记共用身份行，标题不扩大公共圆形头像', () => {
   const css=read('prototype/046-ai-team.css');
   assert.match(css,/\.eva-ai-team__identity-name\s*\{[^}]*flex:\s*0 1 auto/);
   assert.match(read('prototype/009-5-patch-im.js'),/className:'eva-identity-name-row'/);

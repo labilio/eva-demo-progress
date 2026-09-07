@@ -42,7 +42,7 @@
     session.messages.push({kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time,text},{kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time,text:a.presence==='offline'?'【原型】已排队，待数字员工上线后处理。':'【原型】已收到请求，后续由 '+a.name+' 的服务处理。当前未调用真实服务。'});
     session.draft='';session.updatedAt=now();publish();return true;
   };
-  const appearance=a=>({name:a.name,sourceName:'Eva',logo:root.__EVA_COLLEAGUE_PORTRAIT,ownerName:a.ownership==='personal'?(a.creatorName||'王宜林'):'吉利汽车集团',ownerAvatar:a.ownership==='personal'?root.__EVA_CURRENT_USER_PORTRAIT:'prototype/assets/project-agent-bot.svg'});
+  const appearance=a=>({name:a.name,sourceName:'Eva',avatar:a.avatar||root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT});
   // One-time additive demo migration; never overwrite edits or restore deleted sessions.
   if(!state.professionalDemoV1){
     Object.entries(seed.demoConversations||{}).forEach(([id,stories])=>{
