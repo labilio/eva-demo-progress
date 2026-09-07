@@ -20,10 +20,15 @@
   --eva-rail-divider: var(--color-border-2, var(--semi-color-border, #e5e6eb));
   --eva-rail-caption: var(--semi-color-text-2, #8f959e);
   --eva-rail-primary: #1f2329;
-  --eva-rail-secondary: #30343b;
+  /* These row-state values deliberately mirror the final message-rail rules
+     in 016. A session is the My AI equivalent of a group-chat subzone. */
+  --eva-rail-secondary: #68717a;
   --eva-rail-time: #8d95a1;
-  --eva-rail-hover: #e2e3e5;
-  --eva-rail-selected: #e5e6eb;
+  --eva-rail-hover: #eceff1;
+  --eva-rail-selected: #e4e7ea;
+  --eva-rail-group-radius: 6px;
+  --eva-rail-primary-row-radius: 7px;
+  --eva-rail-nested-row-radius: 6px;
   --eva-rail-name-size: var(--gds-type-label-medium-font-size);
   --eva-rail-label-size: var(--gds-type-label-font-size);
   --eva-rail-line-height: var(--gds-type-label-medium-line-height);
@@ -90,9 +95,9 @@
 }
 .eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-1) var(--gds-space-2-5) var(--gds-space-3); }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
-  margin-top: var(--gds-space-2-5);
-  padding-top: var(--gds-space-2-5);
-  border-top: 1px solid var(--eva-rail-divider);
+  /* Match adjacent project groups: whitespace separates sections; a divider
+     would make the AI rail look more segmented than the message rail. */
+  margin-top: 6px;
 }
 .eva-ai-team__group-toggle {
   display: flex;
@@ -102,7 +107,7 @@
   gap: var(--gds-space-1);
   padding: 0;
   border: 0;
-  border-radius: var(--gds-radius-control);
+  border-radius: var(--eva-rail-group-radius);
   background: transparent;
   color: var(--eva-rail-caption);
   text-align: left;
@@ -129,14 +134,13 @@
 .eva-ai-team__digital-button {
   min-width: 0;
   border: 0;
-  border-radius: var(--gds-radius-control);
   background: transparent;
   color: inherit;
   text-align: left;
   font: inherit;
   cursor: pointer;
 }
-.eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-2); min-height: var(--eva-rail-identity-height); padding: 0; flex: 1; }
+.eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-2); min-height: var(--eva-rail-identity-height); padding: 0; border-radius: var(--eva-rail-primary-row-radius); flex: 1; }
 .eva-ai-team__identity-name { min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-medium); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-button > svg,
 .eva-ai-team__identity-button > .ai-badge,
@@ -154,9 +158,10 @@
   min-height: var(--eva-rail-session-height);
   align-items: center;
   padding: 2px var(--gds-space-2) 2px var(--eva-rail-session-indent);
+  border-radius: var(--eva-rail-nested-row-radius);
 }
 /* Actions share the time slot; sibling buttons avoid nested interactive elements. */
-.eva-ai-team__session-row { position: relative; border-radius: var(--gds-radius-control); }
+.eva-ai-team__session-row { position: relative; border-radius: var(--eva-rail-nested-row-radius); }
 .eva-ai-team__session-row:hover { background: var(--eva-rail-hover); }
 .eva-ai-team__session-row.is-selected { background: var(--eva-rail-selected); }
 .eva-ai-team__session-actions { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; opacity: 0; pointer-events: none; }
@@ -171,14 +176,14 @@
 .eva-ai-team__session-row .eva-ai-team__session-time { justify-self: end; }
 .eva-ai-team__session-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-ai-team__session-title { grid-column: 1; font-size: var(--eva-rail-label-size); line-height: var(--gds-type-label-line-height); font-weight: var(--gds-font-weight-regular); color: var(--eva-rail-secondary); }
-.eva-ai-team__session.is-selected .eva-ai-team__session-title { color: var(--eva-rail-primary); font-weight: var(--gds-font-weight-regular); }
+.eva-ai-team__session.is-selected .eva-ai-team__session-title { color: var(--eva-rail-secondary); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__session-time { grid-column: 2; grid-row: 1; align-self: center; white-space: nowrap; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__identity-button:hover,
 .eva-ai-team__session:hover,
 .eva-ai-team__digital-button:hover { background: var(--eva-rail-hover); }
 .eva-ai-team__session.is-selected,
 .eva-ai-team__digital-button.is-selected { background: var(--eva-rail-selected); }
-.eva-ai-team__digital-button { display: flex; align-items: center; width: 100%; gap: var(--gds-space-2); padding: var(--gds-space-2); }
+.eva-ai-team__digital-button { display: flex; align-items: center; width: 100%; gap: var(--gds-space-2); padding: var(--gds-space-2); border-radius: var(--eva-rail-primary-row-radius); }
 .eva-ai-team__digital-button .eva-ai-team__group-title { padding: 0; }
 .eva-ai-team__digital-button > .eva-ai-team__role-label { margin-left: auto; }
 .eva-ai-team__main {
