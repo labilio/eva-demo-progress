@@ -41,10 +41,13 @@
 .eva-loop-task-create__tag-selected { display: flex; flex-wrap: wrap; gap: 6px; }
 .eva-loop-task-create__tag-chip { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; padding: 2px 6px 2px 8px; border: 0; border-radius: var(--gds-radius-control); background: var(--semi-color-fill-0); color: var(--semi-color-text-0); font: inherit; line-height: 20px; cursor: pointer; }
 .eva-loop-task-create__tag-chip:hover { background: var(--semi-color-fill-1); }
-.eva-loop-task-create__tag-menu { position: absolute; z-index: 2; top: 38px; right: 0; left: 0; overflow: hidden; border: 1px solid var(--semi-color-border); border-radius: var(--gds-radius-control); background: var(--semi-color-bg-0); box-shadow: var(--semi-shadow-elevated); }
+.eva-loop-task-create__tag-menu { width: min(568px, calc(100vw - 64px)); max-height: 200px; overflow-y: auto; border: 1px solid var(--semi-color-border); border-radius: var(--gds-radius-control); background: var(--semi-color-bg-0); box-shadow: var(--semi-shadow-elevated); }
 .eva-loop-task-create__tag-menu button,
 .eva-loop-task-create__tag-menu p { display: block; box-sizing: border-box; width: 100%; min-height: 32px; margin: 0; padding: 6px 10px; border: 0; background: transparent; color: var(--semi-color-text-0); font: inherit; line-height: 20px; text-align: left; }
 .eva-loop-task-create__tag-menu button { cursor: pointer; }
 .eva-loop-task-create__tag-menu button:hover { background: var(--semi-color-fill-0); }
 .eva-loop-task-create__tag-menu .eva-loop-task-create__tag-create-option { color: var(--semi-color-primary); }
 .eva-loop-task-create__tag-menu p { color: var(--semi-color-text-2); }
+
+/* Child popups share the modal stacking context, outside its scroll clipping. */
+.eva-loop-task-create-portal .semi-portal { pointer-events: auto; }

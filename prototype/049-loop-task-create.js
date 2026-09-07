@@ -5,7 +5,7 @@
   function create(R){
     const h=R.createElement;
     return function LoopTaskCreate({visible,onClose,onCreated,parentIssueId,deps}){
-      const {Modal,Button,LoopButton,Input,AutoGrowTextarea,Select,LoopPropertyPill,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
+      const {Modal,Button,LoopButton,Input,AutoGrowTextarea,Select,Popover,LoopPropertyPill,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
       const project=typeof deps.project==='function'?deps.project():deps.project;
       R.useSyncExternalStore(members.subscribe,members.getSnapshot,members.getSnapshot);
       const snapshot=members.snapshot(),pid=project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id),scope=snapshot.projects[pid];
@@ -66,8 +66,7 @@
       const normalizedTagQuery=tagQuery.trim().toLowerCase(),tagOptions=labels.filter(label=>!normalizedTagQuery||label.name.toLowerCase().includes(normalizedTagQuery)),hasExactTag=labels.some(label=>label.name.toLowerCase()===normalizedTagQuery);
       const taskLabels=h('div',{className:'eva-loop-task-create__tag-combobox'},
         form.labels.length?h('div',{className:'eva-loop-task-create__tag-selected'},form.labels.map(id=>{const label=labels.find(item=>item.id===id);return label&&h('button',{type:'button',className:'eva-loop-task-create__tag-chip',key:id,'aria-label':'移除标签 '+label.name,disabled,onClick:()=>patch('labels',form.labels.filter(item=>item!==id))},label.name,h(icons.X,{size:12}));})):null,
-        h(Input,{value:tagQuery,onChange:setTagQuery,onFocus:()=>setTagMenuOpen(true),onBlur:()=>setTimeout(()=>setTagMenuOpen(false),120),onEnterPress:()=>addTaskLabel(tagQuery),placeholder:'选择或输入任务标签',maxLength:20,disabled,'aria-label':'添加或编辑任务标签'}),
-        tagMenuOpen&&h('div',{className:'eva-loop-task-create__tag-menu',role:'listbox'},tagOptions.map(label=>h('button',{type:'button',key:label.id,role:'option','aria-selected':form.labels.includes(label.id),onMouseDown:event=>event.preventDefault(),onClick:()=>selectTaskLabel(label.id)},label.name)),normalizedTagQuery&&!hasExactTag&&h('button',{type:'button',className:'eva-loop-task-create__tag-create-option','aria-label':'新建标签：'+tagQuery,onMouseDown:event=>event.preventDefault(),onClick:()=>addTaskLabel(tagQuery)},'新建“'+tagQuery.trim()+'”'),!tagOptions.length&&!normalizedTagQuery&&h('p',null,'暂无任务标签'))
+        h(Popover,{trigger:'custom',visible:tagMenuOpen&&!disabled,position:'bottomLeft',getPopupContainer:popup,onClickOutSide:()=>setTagMenuOpen(false),content:h('div',{className:'eva-loop-task-create__tag-menu',role:'listbox'},tagOptions.map(label=>h('button',{type:'button',key:label.id,role:'option','aria-selected':form.labels.includes(label.id),onMouseDown:event=>event.preventDefault(),onClick:()=>selectTaskLabel(label.id)},label.name)),normalizedTagQuery&&!hasExactTag&&h('button',{type:'button',className:'eva-loop-task-create__tag-create-option','aria-label':'新建标签：'+tagQuery,onMouseDown:event=>event.preventDefault(),onClick:()=>addTaskLabel(tagQuery)},'新建“'+tagQuery.trim()+'”'),!tagOptions.length&&!normalizedTagQuery&&h('p',null,'暂无任务标签'))},h(Input,{value:tagQuery,onChange:setTagQuery,onFocus:()=>setTagMenuOpen(true),onBlur:()=>setTimeout(()=>setTagMenuOpen(false),120),onEnterPress:()=>addTaskLabel(tagQuery),placeholder:'选择或输入任务标签',maxLength:20,disabled,'aria-label':'添加或编辑任务标签'}))
       );
       // Layout restored from the pre-7da18d9 Loop CreateIssueModal.
       // The outer collaboration project is fixed; there is no Loop project picker.
@@ -84,8 +83,8 @@
             h(AutoGrowTextarea,{className:'loop-ci__desc',value:form.description,disabled,'aria-label':'任务描述',placeholder:'补充描述…',onChange:value=>patch('description',value)}),
             selected?.type==='agent'&&h('div',{className:'loop-ci__hint'},identity(selected),h('span',null,'分派给 AI 不会立即启动执行')),
             h('div',{className:'loop-ci__toolbar'},
-              h(LoopPropertyPill,{value:form.status,options:statusOptions,onChange:value=>{if(!disabled)patch('status',value)},ariaLabel:'状态',disabled}),
-              h(LoopPropertyPill,{value:form.priority,options:priorityOptions,onChange:value=>{if(!disabled)patch('priority',value)},ariaLabel:'优先级',disabled}),
+              h(LoopPropertyPill,{value:form.status,options:statusOptions,onChange:value=>{if(!disabled)patch('status',value)},ariaLabel:'状态',disabled,getPopupContainer:popup}),
+              h(LoopPropertyPill,{value:form.priority,options:priorityOptions,onChange:value=>{if(!disabled)patch('priority',value)},ariaLabel:'优先级',disabled,getPopupContainer:popup}),
               h(Select,{className:'eva-loop-task-create__assignee',value:form.assignee||undefined,optionList:candidates.map(person=>({value:person.id,label:identity(person)})),placeholder:'未指派','aria-label':'执行负责人',showClear:true,disabled,getPopupContainer:popup,onChange:value=>patch('assignee',value||'')})),
             h('div',{className:'loop-ci__labels'},taskLabels),
             files.length>0&&h('div',{className:'eva-loop-task-create__attachments'},files.map((file,index)=>h('div',{className:'eva-loop-task-create__attachment',key:index},h('span',null,file.name),h(Button,{theme:'borderless',icon:h(icons.Trash2,{size:14}),'aria-label':'移除 '+file.name,disabled,onClick:()=>setFiles(old=>old.filter((_,i)=>i!==index))})))),
