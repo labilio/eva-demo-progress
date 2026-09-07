@@ -76,7 +76,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
   assert.match(imPatch, /if\(identity\?\.id!==i\.id\)choose\(i\.id,sessions\[0\]\?\.id\|\|null\)/);
   assert.match(imPatch, /collapsedGroups/);
-  assert.match(imPatch, /roleGroup\('assistant','本地助理',localIdentities\)/);
+  assert.doesNotMatch(imPatch, /roleGroup\('assistant',/);
   assert.match(imPatch, /roleGroup\('persona','云端分身',personas\)/);
   assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
   assert.match(imPatch, /className:'eva-ai-team__group-count'/);
@@ -242,7 +242,7 @@ test('一级页面只挂入路由宿主，不再追加到 document.body', () => 
   assert.doesNotMatch(source, /document\.body\.appendChild\((?:root|page|center)\)/);
   assert.doesNotMatch(source, /document\.body\.insertAdjacentHTML\([^,]+,\s*build(?:Workboard|Automation)\(/);
   assert.doesNotMatch(source, /stopImmediatePropagation\(\)/);
-  for (const pageId of ['contacts', 'drive', 'workboard', 'digital-employees', 'connection-center', 'personal']) {
+  for (const pageId of ['contacts', 'drive', 'workboard', 'connection-center', 'personal']) {
     assert.match(source, new RegExp(`__evaNativePages\\.register\\(['"]${pageId}['"]`));
   }
 });
