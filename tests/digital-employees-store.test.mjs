@@ -4,11 +4,14 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {webcrypto} from 'node:crypto';
 const source=readFileSync(new URL('../prototype/009-3-digital-employees-store.js',import.meta.url),'utf8');
+const aiTeamSource=readFileSync(new URL('../prototype/009-3-ai-team-store.js',import.meta.url),'utf8');
 function load(saved){
   let persisted=saved?JSON.stringify(saved):null;
   class FixedDate extends Date {constructor(...args){super(...(args.length?args:['2026-09-06T12:00:00.000Z']));}}
-  const window={crypto:webcrypto,__EVA_DIGITAL_EMPLOYEES_DATA:{agents:[{id:'staff-1',kind:'staff',name:'专家',ownership:'organization'},{id:'project-1',kind:'team',name:'项目助手'}],runtimes:[{key:'dify'}]},localStorage:{getItem:()=>persisted,setItem:(_,value)=>persisted=value}};
-  vm.runInNewContext(source,{window,structuredClone,Date:FixedDate});
+  const window={crypto:webcrypto,__EVA_DIGITAL_EMPLOYEES_DATA:{agents:[{id:'staff-1',kind:'staff',name:'专家',ownership:'organization'},{id:'project-1',kind:'team',name:'项目助手'}],runtimes:[{key:'dify'}]},localStorage:{getItem:key=>key==='eva:digital-employees:v1'?persisted:null,setItem:(key,value)=>{if(key==='eva:digital-employees:v1')persisted=value;}}};
+  const context=vm.createContext({window,structuredClone,Date:FixedDate});
+  vm.runInContext(aiTeamSource,context);
+  vm.runInContext(source,context);
   return {store:window.EvaDigitalEmployeesStore,saved:()=>JSON.parse(persisted)};
 }
 test('membership is explicit, duplicate-safe, persistent and removal preserves messages',()=>{
@@ -25,6 +28,12 @@ test('legacy migration preserves messages, draft and stable session id across re
 test('independent sessions keep drafts, title, pinning and deleted callbacks isolated',()=>{
   const {store}=load();const first=store.createSession('staff-1'),second=store.createSession('staff-1');
   const a=store.conversationSource('staff-1',first),b=store.conversationSource('staff-1',second);
+  assert.equal(a.channels[0].chatType,'group');
+  assert.equal(a.channels[0].memberIds.length,2);
+  assert.equal(a.channels[0].replyPolicy,'direct-only');
+  assert.equal(a.presentation,'ai-direct');
+  assert.notEqual(a.selectedThreadId,b.selectedThreadId);
+  assert.equal(a.channels[0].threads.find(t=>t.id===a.selectedThreadId).channel_type,5);
   a.onDraftChange('草稿 A');b.onDraftChange('草稿 B');a.onSend('会话 A');
   assert.equal(store.conversationSource('staff-1',second).initialDraft,'草稿 B');
   assert.equal(store.sessions('staff-1').find(s=>s.id===first).title,'会话 A');
