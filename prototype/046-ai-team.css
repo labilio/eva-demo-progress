@@ -425,9 +425,7 @@
 }
 .eva-ai-team__fixed-group-tree .wk-conv-compact-name { font-weight: var(--gds-font-weight-medium); }
 .eva-ai-team__fixed-group-tree .wk-conv-compact-icon { width: 22px; flex: 0 0 22px; }
-.eva-ai-team__fixed-group-tree .wk-conv-compact-thread-toggle { width: 20px; flex: 0 0 20px; }
-.eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread { padding-left: 38px; min-height: 38px; }
-.eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread .wk-conv-compact-icon { width: 12px; flex-basis: 12px; }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread { padding-left: 8px; min-height: var(--eva-rail-identity-height); }
 .eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread .wk-conv-compact-name { font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__fixed-group-tree .wk-conv-compact-item:hover { background: var(--eva-rail-hover); }
 .eva-ai-team__fixed-group-tree .wk-conv-compact-item--selected { background: var(--eva-rail-selected); }
