@@ -316,7 +316,7 @@ test('个人 Eva 六态挂在路由宿主内，不使用全屏或 fixed 根节�
   assert.doesNotMatch(workspaceCss, /position:\s*fixed/);
 });
 
-test('个人 Eva 新建会话更新视觉内容但保留原有尺寸与位置', () => {
+test('个人 Eva 首页保留输入能力并适应容器宽度，移除活动文案', () => {
   const workspace = read('prototype/052-personal-eva-gds.js');
   const workspaceCss = read('prototype/051-personal-eva-gds.css');
   const componentCss = read('prototype/048-gds-components.css');
@@ -324,7 +324,6 @@ test('个人 Eva 新建会话更新视觉内容但保留原有尺寸与位置', 
   for (const text of [
     'AI随行',
     '工作随心',
-    '百万亿Token激励计划',
     '分配一个任务或提问任何问题',
     'Qwen3.8 Max',
     '星睿智能体',
@@ -335,6 +334,8 @@ test('个人 Eva 新建会话更新视觉内容但保留原有尺寸与位置', 
   ]) {
     assert.ok(workspace.includes(text), `新会话首页缺少：${text}`);
   }
+  assert.doesNotMatch(workspace, /百万亿Token激励计划|eva-personal-workspace__campaign/);
+  assert.match(workspaceCss, /width: min\(100%, var\(--eva-main-col-w\)\)/);
   assert.match(workspace, /eva-newchat-context.+<span>Eva<\/span>/s);
   assert.match(workspace, /data-eva-selected-assistant/);
   assert.match(workspace, /\+ heroHTML\(\)\s*\+ '<div class="eva-personal-workspace__composer">'[\s\S]+\+ railHTML\(\)/);
@@ -343,7 +344,7 @@ test('个人 Eva 新建会话更新视觉内容但保留原有尺寸与位置', 
   assert.match(workspaceCss, /\.eva-personal-workspace__capability/);
   assert.match(componentCss, /\.eva-composer-wrap\s*\{[^}]*width:\s*var\(--eva-main-col-w\);[^}]*height:\s*166px;/s);
   assert.match(componentCss, /\.eva-composer\s*\{[^}]*width:\s*768px;[^}]*height:\s*118px;/s);
-  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*height:\s*66px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*height:\s*48px;/s);
   assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*margin-top:\s*var\(--eva-space-1\)/s);
   assert.match(workspaceCss, /\.eva-personal-workspace__rail\s*\{[^}]*margin-top:\s*var\(--eva-space-2\)/s);
   assert.match(workspace, /eva-composer-wrap--newchat/);
