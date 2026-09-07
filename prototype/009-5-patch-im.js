@@ -153,7 +153,12 @@ function EvaAITeamPage() {
   const fixedMembers=[{id:'u-wangyilin',name:'王宜林',kind:'human'},
     ...teamIdentities.map(item=>({...item,kind:'ai-direct',identityAppearance:evaIdentityAppearance(item)})),
     ...digitalEmployees.map(item=>({...item,kind:'ai-direct',identityAppearance:digitalStore.appearance(item)}))];
-  const source = groupSelected?groupStore.source(fixedMembers):employee?digitalStore.conversationSource(employee.id,employeeSession?.id):identity ? messageSource('my-ai', snapshot, identity, session) : null;
+  const source = groupSelected?groupStore.source(fixedMembers,selection.sessionId):employee?digitalStore.conversationSource(employee.id,employeeSession?.id):identity ? messageSource('my-ai', snapshot, identity, session) : null;
+  if(groupSelected){
+    source.onCreateThread=record=>{const id=groupStore.createThread(record);setCollapsed(value=>({...value,[groupStore.id]:false}));return id;};
+    source.onUpdateThread=(id,patch)=>{groupStore.updateThread(id,patch);if(patch.deleted&&selection.sessionId===id)choose(groupStore.id,null);};
+    source.onSelectThread=id=>choose(groupStore.id,id);
+  }
   if(source&&!employee&&!groupSelected){
     source.initialDraft=snapshot.drafts[draftKey]||'';
     source.onDraftChange=text=>store.setDraft(draftKey,text);
@@ -227,10 +232,10 @@ function EvaAITeamPage() {
   return h('div',{className:'eva-ai-team'},
     h('aside',{className:'eva-ai-team__sidebar','aria-label':'我的 AI 团队',ref:rail},
       h('div',{className:'eva-conversation-rail-resizer',role:'separator','aria-label':'调整中间栏宽度','aria-orientation':'vertical',tabIndex:0,'data-eva-conversation-rail-resizer':true}),
-      h('div',{className:'eva-ai-team__roles'},h('button',{type:'button',className:'eva-ai-team__identity-button eva-ai-team__fixed-group'+(groupSelected?' is-selected':''),'aria-current':groupSelected?'true':undefined,onClick:()=>choose(groupStore.id,null)},h(Users,{size:20}),h('span',{className:'eva-ai-team__identity-name'},'我的AI团队')),roleGroup('persona','云端分身',personas),roleGroup('assistant','个人助理',teamIdentities.filter(i=>i.role==='assistant')),roleGroup('digital','数字员工',digitalEmployees))),
+      h('div',{className:'eva-ai-team__roles'},h('div',{className:'eva-ai-team__fixed-group-tree'},h(ConvCompactItem,{name:'我的AI团队',avatarUrl:window.EvaAvatar.uri({kind:'group',id:groupStore.id}),threadsExpanded:collapsed[groupStore.id]===false,selected:groupSelected&&!selection.sessionId,hasThreads:true,onToggleThreads:()=>setCollapsed(value=>({...value,[groupStore.id]:value[groupStore.id]===false})),onClick:()=>choose(groupStore.id,null)}),collapsed[groupStore.id]===false&&groupStore.source(fixedMembers).channels[0].threads.filter(item=>item.status!==2).map(item=>h(ConvCompactItem,{key:item.id,isThread:true,name:item.name,selected:groupSelected&&selection.sessionId===item.id,onClick:()=>choose(groupStore.id,item.id)}))),roleGroup('persona','云端分身',personas),roleGroup('assistant','个人助理',teamIdentities.filter(i=>i.role==='assistant')),roleGroup('digital','数字员工',digitalEmployees))),
     h('main',{className:'eva-ai-team__main'},
       snapshot.storageWarning&&h('p',{className:'eva-ai-team__notice',role:'status'},snapshot.storageWarning),
-      groupSelected?h(ChannelsView,{key:groupStore.id,source,onOpenTask:()=>{}}):employee?h(ChannelsView,{key:'digital-chat:'+employee.id+':'+(employeeSession?.id||'empty'),source,onOpenTask:()=>{}}):identity?h(React.Fragment,null,
+      groupSelected?h(ChannelsView,{key:groupStore.id+':'+(selection.sessionId||'group'),source,onOpenTask:()=>{}}):employee?h(ChannelsView,{key:'digital-chat:'+employee.id+':'+(employeeSession?.id||'empty'),source,onOpenTask:()=>{}}):identity?h(React.Fragment,null,
         identity.role==='persona'&&identity.syncStatus==='error'&&h(Button,{theme:'borderless',onClick:()=>store.syncPersona(identity.id).catch(e=>setError(e.message))},'重试同步'),
         error&&h('p',{className:'eva-ai-team__error',role:'alert'},error),
         h(ChannelsView,{key:draftKey,source,onOpenTask:()=>{}})):
@@ -527,7 +532,19 @@ function EvaAITeamPage() {
     cut('scopeId:evaMentionScope,visible:evaMentionOpen', 'scopeId:evaMentionScope,members:evaMentionMembers,visible:evaMentionOpen', '固定群成员传入共享提及选择器');
     cut('key:evaActorId+":"+va,scopeId:evaMemberStore.canRead(Sa.id,evaActorId)?Sa.id:null,placeholder:',
       'key:evaActorId+":"+va,mentionMembers:Sa.fixedMembers,scopeId:Sa.fixedMembers?Sa.id:evaMemberStore.canRead(Sa.id,evaActorId)?Sa.id:null,placeholder:', '固定群提及成员范围');
+    cut('key:evaActorId+":"+Es.id,scopeId:evaMemberStore.canRead(Sa.id,evaActorId)?Sa.id:null,placeholder:',
+      'key:evaActorId+":"+Es.id,mentionMembers:Sa.fixedMembers,scopeId:Sa.fixedMembers?Sa.id:evaMemberStore.canRead(Sa.id,evaActorId)?Sa.id:null,placeholder:', '固定群侧面子区提及成员');
     cut('sessionInfoOnly:!!ct?.conversationOnly', 'sessionInfoOnly:ct?.presentation==="ai-direct"', '固定群沿用群聊信息');
+    cut('evaMemberStore.canRead(Sa.id,evaActorId)&&evaMemberStore.createThread(Fi.id,Sa.id,{...Fi,creator_name:evaMemberStore.person(evaActorId)?.name},evaActorId)',
+      'ct?.onCreateThread?ct.onCreateThread(Fi):evaMemberStore.canRead(Sa.id,evaActorId)&&evaMemberStore.createThread(Fi.id,Sa.id,{...Fi,creator_name:evaMemberStore.person(evaActorId)?.name},evaActorId)', '固定团队群复用创建子区表单');
+    cut('evaMemberStore.updateThread(ci.id,{deleted:true},evaActorId);', 'ct?.onUpdateThread?ct.onUpdateThread(ci.id,{deleted:true}):evaMemberStore.updateThread(ci.id,{deleted:true},evaActorId);', '固定团队群删除子区');
+    cut('ai=(ci,Zi,Fi)=>{if(evaMemberStore.canRead(ci,evaActorId))', 'ai=(ci,Zi,Fi)=>{if(ct?.onUpdateThread){ct.onUpdateThread(Zi,Fi);return;}if(evaMemberStore.canRead(ci,evaActorId))', '固定团队群修改子区');
+    cut('const sent=ct.onSend(Zi);', 'const sent=ct.onSend(Zi,va);', '主消息流按子区发送');
+    cut('vi=(ci,Zi)=>{if(ci.startsWith("dm-"))', 'vi=(ci,Zi)=>{if(ct?.onSend){ct.onSend(Zi,ci);return;}if(ci.startsWith("dm-"))', '侧面子区消息按频道发送');
+    cut('initialDraft:Sa.personId?', 'initialDraft:ct?.getDraft?ct.getDraft(va):Sa.personId?', '固定群主消息流草稿隔离');
+    cut(':ct?.onDraftChange,disabled:', ':ct?.getDraft?text=>ct.onDraftChange(text,va):ct?.onDraftChange,disabled:', '固定群草稿写入当前频道');
+    cut('placeholder:evaIMPlaceholder(Es.name),onSend:ci=>vi(Es.id,ci)', 'placeholder:evaIMPlaceholder(Es.name),initialDraft:ct?.getDraft?.(Es.id),onDraftChange:ct?.getDraft?text=>ct.onDraftChange(text,Es.id):undefined,onSend:ci=>vi(Es.id,ci)', '侧面子区草稿隔离');
+    cut('Za=(ci,Zi)=>{setEvaInlineProjectId(null),xt(ci),Nt(Zi)', 'Za=(ci,Zi)=>{ct?.onSelectThread?.(Zi);setEvaInlineProjectId(null),xt(ci),Nt(Zi)', '固定群中栏子区选择同步');
     return EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

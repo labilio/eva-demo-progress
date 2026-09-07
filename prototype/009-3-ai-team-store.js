@@ -365,7 +365,7 @@
       const record = state.sessions.find(s => s.id === threadId && s.identityId === identityId);
       if (!record) throw new Error('会话已删除或不属于当前 AI');
       const title = String(name || '').trim();
-      if (!title || Array.from(title).length > 50) throw new Error('请输入 1–50 个字符的会话名称');
+      if (!title || Array.from(title).length > 50) throw new Error('请输入 1–100 个字符的会话名称');
       record.title = title; record.autoTitle = false; publish();
     }
     function sendMessage(identityId, sessionId, text) {
@@ -393,13 +393,20 @@
   // A fixed multi-AI group has its own channel/history; membership is derived live.
   function createTeamGroupStore(options = {}) {
     const id = 'my-ai-team:u-wangyilin', key = 'eva:my-ai-team-group:v1';
-    let storage, state = {messages: [], draft: ''}, revision = 0;
+    let storage, state = {messages: [], draft: '', threads: []}, revision = 0;
     const listeners = new Set();
     try {
       storage = Object.hasOwn(options, 'storage') ? options.storage : window.localStorage;
       const saved = JSON.parse(storage?.getItem(key) || 'null');
       if (saved && Array.isArray(saved.messages) && typeof saved.draft === 'string') state = saved;
     } catch (_) {}
+    state.threads ||= [];
+    const target = channelId => {
+      if (!channelId || channelId === id) return state;
+      const thread = state.threads.find(item => item.id === channelId && !item.deleted);
+      if (!thread) throw new Error('子区不存在');
+      return thread;
+    };
     function publish() {
       try { storage?.setItem(key, JSON.stringify(state)); } catch (_) {}
       revision++; listeners.forEach(fn => fn());
@@ -407,25 +414,48 @@
     return Object.freeze({
       id, getSnapshot: () => revision,
       subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-      source(members) {
+      createThread(record) {
+        const name = String(record.name || '').trim();
+        if (!name || name.length > 100) throw new Error('请输入 1–100 个字符的子区名称');
+        const shortId = record.short_id || record.id || 'thread-' + Date.now().toString(36);
+        const channelId = id + '____' + shortId;
+        if (state.threads.some(item => item.id === channelId)) throw new Error('子区已存在');
+        state.threads.push({...record, id:channelId, short_id:shortId, group_no:id, channel_id:channelId,
+          channel_type:5, name, status:1, messages:[], draft:''});
+        publish(); return channelId;
+      },
+      updateThread(channelId, patch) {
+        const thread = target(channelId);
+        if (thread === state) throw new Error('请选择子区');
+        if (patch.name !== undefined) {
+          const name = String(patch.name).trim();
+          if (!name || name.length > 100) throw new Error('请输入 1–100 个字符的子区名称');
+          thread.name = name;
+        }
+        for (const key of ['status','deleted','joined','is_joined','member_count']) if (patch[key] !== undefined) thread[key] = patch[key];
+        thread.updated_at = new Date().toISOString(); publish();
+      },
+      source(members, selectedThreadId) {
         const unique = [...new Map(members.map(member => [member.id, member])).values()];
         const channel = {id, name: '我的AI团队', chatType: 'group', channel_type: 2,
           ownerId: 'u-wangyilin', memberIds: unique.map(member => member.id), members: unique.length,
-          fixedMembers: unique, threads: [], unread: 0, replyPolicy: 'mention-only'};
-        return {conversationOnly: true, sidebarVariant: 'ai-sessions', channels: [channel],
-          cats: [], messages: {[id]: copy(state.messages)}, threadMessages: {}, scopeNameOf: {},
-          initialDraft: state.draft,
-          onDraftChange(text) { if (state.draft !== text) {state.draft = text; publish();} },
-          onSend(text) {
+          fixedMembers: unique, threads: state.threads.filter(item=>!item.deleted).map(({messages,draft,...thread})=>({...thread,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name})), unread: 0, replyPolicy: 'mention-only'};
+        return {conversationOnly: true, sidebarVariant: 'ai-team-group', selectedThreadId, channels: [channel],
+          cats: [], messages: {[id]: copy(state.messages)}, threadMessages: Object.fromEntries(state.threads.filter(item=>!item.deleted).map(item=>[item.id,copy(item.messages)])), scopeNameOf: {},
+          initialDraft: target(selectedThreadId).draft,
+          getDraft: channelId => target(channelId).draft,
+          onDraftChange(text, channelId) { const current=target(channelId || selectedThreadId); if (current.draft !== text) {current.draft = text; publish();} },
+          onSend(text, channelId) {
+            const current = target(channelId || selectedThreadId);
             if (!text.trim()) return false;
             const time = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
-            const messageId = 'team-group:' + Date.now() + ':' + state.messages.length;
-            state.messages.push({id:messageId, kind:'text', sender:{uid:'u-wangyilin', name:'王宜林', avatar:window.__EVA_CURRENT_USER_PORTRAIT}, time, text});
+            const messageId = 'team-group:' + Date.now() + ':' + current.messages.length;
+            current.messages.push({id:messageId, kind:'text', sender:{uid:'u-wangyilin', name:'王宜林', avatar:window.__EVA_CURRENT_USER_PORTRAIT}, time, text});
             unique.filter(member => member.kind !== 'human' && (text.includes('@' + member.name + ' ') || text.endsWith('@' + member.name))).forEach(member => {
-              state.messages.push({id:messageId+':'+member.id, kind:'text', sender:{uid:member.id, name:member.name, ai:true, identityAppearance:member.identityAppearance}, time,
+              current.messages.push({id:messageId+':'+member.id, kind:'text', sender:{uid:member.id, name:member.name, ai:true, identityAppearance:member.identityAppearance}, time,
                 text:'【原型】已收到你的请求，当前未调用真实服务。'});
             });
-            state.draft = ''; publish(); return true;
+            current.draft = ''; current.updated_at = new Date().toISOString(); publish(); return true;
           }
         };
       }
