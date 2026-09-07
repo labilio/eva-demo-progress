@@ -39,6 +39,9 @@
   --eva-rail-identity-height: 32px;
   --eva-rail-session-height: 28px;
   --eva-rail-level-indent: 12px;
+  /* Group chevrons use a 22px slot for a centered 12px icon. Keep an
+     identity avatar's visible left edge aligned to that icon. */
+  --eva-rail-identity-content-inset: 13px;
   box-sizing: border-box;
   /* Group title → assistant label → session label advances by 12px.
      The session has no leading avatar, so its start includes the 22px avatar
@@ -152,7 +155,7 @@
   font: inherit;
   cursor: pointer;
 }
-.eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-2); min-height: var(--eva-rail-identity-height); padding: 0; border-radius: var(--eva-rail-primary-row-radius); flex: 1; }
+.eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-2); min-height: var(--eva-rail-identity-height); padding: 0 0 0 var(--eva-rail-identity-content-inset); border-radius: var(--eva-rail-primary-row-radius); flex: 1; }
 .eva-ai-team__identity-name { min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-medium); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-button > svg,
 .eva-ai-team__identity-button > .ai-badge,
