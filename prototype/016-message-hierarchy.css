@@ -1031,14 +1031,7 @@ body.eva-message-hierarchy-ready
   white-space: nowrap;
 }
 
-body.eva-message-hierarchy-ready
-  .eva-channel-surface[data-eva-message-mode="my-ai"]
-  .ch-head .wk-chat-conversation-header-channel-avatar img {
-  width: 28px !important;
-  height: 28px !important;
-  border-radius: 50%;
-  object-fit: cover;
-}
+
 
 /* The global drive is a first-level EVA surface. */
 body.eva-message-hierarchy-ready .eva-drive {

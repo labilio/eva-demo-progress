@@ -100,10 +100,19 @@ function EvaAITeamPage() {
   const digitalStore=window.EvaDigitalEmployeesStore;
   reactExports.useSyncExternalStore(digitalStore.subscribe,digitalStore.getSnapshot,digitalStore.getSnapshot);
   const digitalEmployees=digitalStore.teamIds().map(id=>digitalStore.get(id)).filter(Boolean);
-  const [selection, setSelection] = reactExports.useState(() => ({identityId:snapshot.identities[0]?.id, sessionId:snapshot.sessions.find(s=>s.identityId===snapshot.identities[0]?.id)?.id}));
-  const [collapsed,setCollapsed] = reactExports.useState({});
-  const [collapsedGroups,setCollapsedGroups] = reactExports.useState({assistant:false,persona:false,digital:false});
-  const [employeeQuery,setEmployeeQuery] = reactExports.useState('');
+  const {search:teamSearch}=useLocation(),requestedIdentityId=new URLSearchParams(teamSearch).get('evaIdentity');
+  const teamIdentities = snapshot.identities.filter(i=>i.role==='persona'||i.role==='employee');
+  const availableIdentities=[...teamIdentities,...digitalEmployees];
+  const requestedIdentity=availableIdentities.find(i=>i.id===requestedIdentityId);
+  const [selection, setSelection] = reactExports.useState(() => {const id=requestedIdentity?.id||availableIdentities[0]?.id;return {identityId:id,sessionId:snapshot.sessions.find(s=>s.identityId===id)?.id||digitalStore.sessions(id)[0]?.id};});
+  const [employeeQuery,setEmployeeQuery]=reactExports.useState('');
+  const [collapsed,setCollapsed] = reactExports.useState(()=>requestedIdentity?{[requestedIdentity.id]:false}:{});
+  reactExports.useEffect(()=>{
+    if(!requestedIdentity)return;
+    setSelection({identityId:requestedIdentity.id,sessionId:snapshot.sessions.find(s=>s.identityId===requestedIdentity.id)?.id||digitalStore.sessions(requestedIdentity.id)[0]?.id});
+    setCollapsed(value=>({...value,[requestedIdentity.id]:false}));
+  },[teamSearch,requestedIdentity?.id]);
+  const [collapsedGroups,setCollapsedGroups]=reactExports.useState({persona:false,digital:false});
   const PinIcon=reactExports.useMemo(()=>createLucideIcon('pin', [['path',{d:'M12 17v5',key:'stem'}],['path',{d:'M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z',key:'head'}]]),[]);
   const LinkIcon=reactExports.useMemo(()=>createLucideIcon('link-2', [['path',{d:'M9 17H7A5 5 0 0 1 7 7h2',key:'left'}],['path',{d:'M15 7h2a5 5 0 0 1 0 10h-2',key:'right'}],['line',{x1:'8',x2:'16',y1:'12',y2:'12',key:'center'}]]),[]);
   const rail = reactExports.useRef(null);
@@ -111,7 +120,7 @@ function EvaAITeamPage() {
   const [busy,setBusy] = reactExports.useState(false), [error,setError] = reactExports.useState('');
   const host = reactExports.useRef(null), form = reactExports.useRef(null), alive = reactExports.useRef(true);
   reactExports.useEffect(() => {alive.current=true;return()=>{alive.current=false;};},[]);
-  const identity = snapshot.identities.find(i=>i.id===selection.identityId);
+  const identity = teamIdentities.find(i=>i.id===selection.identityId);
   const employee = digitalEmployees.find(i=>i.id===selection.identityId);
   const session = snapshot.sessions.find(s=>s.id===selection.sessionId&&s.identityId===identity?.id);
   const draftKey = session?.id || (identity ? 'draft:'+identity.id : '');
@@ -122,14 +131,10 @@ function EvaAITeamPage() {
   const open = kind => {setError('');setSourceId(kind==='create'&&snapshot.localAssistants.length===1?snapshot.localAssistants[0].id:null);setModal(kind);};
   const close = () => {if(!busy){setModal(null);setError('');}};
   const sources = snapshot.localAssistants;
-  const connected = id => snapshot.identities.find(i=>i.role==='assistant'&&i.sourceAssistantId===id);
-  async function submit() {
-    if(!sourceId||busy||(modal==='connect'&&connected(sourceId)))return;
-    if(modal==='create'){setModal(null);window.__evaOpenAssistantEditor({mode:'create',role:'persona',sourceId:sourceId==='__independent__'?null:sourceId,onSaved:result=>{if(alive.current)choose(result.id,null);}});return;}
-    setBusy(true);setError('');
-    try {const result=await store.connectAssistant(sourceId);if(alive.current){choose(result.id,null);setModal(null);}}
-    catch(e){if(alive.current)setError(e.message||'操作失败，请重试');}
-    finally{if(alive.current)setBusy(false);}
+  function submit() {
+    if(!sourceId||busy)return;
+    setModal(null);
+    window.__evaOpenAssistantEditor({mode:'create',role:'persona',sourceId:sourceId==='__independent__'?null:sourceId,onSaved:result=>{if(alive.current)choose(result.id,null);}});
   }
   const employeeSessions=employee?digitalStore.sessions(employee.id):[];
   const employeeSession=employeeSessions.find(item=>item.id===selection.sessionId)||employeeSessions[0];
@@ -191,27 +196,26 @@ function EvaAITeamPage() {
         h('span',{className:'eva-ai-team__group-title'},label),h('span',{className:'eva-ai-team__group-count'},items.length)),
       !groupCollapsed&&h('div',{className:'eva-ai-team__group-content',id:groupId},items.map(role==='digital'?employeeItem:identityItem)));
   }
-  const localIdentities=snapshot.identities.filter(i=>i.role==='assistant'), personas=snapshot.identities.filter(i=>i.role==='persona');
+  const personas=snapshot.identities.filter(i=>i.role==='persona');
   return h('div',{className:'eva-ai-team'},
     h('aside',{className:'eva-ai-team__sidebar','aria-label':'我的 AI 团队',ref:rail},
       h('div',{className:'eva-conversation-rail-resizer',role:'separator','aria-label':'调整中间栏宽度','aria-orientation':'vertical',tabIndex:0,'data-eva-conversation-rail-resizer':true}),
       h('div',{className:'eva-ai-team__sidebar-header'},
         h(Dropdown,{trigger:'click',position:'bottomLeft',clickToHide:true,getPopupContainer:()=>rail.current,render:h(Dropdown.Menu,null,
-          h(Dropdown.Item,{onClick:()=>open('connect')},'助理'),h(Dropdown.Item,{onClick:()=>open('create')},'分身'),h(Dropdown.Item,{onClick:()=>{setEmployeeQuery('');open('employee');}},'数字员工'))},
+          h(Dropdown.Item,{onClick:()=>open('create')},'分身'),h(Dropdown.Item,{onClick:()=>{setEmployeeQuery('');open('employee');}},'数字员工'))},
           h('span',{className:'eva-ai-team__add-anchor'},h(Button,{theme:'light',type:'tertiary',icon:h(Plus$c,{size:16}),className:'eva-ai-team__add'},'添加 AI')))),
-      h('div',{className:'eva-ai-team__roles'},roleGroup('assistant','本地助理',localIdentities),roleGroup('persona','云端分身',personas),roleGroup('digital','数字员工',digitalEmployees))),
+      h('div',{className:'eva-ai-team__roles'},roleGroup('persona','云端分身',personas),roleGroup('digital','数字员工',digitalEmployees))),
     h('main',{className:'eva-ai-team__main'},
       snapshot.storageWarning&&h('p',{className:'eva-ai-team__notice',role:'status'},snapshot.storageWarning),
       employee?h(ChannelsView,{key:'digital-chat:'+employee.id+':'+(employeeSession?.id||'empty'),source,onOpenTask:()=>{}}):identity?h(React.Fragment,null,
-        identity.status==='offline'&&h('p',{className:'eva-ai-team__notice',role:'status'},'本地助理离线，历史记录仍可查看；上线后可继续发送。'),
         identity.role==='persona'&&identity.syncStatus==='error'&&h(Button,{theme:'borderless',onClick:()=>store.syncPersona(identity.id).catch(e=>setError(e.message))},'重试同步'),
         !modal&&error&&h('p',{className:'eva-ai-team__error',role:'alert'},error),
         h(ChannelsView,{key:draftKey,source,onOpenTask:()=>{}})):
       h('div',{className:'eva-ai-team__empty'},h(Users,{size:32}),h('h2',null,'暂无可用的数字员工'),h('p',null,'接入公司数字员工后，即可在这里使用。'))),
     h('div',{className:'eva-ai-team__modal-host',ref:host}),
     modal==='employee'&&h(Modal,{visible:true,title:'添加数字员工',className:'eva-ai-team__modal',getPopupContainer:()=>host.current,onCancel:close,width:480,footer:null},h('div',{className:'eva-ai-team__form'},h(ForwardInput,{value:employeeQuery,onChange:setEmployeeQuery,showClear:true,placeholder:'搜索名称、工号或业务域'}),h('p',null,'加入后可在我的 AI 团队直接对话；移除只隐藏入口，保留聊天记录。'),h('div',{className:'eva-ai-team__employee-options'},employeeCandidates.map(item=>h('button',{key:item.id,type:'button',className:'eva-ai-team__connection-option',disabled:digitalStore.hasInTeam(item.id),onClick:()=>{digitalStore.addToTeam(item.id);setCollapsed(value=>({...value,[item.id]:false}));choose(item.id,digitalStore.sessions(item.id)[0]?.id||digitalStore.createSession(item.id));close();}},h('span',{className:'eva-ai-team__connection-title'},window.EvaAIIdentity.avatar(digitalStore.appearance(item),32,h),h('span',{className:'eva-identity-name-row'},h('strong',{className:'eva-identity-name-text',title:item.name},item.name),h(AiBadge,{size:'small'}))),h('span',{className:'eva-ai-team__connection-status'},digitalStore.hasInTeam(item.id)?'已加入':[item.no,item.domain].filter(Boolean).join(' · '))))),!employeeCandidates.length&&h('p',{className:'eva-ai-team__notice',role:'status'},'没有找到匹配的数字员工，换个关键词试试。'))),
-    (modal==='connect'||modal==='create')&&h(Modal,{visible:true,title:modal==='connect'?'连接本地助理':'创建云端分身',className:'eva-ai-team__modal',getPopupContainer:()=>host.current,onCancel:close,maskClosable:!busy,closable:!busy,closeOnEsc:!busy,width:480,cancelText:'取消',cancelButtonProps:{'aria-label':'取消',disabled:busy},confirmLoading:busy,okText:modal==='connect'?'连接本地助理':'下一步',okButtonProps:{'aria-label':modal==='connect'?'连接本地助理':'下一步',disabled:!sourceId||(sourceId!=='__independent__'&&!sources.find(l=>l.id===sourceId)?.online)||(modal==='connect'&&!!connected(sourceId))},onOk:submit},
-      h('div',{className:'eva-ai-team__form',ref:form},h('p',null,modal==='connect'?'选择个人「Eva 同学」中已有的助理。灰色项已连接，不能重复选择。':'选择助理自动同步配置与已授权记忆，也可以独立配置分身。'),modal==='connect'?h('div',{className:'eva-ai-team__connections'},h('div',{className:'eva-ai-team__connection-heading'},h('span',null,'个人助理'),h(Button,{theme:'borderless',type:'tertiary',size:'small',className:'eva-ai-team__personal-link',icon:h(ArrowUpRight,{size:14}),iconPosition:'right',onClick:()=>{setModal(null);navigate('/guid');}},'前往个人 Eva 同学')),h('div',{className:'eva-ai-team__connection-list'},sources.map(l=>{const linked=connected(l.id),disabled=busy||!!linked||!l.online;return h('button',{type:'button',key:l.id,className:'eva-ai-team__connection-option'+(sourceId===l.id?' is-selected':''),disabled,'aria-pressed':sourceId===l.id,onClick:()=>setSourceId(l.id)},h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(l),size:32}),h('span',{className:'eva-ai-team__connection-title'},h('strong',{title:l.name},l.name),h('span',{className:'eva-ai-team__connection-status'},l.isDefault?'默认 · 已连接':linked?'已连接':l.online?'可连接':'本地离线'))); }))):h(EvaAssistantSourceCards,{sources,value:sourceId,disabled:busy,onChange:value=>{setSourceId(value);setError('');}}),modal==='connect'&&sources.length===0&&h('p',{className:'eva-ai-team__notice'},'所有已有助理均已连接。可以在个人 Eva 同学中管理本地助理。'),error&&h('p',{className:'eva-ai-team__error',role:'alert'},error))));
+    modal==='create'&&h(Modal,{visible:true,title:'创建云端分身',className:'eva-ai-team__modal',getPopupContainer:()=>host.current,onCancel:close,maskClosable:!busy,closable:!busy,closeOnEsc:!busy,width:480,cancelText:'取消',cancelButtonProps:{'aria-label':'取消',disabled:busy},confirmLoading:busy,okText:'下一步',okButtonProps:{'aria-label':'下一步',disabled:!sourceId||(sourceId!=='__independent__'&&!sources.find(l=>l.id===sourceId)?.online)},onOk:submit},
+      h('div',{className:'eva-ai-team__form',ref:form},h('p',null,'选择助理自动同步配置与已授权记忆，也可以独立配置分身。'),h(EvaAssistantSourceCards,{sources,value:sourceId,disabled:busy,onChange:value=>{setSourceId(value);setError('');}}),error&&h('p',{className:'eva-ai-team__error',role:'alert'},error))));
 }
 
     function cut(needle,replacement,label){source=root.__evaCut(source,needle,replacement,'IM '+label);}
