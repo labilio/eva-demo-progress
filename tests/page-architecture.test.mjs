@@ -183,14 +183,16 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(aiTeamCss, /eva-ai-team__group-title\s*\{[^}]*font-size:\s*var\(--gds-type-label-medium-font-size\)/s);
   assert.match(aiTeamCss, /eva-ai-team__session-title\s*\{[^}]*font-size:\s*var\(--eva-rail-label-size\)[^}]*font-weight:\s*var\(--gds-font-weight-regular\)/s);
   assert.match(aiTeamCss, /--eva-rail-level-indent:\s*12px/);
-  assert.match(aiTeamCss, /--eva-rail-session-indent:\s*calc\(24px \+ var\(--gds-space-1\) \+ var\(--eva-rail-level-indent\)\)/);
+  assert.match(aiTeamCss, /--eva-rail-identity-avatar-size:\s*20px/);
+  assert.match(aiTeamCss, /--eva-rail-session-indent:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--gds-space-1\) \+ var\(--eva-rail-level-indent\)\)/);
   assert.match(aiTeamCss, /eva-ai-team__sidebar-header\s*\{[^}]*padding:\s*var\(--gds-space-3\)/s);
   assert.match(aiTeamCss, /eva-ai-team__sidebar-header \.semi-button\s*\{[^}]*height:\s*34px/s);
   assert.match(messageSwitcherCss, /wk-sidebar-tabbar\[data-eva-project-recent-switcher="true"\]\s*\{[^}]*padding:\s*var\(--gds-space-3\)/s);
   assert.match(messageSwitcherCss, /wk-sidebar-tabbar__container\s*\{[^}]*height:\s*34px[^}]*padding:\s*0/s);
   assert.match(messageSwitcherCss, /wk-sidebar-tabbar__btn\s*\{[^}]*min-height:\s*34px/s);
   assert.match(messageSwitcherCss, /eva-msg \.ch-list__top\s*\{[^}]*display:\s*none/s);
-  assert.match(imPatch, /EvaAIIdentityAvatar,\{appearance:evaIdentityAppearance\(i\),size:24\}/);
+  assert.match(imPatch, /EvaAIIdentityAvatar,\{appearance:evaIdentityAppearance\(i\),size:20\}/);
+  assert.match(imPatch, /EvaAIIdentity\.avatar\(digitalStore\.appearance\(item\),20,h\)/);
 });
 
 test('个人助理使用 Brain 身份图标且整行提供 Hover', () => {
@@ -256,14 +258,15 @@ test('一级页面只挂入路由宿主，不再追加到 document.body', () => 
 test('迁移后的一级页面不再保留 DOM 导航状态或浏览器补丁加载器', () => {
   const hierarchy = read('prototype/021-message-hierarchy.js');
   const drive = read('prototype/020-mode-layer.js');
-  const recent = read('prototype/040-team-message-project-recent.js');
+  const recent = read('prototype/009-5-patch-im.js');
   const connectionCenter = read('prototype/029-connection-center-v2-functional.js');
 
   assert.equal(fs.existsSync('prototype/009-9-loader.js'), false, '浏览器补丁加载器仍然存在');
   assert.doesNotMatch(hierarchy, /sync(?:Overview|Contacts|DriveShell)Selection|build(?:Overview|Contacts)Nav/);
   assert.doesNotMatch(drive, /driveNav\.classList\.(?:add|remove)\('is-active'\)/);
-  assert.doesNotMatch(recent, /eva-mode-collaboration/);
-  assert.match(recent, /route === '\/messages'/);
+  assert.equal(fs.existsSync('prototype/040-team-message-project-recent.js'), false);
+  assert.match(recent, /EvaFollowList/);
+  assert.match(recent, /Cn===\"recent\"/);
   assert.doesNotMatch(connectionCenter, /new MutationObserver|centerOpen|setCenterOpen/);
 });
 
@@ -315,6 +318,45 @@ test('个人 Eva 六态挂在路由宿主内，不使用全屏或 fixed 根节�
   }
   assert.match(workspace, /window\.__evaPersonalState/);
   assert.doesNotMatch(workspaceCss, /position:\s*fixed/);
+});
+
+test('个人 Eva 首页保留输入能力并适应容器宽度，移除活动文案', () => {
+  const workspace = read('prototype/052-personal-eva-gds.js');
+  const workspaceCss = read('prototype/051-personal-eva-gds.css');
+  const componentCss = read('prototype/048-gds-components.css');
+
+  for (const text of [
+    'AI随行',
+    '工作随心',
+    '分配一个任务或提问任何问题',
+    'Qwen3.8 Max',
+    '星睿智能体',
+    '邮件操作',
+    '数据分析',
+    '技能开发',
+    '知识助手',
+  ]) {
+    assert.ok(workspace.includes(text), `新会话首页缺少：${text}`);
+  }
+  assert.doesNotMatch(workspace, /百万亿Token激励计划|eva-personal-workspace__campaign/);
+  assert.match(workspaceCss, /width: min\(100%, var\(--eva-main-col-w\)\)/);
+  assert.match(workspace, /eva-newchat-context.+<span>Eva<\/span>/s);
+  assert.match(workspace, /data-eva-selected-assistant/);
+  assert.match(workspace, /\+ heroHTML\(\)\s*\+ '<div class="eva-personal-workspace__composer">'[\s\S]+\+ railHTML\(\)/);
+  assert.match(workspace, /if \(hash\.indexOf\('#\/guid'\) === 0\) \{\s*selectedConversation = '';/);
+  assert.match(workspace, /eva-composer-newchat/);
+  assert.match(workspaceCss, /\.eva-personal-workspace__capability/);
+  assert.match(componentCss, /\.eva-composer-wrap\s*\{[^}]*width:\s*var\(--eva-main-col-w\);[^}]*height:\s*166px;/s);
+  assert.match(componentCss, /\.eva-composer\s*\{[^}]*width:\s*768px;[^}]*height:\s*118px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*height:\s*48px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*margin-top:\s*var\(--eva-space-1\)/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__rail\s*\{[^}]*margin-top:\s*var\(--eva-space-2\)/s);
+  assert.match(workspace, /eva-composer-wrap--newchat/);
+  assert.match(workspaceCss, /\.eva-composer-wrap--newchat\s*\{[^}]*background:\s*transparent/s);
+  assert.doesNotMatch(workspaceCss, /\.eva-composer-wrap--newchat\s*\{[^}]*(?:width|height|margin|padding):/s);
+  assert.doesNotMatch(workspaceCss, /\.eva-personal-workspace__composer \.eva-composer-wrap/);
+  assert.doesNotMatch(workspaceCss, /\.eva-personal-workspace__composer \.eva-composer-newchat/);
+  assert.doesNotMatch(workspace, /你好，我是Eva同学/);
 });
 
 test('侧栏展开默认宽度为 180、折叠宽度为 80 且不渲染广告栏', () => {
