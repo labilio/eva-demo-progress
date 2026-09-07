@@ -565,7 +565,7 @@
       "tag": "style",
       "name": "loop-task-create-style",
       "role": "prototype",
-      "order": 71,
+      "order": 70,
       "bytes": 5287
     },
     {
@@ -673,7 +673,7 @@
       "role": "review-module"
     },
     {
-      "order": 85,
+      "order": 84,
       "tag": "style",
       "name": "050-file-library-styles",
       "file": "prototype/050-file-library.css",
@@ -681,7 +681,7 @@
       "role": "prototype"
     },
     {
-      "order": 86,
+      "order": 85,
       "tag": "script",
       "name": "project-files-ui",
       "file": "prototype/009-1-project-files-ui.js",
