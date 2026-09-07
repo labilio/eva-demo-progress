@@ -165,7 +165,7 @@
       'React.createElement("div",{className:"collab-frame eva-channel-surface","data-eva-channel-surface":"project","data-eva-project-id":rt.id,"data-eva-project-tab":pt}','项目批注定位上下文');
     source=root.__evaCut(source,'function SettingsPage({workspace:rt,onUpdated:ct}){','function SettingsPage({workspace:rt,onUpdated:ct,initialTab:evaInitialSettingsTab="general"}){','设置默认标签参数');
     source=root.__evaCut(source,'React.createElement(Tabs,{type:"line"},React.createElement(TabPane,{tab:"通用"','React.createElement(Tabs,{type:"line",defaultActiveKey:evaInitialSettingsTab},React.createElement(TabPane,{tab:"通用"','设置标签初始化');
-    source=root.__evaCut(source,'case"settings":return React.createElement(SettingsPage,{workspace:{...WORKSPACE','case"settings":return React.createElement(SettingsPage,{initialTab:"members",workspace:{...WORKSPACE','项目设置默认成员管理');
+    source=root.__evaCut(source,'case"settings":return React.createElement(SettingsPage,{workspace:{...WORKSPACE','case"settings":return React.createElement(SettingsPage,{initialTab:"general",workspace:{...WORKSPACE','项目设置默认基本信息');
     source=root.__evaCut(source,'toEntry=rt=>({id:rt.id,space_id:', 'toEntry=rt=>({...rt,id:rt.id,space_id:','文件视图保留来源元数据');
     source=root.__evaCut(source,'source:"user-upload",owner_uid:"u-wangyilin",updated_at:rt.updated_at','source:rt.source??"user-upload",owner_uid:"u-wangyilin",updated_at:rt.updated_at','文件来源不被通用转换覆盖');
     source=root.__evaCut(source,'FilesView=()=>{const[rt,ct]=reactExports.useState(driveEntriesOf()),',
@@ -240,7 +240,7 @@
         React.createElement('section',{className:'eva-project-settings-info__advanced'},field('任务前缀','eva-project-issue-prefix',React.createElement(ForwardInput,{id:'eva-project-issue-prefix','aria-label':'任务前缀',value:issuePrefix,disabled:!editable,placeholder:'例如 SC',onChange:value=>{setIssuePrefix(value.toUpperCase());setSaved(false);}}),'完整任务编号由前缀和数字组成，例如 SC-101。修改前缀只影响新任务，已有编号保留。')),
         React.createElement('div',{className:'eva-project-settings-info__actions'},React.createElement('div',null,error&&React.createElement('p',{role:'alert',className:'eva-members-error'},error),saved&&React.createElement('p',{role:'status',className:'eva-members-muted'},'项目信息已保存'),!editable&&React.createElement('p',{className:'eva-members-muted'},'仅项目负责人和管理员可编辑。')),editable&&React.createElement(Button,{theme:'solid',disabled:!name.trim()||!changed,onClick:save},'保存修改')));
     }`, '项目设置可编辑概览');
-    source=root.__evaCut(source,'tab:"通用",itemKey:"general"','tab:"项目信息",itemKey:"general"','项目信息标签');
+    source=root.__evaCut(source,'tab:"通用",itemKey:"general"','tab:"基本信息",itemKey:"general"','基本信息标签');
     source=root.__evaCut(source,'SpaceFrame=({space:rt,spaces:ct,onSwitch:ut})','SpaceFrame=({space:rt,spaces:ct,onSwitch:ut,onProjectUpdated:evaProjectUpdated})','项目更新回调');
     source=root.__evaCut(source,'workspace:{...WORKSPACE,id:rt.id,name:rt.name,slug:rt.id}','workspace:rt,onUpdated:evaProjectUpdated','设置读取当前项目');
     source=root.__evaCut(source,'space:mt,spaces:rt,onSwitch:gt=>pt(gt)','space:mt,spaces:rt,onSwitch:gt=>pt(gt),onProjectUpdated:ct','项目列表刷新');
