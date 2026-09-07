@@ -58,13 +58,20 @@
       const [dialog,setDialog]=useState(null);
       const [preview,setPreview]=useState(null);
       const [menuId,setMenuId]=useState(null);
+      const [menuAnchor,setMenuAnchor]=useState(null);
 
-      useEffect(()=>{setParentId(0);setCrumbs([]);setQuery('');setSelectedId(null);setTrashMode(false);setDialog(null);setPreview(null);setMenuId(null);},[projectId]);
+      useEffect(()=>{setParentId(0);setCrumbs([]);setQuery('');setSelectedId(null);setTrashMode(false);setDialog(null);setPreview(null);setMenuId(null);setMenuAnchor(null);},[projectId]);
       useEffect(()=>{
         if(!menuId)return undefined;
-        const close=event=>{if(!event.target.closest('.eva-drive__row-actions'))setMenuId(null);};
-        document.addEventListener('pointerdown',close);
-        return()=>document.removeEventListener('pointerdown',close);
+        const close=()=>{setMenuId(null);setMenuAnchor(null);};
+        const closeOutside=event=>{if(!event.target.closest('.eva-drive__row-actions'))close();};
+        const closeOnKey=event=>{if(event.key==='Escape')close();};
+        const closeOnScroll=event=>{if(!(event.target.closest&&event.target.closest('.eva-drive__row-menu')))close();};
+        document.addEventListener('pointerdown',closeOutside);
+        document.addEventListener('keydown',closeOnKey);
+        window.addEventListener('scroll',closeOnScroll,true);
+        window.addEventListener('resize',close);
+        return()=>{document.removeEventListener('pointerdown',closeOutside);document.removeEventListener('keydown',closeOnKey);window.removeEventListener('scroll',closeOnScroll,true);window.removeEventListener('resize',close);};
       },[menuId]);
 
       const all=useMemo(()=>context.files.list(projectId,actor),[revision,projectId,actor]);
@@ -176,7 +183,8 @@
       };
 
       const renderRowActions=item=>{
-        const menuButton=(label,onClick,danger)=>h('button',{key:label,type:'button',role:'menuitem',className:danger?'is-danger':undefined,onClick:event=>{event.stopPropagation();setMenuId(null);onClick();}},label);
+        const closeMenu=()=>{setMenuId(null);setMenuAnchor(null);};
+        const menuButton=(label,onClick,danger)=>h('button',{key:label,type:'button',role:'menuitem',className:danger?'is-danger':undefined,onClick:event=>{event.stopPropagation();closeMenu();onClick();}},label);
         const shortcutInfo=context.files.shortcutInfo(item,actor),canOpen=!shortcutInfo||shortcutInfo.status==='available',items=[];
         if(trashMode){
           items.push(menuButton('查看文档详情',()=>setSelectedId(item.id)));
@@ -197,8 +205,14 @@
         }
         const open=menuId===item.id;
         return h('span',{className:'eva-drive__row-actions'},
-          h('button',{className:'eva-drive__row-more',type:'button','aria-label':'更多操作：'+item.name,'aria-haspopup':'menu','aria-expanded':open,onClick:event=>{event.stopPropagation();setMenuId(open?null:item.id);}},icon('more')),
-          open?h('span',{className:'eva-drive__row-menu',role:'menu','aria-label':item.name+'的操作'},items):null
+          h('button',{className:'eva-drive__row-more',type:'button','aria-label':'更多操作：'+item.name,'aria-haspopup':'menu','aria-expanded':open,onClick:event=>{
+            event.stopPropagation();
+            if(open){closeMenu();return;}
+            const rect=event.currentTarget.getBoundingClientRect(),viewportHeight=window.visualViewport?.height||window.innerHeight,menuHeight=Math.min(items.length*34+10,Math.max(160,viewportHeight-24)),roomBelow=viewportHeight-rect.bottom-12,opensUp=roomBelow<menuHeight&&rect.top>roomBelow;
+            setMenuAnchor({left:Math.max(12,Math.round(rect.right-168)),top:opensUp?undefined:Math.round(rect.bottom+4),bottom:opensUp?Math.max(12,Math.round(viewportHeight-rect.top+4)):undefined});
+            setMenuId(item.id);
+          }},icon('more')),
+          open&&menuAnchor?h('span',{className:'eva-drive__row-menu',role:'menu','aria-label':item.name+'的操作',style:menuAnchor},items):null
         );
       };
 

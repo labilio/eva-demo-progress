@@ -29,6 +29,8 @@
     dialog: null,
     previewId: null,
     menuId: null,
+    menuAnchor: null,
+    tableScroll: null,
     uploadTarget: null,
     pendingWorkspaceId: null,
     pendingTab: null,
@@ -472,6 +474,31 @@
     return '<button type="button" role="menuitem" data-drive-action="' + action + '"' + (danger ? ' class="is-danger"' : '') + '>' + escapeHTML(label) + '</button>';
   }
 
+  function captureTableScroll() {
+    var table = document.querySelector('#eva-drive-root .eva-drive__table');
+    state.tableScroll = table ? { left: table.scrollLeft, top: table.scrollTop } : null;
+  }
+
+  function closeRowMenu(preserveScroll) {
+    if (preserveScroll !== false) captureTableScroll();
+    state.menuId = null;
+    state.menuAnchor = null;
+  }
+
+  function rowMenuAnchor(trigger, itemCount) {
+    var rect = trigger.getBoundingClientRect();
+    var viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    var menuHeight = Math.min(itemCount * 34 + 10, Math.max(160, viewportHeight - 24));
+    var roomBelow = viewportHeight - rect.bottom - 12;
+    var opensUp = roomBelow < menuHeight && rect.top > roomBelow;
+    return {
+      left: Math.max(12, Math.round(rect.right - 168)),
+      top: opensUp ? null : Math.round(rect.bottom + 4),
+      bottom: opensUp ? Math.max(12, Math.round(viewportHeight - rect.top + 4)) : null,
+      direction: opensUp ? 'up' : 'down'
+    };
+  }
+
   function rowActionsHTML(resource) {
     var context = fileContext(), actor = fileActor(), isTrash = state.driveScope === 'trash';
     var shortcutInfo = context.files.shortcutInfo(resource, actor), canOpen = !shortcutInfo || shortcutInfo.status === 'available';
@@ -492,7 +519,9 @@
       if (resource.type !== 'folder' && context.files.can('edit-tags', resource.spaceId, actor)) items.push(rowMenuItemHTML('tags', '编辑标签'));
       if (context.files.can('trash', resource.spaceId, actor)) items.push(rowMenuItemHTML('trash', '移至回收站', true));
     }
-    return '<span class="eva-drive__row-actions"><button class="eva-drive__row-more" type="button" data-drive-action="row-menu" aria-label="更多操作：' + escapeHTML(resource.name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + icon('more') + '</button>' + (open ? '<span class="eva-drive__row-menu" role="menu" aria-label="' + escapeHTML(resource.name) + '的操作">' + items.join('') + '</span>' : '') + '</span>';
+    var anchor = state.menuAnchor;
+    var menuStyle = anchor ? 'left:' + anchor.left + 'px;' + (anchor.top == null ? 'bottom:' + anchor.bottom + 'px;' : 'top:' + anchor.top + 'px;') : '';
+    return '<span class="eva-drive__row-actions"><button class="eva-drive__row-more" type="button" data-drive-action="row-menu" data-drive-menu-size="' + items.length + '" aria-label="更多操作：' + escapeHTML(resource.name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + icon('more') + '</button>' + (open ? '<span class="eva-drive__row-menu is-' + (anchor ? anchor.direction : 'down') + '" role="menu" aria-label="' + escapeHTML(resource.name) + '的操作" style="' + menuStyle + '">' + items.join('') + '</span>' : '') + '</span>';
   }
 
   function tableHTML(list) {
@@ -713,6 +742,12 @@
     var context = fileContext();
     var selected = context ? context.files.snapshot(fileActor()).find(function (resource) { return resource.id === state.selectedId; }) || null : null;
     root.innerHTML = driveHTML(list, selected);
+    var table = root.querySelector('.eva-drive__table');
+    if (table && state.tableScroll) {
+      table.scrollLeft = state.tableScroll.left;
+      table.scrollTop = state.tableScroll.top;
+    }
+    state.tableScroll = null;
     root.dataset.evaDriveScope = state.driveScope;
     root.dataset.evaWorkspaceId = state.workspaceId;
     root.dataset.evaSharedSpaceId = state.sharedSpaceId;
@@ -732,6 +767,7 @@
     state.crumbs = [];
     state.dialog = null;
     state.previewId = null;
+    closeRowMenu(false);
     if (String(location.hash || '').indexOf('#/drive') !== 0) location.hash = '#/drive';
     else {
       renderDrive();
@@ -847,7 +883,7 @@
       state.parentId = 0;
       state.crumbs = [];
       state.selectedId = null;
-      state.menuId = null;
+      closeRowMenu(false);
       renderDrive();
       return;
     }
@@ -855,7 +891,7 @@
     var action = event.target.closest('[data-drive-action]');
     if (!action && row) {
       state.selectedId = row.dataset.resourceId;
-      state.menuId = null;
+      closeRowMenu();
       renderDrive();
       return;
     }
@@ -864,12 +900,17 @@
     event.stopPropagation();
     var name = action.dataset.driveAction;
     if (name === 'row-menu') {
-      state.menuId = state.menuId === String(resource.id) ? null : String(resource.id);
+      if (state.menuId === String(resource.id)) closeRowMenu();
+      else {
+        captureTableScroll();
+        state.menuId = String(resource.id);
+        state.menuAnchor = rowMenuAnchor(action, Number(action.dataset.driveMenuSize || 1));
+      }
       renderDrive();
       return;
     }
     if (state.menuId) {
-      state.menuId = null;
+      closeRowMenu();
       renderDrive();
     }
     if (name === 'select') { state.selectedId = resource.id; renderDrive(); }
@@ -1074,7 +1115,7 @@
     document.addEventListener('click', function (event) {
       if (event.target.closest('#eva-drive-root')) handleDriveClick(event);
       else if (state.menuId && document.getElementById('eva-drive-root')) {
-        state.menuId = null;
+        closeRowMenu();
         renderDrive();
       }
     });
@@ -1088,11 +1129,14 @@
       if (event.key === 'Escape') {
         var menu = document.querySelector('.eva-space-picker__menu:not([hidden])');
         if (menu) menu.hidden = true;
-        if (state.menuId) { state.menuId = null; renderDrive(); }
+        if (state.menuId) { closeRowMenu(); renderDrive(); }
         if (state.dialog) closeDialog();
       }
     });
-    window.addEventListener('resize', syncDriveLeft);
+    window.addEventListener('resize', function () {
+      if (state.menuId) { closeRowMenu(); renderDrive(); }
+      syncDriveLeft();
+    });
   }
 
   function initialize() {

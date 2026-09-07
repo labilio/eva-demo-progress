@@ -542,19 +542,20 @@ body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__row,
 }
 
 .eva-drive__row-menu {
-  position: absolute;
-  z-index: 120;
-  top: 32px;
-  right: 0;
+  position: fixed;
+  z-index: 320;
   box-sizing: border-box;
   width: 168px;
+  max-height: calc(100vh - 24px);
   padding: 4px;
   border: 1px solid var(--gds-color-border-subtle, #dbdbdb);
   border-radius: 10px;
   display: flex !important;
   flex-direction: column;
   align-items: stretch !important;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--gds-color-surface-primary, #fff);
   box-shadow: 0 10px 28px rgb(0 0 0 / 14%);
 }
