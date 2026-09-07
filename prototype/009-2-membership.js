@@ -2,7 +2,7 @@
   'use strict';
   // Business state only. React subscribes to this store; DOM is never a state source.
   function create(seed, persist, resolveProjectInfo){
-    let state=JSON.parse(JSON.stringify({people:[],clones:[],projects:{},groups:{},threads:{},threadDetails:{},messages:{},chatSettings:{},chatPreferences:{},invitations:[],sequence:0,...seed}));
+    let state=JSON.parse(JSON.stringify({people:[],clones:[],projects:{},groups:{},threads:{},threadDetails:{},messages:{},chatSettings:{},chatPreferences:{},memberAdditions:[],sequence:0,...seed}));
     let revision=0;const listeners=new Set();
     const fail=message=>{throw new Error(message);};
     const person=id=>state.people.find(p=>p.id===id&&p.active!==false);
@@ -16,9 +16,8 @@
     const selected=(uid,ids,pid)=>{if(!Array.isArray(ids))fail('分身选择格式无效');return [...new Set(ids)].map(id=>{const c=clone(id);if(!c||c.ownerId!==uid)fail('只能带入自己的可用分身');if(pid&&!state.projects[pid].cloneIds.includes(id))fail('请先将分身加入项目');return id;});};
     const notify=()=>{revision++;if(persist)persist(JSON.parse(JSON.stringify(state)));listeners.forEach(fn=>fn());};
     const writable=id=>{if(id.startsWith('all:'))fail('请在项目成员管理中操作');if(state.threads[id])fail('子区继承父群成员，不单独管理');return scope(id);};
-    const cancelPending=(id,uid)=>state.invitations.forEach(i=>{if(i.scopeId===id&&i.inviterId===uid&&i.status==='pending_approval')i.status='withdrawn';});
-    const drop=(id,uid)=>{const s=scope(id);s.humans=s.humans.filter(m=>m.id!==uid);s.cloneIds=s.cloneIds.filter(cid=>clone(cid)?.ownerId!==uid);cancelPending(id,uid);};
-    const dissolve=id=>{delete state.groups[id];Object.keys(state.threads).filter(t=>state.threads[t]===id).forEach(t=>delete state.threads[t]);state.invitations.filter(i=>i.scopeId===id&&i.status.startsWith('pending')).forEach(i=>i.status='expired');};
+    const drop=(id,uid)=>{const s=scope(id);s.humans=s.humans.filter(m=>m.id!==uid);s.cloneIds=s.cloneIds.filter(cid=>clone(cid)?.ownerId!==uid);};
+    const dissolve=id=>{delete state.groups[id];Object.keys(state.threads).filter(t=>state.threads[t]===id).forEach(t=>delete state.threads[t]);};
     const employee=id=>{const a=root.EvaDigitalEmployeesStore?.get(id);return a?{...a,kind:'employee',ai:true,identityAppearance:root.EvaDigitalEmployeesStore.appearance(a)}:null;};
     const employeeRows=s=>(s.employeeIds||[]).map(employee).filter(Boolean);
     const agentFor=pid=>state.projects[pid]?{id:'project-agent:'+pid,name:'Eva 项目管理专员',kind:'project-agent',ai:true,projectId:pid,cloud:true,removable:false,ownership:'project'}:null;
@@ -35,6 +34,21 @@
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
       snapshot:()=>JSON.parse(JSON.stringify(state)),person,clone,employee,manager,projectAgent:agentFor,
+      pinnedProjects(uid){return [...(state.pinnedProjects?.[uid]||[])].filter(id=>!state.projects[id]||api.canRead(id,uid));},
+      setPinnedProjects(uid,ids){
+        requireHuman(uid);const next=[...new Set(ids)].slice(0,6);
+        if(JSON.stringify(state.pinnedProjects?.[uid]||[])===JSON.stringify(next))return;
+        state.pinnedProjects||={};state.pinnedProjects[uid]=next;notify();
+      },
+      followOrder(uid,bucket,items){
+        const order=state.followOrders?.[uid]?.[bucket]||[],rank=new Map(order.map((id,index)=>[id,index]));
+        return [...items].sort((a,b)=>(rank.get(a.id)??order.length)-(rank.get(b.id)??order.length));
+      },
+      setFollowOrder(uid,bucket,ids){
+        requireHuman(uid);state.followOrders||={};state.followOrders[uid]||={};
+        state.followOrders[uid][bucket]=[...new Set(ids)];notify();
+      },
+
       addEmployee(id,uid,eid){requireHuman(uid);const sid=id.startsWith("all:")?id.slice(4):id,s=state.projects[sid]||fail("数字员工只能放进项目，不能拉进群聊"),a=employee(eid)||fail("数字员工不存在");if(!member(sid,uid))fail("请先加入项目");if((a.ownership==="personal"||a.scope==="self")&&a.by!==uid)fail("只有创建者能邀请自己的数字员工");if(a.ownership==="project"&&a.projectId!==projectId(sid))fail("项目助手只能在所属项目中使用");s.employeeIds=[...new Set([...(s.employeeIds||[]),eid])];notify();},
       removeEmployee(id,uid,eid){const s=writable(id),a=employee(eid)||fail("数字员工不存在");if(!member(id,uid)||(!manager(id,uid)&&a.by!==uid))fail("无移除权限");s.employeeIds=(s.employeeIds||[]).filter(x=>x!==eid);if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.employeeIds=(g.employeeIds||[]).filter(x=>x!==eid);});notify();},
       openDirect(uid,target){
@@ -105,7 +119,7 @@
       loadSupplyDemo(){
         const d=root.__EVA_SUPPLY_MEMBER_DEMO;
         if(!d||!state.projects[d.projectId])fail('供应链演示项目不存在');
-        d.humans.forEach(m=>requireHuman(m.id));requireHuman(d.invitation.inviteeId);
+        d.humans.forEach(m=>requireHuman(m.id));
         const pid=d.projectId, groupIds=Object.values(state.groups).filter(g=>g.projectId===pid).map(g=>g.id);
         const scopeIds=new Set([pid,'all:'+pid,...groupIds,d.group.id]);
         Object.entries(state.threads).forEach(([tid,gid])=>{if(scopeIds.has(gid)){delete state.messages[tid];delete state.threadDetails[tid];if(gid===d.group.id)delete state.threads[tid];}});
@@ -117,8 +131,7 @@
         state.threads[d.thread.id]=d.group.id;state.threadDetails[d.thread.id]={...d.thread};
         state.messages[d.group.id]=d.messages.map(m=>{const {senderId,...message}=m;return {...JSON.parse(JSON.stringify(message)),sender:{...person(senderId),uid:senderId}};});
         state.messages[d.thread.id]=[{kind:'text',sender:{...person('u-linxiao'),uid:'u-linxiao'},time:'10:04',text:'现场验证照片和8D整改证据待补齐；子区沿用供应商整改协同群的成员权限。'}];
-        state.invitations=state.invitations.filter(i=>!scopeIds.has(i.scopeId));
-        state.invitations.push({...d.invitation,id:'invite-'+(++state.sequence)});
+        state.memberAdditions=state.memberAdditions.filter(i=>!scopeIds.has(i.scopeId));
         state.actorId='u-wangyilin';state.supplyDemoVersion=d.version;api.seedSupplyChatContent();state.projectAgentDemoVersion=0;api.seedProjectAgents();notify();
       },
       createProject(id,name,uid,ids,goal){requireHuman(uid);if(state.projects[id]||state.groups[id])fail('项目已存在');const clones=selected(uid,ids);state.projects[id]={id,name,ownerId:uid,humans:[{id:uid,role:'owner'}],cloneIds:clones};agentWelcome(id,goal);notify();return id;},
@@ -142,11 +155,15 @@
         return [...(p?[view(p,'all:'+pid,true)]:[]),...Object.values(state.groups).filter(g=>g.projectId===pid&&api.canRead(g.id,uid)).map(g=>view(g,g.id,false))];
       },
       candidates(id,uid){const s=writable(id);if(!member(id,uid))fail('请先加入');return state.people.filter(p=>p.active!==false&&!member(id,p.id)&&(!s.projectId||member(s.projectId,p.id)));},
-      invite(id,uid,target){requireHuman(uid);requireHuman(target);const s=writable(id);if(!member(id,uid))fail('请先加入');if(member(id,target))fail('该成员已加入');if(s.projectId&&!member(s.projectId,target))fail('只能邀请当前项目成员');const old=state.invitations.find(i=>i.scopeId===id&&i.inviteeId===target&&['pending_approval','pending_accept'].includes(i.status));if(old)return {...old};const invitation={id:'invite-'+(++state.sequence),scopeId:id,inviterId:uid,inviteeId:target,status:manager(id,uid)?'pending_accept':'pending_approval'};state.invitations.push(invitation);notify();return {...invitation};},
-      approve(id,uid){const i=state.invitations.find(i=>i.id===id)||fail('邀请不存在');if(!manager(i.scopeId,uid))fail('无审批权限');if(i.status!=='pending_approval')fail('邀请已处理');i.status='pending_accept';i.approverId=uid;notify();},
-      reject(id,uid){const i=state.invitations.find(i=>i.id===id)||fail('邀请不存在');if(!['pending_approval','pending_accept'].includes(i.status))fail('邀请已处理');if(i.status==='pending_approval'?!manager(i.scopeId,uid):i.inviteeId!==uid)fail('无处理权限');i.status='rejected';notify();},
-      withdraw(id,uid){const i=state.invitations.find(i=>i.id===id)||fail('邀请不存在');if(!manager(i.scopeId,uid)&&!(i.inviterId===uid&&member(i.scopeId,uid)))fail('无撤回权限');if(!['pending_approval','pending_accept'].includes(i.status))fail('邀请已处理');i.status='withdrawn';notify();},
-      accept(id,uid,ids){requireHuman(uid);const i=state.invitations.find(i=>i.id===id)||fail('邀请不存在');if(i.inviteeId===uid&&i.status==='joined')return;if(i.inviteeId!==uid||i.status!=='pending_accept')fail('邀请尚未获批或已处理');const s=writable(i.scopeId);if(s.projectId&&!member(s.projectId,uid))fail('请先加入项目');const clones=selected(uid,ids,s.projectId);if(!member(i.scopeId,uid))s.humans.push({id:uid,role:'member'});s.cloneIds=[...new Set([...s.cloneIds,...clones])];i.status='joined';notify();},
+      addMember(id,uid,target){
+        requireHuman(uid);requireHuman(target);const s=writable(id);
+        if(!member(id,uid))fail('请先加入');
+        if(s.projectId&&!member(s.projectId,target))fail('只能添加当前项目成员');
+        if(member(id,target))return target;
+        s.humans.push({id:target,role:'member'});
+        state.memberAdditions.push({id:'member-add-'+(++state.sequence),scopeId:id,actorId:uid,memberId:target,addedAt:new Date().toISOString()});
+        notify();return target;
+      },
       addClone(id,uid,cid){const s=writable(id);requireHuman(uid);if(!member(id,uid))fail('主人必须先加入');selected(uid,[cid],s.projectId);if(!s.cloneIds.includes(cid))s.cloneIds.push(cid);notify();},
       removeClone(id,uid,cid){if(cid?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);const c=clone(cid)||fail('分身不存在');if(!member(id,uid)||(c.ownerId!==uid&&!manager(id,uid)))fail('无移除权限');s.cloneIds=s.cloneIds.filter(x=>x!==cid);if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.cloneIds=g.cloneIds.filter(x=>x!==cid);});notify();},
       transfer(id,uid,target){const s=writable(id);if(s.ownerId!==uid||!member(id,target)||target===uid)fail('只能转让给范围内的另一位人类成员');s.ownerId=target;s.humans.forEach(m=>{if(state.projects[id]){if(m.id===uid)m.role='member';if(m.id===target)m.role='owner';}});notify();},
@@ -165,7 +182,29 @@
         }
         notify();
       },
-    };return api;
+    };
+    // One-time conversion of old local invitation data; no acceptance workflow remains.
+    if(state.invitations){
+      const pending=state.invitations.filter(i=>['pending_approval','pending_accept'].includes(i.status));
+      // Resolve project membership before ordinary groups; retry chains only when progress occurs.
+      pending.sort((a,b)=>Number(!!state.projects[b.scopeId])-Number(!!state.projects[a.scopeId]));
+      let remaining=pending,progress=true;
+      while(progress&&remaining.length){
+        progress=false;const next=[];
+        for(const i of remaining){
+          const s=state.projects[i.scopeId]||state.groups[i.scopeId];
+          if(!s||!person(i.inviteeId)||!person(i.inviterId))continue;
+          if(member(i.scopeId,i.inviteeId))continue;
+          if(!member(i.scopeId,i.inviterId)||(s.projectId&&!member(s.projectId,i.inviteeId))){next.push(i);continue;}
+          s.humans.push({id:i.inviteeId,role:'member'});
+          state.memberAdditions.push({id:'member-add-'+(++state.sequence),scopeId:i.scopeId,actorId:i.inviterId,memberId:i.inviteeId,migrated:true});
+          progress=true;
+        }
+        remaining=next;
+      }
+      delete state.invitations;
+    }
+    return api;
   }
   function bootstrap(people,projects,channels,orgChannels=[],resolveProjectInfo){
     const key='eva:project-members:v1';
@@ -193,6 +232,19 @@
     for(const [id,oldName] of [['b-wangyilin','王宜林的分身'],['clone-linxiao','林晓的分身'],['clone-hejing','何静的分身']]){
       const c=saved.clones?.find(c=>c.id===id),seed=root.__EVA_MEMBERSHIP_CLONES?.find(c=>c.id===id);
       if(c?.name===oldName&&seed)c.name=seed.name;
+    }
+    // Import the former project-directory preference once. Future pin changes
+    // are owned by the member store and shared with the follow list.
+    if(!saved.pinnedProjects){
+      let ids=['prod'];
+      try{
+        const raw=root.localStorage.getItem('eva:pinned-project-ids:v3');
+        const legacy=raw===null?root.localStorage.getItem('eva:pinned-project-ids:v2'):null;
+        const value=JSON.parse(raw??legacy??'["prod"]');
+        ids=Array.isArray(value)?value.slice(0,6):ids;
+        if(raw===null&&ids.length===1&&ids[0]==='drive-design')ids=['prod'];
+      }catch{}
+      saved.pinnedProjects={'u-wangyilin':ids};
     }
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
     store.seedSupplyChatContent();store.seedProjectAgents();return store;

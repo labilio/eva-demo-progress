@@ -151,8 +151,6 @@
       + '<h1 class="eva-personal-workspace__welcome">'
       + '<span>AI随行</span><span class="eva-personal-workspace__welcome-avatar" aria-hidden="true"><img src="prototype/assets/eva-wave.png" alt=""></span><span>工作随心</span>'
       + '</h1>'
-      + '<button class="eva-personal-workspace__campaign" type="button">'
-      + icon('sparkles', 16, 'eva-i') + '<span>百万亿Token激励计划</span>' + icon('chevron-right', 12, 'eva-i-chevron') + '</button>'
       + '</div>';
   }
 

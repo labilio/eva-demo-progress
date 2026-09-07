@@ -254,14 +254,15 @@ test('一级页面只挂入路由宿主，不再追加到 document.body', () => 
 test('迁移后的一级页面不再保留 DOM 导航状态或浏览器补丁加载器', () => {
   const hierarchy = read('prototype/021-message-hierarchy.js');
   const drive = read('prototype/020-mode-layer.js');
-  const recent = read('prototype/040-team-message-project-recent.js');
+  const recent = read('prototype/009-5-patch-im.js');
   const connectionCenter = read('prototype/029-connection-center-v2-functional.js');
 
   assert.equal(fs.existsSync('prototype/009-9-loader.js'), false, '浏览器补丁加载器仍然存在');
   assert.doesNotMatch(hierarchy, /sync(?:Overview|Contacts|DriveShell)Selection|build(?:Overview|Contacts)Nav/);
   assert.doesNotMatch(drive, /driveNav\.classList\.(?:add|remove)\('is-active'\)/);
-  assert.doesNotMatch(recent, /eva-mode-collaboration/);
-  assert.match(recent, /route === '\/messages'/);
+  assert.equal(fs.existsSync('prototype/040-team-message-project-recent.js'), false);
+  assert.match(recent, /EvaFollowList/);
+  assert.match(recent, /Cn===\"recent\"/);
   assert.doesNotMatch(connectionCenter, /new MutationObserver|centerOpen|setCenterOpen/);
 });
 

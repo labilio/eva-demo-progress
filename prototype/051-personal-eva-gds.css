@@ -30,7 +30,7 @@
 
    [D2] 新会话首页采用用户 2026-09-07 提供的现行视觉内容，但不改变
    GDS 已确认的几何：主列仍为 776，输入器仍为 776×166 / 768×118，
-   整组内容高度仍为 289。内部顺序按参考图调整为欢迎语、活动、输入器、
+   主列随可用宽度收缩并保持居中。内部顺序按参考图调整为欢迎语、输入器、
    快捷能力排。生成中、已完成和历史会话不使用这组首页内容。
    ============================================================ */
 
@@ -99,20 +99,22 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden; /* hero 装饰会越出主列，越出部分不参与布局 */
-  padding: var(--eva-space-10) 0;
+  padding: var(--eva-space-10) var(--eva-space-6);
+  box-sizing: border-box;
 }
 .eva-personal-workspace__column {
   margin: auto;
-  width: var(--eva-main-col-w);
+  width: min(100%, var(--eva-main-col-w));
+  min-width: 0;
   flex: none;
   display: flex;
   flex-direction: column;
 }
 
-/* ---- 新会话欢迎区：标题与活动合计 66px，整组总高度仍保持 289px ---- */
+/* ---- 新会话欢迎区：仅保留欢迎标题 ---- */
 .eva-personal-workspace__hero {
   position: relative;
-  height: 66px;
+  height: 48px;
   flex: none;
   display: flex;
   flex-direction: column;
@@ -120,7 +122,7 @@
 }
 .eva-personal-workspace__hero-grid {
   position: absolute;
-  left: 588px;
+  right: -62px;
   top: -82px;
   width: 250px;
   height: 250px;
@@ -157,21 +159,6 @@
   height: auto;
   max-width: none;
 }
-.eva-personal-workspace__campaign {
-  height: 22px;
-  margin-top: var(--eva-space-1);
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--eva-space-1);
-  border: 0;
-  background: transparent;
-  color: var(--eva-action-primary);
-  cursor: pointer;
-  font: var(--eva-fw-medium) 14px/22px var(--eva-font-sans);
-}
-.eva-personal-workspace__campaign:hover { background: var(--eva-surface-subtle); }
-.eva-personal-workspace__campaign:focus-visible,
 .eva-newchat-icon-action:focus-visible,
 .eva-newchat-context:focus-visible,
 .eva-newchat-model:focus-visible {
@@ -252,6 +239,25 @@
   left: 0;
   bottom: calc(100% + var(--eva-border-hairline-w));
   z-index: 2;
+}
+
+.eva-personal-workspace__column .eva-personal-workspace__pickerhost { right: 0; }
+
+/* Home geometry follows its available workspace, including a resized assistant rail. */
+.eva-personal-workspace__column .eva-composer-wrap,
+.eva-personal-workspace__column .eva-composer,
+.eva-personal-workspace__column .eva-picker {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+.eva-personal-workspace__stage { container-type: inline-size; }
+@container (max-width: 540px) {
+  .eva-personal-workspace__scroll { padding-inline: var(--eva-space-4); }
+  .eva-personal-workspace__welcome { font-size: 24px; gap: var(--eva-space-1); }
+  .eva-newchat-context, .eva-newchat-model { min-width: 0; padding-inline: var(--eva-space-1); flex: 0 1 auto; }
+  .eva-newchat-context span, .eva-newchat-model span { min-width: 0; }
+  .eva-newchat-context svg, .eva-newchat-model svg { flex: none; }
 }
 
 /* ---- 操作卡 ----
