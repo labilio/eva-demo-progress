@@ -2,7 +2,7 @@
    .eva-contacts.eva-contacts--redesigned {
     grid-template-columns: minmax(0, 1fr);
     overflow: hidden;
-    background: var(--semi-color-bg-0, #fff);
+    background: var(--gds-color-surface-primary);
   }
 
    .eva-contacts.eva-contacts--redesigned:not([hidden]) {
@@ -22,8 +22,8 @@
   .eva-contacts__side {
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--semi-color-border, #eceef0);
-    background: #f7f8fa;
+    border-right: var(--gds-border-standard) solid var(--gds-color-border-subtle);
+    background: var(--gds-color-surface-subtle);
   }
 
   .eva-contacts__side-head,
@@ -34,19 +34,21 @@
     height: 56px;
     padding: 0 16px;
     gap: 9px;
-    border-bottom: 1px solid var(--semi-color-border, #eceef0);
+    border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
   }
 
   .eva-contacts__side-head svg {
     width: 18px;
     height: 18px;
-    color: #7e838c;
+    color: var(--gds-color-text-secondary);
   }
 
   .eva-contacts__side-head strong,
   .eva-contacts__main-head strong {
-    font-size: 15px;
-    font-weight: 600;
+    color: var(--gds-color-text-primary);
+    font-size: var(--gds-type-header-font-size);
+    font-weight: var(--gds-font-weight-medium);
+    line-height: var(--gds-type-header-line-height);
   }
 
   .eva-contacts__search {
@@ -56,9 +58,9 @@
     margin: 14px 14px 10px;
     padding: 0 10px;
     gap: 7px;
-    border-radius: 17px;
-    color: var(--semi-color-text-2, #8a8f99);
-    background: #eceef1;
+    border-radius: var(--gds-radius-chip);
+    color: var(--gds-color-text-secondary-accessible);
+    background: var(--gds-color-surface-subtle);
   }
 
   .eva-contacts__search svg { flex: none; width: 15px; height: 15px; }
@@ -67,10 +69,11 @@
     width: 100%;
     border: 0;
     outline: 0;
-    color: var(--semi-color-text-0, #1c1f23);
+    color: var(--gds-color-text-primary);
     background: transparent;
     font: inherit;
-    font-size: 13px;
+    font-size: var(--gds-type-label-font-size);
+    line-height: var(--gds-type-label-line-height);
   }
 
   .eva-contacts__nav {
@@ -81,14 +84,15 @@
 
   .eva-contacts__nav-label {
     margin: 14px 8px 6px;
-    color: var(--semi-color-text-2, #8a8f99);
-    font-size: 12px;
+    color: var(--gds-color-text-secondary-accessible);
+    font-size: var(--gds-type-caption-font-size);
+    line-height: var(--gds-type-caption-line-height);
   }
 
   .eva-contacts__main {
     display: flex;
     flex-direction: column;
-    background: var(--semi-color-bg-0, #fff);
+    background: var(--gds-color-surface-primary);
   }
 
   .eva-contacts__main-head {
@@ -123,10 +127,10 @@
     padding: 0 10px;
     gap: 7px;
     border-radius: 16px;
-    border: 1px solid var(--semi-color-border, #e3e5e8);
-    color: var(--semi-color-text-2, #8a8f99);
-    background: var(--semi-color-bg-0, #fff);
-    box-shadow: 0 4px 14px rgb(0 0 0 / 10%);
+    border: var(--gds-border-standard) solid var(--gds-color-border-subtle);
+    color: var(--gds-color-text-secondary-accessible);
+    background: var(--gds-color-surface-primary);
+    box-shadow: var(--gds-shadow-floating), var(--gds-shadow-hairline);
     transform: translateY(-50%);
   }
 
@@ -137,10 +141,11 @@
     width: 100%;
     border: 0;
     outline: 0;
-    color: var(--semi-color-text-0, #1c1f23);
+    color: var(--gds-color-text-primary);
     background: transparent;
     font: inherit;
-    font-size: 13px;
+    font-size: var(--gds-type-label-font-size);
+    line-height: var(--gds-type-label-line-height);
   }
 
   .eva-contacts__search-toggle {
@@ -152,13 +157,13 @@
     padding: 0;
     border: 0;
     border-radius: 7px;
-    color: var(--semi-color-text-2, #8a8f99);
+    color: var(--gds-color-text-secondary-accessible);
     background: transparent;
     cursor: pointer;
   }
 
-  .eva-contacts__search-toggle:hover { color: var(--semi-color-text-0, #1c1f23); background: var(--semi-color-fill-1, #e2e3e5); }
-  .eva-contacts__search-toggle:focus-visible { outline: 2px solid var(--semi-color-primary, #5b5bd6); outline-offset: 1px; }
+  .eva-contacts__search-toggle:hover { color: var(--gds-color-text-primary); background: var(--gds-color-surface-subtle); }
+  .eva-contacts__search-toggle:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-border-focus); outline-offset: var(--gds-space-0-5); }
   .eva-contacts__search-toggle svg { width: 16px; height: 16px; }
 
   .eva-contacts__list {
@@ -176,15 +181,15 @@
     min-height: 36px;
     align-items: center;
     column-gap: 28px;
-    border-bottom: 1px solid var(--semi-color-border, #eceef0);
-    color: var(--semi-color-text-2, #8a8f99);
-    background: var(--semi-color-bg-0, #fff);
-    font-size: 12px;
-    line-height: 18px;
+    border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
+    color: var(--gds-color-text-secondary-accessible);
+    background: var(--gds-color-surface-primary);
+    font-size: var(--gds-type-caption-font-size);
+    line-height: var(--gds-type-caption-line-height);
   }
 
   .eva-contacts__semi-list.semi-list-split .semi-list-item {
-    border-bottom-color: var(--semi-color-border, #eceef0);
+    border-bottom-color: var(--gds-color-border-faint);
   }
 
   .eva-contacts__person.semi-list-item {
@@ -193,7 +198,7 @@
     min-height: 60px;
     margin: 0;
     padding: 8px 0;
-    color: var(--semi-color-text-0, #1c1f23);
+    color: var(--gds-color-text-primary);
     background: transparent;
   }
 
@@ -234,17 +239,17 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #f2f3f5;
+    background: var(--gds-color-surface-subtle);
     object-fit: cover;
   }
 
   .eva-contacts__person-name {
     min-width: 0;
     overflow: hidden;
-    color: var(--semi-color-text-0, #1c1f23);
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 20px;
+    color: var(--gds-color-text-primary);
+    font-size: var(--gds-type-label-medium-font-size);
+    font-weight: var(--gds-font-weight-medium);
+    line-height: var(--gds-type-label-medium-line-height);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -260,17 +265,17 @@
     justify-content: center;
     border: 0;
     border-radius: 6px;
-    color: var(--semi-color-text-1, #4e5969);
+    color: var(--gds-color-text-secondary);
     background: transparent;
     cursor: pointer;
   }
 
   .eva-personal-assistant-entry .eva-personal-assistant-add:hover {
-    background: var(--semi-color-fill-1, #e5e6eb);
+    background: var(--gds-color-surface-subtle);
   }
 
   .eva-personal-assistant-entry .eva-personal-assistant-add:focus-visible {
-    outline: 2px solid var(--semi-color-primary, #7771d6);
+    outline: 2px solid var(--gds-color-border-focus);
     outline-offset: 1px;
   }
 
@@ -306,8 +311,8 @@
     bottom: 0;
     width: 18px;
     height: 18px;
-    border: 2px solid var(--semi-color-bg-0, #fff);
-    background: var(--semi-color-fill-0, #f2f3f5);
+    border: 2px solid var(--gds-color-surface-primary);
+    background: var(--gds-color-surface-subtle);
   }
 
   .eva-contacts__ai-identity {
@@ -320,10 +325,10 @@
   .eva-contacts__ai-name {
     min-width: 0;
     overflow: hidden;
-    color: var(--semi-color-text-0, #1c1f23);
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 20px;
+    color: var(--gds-color-text-primary);
+    font-size: var(--gds-type-label-medium-font-size);
+    font-weight: var(--gds-font-weight-medium);
+    line-height: var(--gds-type-label-medium-line-height);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -344,18 +349,19 @@
     display: grid;
     place-items: center;
     min-height: 240px;
-    color: var(--semi-color-text-2, #8a8f99);
-    font-size: 13px;
+    color: var(--gds-color-text-secondary-accessible);
+    font-size: var(--gds-type-label-font-size);
+    line-height: var(--gds-type-label-line-height);
   }
 
 
 .eva-contacts__ai-identity{min-width:0;display:flex;align-items:center;gap:6px}
 .eva-contacts__ai-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .eva-contacts__ai-identity .ai-badge{flex-shrink:0}
-.eva-contacts__more{align-self:center;font:inherit;font-size:12px;cursor:pointer;padding:6px;text-align:center;border:0;border-radius:6px;color:var(--semi-color-primary);background:var(--semi-color-fill-0)}
+.eva-contacts__more{align-self:center;font:inherit;font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-caption-line-height);cursor:pointer;padding:var(--gds-space-1-5);text-align:center;border:0;border-radius:var(--gds-radius-control);color:var(--gds-color-action-primary);background:var(--gds-color-surface-subtle)}
 
 .eva-contacts.eva-contacts--redesigned{height:100%;min-height:0;width:100%;position:relative}
-.eva-contact-identity-button{border:0;background:transparent;color:inherit;font:inherit;text-align:left;padding:4px;border-radius:var(--semi-border-radius-small);cursor:pointer}
-.eva-contact-identity-button:hover{background:var(--semi-color-fill-0)}
-.eva-contact-identity-button:focus-visible{outline:2px solid var(--semi-color-primary);outline-offset:1px}
+.eva-contact-identity-button{border:0;background:transparent;color:inherit;font:inherit;text-align:left;padding:var(--gds-space-1);border-radius:var(--gds-radius-control);cursor:pointer}
+.eva-contact-identity-button:hover{background:var(--gds-color-surface-subtle)}
+.eva-contact-identity-button:focus-visible{outline:var(--gds-border-focus) solid var(--gds-color-border-focus);outline-offset:var(--gds-space-0-5)}
 .eva-contacts__search-popover .semi-input-wrapper{border:0;background:transparent;min-width:0;flex:1}

@@ -643,13 +643,29 @@
     {
       "order": 80,
       "tag": "style",
+      "name": "sites-page",
+      "file": "prototype/053-sites-page.css",
+      "bytes": 0,
+      "role": "prototype"
+    },
+    {
+      "order": 81,
+      "tag": "script",
+      "name": "sites-page",
+      "file": "prototype/053-sites-page.js",
+      "bytes": 0,
+      "role": "prototype"
+    },
+    {
+      "order": 82,
+      "tag": "style",
       "name": "review-comments",
       "file": "review/comments.css",
       "bytes": 14096,
       "role": "review"
     },
     {
-      "order": 81,
+      "order": 83,
       "tag": "script",
       "name": "review-comments-store",
       "file": "review/comments-store.mjs",
@@ -657,7 +673,7 @@
       "role": "review-module"
     },
     {
-      "order": 82,
+      "order": 84,
       "tag": "script",
       "name": "review-comments",
       "file": "review/comments.js",
