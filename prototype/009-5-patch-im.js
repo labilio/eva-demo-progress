@@ -262,6 +262,18 @@ function EvaAITeamPage() {
       items[0]=React.cloneElement(items[0],{dragHandleProps:{...drag.attributes,...drag.listeners,ref:drag.setActivatorNodeRef,'aria-label':'拖动排序：'+items[0].props.name}});
       return React.createElement('div',{ref:drag.setNodeRef,className:'eva-follow-channel'+(drag.isDragging?' is-dragging':''),style:{transform:CSS$1.Transform.toString(drag.transform),transition:drag.transition}},items);
     }
+    function EvaConversationCategoryEditor({store,actorId,record,channels,onClose,onSaved}){
+      const h=React.createElement, [name,setName]=reactExports.useState(record.name||''),[error,setError]=reactExports.useState('');
+      const available=channels.filter(c=>!c.category?.startsWith('space:'));
+      const [selected,setSelected]=reactExports.useState(()=>record.id?available.filter(c=>c.category===record.id).map(c=>c.id):[]);
+      return h(Modal,{visible:true,title:record.id?'编辑分组':'创建分组',width:440,okText:record.id?'保存':'创建',cancelText:'取消',onCancel:onClose,onOk:()=>{try{store.saveConversationCategory(actorId,{id:record.id,name,channelIds:selected,availableChannels:available});onSaved();}catch(e){setError(e.message);}}},
+        h(ForwardInput,{value:name,onChange:setName,maxLength:50,placeholder:'输入分组名称','aria-label':'分组名称',autoFocus:true}),
+        h('p',null,'选择放入此分组的非项目会话（可选）'),
+        h('div',{className:'eva-category-conversations'},available.map(c=>h('label',{key:c.id,className:'eva-category-conversation'},
+          h('input',{type:'checkbox',checked:selected.includes(c.id),onChange:e=>setSelected(ids=>e.target.checked?[...ids,c.id]:ids.filter(id=>id!==c.id))}),
+          h('img',{src:c.identityAvatarUrl||window.EvaAvatar.uri({kind:c.id.startsWith('dm-')?'person':'group',id:c.id}),width:22,height:22,alt:''}),h('span',null,c.name)))),
+        error&&h('p',{role:'alert'},error));
+    }
     function EvaFollowCategory({categoryId,sortableItems,children,title,extra}){
       const drag=useSortable({id:'category:'+categoryId,data:{type:'category'}});
       return React.createElement('section',{ref:drag.setNodeRef,className:'eva-follow-category'+(drag.isDragging?' is-dragging':''),style:{transform:CSS$1.Transform.toString(drag.transform),transition:drag.transition},'aria-label':title.props.name},
@@ -545,6 +557,15 @@ function EvaAITeamPage() {
     cut(':ct?.onDraftChange,disabled:', ':ct?.getDraft?text=>ct.onDraftChange(text,va):ct?.onDraftChange,disabled:', '固定群草稿写入当前频道');
     cut('placeholder:evaIMPlaceholder(Es.name),onSend:ci=>vi(Es.id,ci)', 'placeholder:evaIMPlaceholder(Es.name),initialDraft:ct?.getDraft?.(Es.id),onDraftChange:ct?.getDraft?text=>ct.onDraftChange(text,Es.id):undefined,onSend:ci=>vi(Es.id,ci)', '侧面子区草稿隔离');
     cut('Za=(ci,Zi)=>{setEvaInlineProjectId(null),xt(ci),Nt(Zi)', 'Za=(ci,Zi)=>{ct?.onSelectThread?.(Zi);setEvaInlineProjectId(null),xt(ci),Nt(Zi)', '固定群中栏子区选择同步');
-    return EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    cut('[evaGroupCreateOpen,setEvaGroupCreateOpen]=reactExports.useState(false),', '[evaCategoryEditor,setEvaCategoryEditor]=reactExports.useState(null),[evaGroupCreateOpen,setEvaGroupCreateOpen]=reactExports.useState(false),', '自定义分类编辑状态');
+    cut('return {...evaC,...evaS,name:', 'return {...evaC,...evaS,category:ct&&!ct.conversationOnly?evaMemberStore.conversationCategory(evaActorId,evaC):evaC.category,name:', '非项目会话分类来源');
+    cut('gt=ct?.cats??[]', 'gt=ct&&!ct.conversationOnly?[...(ct.cats||[]).filter(c=>c.id.startsWith("space:")),...evaMemberStore.conversationCategories(evaActorId)]:ct?.cats??[]', '用户分类列表');
+    cut('c.id==="scope:other"||evaMemberStore.pinnedProjects', 'c.id.startsWith("scope:")||evaMemberStore.pinnedProjects', '自定义分类在关注展示');
+    cut('React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),setEvaGroupCreateOpen(true)}},"新建群聊")', 'React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),setEvaGroupCreateOpen(true)}},"新建群聊"),React.createElement(Dropdown.Item,{onClick:()=>{cn(false);setEvaCategoryEditor({});}},"创建分组")', '消息加号创建分组');
+    cut('title:"新建群聊","aria-label":"新建群聊"', 'title:"新建","aria-label":"新建"', '消息加号多操作语义');
+    cut('return React.createElement(I18nProvider,null,', 'return React.createElement(I18nProvider,null,evaCategoryEditor&&React.createElement(EvaConversationCategoryEditor,{key:evaActorId+":"+(evaCategoryEditor.id||"new"),store:evaMemberStore,actorId:evaActorId,record:evaCategoryEditor,channels:pt,onClose:()=>setEvaCategoryEditor(null),onSaved:()=>{setEvaCategoryEditor(null);Fa("");ir("follow");}}),', '分类编辑表单');
+    cut('projectId:ci.id.slice(6)}}))}}):null,headerStyle:', 'projectId:ci.id.slice(6)}}))}}):React.createElement(Button,{theme:"borderless",type:"tertiary",size:"small",icon:React.createElement(EllipsisIcon,{size:16}),"aria-label":"编辑分组 "+ci.name,onClick:()=>setEvaCategoryEditor(ci)}),headerStyle:', '其他会话和自定义分类可编辑');
+    cut('setEvaIdentityProfile(null);},[evaMembershipProjectId,evaActorId])', 'setEvaIdentityProfile(null);setEvaCategoryEditor(null);},[evaMembershipProjectId,evaActorId])', '分类表单身份重置');
+    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

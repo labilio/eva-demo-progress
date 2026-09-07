@@ -40,6 +40,28 @@
         if(JSON.stringify(state.pinnedProjects?.[uid]||[])===JSON.stringify(next))return;
         state.pinnedProjects||={};state.pinnedProjects[uid]=next;notify();
       },
+      conversationCategories(uid){
+        return [{id:'scope:other',name:state.conversationCategories?.[uid]?.find(c=>c.id==='scope:other')?.name||'其他会话'},...(state.conversationCategories?.[uid]||[]).filter(c=>c.id!=='scope:other').map(c=>({...c}))];
+      },
+      conversationCategory(uid,channel){
+        if(channel.category?.startsWith('space:'))return channel.category;
+        const id=state.conversationCategoryAssignments?.[uid]?.[channel.id];
+        return api.conversationCategories(uid).some(c=>c.id===id)?id:'scope:other';
+      },
+      saveConversationCategory(uid,{id,name,channelIds=[],availableChannels=[]}){
+        requireHuman(uid);name=String(name||'').trim();
+        if(!name||name.length>50)fail('分组名称需为 1–50 个字符');
+        const categories=api.conversationCategories(uid);
+        if(id&&!categories.some(c=>c.id===id))fail('分组不存在');
+        if(categories.some(c=>c.id!==id&&c.name===name))fail('分组名称已存在');
+        const allowed=new Set(availableChannels.filter(c=>!c.category?.startsWith('space:')&&!state.groups[c.id]?.projectId&&!state.projects[c.id]&&!c.id.startsWith('all:')).map(c=>c.id));
+        if(channelIds.some(cid=>!allowed.has(cid)))fail('只能整理非项目会话');
+        id ||= 'scope:custom-'+(++state.sequence);
+        state.conversationCategories||={};state.conversationCategories[uid]=categories.some(c=>c.id===id)?categories.map(c=>c.id===id?{id,name}:c):categories.concat({id,name});
+        state.conversationCategoryAssignments||={};const assignments=state.conversationCategoryAssignments[uid]||={};
+        availableChannels.filter(c=>allowed.has(c.id)).forEach(c=>{if(api.conversationCategory(uid,c)===id&&!channelIds.includes(c.id))assignments[c.id]='scope:other';});
+        channelIds.forEach(cid=>assignments[cid]=id);notify();return id;
+      },
       followOrder(uid,bucket,items){
         const order=state.followOrders?.[uid]?.[bucket]||[],rank=new Map(order.map((id,index)=>[id,index]));
         return [...items].sort((a,b)=>(rank.get(a.id)??order.length)-(rank.get(b.id)??order.length));
