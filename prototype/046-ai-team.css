@@ -1,5 +1,5 @@
 /* AI Team-specific surfaces use GDS semantic tokens. The conversation remains Octo IM.
- * The rail follows the shared 260px default and 220–480px resize contract. */
+ * The 336px rail is Eva's existing team rail, not GDS's personal 260px shell. */
 .eva-ai-team {
   display: flex;
   position: relative;
@@ -17,13 +17,13 @@
 }
 .eva-ai-team__sidebar {
   /* Match existing personal Eva list typography and message rail surfaces. */
-  --eva-rail-divider: var(--gds-color-border-subtle);
-  --eva-rail-caption: var(--gds-color-text-secondary-accessible);
-  --eva-rail-primary: var(--gds-color-text-primary);
-  --eva-rail-secondary: var(--gds-color-text-secondary);
-  --eva-rail-time: var(--gds-color-text-secondary-accessible);
-  --eva-rail-hover: var(--gds-color-overlay-hover);
-  --eva-rail-selected: var(--gds-color-overlay-pressed);
+  --eva-rail-divider: var(--color-border-2, var(--semi-color-border, #e5e6eb));
+  --eva-rail-caption: var(--semi-color-text-2, #8f959e);
+  --eva-rail-primary: #1f2329;
+  --eva-rail-secondary: #30343b;
+  --eva-rail-time: #8d95a1;
+  --eva-rail-hover: #e2e3e5;
+  --eva-rail-selected: #e5e6eb;
   --eva-rail-name-size: var(--gds-type-label-medium-font-size);
   --eva-rail-label-size: var(--gds-type-label-font-size);
   --eva-rail-line-height: var(--gds-type-label-medium-line-height);
@@ -81,7 +81,7 @@
 .eva-ai-team__new-session.is-active { background: var(--eva-rail-selected); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-action:focus-visible { opacity: 1; pointer-events: auto; outline: 2px solid var(--gds-color-action-primary); outline-offset: -2px; }
 .eva-ai-team__sidebar-header .eva-ai-team__new {
-  background: var(--gds-color-action-dark);
+  background: var(--semi-color-text-0, #1c1f23);
   color: var(--gds-color-surface-primary);
   flex-shrink: 0;
 }
@@ -287,36 +287,36 @@
 .eva-ai-team__field .semi-select:focus-visible,
 .eva-ai-team__sidebar .semi-button:focus-visible,
 .eva-ai-team__modal-host .semi-button:focus-visible {
-  outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
+  outline: var(--gds-border-focus) solid var(--semi-color-text-2);
   outline-offset: var(--gds-space-0-5);
 }
 
 .eva-ai-team .wk-chat-conversation-header-channel-avatar,
 .eva-ai-team .wk-msg-avatar { overflow: visible; }
 .eva-ai-team__identity-heading .ai-badge { flex-shrink: 0; }
-  .eva-create-assistant-modal { display: flex; width: 100%; height: min(650px, calc(100dvh - 76px)); box-sizing: border-box; font-family: var(--gds-font-family-sans); font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); flex-direction: column; overflow: hidden; border: var(--gds-border-standard) solid var(--gds-color-border-subtle); border-radius: var(--gds-radius-panel); background: var(--gds-color-surface-primary); box-shadow: var(--gds-shadow-floating), var(--gds-shadow-hairline); }
+  .eva-create-assistant-modal { display: flex; width: 100%; height: min(650px, calc(100dvh - 76px)); box-sizing: border-box; font-family: var(--gds-font-family-sans); font-size: 13px; line-height: 20px; flex-direction: column; overflow: hidden; border: 1px solid #dfe2e6; border-radius: 12px; background: #fff; box-shadow: 0 24px 64px rgb(31 35 41 / 24%); }
   .eva-create-assistant-modal__head { display: flex; min-height: 92px; box-sizing: border-box; flex-shrink: 0; align-items: flex-start; gap: 14px; padding: 24px 28px 12px; }
-  .eva-create-assistant-modal__mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: var(--gds-radius-control); background: var(--gds-color-surface-subtle); color: var(--gds-color-text-secondary); font-weight: var(--gds-font-weight-medium); }
+  .eva-create-assistant-modal__mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 9px; background: #f2f3f5; color: #4e5969; font-weight: 700; }
   .eva-create-assistant-modal__mark img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
   .eva-create-assistant-modal__identity { min-width: 0; flex: 1; }
-  .eva-create-assistant-modal__identity input { display: block; width: 100%; border: 0; outline: 0; background: transparent; color: var(--gds-color-text-primary); font: inherit; font-size: var(--gds-type-header-font-size); line-height: var(--gds-type-header-line-height); font-weight: var(--gds-font-weight-medium); }
-  .eva-create-assistant-modal__identity input::placeholder { color: var(--gds-color-text-muted); }
-  .eva-create-assistant-modal__identity span { color: var(--gds-color-text-secondary-accessible); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); }
+  .eva-create-assistant-modal__identity input { display: block; width: 100%; border: 0; outline: 0; background: transparent; color: #1f2329; font: inherit; font-size: 20px; font-weight: 600; }
+  .eva-create-assistant-modal__identity input::placeholder { color: #b7bcc4; }
+  .eva-create-assistant-modal__identity span { color: var(--semi-color-text-2); font-size: 13px; }
   .eva-create-assistant-modal__head-actions { display: flex; align-items: center; gap: 8px; }
-  .eva-create-assistant-modal__head-actions button { height: 34px; padding: 0 13px; border: var(--gds-border-standard) solid var(--gds-color-border-subtle); border-radius: var(--gds-radius-control); background: var(--gds-color-surface-primary); color: var(--gds-color-text-secondary); font: inherit; cursor: pointer; }
+  .eva-create-assistant-modal__head-actions button { height: 34px; padding: 0 13px; border: 1px solid #e1e4e8; border-radius: 8px; background: #fff; color: #4e5969; font: inherit; cursor: pointer; }
   .eva-create-assistant-modal__close { width: 34px; padding: 0 !important; border-color: transparent !important; font-size: 22px !important; }
-  .eva-create-assistant-modal__tabs { display: flex; gap: 28px; padding: 0 28px; overflow-x: auto; border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle); }
-  .eva-create-assistant-modal__tab { position: relative; flex-shrink: 0; white-space: nowrap; height: 42px; padding: 0; border: 0; background: transparent; color: var(--gds-color-text-secondary-accessible); font: inherit; cursor: pointer; }
-  .eva-create-assistant-modal__tab.is-active { color: var(--gds-color-action-primary); font-weight: var(--gds-font-weight-medium); }
-  .eva-create-assistant-modal__tab.is-active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: var(--gds-border-focus); background: var(--gds-color-action-primary); content: ''; }
+  .eva-create-assistant-modal__tabs { display: flex; gap: 28px; padding: 0 28px; overflow-x: auto; border-bottom: 1px solid #e5e7ea; }
+  .eva-create-assistant-modal__tab { position: relative; flex-shrink: 0; white-space: nowrap; height: 42px; padding: 0; border: 0; background: transparent; color: #747b84; font: inherit; cursor: pointer; }
+  .eva-create-assistant-modal__tab.is-active { color: #1f2329; font-weight: 600; }
+  .eva-create-assistant-modal__tab.is-active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: #1f2329; content: ''; }
   .eva-create-assistant-modal__body { flex: 1; min-height: 0; padding: 28px; }
-  .eva-create-assistant-modal__hint { margin: 0 0 var(--gds-space-3-5); color: var(--gds-color-text-secondary); font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); }
+  .eva-create-assistant-modal__hint { margin: 0 0 14px; color: #646a73; font-size: 13px; }
   .eva-create-assistant-modal__editor { display: block; width: 100%; height: calc(100% - 35px); min-height: 80px; border: 0; outline: none; resize: none; background: transparent; color: var(--gds-color-text-primary); font: inherit; font-size: 14px; line-height: 22px; }
-  .eva-create-assistant-modal__editor::placeholder { color: var(--gds-color-text-muted); }
-  .eva-create-assistant-modal__footer { box-sizing: border-box; display: flex; flex-shrink: 0; min-height: 68px; align-items: center; gap: 10px; padding: 0 24px; border-top: var(--gds-border-standard) solid var(--gds-color-border-subtle); }
-  .eva-create-assistant-modal__chip { padding: var(--gds-space-2) var(--gds-space-3); border-radius: var(--gds-radius-control); background: var(--gds-color-surface-subtle); color: var(--gds-color-text-secondary); font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); }
+  .eva-create-assistant-modal__editor::placeholder { color: var(--gds-color-text-placeholder); }
+  .eva-create-assistant-modal__footer { box-sizing: border-box; display: flex; flex-shrink: 0; min-height: 68px; align-items: center; gap: 10px; padding: 0 24px; border-top: 1px solid #e5e7ea; }
+  .eva-create-assistant-modal__chip { padding: 8px 12px; border-radius: 8px; background: #f5f6f7; color: #4e5969; font-size: 13px; }
   .eva-create-assistant-modal__spacer { flex: 1; }
-  .eva-create-assistant-modal__submit { height: 32px; padding: 0 16px; border: 0; border-radius: var(--gds-radius-control); background: var(--gds-color-action-primary); color: var(--gds-color-action-primary-text); font: inherit; font-weight: var(--gds-font-weight-medium); cursor: pointer; }
+  .eva-create-assistant-modal__submit { height: 32px; padding: 0 16px; border: 0; border-radius: 8px; background: #8d7cf4; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
 /* Shared editor preserves the original layout and stays below the client titlebar. */
 .eva-editor-host { position: fixed; inset: 36px 0 0; z-index: 1000; pointer-events: none; }
 .eva-editor-host > .semi-portal,
