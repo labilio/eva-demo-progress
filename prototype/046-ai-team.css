@@ -33,10 +33,8 @@
   --eva-rail-session-height: 38px;
   --eva-rail-level-indent: 12px;
   box-sizing: border-box;
-  /* Group title → assistant label → session label advances by 12px.
-     The session has no leading avatar, so its start includes the 20px avatar
-     and 4px icon/text gap that precede an assistant label. */
-  --eva-rail-session-indent: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-1) + var(--eva-rail-level-indent));
+  /* 8px inset + 22px avatar slot + 8px gap; child text advances by 20px. */
+  --eva-rail-session-indent: 58px;
   position: relative;
   flex: 0 0 var(--eva-conversation-rail-current);
   width: var(--eva-conversation-rail-current);
@@ -89,17 +87,15 @@
 }
 .eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-2) var(--gds-space-3) var(--gds-space-4); }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--eva-rail-divider);
+  margin-top: 16px;
 }
 .eva-ai-team__group-toggle {
   display: flex;
   width: 100%;
   min-height: 30px;
   align-items: center;
-  gap: var(--gds-space-1);
-  padding: 4px 0;
+  gap: 8px;
+  padding: 4px 8px;
   border: 0;
   border-radius: var(--gds-radius-control);
   background: transparent;
@@ -118,11 +114,11 @@
   font-weight: var(--gds-font-weight-medium);
 }
 .eva-ai-team__group-count { min-width: 18px; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); text-align: right; }
-.eva-ai-team__group-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
+.eva-ai-team__group-chevron { flex: 0 0 22px; transition: transform 120ms ease; }
 .eva-ai-team__group-chevron.is-expanded { transform: rotate(90deg); }
-.eva-ai-team__group-content { margin-top: var(--gds-space-2); }
-.eva-ai-team__identity + .eva-ai-team__identity { margin-top: 6px; }
-.eva-ai-team__identity-heading { display: flex; align-items: center; gap: var(--gds-space-1); margin-bottom: var(--gds-space-1); }
+.eva-ai-team__group-content { margin-top: 4px; }
+.eva-ai-team__identity + .eva-ai-team__identity { margin-top: 2px; }
+.eva-ai-team__identity-heading { position: relative; display: flex; align-items: center; border-radius: var(--gds-radius-control); }
 .eva-ai-team__identity-button,
 .eva-ai-team__session,
 .eva-ai-team__digital-button {
@@ -135,13 +131,13 @@
   font: inherit;
   cursor: pointer;
 }
-.eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-1); min-height: var(--eva-rail-identity-height); padding: 0; flex: 1; }
+.eva-ai-team__identity-button { display: flex; align-items: center; gap: 8px; min-height: var(--eva-rail-identity-height); padding: 0 32px 0 8px; flex: 1; }
 .eva-ai-team__identity-name { min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-medium); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-button > svg,
 .eva-ai-team__identity-button > .ai-badge,
 .eva-ai-team__identity-button > .eva-identity-avatar { flex-shrink: 0; }
 .eva-ai-team__identity-button > .eva-identity-name-row { flex: 1; }
-.eva-ai-team__chevron { color: var(--gds-color-text-secondary); }
+.eva-ai-team__chevron { position: absolute; right: 10px; width: 16px; height: 16px; color: var(--gds-color-text-secondary); }
 .eva-ai-team__chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__role-label { flex-shrink: 0; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); color: var(--gds-color-text-secondary); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__identity-status { margin: 0 0 var(--gds-space-2) var(--gds-space-8); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); }
@@ -406,6 +402,32 @@
 .eva-ai-team__source-options input[type="radio"] { flex-shrink: 0; width: 16px; height: 16px; margin: 0; accent-color: var(--semi-color-text-1); cursor: inherit; }
 .eva-ai-team__source-options .eva-ai-team__connection-option:has(input:focus-visible) { outline: 2px solid var(--semi-color-text-2); outline-offset: -2px; }
 
-.eva-ai-team__fixed-group-tree {
-  margin-bottom: 12px;
+/* One avatar/text grid and one trailing disclosure column for all identities. */
+.eva-ai-team__identity-button > .eva-identity-avatar { margin-right: 2px; }
+.eva-ai-team__identity-heading > .eva-ai-team__new-session-anchor,
+.eva-ai-team__identity-heading > .eva-ai-team__menu-anchor {
+  position: absolute; right: 32px; top: 50%; transform: translateY(-50%);
 }
+.eva-ai-team__identity-heading > .eva-ai-team__menu-anchor { right: 58px; opacity: 0; pointer-events: none; }
+.eva-ai-team__identity-heading:hover > .eva-ai-team__menu-anchor,
+.eva-ai-team__identity-heading:focus-within > .eva-ai-team__menu-anchor { opacity: 1; pointer-events: auto; }
+.eva-ai-team__identity-heading:hover .eva-ai-team__identity-button,
+.eva-ai-team__identity-heading:focus-within .eva-ai-team__identity-button,
+.eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__identity-button { padding-right: 60px; }
+.eva-ai-team__identity-heading:has(> .eva-ai-team__menu-anchor):hover .eva-ai-team__identity-button,
+.eva-ai-team__identity-heading:has(> .eva-ai-team__menu-anchor):focus-within .eva-ai-team__identity-button { padding-right: 86px; }
+.eva-ai-team__identity-heading .eva-ai-team__more { width: 24px; min-height: 24px; height: 24px; padding: 0; }
+.eva-ai-team__fixed-group-tree { margin-bottom: 16px; }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item {
+  box-sizing: border-box; min-height: var(--eva-rail-identity-height); height: auto;
+  padding: 0 8px; gap: 8px; border-radius: var(--gds-radius-control);
+  font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height);
+}
+.eva-ai-team__fixed-group-tree .wk-conv-compact-name { font-weight: var(--gds-font-weight-medium); }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-icon { width: 22px; flex: 0 0 22px; }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-thread-toggle { width: 20px; flex: 0 0 20px; }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread { padding-left: 38px; min-height: 38px; }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread .wk-conv-compact-icon { width: 12px; flex-basis: 12px; }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread .wk-conv-compact-name { font-weight: var(--gds-font-weight-regular); }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item:hover { background: var(--eva-rail-hover); }
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item--selected { background: var(--eva-rail-selected); }
