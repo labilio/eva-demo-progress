@@ -390,5 +390,47 @@
     }
     return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, setSessionFlag, deleteSession });
   }
+  // A fixed multi-AI group has its own channel/history; membership is derived live.
+  function createTeamGroupStore(options = {}) {
+    const id = 'my-ai-team:u-wangyilin', key = 'eva:my-ai-team-group:v1';
+    let storage, state = {messages: [], draft: ''}, revision = 0;
+    const listeners = new Set();
+    try {
+      storage = Object.hasOwn(options, 'storage') ? options.storage : window.localStorage;
+      const saved = JSON.parse(storage?.getItem(key) || 'null');
+      if (saved && Array.isArray(saved.messages) && typeof saved.draft === 'string') state = saved;
+    } catch (_) {}
+    function publish() {
+      try { storage?.setItem(key, JSON.stringify(state)); } catch (_) {}
+      revision++; listeners.forEach(fn => fn());
+    }
+    return Object.freeze({
+      id, getSnapshot: () => revision,
+      subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+      source(members) {
+        const unique = [...new Map(members.map(member => [member.id, member])).values()];
+        const channel = {id, name: '我的AI团队', chatType: 'group', channel_type: 2,
+          ownerId: 'u-wangyilin', memberIds: unique.map(member => member.id), members: unique.length,
+          fixedMembers: unique, threads: [], unread: 0, replyPolicy: 'mention-only'};
+        return {conversationOnly: true, sidebarVariant: 'ai-sessions', channels: [channel],
+          cats: [], messages: {[id]: copy(state.messages)}, threadMessages: {}, scopeNameOf: {},
+          initialDraft: state.draft,
+          onDraftChange(text) { if (state.draft !== text) {state.draft = text; publish();} },
+          onSend(text) {
+            if (!text.trim()) return false;
+            const time = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
+            const messageId = 'team-group:' + Date.now() + ':' + state.messages.length;
+            state.messages.push({id:messageId, kind:'text', sender:{uid:'u-wangyilin', name:'王宜林', avatar:window.__EVA_CURRENT_USER_PORTRAIT}, time, text});
+            unique.filter(member => member.kind !== 'human' && (text.includes('@' + member.name + ' ') || text.endsWith('@' + member.name))).forEach(member => {
+              state.messages.push({id:messageId+':'+member.id, kind:'text', sender:{uid:member.id, name:member.name, ai:true, identityAppearance:member.identityAppearance}, time,
+                text:'【原型】已收到你的请求，当前未调用真实服务。'});
+            });
+            state.draft = ''; publish(); return true;
+          }
+        };
+      }
+    });
+  }
+  window.EvaMyAITeamGroup = Object.freeze({...createTeamGroupStore(), createStore:createTeamGroupStore});
   window.EvaAITeam = Object.freeze({ ...createStore({profile:'review'}), createStore });
 })(window);

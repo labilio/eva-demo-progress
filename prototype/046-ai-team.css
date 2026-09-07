@@ -405,3 +405,12 @@
 .eva-ai-team__source-options .eva-ai-team__connection-option { min-height: 54px; }
 .eva-ai-team__source-options input[type="radio"] { flex-shrink: 0; width: 16px; height: 16px; margin: 0; accent-color: var(--semi-color-text-1); cursor: inherit; }
 .eva-ai-team__source-options .eva-ai-team__connection-option:has(input:focus-visible) { outline: 2px solid var(--semi-color-text-2); outline-offset: -2px; }
+
+.eva-ai-team__fixed-group {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 8px;
+}
+.eva-ai-team__fixed-group.is-selected {
+  background: var(--eva-overlay-pressed);
+}
