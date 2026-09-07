@@ -8,9 +8,11 @@
      明令禁止的形态）。布局与状态切换见 051-personal-eva-gds.css，
      组件外观见 048-gds-components.css，色值见 047-gds-tokens.css。
 
-     六态与 GDS spec/components.json 的 pageStates 对应，逐态核对过
+     六态与 GDS spec/components.json 的 pageStates 对应。新会话首页按
+     2026-09-07 用户提供的现行参考图调整为欢迎语、任务输入器和快捷能力排；
+     生成中、已完成与历史会话仍沿用原 GDS 生命周期。
      required／forbidden：
-       home         hero + 场景排 + 空输入器
+       home         欢迎语 + 空输入器 + 快捷能力排
        input        同上，输入器带文字与 @ 技能提示
        skill-picker 同上 + 技能选择器（压在输入器上方）
        operation    同上 + 操作卡
@@ -38,13 +40,12 @@
   var STATES = ['home', 'input', 'skill-picker', 'operation', 'generating', 'completed', 'history'];
 
   var SCENARIOS = [
-    { id: 'image', label: '图像', icon: 'file-image' },
-    { id: 'video', label: '视频', icon: 'play' },
-    { id: 'ppt', label: 'PPT', icon: 'monitor', skill: 'ppt' },
-    { id: 'doc', label: '文档', icon: 'file-text' },
+    { id: 'agent', label: '星睿智能体', icon: 'sparkles' },
+    { id: 'mail', label: '邮件操作', icon: 'mail' },
     { id: 'data', label: '数据分析', icon: 'layout-grid' },
-    { id: 'product', label: '产品开发', icon: 'cpu' },
-    { id: 'more', label: '更多创作', icon: 'sparkles' }
+    { id: 'skill', label: '技能开发', icon: 'cpu' },
+    { id: 'knowledge', label: '知识助手', icon: 'book-open' },
+    { id: 'collaboration', label: '飞书协作', icon: 'link-2' }
   ];
 
   var SKILLS = [
@@ -81,7 +82,7 @@
   var pickerQuery = '';
   var generatingTimer = 0;
   var root = null;
-  var selectedConversation = 'UI设计师发展前景的PPT';
+  var selectedConversation = '';
   var selectedAssistantId = 'assistant-general';
   var collapsedAssistants = new Set();
 
@@ -105,6 +106,17 @@
 
   function conversationForId(id) {
     return conversationCatalog().find(function (item) { return item.id === id; }) || null;
+  }
+
+  function selectedAssistant() {
+    var assistants = window.__EVA_PERSONAL_ASSISTANTS || [];
+    return assistants.find(function (assistant) { return assistant.id === selectedAssistantId; })
+      || assistants[0]
+      || { id: 'assistant-general', name: '通用助理' };
+  }
+
+  function isNewConversationState() {
+    return state === 'home' || state === 'input' || state === 'skill-picker' || state === 'operation';
   }
 
   function assistantRailHTML() {
@@ -135,23 +147,21 @@
   /* ---- hero ------------------------------------------------ */
   function heroHTML() {
     return '<div class="eva-personal-workspace__hero">'
-      + '<h1 class="eva-hero-title eva-t-hero">你好，我是Eva同学</h1>'
-      + '<div class="eva-dotfield" aria-hidden="true"></div>'
-      + '<div class="eva-bubble eva-t-mascot" aria-hidden="true"><span>Hi</span></div>'
-      /* 相对路径按 index.html 的 base URL 解析，所以必须带 prototype/ 前缀；
-         写成 assets/eva-wave.png 会去请求根目录的 /assets/，404。 */
-      + '<div class="eva-mascot" aria-hidden="true"><img src="prototype/assets/eva-wave.png" alt=""></div>'
+      + '<div class="eva-personal-workspace__hero-grid" aria-hidden="true"></div>'
+      + '<h1 class="eva-personal-workspace__welcome">'
+      + '<span>AI随行</span><span class="eva-personal-workspace__welcome-avatar" aria-hidden="true"><img src="prototype/assets/eva-wave.png" alt=""></span><span>工作随心</span>'
+      + '</h1>'
       + '</div>';
   }
 
   /* ---- 场景 chip 排 ---------------------------------------- */
   function railHTML() {
-    return '<div class="eva-rail eva-personal-workspace__rail" role="group" aria-label="创作场景">'
+    return '<div class="eva-rail eva-personal-workspace__rail" role="group" aria-label="快捷能力">'
       + SCENARIOS.map(function (item) {
-        return '<button class="eva-chip eva-t-chip" type="button" data-eva-scenario="' + item.id + '">'
+        return '<button class="eva-chip eva-t-chip eva-personal-workspace__capability" type="button" data-eva-scenario="' + item.id + '">'
           + icon(item.icon, 16, 'eva-i') + '<span>' + escapeHTML(item.label) + '</span></button>';
       }).join('')
-      + '<button class="eva-rail-next" type="button" aria-label="更多场景">' + icon('chevron-right', 12, 'eva-i-chevron') + '</button>'
+      + '<button class="eva-rail-next" type="button" aria-label="更多快捷能力">' + icon('chevron-right', 12, 'eva-i-chevron') + '</button>'
       + '</div>';
   }
 
@@ -174,6 +184,9 @@
       : '';
     if (draft) return mention + '<span class="eva-t-body">' + escapeHTML(draft) + '</span>';
     if (mention) return mention + '<span class="eva-t-body eva-composer-ph">补充你的要求</span>';
+    if (isNewConversationState()) {
+      return '<span class="eva-t-body eva-composer-ph">分配一个任务或提问任何问题</span>';
+    }
     return '<span class="eva-t-body eva-composer-ph">要我帮你做些什么？</span>'
       + '<span class="eva-at">@</span><span class="eva-t-body eva-composer-ph">调用技能与指令</span>';
   }
@@ -191,6 +204,17 @@
   }
 
   function actionsHTML() {
+    if (isNewConversationState()) {
+      var assistant = selectedAssistant();
+      return '<div class="eva-composer-actions eva-newchat-actions">'
+        + '<button class="eva-newchat-icon-action" type="button" aria-label="添加附件">' + icon('plus', 20, 'eva-i') + '</button>'
+        + '<button class="eva-newchat-context" type="button">' + icon('folder', 18, 'eva-i') + '<span>Eva</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
+        + '<button class="eva-newchat-context" type="button" data-eva-selected-assistant="' + escapeHTML(assistant.id) + '">' + icon('brain', 18, 'eva-i') + '<span>' + escapeHTML(assistant.name) + '</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
+        + '<span class="eva-newchat-actions__spacer"></span>'
+        + '<button class="eva-newchat-model" type="button"><span>Qwen3.8 Max</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
+        + sendHTML()
+        + '</div>';
+    }
     return '<div class="eva-composer-actions">'
       + '<button class="eva-round eva-round-ghost" type="button" aria-label="添加附件">' + icon('plus', 16, 'eva-i') + '</button>'
       + '<span style="flex:1 1 auto"></span>'
@@ -201,18 +225,10 @@
   }
 
   function composerPanelHTML(extraClass) {
-    return '<div class="eva-composer' + (extraClass ? ' ' + extraClass : '') + '" data-eva-personal-composer>'
+    var newConversationClass = isNewConversationState() ? ' eva-composer-newchat' : '';
+    return '<div class="eva-composer' + newConversationClass + (extraClass ? ' ' + extraClass : '') + '" data-eva-personal-composer>'
       + '<div class="eva-composer-prompt" role="textbox" aria-label="向 Eva 同学提问" tabindex="0">' + promptHTML() + '</div>'
       + actionsHTML()
-      + '</div>';
-  }
-
-  function quickSkillsHTML() {
-    var assistants = window.__EVA_PERSONAL_ASSISTANTS || [];
-    var selectedAssistant = assistants.find(function (assistant) { return assistant.id === selectedAssistantId; }) || assistants[0] || { name: '通用助理' };
-    return '<div class="eva-quickskills">'
-      + '<button class="eva-quick eva-t-caption" type="button">' + icon('eye', 16, 'eva-i') + '<span>视觉探索</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
-      + '<button class="eva-quick eva-t-caption" type="button" data-eva-selected-assistant="' + escapeHTML(selectedAssistantId) + '">' + icon('brain', 16, 'eva-i') + '<span>' + escapeHTML(selectedAssistant.name) + '</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
       + '</div>';
   }
 
@@ -448,11 +464,12 @@
     return assistantRailHTML() + '<div class="eva-personal-workspace__stage"><div class="eva-personal-workspace__scroll">'
       + '<div class="eva-personal-workspace__column">'
       + heroHTML()
-      + railHTML()
       + '<div class="eva-personal-workspace__composer">'
       + pickerHTML()
-      + '<div class="eva-composer-wrap">' + composerPanelHTML() + quickSkillsHTML() + '</div>'
-      + '</div></div></div>'
+      + '<div class="eva-composer-wrap' + (isNewConversationState() ? ' eva-composer-wrap--newchat' : '') + '">' + composerPanelHTML() + '</div>'
+      + '</div>'
+      + railHTML()
+      + '</div></div>'
       + generatingHTML()
       + historyConversationHTML()
       + '<div class="eva-personal-workspace__completed">'
@@ -679,7 +696,10 @@
       state = 'history';
       return;
     }
-    if (hash.indexOf('#/guid') === 0 && state !== 'home') resetToHome();
+    if (hash.indexOf('#/guid') === 0) {
+      selectedConversation = '';
+      if (state !== 'home') resetToHome();
+    }
   }
 
   window.addEventListener('hashchange', function () {

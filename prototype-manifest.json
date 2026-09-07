@@ -117,7 +117,7 @@
       "tag": "script",
       "name": "data-supply",
       "file": "prototype/009-2-data-supply.js",
-      "bytes": 18706,
+      "bytes": 18980,
       "role": "prototype"
     },
     {
@@ -133,7 +133,7 @@
       "tag": "script",
       "name": "ai-team-store",
       "role": "prototype",
-      "bytes": 24676,
+      "bytes": 28369,
       "order": 16
     },
     {
@@ -150,7 +150,7 @@
       "name": "digital-employees-store",
       "role": "prototype",
       "order": 18,
-      "bytes": 8303
+      "bytes": 9187
     },
     {
       "file": "prototype/047-digital-employees.js",
@@ -174,7 +174,7 @@
       "name": "loop-task-create",
       "role": "prototype",
       "order": 21,
-      "bytes": 10290
+      "bytes": 11791
     },
     {
       "file": "prototype/047-digital-employees.css",
@@ -189,7 +189,7 @@
       "tag": "script",
       "name": "membership-controller",
       "file": "prototype/009-2-membership.js",
-      "bytes": 25630,
+      "bytes": 26424,
       "role": "prototype"
     },
     {
@@ -205,7 +205,7 @@
       "tag": "script",
       "name": "member-picker-preview",
       "file": "prototype/009-2-picker-preview.js",
-      "bytes": 6498,
+      "bytes": 6465,
       "role": "prototype"
     },
     {
@@ -245,7 +245,7 @@
       "tag": "script",
       "name": "chat-settings",
       "file": "prototype/009-2-chat-settings.js",
-      "bytes": 11696,
+      "bytes": 11486,
       "role": "prototype"
     },
     {
@@ -261,7 +261,7 @@
       "tag": "script",
       "name": "membership-components",
       "file": "prototype/009-2-members-ui.js",
-      "bytes": 25455,
+      "bytes": 18080,
       "role": "prototype"
     },
     {
@@ -269,7 +269,7 @@
       "tag": "link",
       "name": "membership-style",
       "file": "prototype/009-2-members.css",
-      "bytes": 6376,
+      "bytes": 9788,
       "role": "prototype"
     },
     {
@@ -293,7 +293,7 @@
       "tag": "script",
       "name": "runtime-patch-im",
       "file": "prototype/009-5-patch-im.js",
-      "bytes": 72322,
+      "bytes": 78961,
       "role": "build-input"
     },
     {
@@ -301,7 +301,7 @@
       "tag": "script",
       "name": "runtime-patch-general",
       "file": "prototype/009-6-patch-general.js",
-      "bytes": 48557,
+      "bytes": 57957,
       "role": "build-input"
     },
     {
@@ -309,7 +309,7 @@
       "tag": "script",
       "name": "runtime-patch-sider",
       "file": "prototype/009-7-patch-sider.js",
-      "bytes": 23321,
+      "bytes": 23670,
       "role": "build-input"
     },
     {
@@ -317,7 +317,7 @@
       "tag": "script",
       "name": "runtime-patch-automation",
       "file": "prototype/009-8-patch-automation.js",
-      "bytes": 12200,
+      "bytes": 12353,
       "role": "build-input"
     },
     {
@@ -341,7 +341,7 @@
       "tag": "style",
       "name": "mode-layer",
       "file": "prototype/012-mode-layer.css",
-      "bytes": 21514,
+      "bytes": 24483,
       "role": "prototype"
     },
     {
@@ -373,7 +373,7 @@
       "tag": "style",
       "name": "message-hierarchy",
       "file": "prototype/016-message-hierarchy.css",
-      "bytes": 52359,
+      "bytes": 52761,
       "role": "prototype"
     },
     {
@@ -469,7 +469,7 @@
       "tag": "style",
       "name": "expert-center-v1",
       "file": "prototype/030-expert-center-v1.css",
-      "bytes": 526,
+      "bytes": 938,
       "role": "prototype"
     },
     {
@@ -477,7 +477,7 @@
       "tag": "style",
       "name": "shared-automation-v2",
       "file": "prototype/031-shared-automation-v2.css",
-      "bytes": 5872,
+      "bytes": 9119,
       "role": "prototype"
     },
     {
@@ -485,7 +485,7 @@
       "tag": "style",
       "name": "contacts-redesign-v2",
       "file": "prototype/032-contacts-redesign-v2.css",
-      "bytes": 8940,
+      "bytes": 10133,
       "role": "prototype"
     },
     {
@@ -501,7 +501,7 @@
       "tag": "style",
       "name": "project-task-toolbar-v3",
       "file": "prototype/034-project-task-toolbar-v3.css",
-      "bytes": 1534,
+      "bytes": 3144,
       "role": "prototype"
     },
     {
@@ -517,7 +517,7 @@
       "tag": "style",
       "name": "project-directory-v3",
       "file": "prototype/036-project-directory-v3.css",
-      "bytes": 10924,
+      "bytes": 16222,
       "role": "prototype"
     },
     {
@@ -525,23 +525,15 @@
       "tag": "style",
       "name": "team-message-project-recent",
       "file": "prototype/039-team-message-project-recent.css",
-      "bytes": 7352,
+      "bytes": 4207,
       "role": "prototype"
     },
     {
       "order": 66,
-      "tag": "script",
-      "name": "team-message-project-recent",
-      "file": "prototype/040-team-message-project-recent.js",
-      "bytes": 7461,
-      "role": "prototype"
-    },
-    {
-      "order": 67,
       "tag": "style",
       "name": "final-layout-convergence",
       "file": "prototype/043-final-layout-convergence.css",
-      "bytes": 18216,
+      "bytes": 18152,
       "role": "prototype"
     },
     {
@@ -549,7 +541,7 @@
       "name": "native-page-layout",
       "file": "prototype/045-native-page-layout.css",
       "role": "prototype",
-      "order": 68,
+      "order": 67,
       "bytes": 939
     },
     {
@@ -557,15 +549,15 @@
       "tag": "style",
       "name": "ai-team",
       "role": "prototype",
-      "bytes": 24828,
-      "order": 69
+      "bytes": 24819,
+      "order": 68
     },
     {
       "file": "prototype/048-settings-usage.css",
       "tag": "style",
       "name": "settings-usage-style",
       "role": "prototype",
-      "order": 70,
+      "order": 69,
       "bytes": 6916
     },
     {
@@ -573,11 +565,11 @@
       "tag": "style",
       "name": "loop-task-create-style",
       "role": "prototype",
-      "order": 71,
-      "bytes": 3217
+      "order": 70,
+      "bytes": 3303
     },
     {
-      "order": 72,
+      "order": 71,
       "tag": "script",
       "name": "final-layout-convergence",
       "file": "prototype/044-final-layout-convergence.js",
@@ -585,7 +577,7 @@
       "role": "prototype"
     },
     {
-      "order": 73,
+      "order": 72,
       "tag": "script",
       "name": "personal-assistants",
       "file": "prototype/046-personal-assistants.js",
@@ -593,7 +585,7 @@
       "role": "prototype"
     },
     {
-      "order": 74,
+      "order": 73,
       "tag": "style",
       "name": "gds-tokens",
       "file": "prototype/047-gds-tokens.css",
@@ -601,7 +593,7 @@
       "role": "prototype"
     },
     {
-      "order": 75,
+      "order": 74,
       "tag": "style",
       "name": "gds-components",
       "file": "prototype/048-gds-components.css",
@@ -609,7 +601,7 @@
       "role": "prototype"
     },
     {
-      "order": 76,
+      "order": 75,
       "tag": "style",
       "name": "gds-brand-reroot",
       "file": "prototype/049-gds-brand-reroot.css",
@@ -617,7 +609,7 @@
       "role": "prototype"
     },
     {
-      "order": 77,
+      "order": 76,
       "tag": "script",
       "name": "lucide-dom",
       "file": "prototype/050-lucide-dom.js",
@@ -625,39 +617,39 @@
       "role": "prototype"
     },
     {
-      "order": 78,
+      "order": 77,
       "tag": "style",
       "name": "personal-eva-gds",
       "file": "prototype/051-personal-eva-gds.css",
-      "bytes": 12682,
+      "bytes": 15629,
+      "role": "prototype"
+    },
+    {
+      "order": 78,
+      "tag": "script",
+      "name": "personal-eva-gds",
+      "file": "prototype/052-personal-eva-gds.js",
+      "bytes": 38301,
       "role": "prototype"
     },
     {
       "order": 79,
-      "tag": "script",
-      "name": "personal-eva-gds",
-      "file": "prototype/052-personal-eva-gds.js",
-      "bytes": 37321,
+      "tag": "style",
+      "name": "sites-page",
+      "file": "prototype/053-sites-page.css",
+      "bytes": 2976,
       "role": "prototype"
     },
     {
       "order": 80,
-      "tag": "style",
+      "tag": "script",
       "name": "sites-page",
-      "file": "prototype/053-sites-page.css",
-      "bytes": 0,
+      "file": "prototype/053-sites-page.js",
+      "bytes": 1861,
       "role": "prototype"
     },
     {
       "order": 81,
-      "tag": "script",
-      "name": "sites-page",
-      "file": "prototype/053-sites-page.js",
-      "bytes": 0,
-      "role": "prototype"
-    },
-    {
-      "order": 82,
       "tag": "style",
       "name": "review-comments",
       "file": "review/comments.css",
@@ -665,7 +657,7 @@
       "role": "review"
     },
     {
-      "order": 83,
+      "order": 82,
       "tag": "script",
       "name": "review-comments-store",
       "file": "review/comments-store.mjs",
@@ -673,7 +665,7 @@
       "role": "review-module"
     },
     {
-      "order": 84,
+      "order": 83,
       "tag": "script",
       "name": "review-comments",
       "file": "review/comments.js",
