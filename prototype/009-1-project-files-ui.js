@@ -221,11 +221,10 @@
         const deleted=Boolean(selected.deletedAt),canEditTags=context.files.can('edit-tags',selected.spaceId,actor)&&selected.type!=='folder',shortcutInfo=context.files.shortcutInfo(selected,actor),canOpen=!shortcutInfo||shortcutInfo.status==='available';
         return h('aside',{className:'eva-project-files__inspector','aria-label':'文件详情'},
           h('div',{className:'eva-drive__inspector-head'},h('h2',null,'文件详情'),h('button',{className:'eva-drive__inspector-close',type:'button',onClick:()=>setSelectedId(null),'aria-label':'关闭文件详情'},'×')),
-          h('div',{className:'eva-file-detail__identity'},h('span',{className:'eva-drive__file-mark '+markClass(selected)},icon(fileIcon(selected))),h('span',null,h('strong',null,selected.name),h('small',null,fileType(selected)+(selected.type==='folder'?'':' · '+bytes(selected.size))))),
-          !deleted?h('div',{className:'eva-drive__inspector-actions'},
+          h('div',{className:'eva-file-detail__identity'+(!deleted?' eva-file-detail__identity--with-action':'')},h('span',{className:'eva-drive__file-mark '+markClass(selected)},icon(fileIcon(selected))),h('span',{className:'eva-file-detail__identity-content'},h('strong',null,selected.name),h('small',null,fileType(selected)+(selected.type==='folder'?'':' · '+bytes(selected.size)))),!deleted?h('button',{className:'eva-file-detail__copy-link',type:'button',onClick:()=>copyLink(selected),'aria-label':'复制内部链接',title:'复制内部链接'},icon('link')):null),
+          !deleted&&selected.type!=='folder'&&canOpen?h('div',{className:'eva-drive__inspector-actions'},
             selected.type!=='folder'&&canOpen?h('button',{className:'eva-drive__ghost-button',type:'button',onClick:()=>openPreview(selected)},'预览'):null,
-            selected.type!=='folder'&&canOpen?h('button',{className:'eva-drive__ghost-button',type:'button',onClick:()=>download(selected)},'下载'):null,
-            h('button',{className:'eva-drive__ghost-button',type:'button',onClick:()=>copyLink(selected)},icon('link'),'复制内部链接')
+            selected.type!=='folder'&&canOpen?h('button',{className:'eva-drive__ghost-button',type:'button',onClick:()=>download(selected)},'下载'):null
           ):null,
           deleted?h('div',{className:'eva-drive__management-actions'},
             h('button',{type:'button',onClick:()=>{context.files.restore(actor,selected.id);setSelectedId(null);}},'恢复'),

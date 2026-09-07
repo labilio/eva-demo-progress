@@ -724,11 +724,42 @@ body.eva-message-hierarchy-ready .eva-drive--inspector-open .eva-drive__inspecto
   gap: 12px;
 }
 
-.eva-file-detail__identity > span:last-child {
+.eva-file-detail__identity--with-action {
+  grid-template-columns: 42px minmax(0, 1fr) 28px;
+}
+
+.eva-file-detail__identity-content {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 3px;
+}
+
+.eva-file-detail__copy-link {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--gds-radius-control, 8px);
+  display: grid;
+  place-items: center;
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  background: transparent;
+  cursor: pointer;
+}
+
+.eva-file-detail__copy-link:hover {
+  background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
+}
+
+.eva-file-detail__copy-link:focus-visible {
+  outline: var(--gds-border-focus, 2px) solid var(--gds-color-border-focus, #1563eb);
+  outline-offset: 2px;
+}
+
+.eva-file-detail__copy-link .eva-drive-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .eva-file-detail__identity strong,
