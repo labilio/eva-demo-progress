@@ -629,7 +629,7 @@
       "tag": "style",
       "name": "personal-eva-gds",
       "file": "prototype/051-personal-eva-gds.css",
-      "bytes": 12682,
+      "bytes": 15178,
       "role": "prototype"
     },
     {
@@ -637,7 +637,7 @@
       "tag": "script",
       "name": "personal-eva-gds",
       "file": "prototype/052-personal-eva-gds.js",
-      "bytes": 37321,
+      "bytes": 38516,
       "role": "prototype"
     },
     {

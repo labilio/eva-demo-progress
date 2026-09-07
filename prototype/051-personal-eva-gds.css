@@ -28,12 +28,10 @@
    列改成「以 810 为 flex 基线、可收缩」（见 048 的 .eva-ed-col），
    栏比与内部所有尺寸不变。用户已就此拍板。
 
-   [D2] 主列纵向位置用居中，不写死画板 y 坐标。
-   GDS 画板 1200x800 没有应用标题栏，hero 标题顶边在 y=268；本仓库
-   工作区顶边已经在 37px（标题栏底边），宿主净高 763 而非 800，画板
-   y 坐标无法原样成立。改为把主列在宿主内垂直居中——1200x800 下
-   标题落在宿主内 241、全局 278，比写死 268（全局 305）更接近画板的
-   视觉位置。水平方向仍是规范原值：776 主列居中，左右各 82 内缩。
+   [D2] 新会话首页采用用户 2026-09-07 提供的现行视觉内容，但不改变
+   GDS 已确认的几何：主列仍为 776，输入器仍为 776×166 / 768×118，
+   整组内容高度仍为 289。内部顺序按参考图调整为欢迎语、活动、输入器、
+   快捷能力排。生成中、已完成和历史会话不使用这组首页内容。
    ============================================================ */
 
 .eva-personal-workspace {
@@ -100,12 +98,10 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  overflow-x: hidden; /* hero 点阵会越出主列右边 62px，越出部分是装饰 */
+  overflow-x: hidden; /* hero 装饰会越出主列，越出部分不参与布局 */
   padding: var(--eva-space-10) 0;
 }
 .eva-personal-workspace__column {
-  /* margin:auto 才能在可滚动的 flex 容器里既居中又不吞掉顶部溢出，
-     align-items:center 会让超高内容的顶端滚不到。 */
   margin: auto;
   width: var(--eva-main-col-w);
   flex: none;
@@ -113,43 +109,140 @@
   flex-direction: column;
 }
 
-/* ---- hero：标题在流内，点阵／吉祥物／气泡按画板相对位摆 ----
-   画板全局坐标（workspace 左边界 = 260）：
-     标题 342,268 · 点阵 930,186 · 吉祥物 996,260 · 气泡 968,280
-   换成相对主列左上角（主列在 342,268）：
-     点阵 588,-82 · 吉祥物 654,-8 · 气泡 626,12
-   ------------------------------------------------------------ */
+/* ---- 新会话欢迎区：标题与活动合计 66px，整组总高度仍保持 289px ---- */
 .eva-personal-workspace__hero {
   position: relative;
+  height: 66px;
   flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
-.eva-personal-workspace__hero .eva-dotfield {
+.eva-personal-workspace__hero-grid {
   position: absolute;
   left: 588px;
   top: -82px;
+  width: 250px;
+  height: 250px;
+  background-image:
+    linear-gradient(var(--eva-decoration-dot) 3px, transparent 3px),
+    linear-gradient(90deg, var(--eva-decoration-dot) 3px, transparent 3px);
+  background-size: var(--eva-space-2) var(--eva-space-2);
+  mask-image: radial-gradient(circle, var(--eva-text-strong), transparent 70%);
+  -webkit-mask-image: radial-gradient(circle, var(--eva-text-strong), transparent 70%);
 }
-.eva-personal-workspace__hero .eva-mascot {
-  position: absolute;
-  left: 654px;
-  top: -8px;
+.eva-personal-workspace__welcome {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--eva-space-2);
+  color: var(--eva-text-strong);
+  font: var(--eva-fw-semibold) 32px/40px var(--eva-font-sans);
+  white-space: nowrap;
 }
-.eva-personal-workspace__hero .eva-bubble {
+.eva-personal-workspace__welcome-avatar {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  overflow: hidden;
+  border-radius: var(--eva-radius-full);
+  background: var(--eva-decoration-dot);
+}
+.eva-personal-workspace__welcome-avatar img {
   position: absolute;
-  left: 626px;
-  top: 12px;
+  top: -3px;
+  left: -14px;
+  width: 64px;
+  height: auto;
+  max-width: none;
+}
+.eva-personal-workspace__campaign {
+  height: 22px;
+  margin-top: var(--eva-space-1);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--eva-space-1);
+  border: 0;
+  background: transparent;
+  color: var(--eva-action-primary);
+  cursor: pointer;
+  font: var(--eva-fw-medium) 14px/22px var(--eva-font-sans);
+}
+.eva-personal-workspace__campaign:hover { background: var(--eva-surface-subtle); }
+.eva-personal-workspace__campaign:focus-visible,
+.eva-newchat-icon-action:focus-visible,
+.eva-newchat-context:focus-visible,
+.eva-newchat-model:focus-visible {
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+  outline-offset: var(--eva-space-0-5);
 }
 
-/* ---- 场景 chip 排：标题底边 308 → chip 顶边 330 ---- */
+/* ---- 快捷能力排：位于输入器后，仍保持原来的 37px 高度 ---- */
 .eva-personal-workspace__rail {
   flex: none;
-  margin-top: var(--eva-space-5-5);
+  margin-top: var(--eva-space-2);
 }
+.eva-personal-workspace__capability .eva-i { color: var(--eva-action-primary); }
 
-/* ---- 输入器：chip 底边 367 → 输入器外框顶边 383 ---- */
+/* ---- 输入器：沿用原复合输入器尺寸，只替换工具内容 ---- */
 .eva-personal-workspace__composer {
   position: relative;
   flex: none;
-  margin-top: var(--eva-space-4);
+  margin-top: var(--eva-space-1);
+}
+/* 新会话不再把快捷能力放在输入器外框内，因此隐藏原组件用于承接
+   底部快捷区的灰色底板；保留 776×166 占位，输入器本体位置不变。 */
+.eva-composer-wrap--newchat {
+  background: transparent;
+}
+.eva-newchat-actions {
+  height: 52px;
+  padding: var(--eva-space-2-5);
+  gap: var(--eva-space-2);
+}
+.eva-newchat-icon-action,
+.eva-newchat-context,
+.eva-newchat-model {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--eva-space-1-5);
+  border: 0;
+  border-radius: var(--eva-radius-full);
+  background: transparent;
+  color: var(--eva-text-secondary-accessible);
+  cursor: pointer;
+  font: var(--eva-fw-regular) 14px/22px var(--eva-font-sans);
+}
+.eva-newchat-icon-action {
+  width: 32px;
+  flex: none;
+  padding: 0;
+}
+.eva-newchat-context,
+.eva-newchat-model { padding: 0 var(--eva-space-2); }
+.eva-newchat-context:hover,
+.eva-newchat-model:hover,
+.eva-newchat-icon-action:hover { background: var(--eva-surface-subtle); }
+.eva-newchat-context span,
+.eva-newchat-model span {
+  max-width: 132px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eva-newchat-actions__spacer { flex: 1 1 auto; min-width: var(--eva-space-2); }
+.eva-newchat-model {
+  flex: none;
+  color: var(--eva-text-primary);
+  font-weight: var(--eva-fw-medium);
+}
+.eva-newchat-actions .eva-send {
+  width: 32px;
+  height: 32px;
 }
 
 /* ---- 技能选择器：画板 342,119，高 263.5，底边 382.5，
