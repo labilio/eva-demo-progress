@@ -13,6 +13,7 @@ Eva 桌面端交互原型的在线进度预览。
 - 客户设计规范：`docs/design-system/gds-for-ai2.0/README.md`（GDS for AI 2.0）
 - AI／Codex 云端批注：`docs/AI_COMMENTS.md`
 - 文件库角色、权限动作与任务产出设计：[`docs/file-library-permissions/index.html`](docs/file-library-permissions/index.html)
+- 团队文件与文件库需求及修改计划：[`docs/团队文件与文件库需求文档.md`](docs/团队文件与文件库需求文档.md)
 
 本地使用 `npm start` 后访问 `http://127.0.0.1:4173`。应用通过 HTTP 加载；线上由 GitHub `main` 自动发布到 Vercel。
 
