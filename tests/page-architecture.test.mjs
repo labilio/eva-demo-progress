@@ -244,7 +244,9 @@ test('一级页面只挂入路由宿主，不再追加到 document.body', () => 
   assert.doesNotMatch(source, /document\.body\.appendChild\((?:root|page|center)\)/);
   assert.doesNotMatch(source, /document\.body\.insertAdjacentHTML\([^,]+,\s*build(?:Workboard|Automation)\(/);
   assert.doesNotMatch(source, /stopImmediatePropagation\(\)/);
-  for (const pageId of ['contacts', 'drive', 'workboard', 'connection-center', 'personal']) {
+  assert.match(createPatchedRuntime().source, /path:"\/contacts",element:React\.createElement\(EvaContactsPage,null\)/);
+  assert.doesNotMatch(source, /__evaNativePages\.register\(['"]contacts['"]/);
+  for (const pageId of ['drive', 'workboard', 'connection-center', 'personal']) {
     assert.match(source, new RegExp(`__evaNativePages\\.register\\(['"]${pageId}['"]`));
   }
 });

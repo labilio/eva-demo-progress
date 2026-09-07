@@ -15,7 +15,7 @@
 .eva-members-select{width:100%}
 .eva-members-notice{padding:12px;background:var(--semi-color-fill-0);border-radius:8px}
 .eva-members-error{color:var(--semi-color-danger);font-size:13px}
-body:has(.eva-members-modal) .semi-modal-mask,.semi-modal-wrap:has(.eva-members-modal){top:var(--topbar-height);height:calc(100% - var(--topbar-height))}
+body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)),.semi-modal-wrap:has(.eva-members-modal):not(:where(.eva-identity-portal *)){top:var(--topbar-height);height:calc(100% - var(--topbar-height))}
 .eva-members-group-panel{padding:12px 0}
 .eva-members-group-panel h4{margin:0 0 12px}
 .eva-members-inbox{padding:12px;border-bottom:1px solid var(--semi-color-border);display:flex;flex-direction:column;gap:6px}

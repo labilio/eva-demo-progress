@@ -41,5 +41,10 @@ test('AI名称与标记共用身份行，标题不扩大组合头像子图', () 
   assert.match(read('prototype/009-5-patch-im.js'),/className:'eva-identity-name-row'/);
   const hierarchy=read('prototype/016-message-hierarchy.css');
   assert.doesNotMatch(hierarchy,/\.wk-chat-conversation-header-channel-avatar img\s*\{[^}]*width:\s*28px\s*!important/);
-  assert.match(runtime,/eva:contact-personas/);
+  assert.match(runtime,/EvaContactsUI\.render/);
+  const contacts=read('prototype/033-contacts-redesign-v2.js');
+  assert.match(contacts,/personas\.slice\(0,2\)/);
+  assert.match(contacts,/personas\.slice\(2\)/);
+  assert.match(contacts,/EvaAIIdentity\.badge/);
+  assert.doesNotMatch(contacts,/MutationObserver|innerHTML/);
 });
