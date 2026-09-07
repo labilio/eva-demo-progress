@@ -118,7 +118,7 @@
   flex: none;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
 }
 .eva-personal-workspace__hero-grid {
   position: absolute;
