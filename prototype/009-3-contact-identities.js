@@ -8,7 +8,7 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
   const id=typeof ref==='string'?ref:ref?.id||ref?.uid;if(!id)return null;
   const actor=store.snapshot().actorId;
   const human=store.person(id);
-  if(human)return {id,name:human.name,kind:'human',avatar:portrait(id),owner:null,action:id===actor?null:{label:'发消息',personId:id}};
+  if(human)return {id,name:human.name,kind:'human',departmentL2:human.departmentL2||root.__EVA_CONTACT_L2_DEPARTMENTS?.[id]||'数智化中心',avatar:portrait(id),owner:null,action:id===actor?null:{label:'发消息',personId:id}};
   const alias=root.__EVA_CONTACT_IDENTITY_ALIASES?.[id];
   if(alias)return resolve(alias);
   const persona=team?.getSnapshot().identities.find(i=>i.id===id&&i.role==='persona');

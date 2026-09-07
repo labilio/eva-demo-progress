@@ -365,3 +365,14 @@
 .eva-contact-identity-button:hover{background:var(--gds-color-surface-subtle)}
 .eva-contact-identity-button:focus-visible{outline:var(--gds-border-focus) solid var(--gds-color-border-focus);outline-offset:var(--gds-space-0-5)}
 .eva-contacts__search-popover .semi-input-wrapper{border:0;background:transparent;min-width:0;flex:1}
+
+/* L2 department stays beside the human name; AI columns remain unchanged. */
+.eva-contacts__department {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--gds-color-text-secondary);
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+}
