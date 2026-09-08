@@ -156,8 +156,26 @@
       const source=shortcutSource(item);if(!source||source.deletedAt)return'missing';
       return role(source.spaceId,actorId)?'available':'forbidden';
     };
+    const sourceReadable=(item,actorId)=>{
+      if(item.source?.type==='ai-conversation-copy')return item.source.ownerId===actorId;
+      if(item.source?.type==='chat-copy')return Boolean(membership.canReadDirect?.(item.source.conversationId,actorId));
+      if(item.source?.type==='group-copy')return Boolean(membership.canRead(item.source.threadId||item.source.groupId||item.source.conversationId,actorId));
+      return true;
+    };
     const visibleRecord=(item,actorId)=>{
-      const value=clone(item);if(item.type!=='shortcut'||!actorId)return value;
+      const value=clone(item);delete value.identity;
+      if(actorId&&!sourceReadable(item,actorId)){
+        const sourceType=item.source?.type;
+        value.source={type:sourceType,label:sourceType==='ai-conversation-copy'?'从 AI 会话保存':sourceType==='chat-copy'?'从私聊保存':'从群聊保存'};
+        value.systemRelations=(value.systemRelations||[]).map(itemRelation=>{
+          if(itemRelation.type==='ai-conversation')return{type:'ai-conversation',id:null,label:'来源 AI 会话',meta:'你无权访问原会话',restricted:true,navigable:false};
+          if(itemRelation.type==='chat')return{type:'chat',id:null,label:'来源私聊',meta:'你无权访问原会话',restricted:true,navigable:false};
+          if(itemRelation.type==='group')return{type:'group',id:null,label:'来源群聊',meta:'你无权访问来源消息',restricted:true,navigable:false};
+          return itemRelation;
+        });
+        delete value.conversationArtifact;
+      }
+      if(item.type!=='shortcut'||!actorId)return value;
       const status=shortcutStatus(item,actorId),source=shortcutSource(item);value.shortcutStatus=status;
       if(status==='available'){
         value.name=item.customName?item.name:source.name;value.extension=source.extension||ext(source.name);value.size=source.size||0;value.sourceAvailable=true;
@@ -167,6 +185,22 @@
       return value;
     };
     const normalizeTags=value=>Array.from(new Set((Array.isArray(value)?value:String(value||'').split(/[，,]/)).map(tag=>String(tag).trim()).filter(Boolean))).slice(0,8).map(tag=>tag.slice(0,20));
+    const conversationReadable=(source,actorId)=>{
+      if(source?.type==='ai-conversation')return Boolean(membership.person(actorId)&&source.ownerId===actorId);
+      if(source?.type==='chat')return Boolean(membership.canReadDirect?.(source.conversationId,actorId));
+      if(source?.type==='group')return Boolean(membership.canRead(source.threadId||source.groupId||source.conversationId,actorId));
+      return false;
+    };
+    const conversationIdentity=(spaceId,parentId,sourceFile,source)=>JSON.stringify([
+      spaceId,parentId||0,source.type,source.ownerId||null,source.conversationId||source.groupId||null,
+      source.messageId,sourceFile.id||sourceFile.attachmentId||(source.messageId+':'+sourceFile.name),sourceFile.version||1
+    ]);
+    const availableName=(spaceId,parentId,name)=>{
+      const occupied=new Set(records.filter(item=>!item.deletedAt&&item.spaceId===spaceId&&item.parent_id===(parentId||0)).map(item=>item.name));
+      if(!occupied.has(name))return name;
+      const match=String(name).match(/^(.*?)(\.[^.]*)?$/),base=match?.[1]||name,suffix=match?.[2]||'';
+      let index=2,candidate;do{candidate=base+' ('+index+++')'+suffix;}while(occupied.has(candidate));return candidate;
+    };
     const spaceLabel=(spaceId,actorId)=>{
       if(spaceId===personalSpace(actorId))return'个人空间';
       const shared=sharedSpace(spaceId);if(shared)return shared.name;
@@ -207,6 +241,8 @@
         }
         return clone(item.systemRelations||[]).map(itemRelation=>{
           if(itemRelation.type==='group'&&itemRelation.id&&!membership.canRead(itemRelation.id,actorId))return {...itemRelation,label:'来源群聊',meta:'你无权访问来源消息',restricted:true};
+          if(itemRelation.type==='chat'&&itemRelation.id&&!membership.canReadDirect?.(itemRelation.id,actorId))return{type:'chat',id:null,label:'来源私聊',meta:'你无权访问原会话',restricted:true,navigable:false};
+          if(itemRelation.type==='ai-conversation'&&itemRelation.target?.ownerId!==actorId)return{type:'ai-conversation',id:null,label:'来源 AI 会话',meta:'你无权访问原会话',restricted:true,navigable:false};
           return itemRelation;
         });
       },
@@ -214,6 +250,8 @@
         const item=typeof idOrRecord==='string'?record(idOrRecord):idOrRecord;
         if(item.type==='shortcut'){const info=api.shortcutInfo(item,actorId);return info.status==='available'?'快捷方式 · '+info.sourceSpaceName:info.statusLabel;}
         if(item.source?.groupId&&!membership.canRead(item.source.groupId,actorId))return'从群聊保存';
+        if(item.source?.type==='chat-copy'&&!membership.canReadDirect?.(item.source.conversationId,actorId))return'从私聊保存';
+        if(item.source?.type==='ai-conversation-copy'&&item.source.ownerId!==actorId)return'从 AI 会话保存';
         return item.source?.label||'空间内创建';
       },
       sharedSpaces(actorId){return clone(sharedSpaces.filter(space=>space.members.some(member=>member.id===actorId)));},
@@ -266,6 +304,39 @@
       move(actorId,id,parentId=0){const item=record(id);requireAction('move',item.spaceId,actorId);if(id===parentId||descendants(id).has(parentId))fail('不能移动到自身或子文件夹');ensureSameSpace(item,parentId);item.parent_id=parentId||0;item.updatedBy=actorName(actorId);item.editor=actorName(actorId);item.updated_at=stamp();notify();},
       updateTags(actorId,id,tags){
         const item=record(id);requireAction('edit-tags',item.spaceId,actorId);if(item.type==='folder')fail('文件夹无需设置标签');item.tags=normalizeTags(tags);notify();
+      },
+      findConversationFile(actorId,sourceFile,source){
+        if(!sourceFile?.name||!source?.messageId)return null;
+        const fileIdentity=sourceFile.id||sourceFile.attachmentId||(source.messageId+':'+sourceFile.name),sourceProjectId=source.type==='group'&&source.projectId?source.projectId:null;
+        const found=records.find(item=>!item.deletedAt&&item.conversationArtifact&&item.conversationArtifact.sourceType===source.type&&item.conversationArtifact.conversationId===(source.conversationId||source.groupId)&&item.conversationArtifact.messageId===source.messageId&&item.conversationArtifact.fileIdentity===fileIdentity&&(!sourceProjectId||item.spaceId===sourceProjectId)&&Boolean(role(item.spaceId,actorId)));
+        return found?clone(found):null;
+      },
+      saveConversationFile(actorId,targetSpaceId,targetParentId,sourceFile,source){
+        if(!sourceFile?.name)fail('文件不存在');
+        if(!source?.messageId||!['group','chat','ai-conversation'].includes(source.type))fail('文件来源信息不完整');
+        if(!conversationReadable(source,actorId))fail('你无权访问来源会话，不能保存此文件');
+        requireAction('upload',targetSpaceId,actorId);
+        const parentId=targetParentId||0,targetProbe={spaceId:targetSpaceId};ensureSameSpace(targetProbe,parentId);
+        const identity=conversationIdentity(targetSpaceId,parentId,sourceFile,source),old=records.find(item=>!item.deletedAt&&item.identity===identity);
+        if(old)return old.id;
+        const now=stamp(),area=areaForSpace(targetSpaceId),name=availableName(targetSpaceId,parentId,String(sourceFile.name));
+        const conversationId=source.conversationId||source.groupId,fileIdentity=sourceFile.id||sourceFile.attachmentId||(source.messageId+':'+sourceFile.name);
+        const target={ownerId:source.ownerId||null,conversationKind:source.conversationKind||source.type,identityId:source.identityId||null,sessionId:source.sessionId||conversationId,messageId:source.messageId,groupId:source.groupId||null,threadId:source.threadId||null};
+        let sourceRecord,systemRelations;
+        if(source.type==='ai-conversation'){
+          sourceRecord={type:'ai-conversation-copy',label:'从我的 AI 团队保存',ownerId:source.ownerId,conversationId,identityId:source.identityId||null,identityName:source.identityName||'AI'};
+          systemRelations=[{...relation('ai-conversation',conversationId,source.conversationTitle||'AI 会话',(source.identityName||'AI')+' · 我的 AI 团队'),target,navigable:true}];
+        }else if(source.type==='chat'){
+          sourceRecord={type:'chat-copy',label:'从私聊保存',conversationId,senderId:source.senderId||null,senderName:source.senderName||null};
+          systemRelations=[{...relation('chat',conversationId,source.conversationTitle||'来源私聊',(source.senderName||'会话成员')+' · 来源文件'),target,navigable:true}];
+        }else{
+          const groupId=source.groupId||conversationId;
+          sourceRecord={type:'group-copy',label:'从群聊保存',groupId,groupName:source.groupName||source.conversationTitle||'来源群',conversationId,threadId:source.threadId||null,threadName:source.threadName||null,taskId:source.taskId||sourceFile.taskId||null};
+          systemRelations=[{...relation('group',groupId,source.groupName||source.conversationTitle||'来源群','群聊 · 来源文件'),target,navigable:true}];
+          if(sourceRecord.taskId)systemRelations.push(relation('task',sourceRecord.taskId,'任务 · '+sourceRecord.taskId,'来源任务'));
+        }
+        const id='saved-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),item={id,identity,spaceId:targetSpaceId,projectId:projectForSpace(targetSpaceId),area,parent_id:parentId,name,type:'blob',size:Number(sourceFile.size||0),extension:sourceFile.extension||ext(name),sourceVersion:sourceFile.version||1,source:sourceRecord,systemRelations,tags:normalizeTags(sourceFile.tags||[]),conversationArtifact:{sourceType:source.type,conversationId,messageId:source.messageId,fileIdentity},creator:actorName(actorId),editor:'未编辑过',createdBy:actorName(actorId),updatedBy:actorName(actorId),createdAt:now,updated_at:now,description:'从会话手动保存到文件库的独立文件'};
+        records.unshift(item);notify();return id;
       },
       createShortcut(actorId,sourceId,targetSpaceId,targetParentId=0){
         const source=record(sourceId);if(source.type==='folder')fail('当前版本不支持文件夹快捷方式');if(source.type==='shortcut')fail('不能为快捷方式再次创建快捷方式');if(source.deletedAt)fail('源文件已进入回收站');

@@ -12,8 +12,8 @@
     const roleLabel=role=>role==='owner'?'Owner':role==='manager'?'Manager':'Editor';
     const fileIcon=item=>item.type==='folder'?'folder':['xlsx','xls','csv'].includes(item.extension)?'sheet':'file';
     const markClass=item=>item.type==='folder'?'is-folder':item.type==='shortcut'?'is-shortcut':item.extension==='pdf'?'is-pdf':['xlsx','xls','csv'].includes(item.extension)?'is-sheet':'';
-    const relationTypeLabel={task:'任务',group:'群聊',chat:'私聊',file:'来源文件'};
-    const relationIcon={task:'task',group:'users',chat:'users',file:'file'};
+    const relationTypeLabel={task:'任务',group:'群聊',chat:'私聊','ai-conversation':'AI 团队会话',file:'来源文件'};
+    const relationIcon={task:'task',group:'users',chat:'users','ai-conversation':'automation',file:'file'};
     const bytes=value=>{
       if(!value)return'—';
       const units=['B','KB','MB','GB'];let size=Number(value),index=0;
@@ -103,10 +103,34 @@
           setPreview({...target,url,extension:target.extension||target.name.split('.').pop(),shortcut:item.type==='shortcut'});
         }catch{setSelectedId(item.id);}
       };
-      const download=async item=>{const target=context.files.resolveFile(item,actor);return deps.downloadFile(await deps.demoFileUrl(target.name),target.name);};
+      const download=async item=>{
+        const liveItem=context.files.list(item.spaceId,actor).find(candidate=>candidate.id===item.id);
+        if(!liveItem||liveItem.type==='folder'||liveItem.deletedAt||!context.files.can('download',liveItem.spaceId,actor))throw new Error('当前文件无法下载');
+        const target=context.files.resolveFile(liveItem,actor);
+        if(target.type==='folder'||target.deletedAt||!context.files.can('download',target.spaceId,actor))throw new Error('当前文件无法下载');
+        const url=window.__EVA_FILE_SAMPLE_URLS?.[target.name]||window.__EVA_FILE_DOWNLOAD_FALLBACK_URL||'prototype/assets/file-samples/file-placeholder.txt';
+        return deps.downloadFile(url,target.name);
+      };
       const copyLink=item=>{
         const url=location.origin+location.pathname+'#/drive?file='+encodeURIComponent(item.id);
         if(navigator.clipboard?.writeText)navigator.clipboard.writeText(url).catch(()=>{});
+      };
+      const openRelationSource=relation=>{
+        if(!relation?.navigable||relation.restricted)return;
+        const target=relation.target||{};
+        if(relation.type==='ai-conversation'&&target.identityId){
+          const params=new URLSearchParams({evaIM:'my-ai',evaIdentity:target.identityId});
+          if(target.sessionId)params.set('evaSession',target.sessionId);
+          if(target.messageId)params.set('evaMessage',target.messageId);
+          location.hash='#/messages?'+params.toString();
+        }else if(relation.type==='chat'&&relation.id){
+          const params=new URLSearchParams({evaDM:relation.id});
+          if(target.messageId)params.set('evaMessage',target.messageId);
+          location.hash='#/messages?'+params.toString();
+        }else if(relation.type==='group'&&relation.id){
+          location.hash='#/messages';
+          setTimeout(()=>window.dispatchEvent(new CustomEvent('eva-im:open',{detail:{conversationId:target.groupId||relation.id,threadId:target.threadId||null,messageId:target.messageId||null}})),80);
+        }
       };
       const locationLabel=item=>{
         const parts=['团队文件'];let current=item;
@@ -219,14 +243,15 @@
         if(!relations.length)return h('p',{className:'eva-file-detail__empty'},'当前文件没有系统关联');
         return h('div',{className:'eva-file-relations'},relations.map(relation=>h('div',{className:'eva-file-relation',key:relation.type+relation.id},
           h('span',{className:'eva-file-relation__icon'},icon(relationIcon[relation.type]||'link')),
-          h('span',null,h('small',null,relationTypeLabel[relation.type]||'关联内容'),h('strong',null,relation.label),relation.meta?h('em',null,relation.meta):null)
+          h('span',null,h('small',null,relationTypeLabel[relation.type]||'关联内容'),h('strong',null,relation.label),relation.meta?h('em',null,relation.meta):null),
+          relation.navigable&&!relation.restricted&&['ai-conversation','chat','group'].includes(relation.type)?h('button',{className:'eva-file-relation__action',type:'button',onClick:()=>openRelationSource(relation)},'查看来源'):null
         )));
       };
 
       const renderRowActions=item=>{
         const closeMenu=()=>{setMenuId(null);setMenuAnchor(null);};
         const menuButton=(label,onClick,danger)=>h('button',{key:label,type:'button',role:'menuitem',className:danger?'is-danger':undefined,onClick:event=>{event.stopPropagation();closeMenu();onClick();}},label);
-        const shortcutInfo=context.files.shortcutInfo(item,actor),canOpen=!shortcutInfo||shortcutInfo.status==='available',items=[];
+        const shortcutInfo=context.files.shortcutInfo(item,actor),canOpen=!shortcutInfo||shortcutInfo.status==='available',canDownload=item.type!=='folder'&&canOpen&&context.files.can('download',item.spaceId,actor),items=[];
         if(trashMode){
           items.push(menuButton('查看文件信息',()=>setSelectedId(item.id)));
           if(context.files.can('restore',item.spaceId,actor))items.push(menuButton('恢复',()=>restoreItem(item)));
@@ -234,7 +259,7 @@
         }else{
           if(item.type==='folder')items.push(menuButton('打开文件夹',()=>enterFolder(item)));
           else if(canOpen)items.push(menuButton('预览',()=>openPreview(item)));
-          if(item.type!=='folder'&&canOpen)items.push(menuButton('下载',()=>download(item)));
+          if(canDownload)items.push(menuButton('下载',()=>download(item)));
           items.push(menuButton('查看文件信息',()=>setSelectedId(item.id)));
           items.push(menuButton('复制内部链接',()=>copyLink(item)));
           if(context.files.can('rename',item.spaceId,actor))items.push(menuButton('重命名',()=>setDialog({type:'rename',id:item.id,value:item.name})));
@@ -259,13 +284,13 @@
 
       const renderInspector=()=>{
         if(!selected)return null;
-        const deleted=Boolean(selected.deletedAt),canEditTags=context.files.can('edit-tags',selected.spaceId,actor)&&selected.type!=='folder',canRestore=context.files.can('restore',selected.spaceId,actor),canDeleteForever=context.files.can('delete-forever',selected.spaceId,actor),shortcutInfo=context.files.shortcutInfo(selected,actor),canOpen=!shortcutInfo||shortcutInfo.status==='available';
+        const deleted=Boolean(selected.deletedAt),canEditTags=context.files.can('edit-tags',selected.spaceId,actor)&&selected.type!=='folder',canRestore=context.files.can('restore',selected.spaceId,actor),canDeleteForever=context.files.can('delete-forever',selected.spaceId,actor),shortcutInfo=context.files.shortcutInfo(selected,actor),canOpen=!shortcutInfo||shortcutInfo.status==='available',canDownload=selected.type!=='folder'&&!deleted&&canOpen&&context.files.can('download',selected.spaceId,actor);
         return h('aside',{className:'eva-project-files__inspector','aria-label':'文件详情'},
           h('div',{className:'eva-drive__inspector-head'},h('h2',null,'文件详情'),h('button',{className:'eva-drive__inspector-close',type:'button',onClick:()=>setSelectedId(null),'aria-label':'关闭文件详情'},'×')),
           h('div',{className:'eva-file-detail__identity'+(!deleted?' eva-file-detail__identity--with-action':'')},h('span',{className:'eva-drive__file-mark '+markClass(selected)},icon(fileIcon(selected))),h('span',{className:'eva-file-detail__identity-content'},h('strong',null,selected.name),h('small',null,fileType(selected)+(selected.type==='folder'?(deleted&&selected.trashedItemCount?' · 包含 '+selected.trashedItemCount+' 项':''):' · '+bytes(selected.size)))),!deleted?h('button',{className:'eva-file-detail__copy-link',type:'button',onClick:()=>copyLink(selected),'aria-label':'复制内部链接',title:'复制内部链接'},icon('link')):null),
-          !deleted&&selected.type!=='folder'&&canOpen?h('div',{className:'eva-drive__inspector-actions'},
+          canDownload?h('div',{className:'eva-drive__inspector-actions'},
             selected.type!=='folder'&&canOpen?h('button',{className:'eva-drive__ghost-button',type:'button',onClick:()=>openPreview(selected)},'预览'):null,
-            selected.type!=='folder'&&canOpen?h('button',{className:'eva-drive__ghost-button',type:'button',onClick:()=>download(selected)},'下载'):null
+            h('button',{className:'eva-drive__ghost-button',type:'button',onClick:()=>download(selected)},'下载')
           ):null,
           deleted&&(canRestore||canDeleteForever)?h('div',{className:'eva-drive__management-actions'},
             canRestore?h('button',{type:'button',onClick:()=>restoreItem(selected)},'恢复'):null,

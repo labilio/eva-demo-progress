@@ -133,6 +133,25 @@ function EvaAssistantEditor({request,host,onClose}) {
 function evaIMPlaceholder(name) {
   return name ? '发送给 ' + name : '发送消息';
 }
+function evaRenderableMessage(message) {
+  if (!message || typeof message !== 'object') return {kind:'system',text:'该消息暂时无法展示'};
+  const safe={...message};
+  if (safe.kind!=='divider'&&safe.kind!=='system') {
+    const sender=safe.sender&&typeof safe.sender==='object'?safe.sender:{};
+    safe.sender={uid:'unknown',name:'未知成员',color:'#8a8f99',online:false,ai:false,...sender};
+  }
+  if (safe.kind==='file') {
+    const file=safe.file&&typeof safe.file==='object'?safe.file:{};
+    const name=String(file.name||'未命名文件');
+    const suffix=name.includes('.')?name.split('.').pop():'';
+    safe.file={...file,name,size:Number(file.size)||0,extension:String(file.extension||suffix||'file').toLowerCase()};
+  }
+  if (safe.kind==='threadcreated') {
+    const thread=safe.thread&&typeof safe.thread==='object'?safe.thread:{};
+    safe.thread={...thread,name:String(thread.name||'未命名子区'),replies:Number(thread.replies)||0,participants:Array.isArray(thread.participants)?thread.participants.filter(Boolean):[]};
+  }
+  return safe;
+}
 function evaTeamThreadSource(snapshot, identity, selected) {
   const records=snapshot.sessions.filter(record=>record.identityId===identity.id);
   // An unselected identity gets an empty draft topic, not another conversation's history.
@@ -148,6 +167,30 @@ function evaTeamThreadSource(snapshot, identity, selected) {
     })});
 }
 
+function evaConversationMessages(base) {
+  const memberStore=evaMembers().store,actorId=memberStore.snapshot().actorId;
+  const result=memberStore.directMessages(actorId,base);
+  if(actorId!=='u-wangyilin'||!Array.isArray(result['dm-hejing']))return result;
+  if(result['dm-hejing'].some(message=>message.id==='dm-hejing-file-v1'))return result;
+  return {...result,'dm-hejing':[...result['dm-hejing'],{
+    id:'dm-hejing-file-v1',kind:'file',time:'14:31',sender:SENDERS['u-hejing'],
+    file:{id:'attachment:dm-hejing:permission-matrix-v1',name:'文件库权限矩阵.pdf',size:806912,extension:'pdf',version:1}
+  }]};
+}
+
+function evaRevealMessage(messageId) {
+  if(!messageId)return;
+  let attempts=0;
+  const reveal=()=>{
+    const node=Array.from(document.querySelectorAll('[data-eva-message-id]')).find(item=>item.dataset.evaMessageId===messageId);
+    if(!node){if(attempts++<10)setTimeout(reveal,100);return;}
+    node.scrollIntoView({block:'center'});
+    node.classList.add('eva-message-source-highlight');
+    setTimeout(()=>node.classList.remove('eva-message-source-highlight'),2200);
+  };
+  requestAnimationFrame(reveal);
+}
+
 function EvaAITeamPage() {
   const h = React.createElement, store = window.EvaAITeam;
   const snapshot = reactExports.useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
@@ -156,20 +199,27 @@ function EvaAITeamPage() {
   reactExports.useSyncExternalStore(groupStore.subscribe,groupStore.getSnapshot,groupStore.getSnapshot);
   reactExports.useSyncExternalStore(digitalStore.subscribe,digitalStore.getSnapshot,digitalStore.getSnapshot);
   const digitalEmployees=digitalStore.teamIds().map(id=>digitalStore.get(id)).filter(Boolean);
-  const {search:teamSearch}=useLocation(),requestedIdentityId=new URLSearchParams(teamSearch).get('evaIdentity');
+  const {search:teamSearch}=useLocation(),teamParams=new URLSearchParams(teamSearch),requestedIdentityId=teamParams.get('evaIdentity'),requestedSessionId=teamParams.get('evaSession'),requestedMessageId=teamParams.get('evaMessage');
   // 本地助理、云端分身和数字员工都是“我的 AI”的独立对话入口；
   // 它们各自维护会话，不能借用另一个身份的当前会话。
   const teamIdentities = snapshot.identities.filter(i=>i.role==='assistant'||i.role==='persona'||i.role==='employee');
   const availableIdentities=[...teamIdentities,...digitalEmployees];
-  const requestedIdentity=availableIdentities.find(i=>i.id===requestedIdentityId);
-  const [selection, setSelection] = reactExports.useState(() => {const id=requestedIdentity?.id||groupStore.id;return {identityId:id,sessionId:snapshot.sessions.find(s=>s.identityId===id)?.id||digitalStore.sessions(id)[0]?.id};});
+  const fixedMembers=[{id:'u-wangyilin',name:'王宜林',kind:'human'},
+    ...teamIdentities.map(item=>({...item,kind:'ai-direct',identityAppearance:evaIdentityAppearance(item)})),
+    ...digitalEmployees.map(item=>({...item,kind:'ai-direct',identityAppearance:digitalStore.appearance(item)}))];
+  const requestedIdentity=requestedIdentityId===groupStore.id?{id:groupStore.id}:availableIdentities.find(i=>i.id===requestedIdentityId);
+  const sessionsFor=id=>id===groupStore.id?groupStore.source(fixedMembers).channels[0].threads:snapshot.sessions.filter(session=>session.identityId===id).concat(digitalStore.sessions(id));
+  const requestedSelection=id=>{const sessions=sessionsFor(id),explicit=requestedSessionId&&requestedSessionId!==groupStore.id?sessions.find(session=>session.id===requestedSessionId):null;return{identityId:id,sessionId:explicit?.id||(requestedSessionId?null:sessions[0]?.id)}};
+  const [selection, setSelection] = reactExports.useState(() => requestedSelection(requestedIdentity?.id||groupStore.id));
   const [rename,setRename]=reactExports.useState(null),[renameTitle,setRenameTitle]=reactExports.useState(''),[renameError,setRenameError]=reactExports.useState('');
   const openRename=(identityId,record)=>{setRename({identityId,id:record.id});setRenameTitle(record.title);setRenameError('');};
   const saveRename=()=>{try{(digitalEmployees.some(i=>i.id===rename.identityId)?digitalStore:store).renameThread(rename.identityId,rename.id,renameTitle);setRename(null);}catch(e){setRenameError(e.message);}};
   const [collapsed,setCollapsed] = reactExports.useState(()=>requestedIdentity?{[requestedIdentity.id]:false}:{});
   reactExports.useEffect(()=>{
     if(!requestedIdentity)return;
-    setSelection({identityId:requestedIdentity.id,sessionId:snapshot.sessions.find(s=>s.identityId===requestedIdentity.id)?.id||digitalStore.sessions(requestedIdentity.id)[0]?.id});
+    const next=requestedSelection(requestedIdentity.id);
+    setSelection(next);
+    if(requestedSessionId&&requestedSessionId!==groupStore.id&&!next.sessionId)setError('原会话已删除或当前不可访问');else setError('');
     setCollapsed(value=>({...value,[requestedIdentity.id]:false}));
   },[teamSearch,requestedIdentity?.id]);
   const [collapsedGroups,setCollapsedGroups]=reactExports.useState({assistant:false,persona:false,digital:false});
@@ -187,10 +237,8 @@ function EvaAITeamPage() {
   const employeeSession=employeeSessions.find(item=>item.id===selection.sessionId)||employeeSessions[0];
 
   const groupSelected=selection.identityId===groupStore.id;
-  const fixedMembers=[{id:'u-wangyilin',name:'王宜林',kind:'human'},
-    ...teamIdentities.map(item=>({...item,kind:'ai-direct',identityAppearance:evaIdentityAppearance(item)})),
-    ...digitalEmployees.map(item=>({...item,kind:'ai-direct',identityAppearance:digitalStore.appearance(item)}))];
   const source = groupSelected?groupStore.source(fixedMembers,selection.sessionId):employee?digitalStore.conversationSource(employee.id,employeeSession?.id):identity ? messageSource('my-ai', snapshot, identity, session) : null;
+  if(source)source.openMessageId=requestedMessageId;
   if(groupSelected){
     source.onCreateThread=record=>{const id=groupStore.createThread(record);setCollapsed(value=>({...value,[groupStore.id]:false}));return id;};
     source.onUpdateThread=(id,patch)=>{groupStore.updateThread(id,patch);if(patch.deleted&&selection.sessionId===id)choose(groupStore.id,null);};
@@ -421,7 +469,7 @@ function EvaAITeamPage() {
     cut("La=ci=>{xt(ci),Nt(null),Da(null),Dt(\"none\"),Qt(null),Ht(null)}",
       "La=ci=>{setEvaInlineProjectId(null),xt(ci),Nt(null),Da(null),Dt(\"none\"),Qt(null),Ht(null)}", "切换群聊时关闭消息内联项目");
     cut("Za=(ci,Zi)=>{xt(ci),Nt(Zi),Dt(\"none\"),Da(null)},za=ci=>",
-      "Za=(ci,Zi)=>{setEvaInlineProjectId(null),xt(ci),Nt(Zi),Dt(\"none\"),Da(null)},evaOpenEffect=reactExports.useEffect(()=>{const evaOpen=evaEvent=>{const evaId=evaEvent.detail?.conversationId;if(!evaId||!pt.some(evaChannel=>evaChannel.id===evaId))return;La(evaId),requestAnimationFrame(()=>da.current?.scrollTo({top:0}))};window.addEventListener(\"eva-im:open\",evaOpen);return()=>window.removeEventListener(\"eva-im:open\",evaOpen)},[pt]),za=ci=>", "切换子区时关闭消息内联项目");
+      "Za=(ci,Zi)=>{setEvaInlineProjectId(null),xt(ci),Nt(Zi),Dt(\"none\"),Da(null)},evaOpenEffect=reactExports.useEffect(()=>{const evaOpen=evaEvent=>{const evaId=evaEvent.detail?.conversationId,evaThreadId=evaEvent.detail?.threadId;if(!evaId||!pt.some(evaChannel=>evaChannel.id===evaId))return;evaThreadId?Za(evaId,evaThreadId):La(evaId),evaRevealMessage(evaEvent.detail?.messageId)};window.addEventListener(\"eva-im:open\",evaOpen);return()=>window.removeEventListener(\"eva-im:open\",evaOpen)},[pt]),za=ci=>", "切换子区时关闭消息内联项目");
     cut('React.createElement(AppProviders,null,React.createElement(App,null))','React.createElement(AppProviders,null,React.createElement(EvaAssistantEditorHost,null,React.createElement(App,null)))','shared assistant editor host');
     cut('React.createElement("span",{className:"t"},Sa.name)', 'Sa.identityId?React.createElement("span",{className:"eva-identity-name-row"},React.createElement("span",{className:"t eva-identity-name-text",title:Sa.name},Sa.name),React.createElement(AiBadge,{size:"small"}),window.EvaAIIdentity.ownerLabel(evaMembers().ui.identityModel.resolve(Sa.identityId),React.createElement)):React.createElement("span",{className:"t"},Sa.name)', 'AI 会话顶部沿用私聊身份标题');
     cut('St&&React.createElement(AiBadge,{size:"small"}),Ct&&React.createElement(WebhookBadge,null)', 'St&&React.createElement(AiBadge,{size:"small"}),window.EvaAIIdentity.ownerLabel(evaMembers().ui.identityModel.resolve(evaSenderIdentityId),React.createElement),Ct&&React.createElement(WebhookBadge,null)', '分身消息署名显示真实主人');
@@ -560,9 +608,9 @@ function EvaAITeamPage() {
       'placeholder:evaIMPlaceholder(Es.name)', 'Thread side composer recipient placeholder');
     // Contact identity navigation shares the existing IM patch registry entry.
   cut('const{search:evaMessageSearch}=useLocation(),evaMessageMode=', 'const{search:evaMessageSearch,key:evaContactRequestKey}=useLocation(),evaMessageMode=', '身份卡导航请求');
-  cut('rt=reactExports.useMemo(()=>messageSource(evaMessageMode),[evaMessageMode,evaLiveMemberRevision])', 'rt=reactExports.useMemo(()=>({...messageSource(evaMessageMode),openChannelId:new URLSearchParams(evaMessageSearch).get("evaDM"),openRequestKey:evaContactRequestKey}),[evaMessageMode,evaLiveMemberRevision,evaMessageSearch,evaContactRequestKey])', '私聊路由数据');
+  cut('rt=reactExports.useMemo(()=>messageSource(evaMessageMode),[evaMessageMode,evaLiveMemberRevision])', 'rt=reactExports.useMemo(()=>({...messageSource(evaMessageMode),openChannelId:new URLSearchParams(evaMessageSearch).get("evaDM"),openMessageId:new URLSearchParams(evaMessageSearch).get("evaMessage"),openRequestKey:evaContactRequestKey}),[evaMessageMode,evaLiveMemberRevision,evaMessageSearch,evaContactRequestKey])', '私聊路由数据');
   cut('...DMS.map(mt=>({...mt,category:"scope:dm"}))', '...(evaMembers().store.snapshot().actorId==="u-wangyilin"?DMS:[]).filter(mt=>!evaMembers().store.directChannels(evaMembers().store.snapshot().actorId).some(c=>c.id===mt.id)).map(mt=>({...mt,personId:"u-"+mt.id.slice(3),chatType:"direct",category:"scope:dm"})),...evaMembers().store.directChannels(evaMembers().store.snapshot().actorId).map(mt=>({...mt,category:"scope:dm"}))', '私聊稳定身份索引');
-  cut('messages:{...CHANNEL_MESSAGES,...OWN_MESSAGES,...evaDemo.messages}', 'messages:evaMembers().store.directMessages(evaMembers().store.snapshot().actorId,{...CHANNEL_MESSAGES,...OWN_MESSAGES,...evaDemo.messages})', '私聊业务消息读取');
+  cut('messages:{...CHANNEL_MESSAGES,...OWN_MESSAGES,...evaDemo.messages}', 'messages:evaConversationMessages({...CHANNEL_MESSAGES,...OWN_MESSAGES,...evaDemo.messages})', '私聊业务消息读取与附件示例');
   cut('const [evaTaskContext,setEvaTaskContext]=reactExports.useState(null),evaMemberStore=', 'const [evaIdentityProfile,setEvaIdentityProfile]=reactExports.useState(null),[evaTaskContext,setEvaTaskContext]=reactExports.useState(null),evaMemberStore=', '会话资料状态所有者');
   cut('vi=(ci,Zi)=>{if(evaMemberStore.canRead(ci,evaActorId))', 'vi=(ci,Zi)=>{if(ci.startsWith("dm-")){const target=pt.find(c=>c.id===ci)?.personId;if(target){const id=evaMemberStore.openDirect(evaActorId,target);evaMemberStore.sendDirect(id,evaActorId,Zi);return;}}if(evaMemberStore.canRead(ci,evaActorId))', '人类私聊持久化发送');
   cut('evaOpenEffect=reactExports.useEffect(()=>{const evaOpen=', 'evaContactOpenEffect=reactExports.useEffect(()=>{if(ct?.openChannelId&&pt.some(c=>c.id===ct.openChannelId)){La(ct.openChannelId);ir("recent");}},[ct?.openChannelId,ct?.openRequestKey]),evaOpenEffect=reactExports.useEffect(()=>{const evaOpen=', '私聊路由选择');
@@ -637,6 +685,28 @@ function EvaAITeamPage() {
     cut('projectId:ci.id.slice(6)}}))}}):null,headerStyle:', 'projectId:ci.id.slice(6)}}))}}):React.createElement(Button,{theme:"borderless",type:"tertiary",size:"small",icon:React.createElement(EllipsisIcon,{size:16}),"aria-label":"编辑分组 "+ci.name,onClick:()=>setEvaCategoryEditor(ci)}),headerStyle:', '其他会话和自定义分类可编辑');
     cut('setEvaIdentityProfile(null);},[evaMembershipProjectId,evaActorId])', 'setEvaIdentityProfile(null);setEvaCategoryEditor(null);},[evaMembershipProjectId,evaActorId])', '分类表单身份重置');
     cut('React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",visible:sn,onVisibleChange:cn,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),setEvaGroupCreateOpen(true)}},"新建群聊"),React.createElement(Dropdown.Item,{onClick:()=>{cn(false);setEvaCategoryEditor({});}},"创建分组"))},React.createElement("button",{type:"button",className:"ch-cat-gear eva-message-invite",title:"新建","aria-label":"新建"},React.createElement(Plus$c,{size:15})))','evaMembershipProjectId?React.createElement("button",{type:"button",className:"ch-cat-gear eva-message-invite",title:"新建群聊","aria-label":"新建群聊",onClick:()=>setEvaGroupCreateOpen(true)},React.createElement(Plus$c,{size:15})):React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",visible:sn,onVisibleChange:cn,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),setEvaGroupCreateOpen(true)}},"新建群聊"),React.createElement(Dropdown.Item,{onClick:()=>{cn(false);setEvaCategoryEditor({});}},"创建分组"))},React.createElement("button",{type:"button",className:"ch-cat-gear eva-message-invite",title:"新建","aria-label":"新建"},React.createElement(Plus$c,{size:15})))',"项目群聊直接打开拉人建群模板");
-    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    cut('FileCard=({file:rt,onOpen:ct,onDownload:ut})=>{const[pt,mt]=reactExports.useState(()=>window.EvaFileMessage.isSaved(rt.name));reactExports.useEffect(()=>window.EvaFileMessage.subscribe(rt.name,mt),[rt.name]);const gt=window.EvaFileMessage.action(rt.name),St=xt=>{(xt.key==="Enter"||xt.key===" ")&&(xt.preventDefault(),xt.stopPropagation(),window.EvaFileMessage.activate(rt.name))};',
+      'FileCard=({file:rt,onOpen:ct,onDownload:ut,saveContext:evaSaveContext,onSave:evaOnSave,savedRecord:evaSavedRecord})=>{const[pt,mt]=reactExports.useState(0);reactExports.useEffect(()=>window.EvaFileMessage.subscribe(rt,evaSaveContext,()=>mt(value=>value+1)),[rt.id,rt.name,evaSaveContext?.messageId]);const gt=window.EvaFileMessage.action(rt,evaSaveContext,evaSavedRecord),evaActivate=()=>gt.saved?window.EvaFileMessage.activate(rt,evaSaveContext,evaSavedRecord):evaOnSave?.(rt,evaSaveContext),St=xt=>{(xt.key==="Enter"||xt.key===" ")&&(xt.preventDefault(),xt.stopPropagation(),evaActivate())};', '文件卡保存状态使用稳定附件和文件库记录');
+    cut('return React.createElement("div",{className:"wk-message-file wk-message-file--clickable",title:"预览",role:"button"',
+      'return React.createElement("div",{className:"wk-message-file wk-message-file--clickable"+(new URLSearchParams(String(window.location?.hash||"").split("?")[1]||"").get("evaMessage")===evaSaveContext?.messageId?" eva-message-source-highlight":""),title:"预览","data-eva-message-id":evaSaveContext?.messageId,role:"button"', '文件消息提供来源定位锚点');
+    cut('onClick:xt=>{xt.preventDefault(),xt.stopPropagation(),window.EvaFileMessage.activate(rt.name)}',
+      'onClick:xt=>{xt.preventDefault(),xt.stopPropagation(),evaActivate()}', '文件卡保存按钮打开统一弹窗');
+    cut('evaMemberStore=evaMembers().store,evaMemberRevision=reactExports.useSyncExternalStore(evaMemberStore.subscribe,evaMemberStore.getSnapshot)',
+      'evaMemberContext=evaMembers(),evaMemberStore=evaMemberContext.store,evaMemberFiles=evaMemberContext.files,evaFileRevision=reactExports.useSyncExternalStore(evaMemberFiles.subscribe,evaMemberFiles.getSnapshot),evaMemberRevision=reactExports.useSyncExternalStore(evaMemberStore.subscribe,evaMemberStore.getSnapshot)', '会话订阅文件库状态');
+    cut('[evaTransferFile,setEvaTransferFile]=reactExports.useState(null),',
+      '[evaTransferFile,setEvaTransferFile]=reactExports.useState(null),[evaFileSaveRequest,setEvaFileSaveRequest]=reactExports.useState(null),', '统一存到文件库弹窗状态');
+    cut('evaMenuItems=ci=>{if(!ci)return[];const Zi=[];if(ci.kind==="file"&&ci.file&&evaMemberStore.canRead(Sa.id,evaActorId))Zi.push({title:"转存到项目",icon:React.createElement(FolderPlus,{size:18}),onClick:()=>setEvaTransferFile(ci.file)});',
+      'evaSaveContextFor=ci=>{const evaAI=ct?.presentation==="ai-direct"||ct?.sidebarVariant==="ai-team-group",evaDirect=!evaAI&&(Sa.chatType==="direct"||Sa.id.startsWith("dm-")),evaType=evaAI?"ai-conversation":evaDirect?"chat":"group",evaConversationId=evaAI?(ct?.sidebarVariant==="ai-team-group"?(fa?.id||Sa.id):(fa?.short_id||fa?.id||Sa.id)):(fa?.id||Sa.id),evaMessageId=ci.id||ci.fixtureId||[evaConversationId,ci.sender?.uid||"unknown",ci.time||"",ci.file?.id||ci.file?.name||"file"].join(":");return{type:evaType,ownerId:evaAI?evaActorId:null,identityId:evaAI?(ct?.sidebarVariant==="ai-team-group"?Sa.id:(Sa.identityId||ci.sender?.uid)):null,identityName:evaAI?(Sa.identityName||ci.sender?.name||Sa.name):null,conversationKind:ct?.sidebarVariant||Sa.chatType||"group",conversationId:evaConversationId,conversationTitle:fa?.name||Sa.sessionTitle||Sa.name,messageId:evaMessageId,senderId:ci.sender?.uid||null,senderName:ci.sender?.name||null,groupId:evaType==="group"?Sa.id:null,groupName:evaType==="group"?Sa.name:null,threadId:evaType==="group"?fa?.id:null,threadName:evaType==="group"?fa?.name:null,projectId:evaType==="group"?evaTaskProjectId:null,taskId:ci.file?.taskId||null}},evaSaveConversationFile=(file,source)=>{if(source?.type==="group"&&source.projectId){try{const id=evaMemberFiles.saveConversationFile(evaActorId,source.projectId,0,file,source),record=evaMemberFiles.snapshot(evaActorId).find(item=>item.id===id);window.EvaFileMessage.markSaved(file,source,record);Toast.success("已存到项目文件库");}catch(error){Toast.error(error.message||"保存失败");}return;}setEvaFileSaveRequest({file,source})},evaMenuItems=ci=>{if(!ci)return[];const Zi=[];if(ci.kind==="file"&&ci.file)Zi.push({title:"存到文件库",icon:React.createElement(FolderPlus,{size:18}),onClick:()=>evaSaveConversationFile(ci.file,evaSaveContextFor(ci))});', '项目群文件直接保存，其他会话复用统一保存入口');
+    cut('else if(ci.kind==="file"&&ci.file){const Ms=ci.file;ns=React.createElement(FileCard,{file:Ms,onOpen:()=>void $a(Ms),onDownload:()=>void Na(Ms)})}',
+      'else if(ci.kind==="file"&&ci.file){const Ms=ci.file,evaSaveContext=evaSaveContextFor(ci),evaSavedRecord=evaMemberFiles.findConversationFile(evaActorId,Ms,evaSaveContext);ns=React.createElement(FileCard,{file:Ms,saveContext:evaSaveContext,savedRecord:evaSavedRecord,onSave:(file,source)=>evaSaveConversationFile(file,source),onOpen:()=>void $a(Ms),onDownload:()=>void Na(Ms)})}', '文件卡携带消息与会话来源');
+    cut('React.createElement(evaMembers().ui.FileTransfer,{file:evaTransferFile,source:{groupId:Sa.id,groupName:Sa.name,threadId:fa?.id,threadName:fa?.name,taskId:evaTransferFile?.taskId},onClose:()=>setEvaTransferFile(null)}),',
+      'React.createElement(evaMembers().ui.FileLibrarySave,{file:evaFileSaveRequest?.file,source:evaFileSaveRequest?.source,onClose:()=>setEvaFileSaveRequest(null)}),', '挂载统一存到文件库弹窗');
+    cut('evaContactOpenEffect=reactExports.useEffect(()=>{if(ct?.openChannelId&&pt.some(c=>c.id===ct.openChannelId)){La(ct.openChannelId);ir("recent");}},[ct?.openChannelId,ct?.openRequestKey]),evaOpenEffect=',
+      'evaContactOpenEffect=reactExports.useEffect(()=>{if(ct?.openChannelId&&pt.some(c=>c.id===ct.openChannelId)){La(ct.openChannelId);ir("recent");}},[ct?.openChannelId,ct?.openRequestKey]),evaRelationOpenEffect=reactExports.useEffect(()=>{evaRevealMessage(ct?.openMessageId)},[ct?.openMessageId,va,Ta.length]),evaOpenEffect=', '关联来源消息定位');
+    cut('hi=(ci,Zi,Fi)=>{if(ci.kind==="divider")',
+      'hi=(ci,Zi,Fi)=>{ci=evaRenderableMessage(ci);if(ci.kind==="divider")', '消息渲染兼容历史数据缺失字段');
+    cut('avatarUri(zs,SENDERS[zs].color)',
+      'avatarUri(zs,SENDERS[zs]?.color??"#8a8f99")', '子区消息兼容未知参与者');
+    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

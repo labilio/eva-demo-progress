@@ -164,3 +164,5 @@ Object.assign(window.__EVA_FILE_SAMPLE_URLS, {
 });
 
 Object.assign(window.__EVA_FILE_SAMPLE_URLS, {"供应链晨会行动清单.md":"prototype/assets/file-samples/供应链晨会行动清单.md","A-2409整改证据检查表.csv":"prototype/assets/file-samples/A-2409整改证据检查表.csv","采购合同评审提纲.md":"prototype/assets/file-samples/采购合同评审提纲.md"});
+
+window.__EVA_FILE_DOWNLOAD_FALLBACK_URL = 'prototype/assets/file-samples/file-placeholder.txt';

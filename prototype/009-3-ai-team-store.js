@@ -82,11 +82,16 @@
     const str = value => typeof value === 'string';
     const record = value => !!value && typeof value === 'object' && !Array.isArray(value);
     const config = value => record(value) && str(value.identity) && str(value.personality) && Array.isArray(value.skills) && value.skills.every(str);
+    const sender = value => record(value) && str(value.uid) && str(value.name) && str(value.color) && typeof value.ai === 'boolean';
+    const message = value => record(value) && str(value.time) && sender(value.sender) && (
+      (value.kind === 'text' && str(value.text)) ||
+      (value.kind === 'file' && record(value.file) && str(value.file.id) && str(value.file.name) && typeof value.file.size === 'number' && str(value.file.extension))
+    );
     const unique = rows => new Set(rows.map(x => x.id)).size === rows.length;
     if (!record(state) || state.schemaVersion !== 1 || !Array.isArray(state.localAssistants) || !Array.isArray(state.identities) || !Array.isArray(state.sessions) || !record(state.drafts)) return false;
     if (!state.localAssistants.every(x => record(x) && str(x.id) && str(x.name) && Number.isInteger(x.version) && x.version > 0 && typeof x.online === 'boolean' && config(x.configuration))) return false;
     if (!state.identities.every(x => record(x) && str(x.id) && str(x.name) && ['assistant', 'persona'].includes(x.role) && ['ready', 'offline'].includes(x.status) && ['synced', 'syncing', 'waiting', 'error'].includes(x.syncStatus) && str(x.lastSyncedAt) && Number.isInteger(x.configVersion) && x.configVersion > 0 && config(x.configuration) && ((x.role === 'persona' && x.sourceAssistantId === null && x.syncStatus === 'synced') || state.localAssistants.some(l => l.id === x.sourceAssistantId && x.configVersion <= l.version)))) return false;
-    if (!state.sessions.every(x => record(x) && str(x.id) && str(x.title) && str(x.updatedAt) && (x.pinned === undefined || typeof x.pinned === 'boolean') && state.identities.some(i => i.id === x.identityId) && Array.isArray(x.messages) && x.messages.every(m => record(m) && m.kind === 'text' && str(m.text) && str(m.time) && record(m.sender) && str(m.sender.uid) && str(m.sender.name) && str(m.sender.color) && typeof m.sender.ai === 'boolean'))) return false;
+    if (!state.sessions.every(x => record(x) && str(x.id) && str(x.title) && str(x.updatedAt) && (x.pinned === undefined || typeof x.pinned === 'boolean') && state.identities.some(i => i.id === x.identityId) && Array.isArray(x.messages) && x.messages.every(message))) return false;
     return unique(state.localAssistants) && unique(state.identities) && unique(state.sessions) && Object.entries(state.drafts).every(([key, value]) => str(value) && (state.sessions.some(s => s.id === key) || state.identities.some(i => 'draft:' + i.id === key))) && new Set(state.identities.filter(i => i.role === 'assistant').map(i => i.sourceAssistantId)).size === state.identities.filter(i => i.role === 'assistant').length;
   }
   // Migrate only known generated copy; never rewrite user-authored messages.
@@ -225,6 +230,19 @@
         if(session.title==='电脑关机后，供应风险继续跟进'||session.title==='夜间巡检，早上只看需要处理的事')session.title=copy.title;
       });
       state.personaVarietyV2=true;
+      try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
+    }
+    if(options.profile==='review'&&!state.fileArtifactDemoV1){
+      const session=state.sessions.find(item=>item.id==='team-assistant-welcome-example')||state.sessions.find(item=>item.id==='team-assistant-welcome');
+      const identity=state.identities.find(item=>item.id===session?.identityId);
+      if(session&&identity&&!session.messages.some(message=>message.id==='ai-file-artifact-v1')){
+        session.messages.push({
+          id:'ai-file-artifact-v1',kind:'file',time:session.updatedAt,
+          sender:{uid:identity.id,name:identity.name,color:'#1563EB',ai:true},
+          file:{id:'artifact:ai-general:morning-brief-v1',name:'十分钟晨会提纲.docx',size:32768,extension:'docx',version:1}
+        });
+      }
+      state.fileArtifactDemoV1=true;
       try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
     }
     // Personal assistants automatically have an IM identity, separate from local chats.
