@@ -463,7 +463,13 @@
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-name { color: var(--eva-rail-primary); font-weight: var(--gds-font-weight-medium); }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-icon { width: 22px; flex: 0 0 22px; }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-drag-handle { display: none; }
-.eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread { padding-left: 8px; min-height: var(--eva-rail-identity-height); }
+/* The fixed group is a first-level group chat; its thread rows are subzones.
+   Anchor at the parent group avatar's left edge, then advance one shared 12px
+   hierarchy level so the nested relationship is visible at a glance. */
+.eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread {
+  padding-left: calc(var(--eva-rail-identity-content-inset) + var(--eva-rail-level-indent));
+  min-height: var(--eva-rail-identity-height);
+}
 .eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread .wk-conv-compact-name { font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread):hover { background: var(--eva-rail-hover); }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread).wk-conv-compact-item--selected { background: var(--eva-rail-selected); }

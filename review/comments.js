@@ -3,7 +3,7 @@ import { afterBrowserPaint, buildAnchorRecord, buildProjectViewContext, clampFlo
 import { COMMENTS_CONFIG } from './comments-config.mjs';
 
 const store = createCommentsStore(COMMENTS_CONFIG);
-const state = { rows: [], target: null, picking: false, pinMode: localStorage.getItem('eva-review-pin-mode') || 'all', activeId: null, replyingId: null, locateRevision: 0, draggedUntil: 0 };
+const state = { rows: [], target: null, picking: false, pinMode: localStorage.getItem('eva-review-pin-mode') || 'all', activeId: null, replyingId: null, replyDrafts: new Map(), submittingReplies: new Set(), listRenderPending: false, locateRevision: 0, draggedUntil: 0 };
 
 const KINDS = {
   copy: { label: '改文案', className: 'copy' },
@@ -167,11 +167,11 @@ function ensureUI() {
       <div class="eva-review-list"></div>
     </aside>
     <div class="eva-review-dialog" data-review-ui hidden role="dialog" aria-modal="true" aria-labelledby="eva-review-title">
-      <form class="eva-review-card">
+      <form class="eva-review-card" autocomplete="off">
         <header><div><h2 id="eva-review-title">添加批注</h2><p data-review-quote></p></div><button type="button" class="eva-review-icon-button" data-review-cancel aria-label="关闭">${icon('close')}</button></header>
-        <div class="eva-review-identity"><label data-review-author-field>你的名字（选填）<input name="author" maxlength="40" autocomplete="name" placeholder="不填则显示匿名同事"></label><div data-review-author-saved hidden><span>提交人</span><strong data-review-author-name></strong><button type="button" data-review-change-author>更换</button></div></div>
+        <div class="eva-review-identity"><label data-review-author-field>你的名字（选填）<input name="author" maxlength="40" autocomplete="off" placeholder="不填则显示匿名同事"></label><div data-review-author-saved hidden><span>提交人</span><strong data-review-author-name></strong><button type="button" data-review-change-author>更换</button></div></div>
         <label>批注类型<select name="kind"><option value="copy">改文案</option><option value="ui">调整 UI</option><option value="rebuild">重做</option><option value="function">补充/优化功能</option><option value="ready">已基本定稿</option></select></label>
-        <label>批注内容<textarea name="body" maxlength="2000" placeholder="哪里需要调整？希望改成什么样？" required></textarea></label>
+        <label>批注内容<textarea name="body" autocomplete="off" maxlength="2000" placeholder="哪里需要调整？希望改成什么样？" required></textarea></label>
         <div class="eva-review-error" role="alert"></div>
         <footer><button type="button" class="eva-review-secondary" data-review-cancel>取消</button><button type="submit" class="eva-review-primary">提交批注</button></footer>
       </form>
@@ -268,7 +268,7 @@ async function refresh({ quiet = false } = {}) {
   ensureUI();
   const request = requestGate.start();
   const list = document.querySelector('.eva-review-list');
-  if (!quiet && !document.querySelector('.eva-review-panel').hidden) list.innerHTML = '<div class="eva-review-empty">正在读取批注…</div>';
+  if (!quiet && !list.querySelector('[data-review-item]') && !document.querySelector('.eva-review-panel').hidden) list.innerHTML = '<div class="eva-review-empty">正在读取批注…</div>';
   try {
     const rows = await store.list();
     if (!requestGate.isCurrent(request)) return;
@@ -276,6 +276,8 @@ async function refresh({ quiet = false } = {}) {
     renderList(); schedulePins();
   } catch (error) {
     if (!requestGate.isCurrent(request)) return;
+    // A failed background read must not destroy an existing reply editor.
+    if (list.querySelector('[data-review-item]')) { if (!quiet) toast(error.message); return; }
     if (!document.querySelector('.eva-review-panel').hidden) list.innerHTML = `<div class="eva-review-empty"><strong>批注读取失败</strong><span>${escapeHtml(error.message)}</span><button type="button" data-review-retry>重新读取</button></div>`;
     list.querySelector('[data-review-retry]')?.addEventListener('click', () => refresh());
   }
@@ -284,6 +286,13 @@ async function refresh({ quiet = false } = {}) {
 function renderList() {
   const list = document.querySelector('.eva-review-list');
   if (!list) return;
+  // Polling still reads shared data, but never replaces a live editor (including IME).
+  const editing = document.activeElement?.closest('[data-review-reply]');
+  if (editing && editing.dataset.reviewReply === state.replyingId) {
+    state.listRenderPending = true;
+    return;
+  }
+  state.listRenderPending = false;
   const rows = state.rows
     .filter(row => state.pinMode === 'all' || (state.pinMode === 'approved' && row.status === 'approved'))
     .sort((a,b) => Number(b.seq || 0) - Number(a.seq || 0));
@@ -306,12 +315,14 @@ function commentHtml(row) {
   const replies = [...(row.replies || [])].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
   const options = Object.entries(STATUSES).map(([value,label]) => `<option value="${value}"${row.status === value ? ' selected' : ''}>${label}</option>`).join('');
   const replying = state.replyingId === row.id;
+  const draft = state.replyDrafts.get(row.id) || { author: '', body: '' };
+  const submitting = state.submittingReplies.has(row.id);
   return `<article class="eva-review-item ${state.activeId === row.id ? 'is-active' : ''}" data-review-item="${escapeHtml(row.id)}">
     <div class="eva-review-item-head"><span class="eva-review-seq">#${escapeHtml(row.seq || '—')}</span><span class="eva-review-kind ${kind.className}">${kind.label}</span><span class="eva-review-page" data-review-page="${escapeHtml(row.page_path)}">${escapeHtml(pageLabel(row.page_path))}</span><span class="eva-review-author">${escapeHtml(row.author_name)}</span><time>${escapeHtml(shortTime(row.created_at))}</time></div>
     <button type="button" class="eva-review-anchor" data-review-locate="${escapeHtml(row.id)}">${icon('locate',14)}<span>${escapeHtml(row.anchor?.quote?.slice(0,54) || `前往${pageLabel(row.page_path)}`)}</span></button>
     <div class="eva-review-body">${escapeHtml(row.body)}</div>
     ${replies.length ? `<div class="eva-review-replies">${replies.map(reply => `<div><header><strong>${escapeHtml(reply.author_name)}</strong><time>${escapeHtml(shortTime(reply.created_at))}</time></header><p>${escapeHtml(reply.body)}</p></div>`).join('')}</div>` : ''}
-    ${replying ? `<form class="eva-review-reply${savedAuthor ? ' has-author' : ''}" data-review-reply="${escapeHtml(row.id)}">${savedAuthor ? '' : '<input name="author" maxlength="40" placeholder="你的名字（选填）" aria-label="回复人姓名">'}<input name="body" maxlength="2000" placeholder="回复这条批注" aria-label="回复内容" required><button type="submit" aria-label="发送回复">${icon('send',15)}</button></form>` : ''}
+    ${replying ? `<form class="eva-review-reply${savedAuthor ? ' has-author' : ''}" data-review-reply="${escapeHtml(row.id)}" autocomplete="off">${savedAuthor ? '' : `<input name="author" autocomplete="off" value="${escapeHtml(draft.author)}" ${submitting ? 'readonly' : ''} maxlength="40" placeholder="你的名字（选填）" aria-label="回复人姓名">`}<input name="body" autocomplete="off" value="${escapeHtml(draft.body)}" ${submitting ? 'readonly' : ''} maxlength="2000" placeholder="回复这条批注" aria-label="回复内容" required><button type="submit" ${submitting ? 'disabled' : ''} aria-label="发送回复">${icon('send',15)}</button></form>` : ''}
     <footer><label class="eva-review-status"><span class="eva-review-status-light is-${escapeHtml(row.status)}" aria-hidden="true"></span><select data-review-status="${escapeHtml(row.id)}" aria-label="批注状态">${options}</select></label><div class="eva-review-actions">${row.status === 'done' ? '' : `<button type="button" class="eva-review-icon-button is-complete" data-review-complete="${escapeHtml(row.id)}" aria-label="标记为原型已改完">${icon('check')}</button>`}<button type="button" class="eva-review-icon-button" data-review-reply-toggle="${escapeHtml(row.id)}" aria-expanded="${replying}" aria-label="${replying ? '收起回复' : '回复批注'}">${icon('reply')}</button><button type="button" class="eva-review-icon-button is-danger" data-review-delete="${escapeHtml(row.id)}" aria-label="删除批注">${icon('trash')}</button></div></footer>
   </article>`;
 }
@@ -330,6 +341,7 @@ function bindListEvents() {
     button.disabled = true;
     try {
       await store.remove(id);
+      state.replyDrafts.delete(id);
       if (state.activeId === id) state.activeId = null;
       if (state.replyingId === id) state.replyingId = null;
       await refresh({ quiet:true });
@@ -347,15 +359,39 @@ function bindListEvents() {
     catch (error) { toast(error.message); await refresh({ quiet:true }); }
     finally { select.disabled = false; }
   });
-  document.querySelectorAll('[data-review-reply]').forEach(form => form.onsubmit = async event => {
-    event.preventDefault();
-    const submit = form.querySelector('button'); submit.disabled = true;
-    try {
-      const authorName = localStorage.getItem('eva-review-author') || form.author?.value || '';
-      const reply = await store.addReply(form.dataset.reviewReply, { author_name: authorName, body: form.body.value });
-      localStorage.setItem('eva-review-author', reply.author_name); state.replyingId = null; renderIdentity(); await refresh({ quiet:true }); toast('回复已同步');
-    } catch (error) { toast(error.message); }
-    finally { submit.disabled = false; }
+  document.querySelectorAll('[data-review-reply]').forEach(form => {
+    const id = form.dataset.reviewReply;
+    form.oninput = () => state.replyDrafts.set(id, { author: form.author?.value || '', body: form.body.value });
+    form.onfocusout = () => setTimeout(() => {
+      if (state.listRenderPending) renderList();
+    }, 0);
+    form.onkeydown = event => {
+      if (event.key === 'Enter' && (event.isComposing || event.keyCode === 229)) event.preventDefault();
+    };
+    form.onsubmit = async event => {
+      event.preventDefault();
+      if (state.submittingReplies.has(id)) return;
+      form.oninput();
+      const submit = form.querySelector('button'); submit.disabled = true;
+      state.submittingReplies.add(id);
+      form.querySelectorAll('input').forEach(input => input.readOnly = true);
+      try {
+        const authorName = localStorage.getItem('eva-review-author') || form.author?.value || '';
+        const reply = await store.addReply(id, { author_name: authorName, body: form.body.value });
+        state.replyDrafts.delete(id);
+        localStorage.setItem('eva-review-author', reply.author_name);
+        if (state.replyingId === id) state.replyingId = null;
+        renderIdentity(); renderList(); await refresh({ quiet:true }); toast('回复已同步');
+      } catch (error) { toast(error.message); }
+      finally {
+        state.submittingReplies.delete(id);
+        const currentForm = document.querySelector(`[data-review-reply="${cssEscape(id)}"]`);
+        if (currentForm) {
+          currentForm.querySelector('button').disabled = false;
+          currentForm.querySelectorAll('input').forEach(input => input.readOnly = false);
+        }
+      }
+    };
   });
 }
 
