@@ -77,12 +77,24 @@
   };
   const normalizeRecord=item=>{
     const preset=RECORD_METADATA[item.id]||{},isFolder=item.type==='folder',normalized=clone(item);delete normalized.category;
+    delete normalized.pinned;delete normalized.pinnedAt;
     const systemRelations=clone(item.systemRelations||preset.systemRelations||[]).filter(itemRelation=>itemRelation.type!=='run');
     return {...normalized,createdAt:item.createdAt||item.created_at||item.updated_at||stamp(),tags:isFolder?[]:clone(item.tags||preset.tags||[]),systemRelations};
   };
 
-  function create(membership,seed=[],persist,resetSeed=seed,sharedSpaceSeed=DEFAULT_SHARED_SPACES){
-    let records=clone(seed).map(normalizeRecord),sharedSpaces=clone(sharedSpaceSeed),revision=0;const listeners=new Set();
+  const normalizePins=value=>{
+    const latest=new Map();
+    (Array.isArray(value)?value:[]).forEach(item=>{
+      const actorId=String(item?.actorId||''),fileId=String(item?.fileId||''),pinnedAt=String(item?.pinnedAt||'');
+      if(!actorId||!fileId||!pinnedAt)return;
+      const key=actorId+'\u0000'+fileId,old=latest.get(key);
+      if(!old||old.pinnedAt<pinnedAt)latest.set(key,{actorId,fileId,pinnedAt});
+    });
+    return Array.from(latest.values());
+  };
+
+  function create(membership,seed=[],persist,resetSeed=seed,sharedSpaceSeed=DEFAULT_SHARED_SPACES,pinSeed=[],persistPins){
+    let records=clone(seed).map(normalizeRecord),sharedSpaces=clone(sharedSpaceSeed),pins=normalizePins(pinSeed),revision=0;const listeners=new Set();
     const actorName=actorId=>membership.person(actorId)?.name||membership.clone?.(actorId)?.name||membership.employee?.(actorId)?.name||membership.projectAgent?.(String(actorId).replace(/^project-agent:/,''))?.name||actorId;
     const snapshot=()=>membership.snapshot();
     const personalSpace=actorId=>'personal:'+actorId;
@@ -112,8 +124,9 @@
     };
     const fail=message=>{throw new Error(message);};
     const requireAction=(action,spaceId,actorId)=>can(action,spaceId,actorId)||fail('当前角色无此操作权限');
-    const notify=()=>{revision++;if(persist)persist(clone(records),clone(sharedSpaces));listeners.forEach(fn=>fn());};
+    const notify=()=>{revision++;if(persist)persist(clone(records),clone(sharedSpaces));if(persistPins)persistPins(clone(pins));listeners.forEach(fn=>fn());};
     const record=id=>records.find(item=>item.id===id)||fail('文件不存在');
+    const pinRecord=(actorId,fileId)=>pins.find(item=>item.actorId===actorId&&item.fileId===fileId)||null;
     const areaForSpace=spaceId=>spaceId.startsWith('personal:')?'personal':spaceId.startsWith('shared:')?'shared':'project';
     const projectForSpace=spaceId=>areaForSpace(spaceId)==='project'?spaceId:null;
     const ensureSameSpace=(item,targetParentId)=>{
@@ -183,13 +196,16 @@
         });
         delete value.conversationArtifact;
       }
-      if(item.type!=='shortcut'||!actorId)return value;
-      const status=shortcutStatus(item,actorId),source=shortcutSource(item);value.shortcutStatus=status;
-      if(status==='available'){
-        value.name=item.customName?item.name:source.name;value.extension=source.extension||ext(source.name);value.size=source.size||0;value.sourceAvailable=true;
-      }else{
-        value.name=status==='missing'?'源文件已失效':'无权访问的快捷方式';value.extension='';value.size=0;value.sourceAvailable=false;value.systemRelations=[];
+      if(item.type==='shortcut'&&actorId){
+        const status=shortcutStatus(item,actorId),source=shortcutSource(item);value.shortcutStatus=status;
+        if(status==='available'){
+          value.name=item.customName?item.name:source.name;value.extension=source.extension||ext(source.name);value.size=source.size||0;value.sourceAvailable=true;
+        }else{
+          value.name=status==='missing'?'源文件已失效':'无权访问的快捷方式';value.extension='';value.size=0;value.sourceAvailable=false;value.systemRelations=[];
+        }
       }
+      const preference=actorId?pinRecord(actorId,item.id):null;
+      value.pinned=Boolean(preference);value.pinnedAt=preference?.pinnedAt||null;
       return value;
     };
     const normalizeTags=value=>Array.from(new Set((Array.isArray(value)?value:String(value||'').split(/[，,]/)).map(tag=>String(tag).trim()).filter(Boolean))).slice(0,8).map(tag=>tag.slice(0,20));
@@ -217,6 +233,34 @@
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
       snapshot(actorId){return clone(records.map(item=>visibleRecord(item,actorId)));},role,can,personalSpace,
+      isPinned(actorId,id){return Boolean(pinRecord(actorId,id));},
+      setPinned(actorId,id,nextPinned){
+        const item=record(id);if(item.type==='folder')fail('文件夹不支持置顶');if(item.deletedAt)fail('回收站中的文件不能置顶');requireAction('read',item.spaceId,actorId);
+        const index=pins.findIndex(pin=>pin.actorId===actorId&&pin.fileId===id),desired=Boolean(nextPinned);
+        if(desired&&index>=0)return true;if(!desired&&index<0)return false;
+        if(desired)pins.push({actorId,fileId:id,pinnedAt:stamp()});else pins.splice(index,1);
+        notify();return desired;
+      },
+      togglePinned(actorId,id){return api.setPinned(actorId,id,!api.isPinned(actorId,id));},
+      pinnedFiles(actorId,options={}){
+        const spaceId=options.spaceId||null;
+        return pins.filter(pin=>pin.actorId===actorId).sort((left,right)=>right.pinnedAt.localeCompare(left.pinnedAt)||left.fileId.localeCompare(right.fileId)).map(pin=>{
+          const item=records.find(candidate=>candidate.id===pin.fileId);
+          if(!item||item.type==='folder'||item.deletedAt||!role(item.spaceId,actorId)||(spaceId&&item.spaceId!==spaceId))return null;
+          return visibleRecord(item,actorId);
+        }).filter(Boolean).map(clone);
+      },
+      sortEntries(actorId,entries,options={}){
+        const pinnedFirst=options.pinnedFirst!==false;
+        return clone(entries).sort((left,right)=>{
+          const leftPin=pinnedFirst&&left.type!=='folder'&&!left.deletedAt?pinRecord(actorId,left.id):null;
+          const rightPin=pinnedFirst&&right.type!=='folder'&&!right.deletedAt?pinRecord(actorId,right.id):null;
+          if(Boolean(leftPin)!==Boolean(rightPin))return leftPin?-1:1;
+          if(leftPin&&rightPin){const pinOrder=rightPin.pinnedAt.localeCompare(leftPin.pinnedAt);if(pinOrder)return pinOrder;}
+          if(left.type!==right.type){if(left.type==='folder')return-1;if(right.type==='folder')return 1;}
+          return String(right.deletedAt||right.createdAt).localeCompare(String(left.deletedAt||left.createdAt))||String(left.id).localeCompare(String(right.id));
+        });
+      },
       fileTypeFor(idOrRecord,actorId){
         const item=typeof idOrRecord==='string'?record(idOrRecord):idOrRecord;if(item.type==='folder')return'文件夹';
         if(item.type==='shortcut'){
@@ -383,7 +427,7 @@
         const item=record(id);requireAction('delete-forever',item.spaceId,actorId);requireTrashRoot(item);
         const unit=trashUnitRecords(item),ids=new Set(unit.map(target=>target.id));
         for(const target of records){if(target.spaceId===item.spaceId&&!target.deletedAt&&ids.has(target.parent_id))target.parent_id=0;}
-        records=records.filter(target=>!(target.deletedAt&&ids.has(target.id)));notify();return{removedCount:unit.length};
+        records=records.filter(target=>!(target.deletedAt&&ids.has(target.id)));pins=pins.filter(pin=>!ids.has(pin.fileId));notify();return{removedCount:unit.length};
       },
       resetProjectDemo(projectId){records=records.filter(r=>r.projectId!==projectId);records.push(...clone(resetSeed.filter(r=>r.projectId===projectId)).map(normalizeRecord));notify();},
       transfer(actorId,projectId,sourceFile,source){
@@ -405,7 +449,8 @@
   }
 
   function bootstrap(membership){
-    const key='eva:file-store:v6';let saved,spaces,previewDemoInitialized=false;
+    const key='eva:file-store:v6',pinKey='eva:file-pins:v1';let saved,spaces,pinSeed=[],previewDemoInitialized=false;
+    try{const value=JSON.parse(root.localStorage.getItem(pinKey));if(value?.schema===1&&Array.isArray(value.pins))pinSeed=value.pins;}catch{}
     try{const value=JSON.parse(root.localStorage.getItem(key));if(value?.schema===6&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;previewDemoInitialized=true;}}catch{}
     if(!saved){
       try{const value=JSON.parse(root.localStorage.getItem('eva:file-store:v5'));if(value?.schema===5&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;}}catch{}
@@ -432,7 +477,15 @@
     const previewDemoIds=new Set(['personal-word-demo','personal-sheet-demo','personal-slides-demo']);
     const existingIds=new Set(saved.map(item=>item.id));
     DEFAULT_RECORDS.filter(item=>!previewDemoInitialized&&previewDemoIds.has(item.id)&&!existingIds.has(item.id)).forEach(item=>saved.push(clone(item)));
-    return create(membership,saved,(records,sharedSpaces)=>{try{root.localStorage.setItem(key,JSON.stringify({schema:6,records,sharedSpaces}));}catch{}},DEFAULT_RECORDS,spaces||DEFAULT_SHARED_SPACES);
+    return create(
+      membership,
+      saved,
+      (records,sharedSpaces)=>{try{root.localStorage.setItem(key,JSON.stringify({schema:6,records,sharedSpaces}));}catch{}},
+      DEFAULT_RECORDS,
+      spaces||DEFAULT_SHARED_SPACES,
+      pinSeed,
+      pins=>{try{root.localStorage.setItem(pinKey,JSON.stringify({schema:1,pins}));}catch{}}
+    );
   }
 
   root.EvaFileSharing=Object.freeze({create,bootstrap,DEFAULT_RECORDS:clone(DEFAULT_RECORDS),DEFAULT_SHARED_SPACES:clone(DEFAULT_SHARED_SPACES)});
