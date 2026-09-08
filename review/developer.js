@@ -130,10 +130,10 @@ $('#rows').onclick=event=>{const button=event.target.closest('[data-detail]');if
 $('#reply-body').oninput=()=>sessionStorage.setItem('eva-developer-draft:'+state.detailId,$('#reply-body').value);
 $('#reply-form').onsubmit=async event=>{
   event.preventDefault();const button=event.currentTarget.querySelector('button');if(button.disabled)return;
-  const body=$('#reply-body').value.trim(),author=$('#assignee').value.trim();
+  const id=state.detailId,body=$('#reply-body').value.trim(),author=$('#assignee').value.trim();
   if(!body||!author){$('#reply-error').textContent='请填写认领者姓名和回填内容。';return;}
   button.disabled=true;
-  try{const reply=await store.addReply(state.detailId,{body,author_name:author});state.revision++;sessionStorage.removeItem('eva-developer-draft:'+state.detailId);state.rows=state.rows.map(r=>r.id===state.detailId?{...r,replies:[...(r.replies||[]),reply]}:r);render();$('#detail').close();message('开发结果已回填到原批注');}
+  try{const reply=await store.addReply(id,{body,author_name:author});state.revision++;sessionStorage.removeItem('eva-developer-draft:'+id);state.rows=state.rows.map(r=>r.id===id?{...r,replies:[...(r.replies||[]),reply]}:r);render();if(state.detailId===id)$('#detail').close();message('开发结果已回填到原批注');}
   catch(error){$('#reply-error').textContent=error.message;}finally{button.disabled=false;}
 };
 render();
