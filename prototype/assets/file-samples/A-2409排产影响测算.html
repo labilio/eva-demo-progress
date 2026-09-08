@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="octo-component-spec" content="2.0">
+  <base href="/prototype/assets/file-samples/">
+  <title>A-2409 排产影响测算</title>
+  <link rel="stylesheet" href="../../document-preview/tokens.css">
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;color:var(--wk-text-primary);background:var(--wk-bg-base)}*{box-sizing:border-box}body{margin:0;padding:32px}.page{max-width:920px;margin:auto;background:var(--wk-bg-surface);border:1px solid var(--wk-border-subtle);border-radius:12px;padding:28px;box-shadow:var(--wk-shadow-card)}header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-bottom:1px solid var(--wk-border-subtle);padding-bottom:20px}h1{font-size:24px;margin:0 0 8px}.sub{color:var(--wk-text-tertiary);font-size:13px}.badge{white-space:nowrap;color:var(--wk-color-warning);background:var(--wk-warning-alpha-12);border:1px solid var(--wk-color-warning);border-radius:999px;padding:5px 10px;font-size:12px}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}.metric{padding:16px;border-radius:8px;background:var(--wk-bg-subtle)}.metric b{display:block;font-size:20px;margin-top:6px}.metric span{color:var(--wk-text-tertiary);font-size:12px}.scenarios{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{border:1px solid var(--wk-border-subtle);border-radius:10px;padding:18px}.card.recommended{border-color:var(--wk-color-accent);background:var(--wk-bg-selected-accent)}.card h2{font-size:16px;margin:0 0 12px}.row{display:flex;justify-content:space-between;gap:20px;padding:9px 0;border-top:1px solid var(--wk-border-subtle);font-size:13px}.row span{color:var(--wk-text-tertiary)}.timeline{margin-top:24px}.step{position:relative;margin-left:8px;padding:0 0 18px 22px;border-left:2px solid var(--wk-border-default)}.step:last-child{border-left-color:transparent}.step:before{content:"";position:absolute;left:-6px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--wk-color-accent)}.step b{display:block;font-size:14px}.step small{color:var(--wk-text-tertiary)}.note{margin-top:18px;padding:12px 14px;border-left:3px solid var(--wk-color-accent);background:var(--wk-bg-selected-accent);color:var(--wk-text-secondary);font-size:13px}@media(max-width:680px){body{padding:12px}.page{padding:18px}.summary,.scenarios{grid-template-columns:1fr}header{display:block}.badge{display:inline-block;margin-top:12px}}
+  </style>
+</head>
+<body data-screen-label="A-2409 排产影响测算">
+  <main class="page">
+    <header><div><h1>A-2409 排产影响测算</h1><div class="sub">关联任务 SC-105 · 内部比较稿 · 2026-09-08 11:08</div></div><span class="badge">待质量结论</span></header>
+    <section class="summary" aria-label="测算摘要"><div class="metric"><span>比较场景</span><b>2 个</b></div><div class="metric"><span>共同前提</span><b>质量复核</b></div><div class="metric"><span>决策状态</span><b>未下发</b></div></section>
+    <section class="scenarios">
+      <article class="card"><h2>场景 A · 维持原顺序</h2><div class="row"><span>换型</span><strong>不增加</strong></div><div class="row"><span>风险</span><strong>A-2409 等待时间扩大</strong></div><div class="row"><span>启用条件</span><strong>中午前明确放行时间</strong></div></article>
+      <article class="card recommended"><h2>场景 B · 提前换型</h2><div class="row"><span>换型</span><strong>增加 1 次</strong></div><div class="row"><span>收益</span><strong>隔离质量等待</strong></div><div class="row"><span>启用条件</span><strong>质量结论继续延后</strong></div></article>
+    </section>
+    <section class="timeline"><h2>确认顺序</h2><div class="step"><b>质量复核</b><small>林晓确认异常范围与现场验证结果</small></div><div class="step"><b>产能复核</b><small>周远确认换型窗口和受影响工序</small></div><div class="step"><b>负责人拍板</b><small>王宜林确认是否切换排产场景</small></div></section>
+    <p class="note">本页用于比较影响，不构成排产指令；只有负责人确认后才可下发。</p>
+  </main>
+</body>
+</html>
