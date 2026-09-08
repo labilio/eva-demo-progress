@@ -1,0 +1,2 @@
+alter table public.eva_demo_comments drop constraint eva_demo_comments_author_name, add constraint eva_demo_comments_author_name check (char_length(btrim(author_name)) between 1 and 40);
+alter table public.eva_demo_comment_replies drop constraint eva_demo_comment_replies_author_name_length, add constraint eva_demo_comment_replies_author_name_length check (char_length(btrim(author_name)) between 1 and 40);

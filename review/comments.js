@@ -723,6 +723,9 @@ setInterval(detectPageChange, 250);
 refresh({ quiet:true, background:true }).then(async () => {
   const id = new URLSearchParams(location.search).get('reviewComment');
   if (!id) return;
+  const url = new URL(location.href);
+  url.searchParams.delete('reviewComment');
+  history.replaceState(history.state, '', url);
   const row = state.rows.find(row => row.id === id);
   if (row) { openPanel(); await locateComment(row.id); }
 });
