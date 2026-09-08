@@ -87,7 +87,7 @@
     id: 'p-drive', workspace_id: 'drive-design', title: '团队文件功能设计',
     description: '完善文件上传、移动、复制、分享和权限体验', icon: '☁️',
     status: 'in_progress', priority: 'high', lead_type: 'member', lead_id: 'u-wangyilin',
-    issue_count: 6, done_count: 1, created_at: T0, updated_at: T1, lead_name: '王宜林'
+    issue_count: 9, done_count: 1, created_at: T0, updated_at: T1, lead_name: '王宜林'
   }];
 
   function task(number, title, status, priority, assigneeType, assigneeId, assigneeName, extra) {
@@ -124,6 +124,12 @@
       automation_id: 'ap-drive-daily', updated_at: '2026-09-02T09:08:00Z'
     })
   ];
+
+  issues.push(
+    task(7, '补齐同名文件冲突处理', 'in_progress', 'high', 'member', 'u-linxiao', '林晓', {description:'移动或复制遇到同名文件时提供保留两份与取消路径；失败不删除原文件，在文件功能开发群复核。'}),
+    task(8, '验收批量文件操作反馈', 'todo', 'medium', 'member', 'u-hejing', '何静', {description:'覆盖部分成功、部分失败与无权限文件，逐项说明结果并允许重试失败项；在文件验收与反馈群记录复现步骤。'}),
+    task(9, '完善文件搜索与空状态说明', 'in_review', 'medium', 'member', 'u-wangyilin', '王宜林', {description:'区分无匹配结果、文件夹为空与无访问权限，搜索结果仅展示当前可访问文件；评审后补充验收记录。'})
+  );
 
   var agentTasks = {};
   agents.forEach(function (agent) {

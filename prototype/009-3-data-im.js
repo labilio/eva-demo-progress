@@ -182,3 +182,21 @@ window.__EVA_CONTACT_L2_DEPARTMENTS={
   'u-zhouyuan':'制造中心',
   'u-suhang':'研发中心'
 };
+
+// User-approved additional demo in the existing team-file project.
+window.__EVA_DRIVE_CHAT_DEMO = [
+  {id:'drive-product-design',name:'文件体验设计',threads:[{id:'drive-share-review',name:'分享链接权限评审'}],messages:{
+    'drive-product-design':[
+      {kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time:'09:10',text:'这一轮先收口分享权限和上传恢复。DRIVE-1 的方案评审意见放到子区，DRIVE-2 继续补断网后的状态说明。'},
+      {kind:'text',sender:{uid:'u-hejing',name:'何静'},time:'09:16',text:'分享链接需要明确有效期和撤销结果，不能让“能看文件”被理解成“加入来源群”。我把这点写进验收口径。'}],
+    'drive-share-review':[{kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time:'10:05',text:'DRIVE-1 评审结论：先支持查看权限；撤销后再次打开应提示链接失效，文件原有项目权限不变。待方案确认后再开发。'}]}},
+  {id:'drive-development',name:'文件功能开发',threads:[{id:'drive-upload-recovery',name:'上传失败与重试'}],messages:{
+    'drive-development':[
+      {kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time:'10:20',text:'DRIVE-3 的移动和复制先复用目标目录选择器。新增 DRIVE-7 跟进同名冲突处理，避免覆盖文件时没有确认。'},
+      {kind:'text',sender:{uid:'u-linxiao',name:'林晓'},time:'10:28',text:'先按保留两份和取消两条路径实现，失败时保留原文件。完成后交给验收群复核。'}],
+    'drive-upload-recovery':[{kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time:'11:00',text:'DRIVE-2 还缺客户端重启场景：重新打开后能看到失败原因和重试入口，不能显示上传成功。'}]}},
+  {id:'drive-acceptance',name:'文件验收与反馈',threads:[],messages:{
+    'drive-acceptance':[
+      {kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time:'14:00',text:'DRIVE-8 检查批量操作反馈，DRIVE-9 检查搜索和空状态。请记录操作步骤、实际结果和截图，暂不把待验证项标成通过。'},
+      {kind:'text',sender:{uid:'u-hejing',name:'何静'},time:'14:12',text:'收到。权限仍按 DRIVE-4 的矩阵检查，重点复核项目文件与来源群历史的隔离。'}]}}
+];

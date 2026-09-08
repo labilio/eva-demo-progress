@@ -257,6 +257,19 @@
       saved.seededOrgGroups=true;
       for(const g of orgChannels){saved.groups[g.id]={id:g.id,name:g.name,projectId:null,ownerId:'u-wangyilin',humans:[{id:'u-wangyilin',role:'member'}],cloneIds:[]};for(const t of g.threads||[])saved.threads[t.id]=g.id;}
     }
+    // One-time additive fixture migration; do not recreate removed demo groups.
+    const driveDemo=root.__EVA_DRIVE_CHAT_DEMO,driveProject=saved.projects['drive-design'];
+    if(driveDemo&&driveProject&&!saved.seededDriveDiscussionV1){
+      saved.messages||={};saved.threadDetails||={};
+      for(const g of driveDemo){
+        if(saved.groups[g.id])continue;
+        const humans=driveProject.humans.map(p=>({id:p.id,role:'member'}));
+        saved.groups[g.id]={id:g.id,name:g.name,projectId:'drive-design',ownerId:driveProject.ownerId,humans,cloneIds:[],employeeIds:[]};
+        for(const t of g.threads||[]){saved.threads[t.id]=g.id;saved.threadDetails[t.id]={...t,created_at:root.__EVA_DEMO_TIME?.T1};}
+        for(const [id,messages] of Object.entries(g.messages))saved.messages[id]=messages.filter(m=>humans.some(p=>p.id===m.sender.uid)).map(m=>({...m,sender:{...saved.people.find(p=>p.id===m.sender.uid),...m.sender}}));
+      }
+      saved.seededDriveDiscussionV1=true;
+    }
     // Reconcile only retired demo defaults; preserve user-edited names and active flags.
     for(const [id,oldName] of [['b-wangyilin','王宜林的分身'],['clone-linxiao','林晓的分身'],['clone-hejing','何静的分身']]){
       const c=saved.clones?.find(c=>c.id===id),seed=root.__EVA_MEMBERSHIP_CLONES?.find(c=>c.id===id);
@@ -265,13 +278,13 @@
     // Import the former project-directory preference once. Future pin changes
     // are owned by the member store and shared with the follow list.
     if(!saved.pinnedProjects){
-      let ids=['prod','official'];
+      let ids=['prod','drive-design'];
       try{
         const raw=root.localStorage.getItem('eva:pinned-project-ids:v3');
         const legacy=raw===null?root.localStorage.getItem('eva:pinned-project-ids:v2'):null;
-        const value=JSON.parse(raw??legacy??'["prod","official"]');
+        const value=JSON.parse(raw??legacy??'["prod","drive-design"]');
         ids=Array.isArray(value)?value.slice(0,6):ids;
-        if(raw===null&&ids.length===1&&ids[0]==='drive-design')ids=['prod','official'];
+        if(raw===null&&ids.length===1&&ids[0]==='drive-design')ids=['prod','drive-design'];
       }catch{}
       saved.pinnedProjects={'u-wangyilin':ids};
     }
