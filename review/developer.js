@@ -56,7 +56,7 @@ function render() {
   $('#rows').innerHTML = visible.map(row => `<tr data-id="${escape(row.id)}" class="${state.selected.has(row.id)?'is-selected':''}">
     <td><input type="checkbox" data-select="${escape(row.id)}" aria-label="选择批注 ${escape(row.seq)}" ${state.selected.has(row.id)?'checked':''}></td>
     <td>#${escape(row.seq)}</td><td>${escape(MENUS.find(([id])=>id===menuOf(row.page_path))[1])}</td>
-    <td><p class="body-text">${escape(row.body)}</p><span class="anchor-text" title="${escape(row.anchor?.quote || row.page_path)}">${escape(row.anchor?.quote || row.page_path)}</span></td>
+    <td><p class="body-text">${escape(row.body)}</p><a class="anchor-card" href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener" title="定位到原型中的修改位置">${icon('crosshair')}<span><span class="anchor-caption">修改位置</span><span class="anchor-text">${escape(row.anchor?.quote || row.page_path)}</span></span></a></td>
     <td>${escape(KIND_LABELS[row.kind]||row.kind)}</td><td><select class="status-label ${escape(row.status)}" data-row-status="${escape(row.id)}" aria-label="批注 ${escape(row.seq)} 状态" ${state.busy?'disabled':''}>${Object.entries(STATUS_LABELS).map(([value,label])=>`<option value="${value}"${row.status===value?' selected':''}>${label}</option>`).join('')}</select></td>
     <td>${escape(row.author_name)}</td><td>${escape(row.claimed_by||'未认领')}</td><td>${date(row.updated_at||row.created_at)}</td>
     <td><div class="cell-actions"><button type="button" data-detail="${escape(row.id)}">${icon('file-text')}详情${row.replies?.length?' · '+row.replies.length:''}</button><a href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener">${icon('external-link')}查看原型</a></div></td></tr>`).join('');
