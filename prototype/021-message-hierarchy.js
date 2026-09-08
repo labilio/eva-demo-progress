@@ -167,26 +167,6 @@
     header.insertAdjacentElement('afterend', bar);
   }
 
-  function syncDriveInspector(root) {
-    if (!root) return;
-    var inspector = root.querySelector('.eva-drive__inspector');
-    if (!inspector) return;
-    var populated = Boolean(inspector.querySelector('.eva-drive__meta'));
-    var dismissed = root.dataset.evaInspectorDismissed === 'true';
-    root.classList.toggle('eva-drive--inspector-open', populated && !dismissed);
-
-    var head = inspector.querySelector('.eva-drive__inspector-head');
-    if (populated && head && !head.querySelector('.eva-drive__inspector-close')) {
-      var close = document.createElement('button');
-      close.type = 'button';
-      close.className = 'eva-drive__inspector-close';
-      close.dataset.evaDriveInspectorClose = 'true';
-      close.textContent = '关闭';
-      close.setAttribute('aria-label', '关闭文件详情');
-      head.appendChild(close);
-    }
-  }
-
   function tuneDriveView() {
     var root = document.getElementById('eva-drive-root');
     if (!root || root.hidden) return;
@@ -195,14 +175,14 @@
       if (!button.hidden) button.hidden = true;
       button.setAttribute('aria-hidden', 'true');
     });
-    syncDriveInspector(root);
   }
 
   function fileNameFromCard(card) {
     return directText(card && card.querySelector('.wk-message-file-name'));
   }
 
-  function openDrive() {
+  function openDrive(record) {
+    if (record && typeof window.__evaOpenDriveFile === 'function' && window.__evaOpenDriveFile(record)) return;
     if (typeof window.__evaOpenDrive === 'function') {
       window.__evaOpenDrive('global', null, 'personal');
       return;
@@ -276,13 +256,7 @@
     target.click();
   });
 
-
-
-
-
-
   document.addEventListener('click', function (event) {
-    var root = document.getElementById('eva-drive-root');
     var spaceChild = event.target.closest('[data-eva-space-child]');
     if (spaceChild) {
       event.preventDefault();
@@ -294,22 +268,6 @@
       }
       queueTune();
       return;
-    }
-
-    if (event.target.closest('[data-eva-drive-inspector-close]')) {
-      if (root) {
-        root.dataset.evaInspectorDismissed = 'true';
-        root.classList.remove('eva-drive--inspector-open');
-      }
-      event.stopPropagation();
-      return;
-    }
-
-    if (root && event.target.closest('.eva-drive__row')) {
-      root.dataset.evaInspectorDismissed = 'false';
-    }
-    if (root && event.target.closest('[data-drive-scope]')) {
-      root.dataset.evaInspectorDismissed = 'true';
     }
   }, true);
 

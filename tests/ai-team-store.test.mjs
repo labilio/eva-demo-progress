@@ -120,6 +120,15 @@ test('review account has two assistants and two independently renameable persona
  s.savePersona({id:'persona-initial',name:'新分身名字'});assert.equal(s.getSnapshot().identities.find(i=>i.id==='persona-initial').name,'新分身名字');
 });
 
+test('AI 团队文件先留在会话中，不会由会话数据层直接写入文件库',()=>{
+ const snapshot=make().getSnapshot();
+ const message=snapshot.sessions.flatMap(session=>session.messages).find(item=>item.id==='ai-file-artifact-v1');
+ assert.equal(message.kind,'file');
+ assert.equal(message.file.id,'artifact:ai-general:morning-brief-v1');
+ assert.equal(message.file.name,'十分钟晨会提纲.docx');
+ assert.equal(Object.hasOwn(message,'savedFileId'),false);
+});
+
 test('隐藏本地助理入口留下的状态会恢复本地身份和独立首会话',()=>{
  const storage=memory();make({storage});const saved=JSON.parse(storage.getItem());
  const hiddenIds=new Set(saved.identities.filter(i=>i.role==='assistant').map(i=>i.id));

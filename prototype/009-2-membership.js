@@ -134,6 +134,14 @@
         state.directConversations[id]||={id,memberIds:[uid,target],lastAt:new Date().toISOString(),messages:[]};notify();return id;
       },
       directChannels(uid){return Object.values(state.directConversations||{}).filter(c=>c.memberIds.includes(uid)).map(c=>{const p=person(c.memberIds.find(id=>id!==uid));return p?{id:c.id,personId:p.id,name:p.name,chatType:'direct',members:2,unread:0,threads:[],lastAt:c.lastAt,identityAvatarUrl:p.id==='u-wangyilin'?root.__EVA_CURRENT_USER_PORTRAIT:root.EvaAvatar?.personUri(p.id)}:null;}).filter(Boolean);},
+      canReadDirect(id,uid){
+        if(!person(uid)||!String(id||'').startsWith('dm-'))return false;
+        const saved=state.directConversations?.[id];
+        if(saved)return saved.memberIds.includes(uid);
+        if(uid!=='u-wangyilin')return false;
+        const peer='u-'+String(id).slice(3);
+        return Boolean(person(peer));
+      },
       directMessages(uid,base={}){return {...base,...Object.fromEntries(Object.values(state.directConversations||{}).filter(c=>c.memberIds.includes(uid)).map(c=>[c.id,[...(base[c.id]||[]),...JSON.parse(JSON.stringify(c.messages))]]))};},
       directDraft(id,uid){const c=state.directConversations?.[id];return c?.memberIds.includes(uid)?c.drafts?.[uid]||'':'';},
       setDirectDraft(id,uid,text){const c=state.directConversations?.[id];if(!c||!c.memberIds.includes(uid))fail('无私聊访问权限');if((c.drafts?.[uid]||'')===text)return;c.drafts||={};c.drafts[uid]=text;notify();},
@@ -178,11 +186,14 @@
           const id=block.scopeId||Object.values(state.groups).find(g=>g.projectId==='prod'&&g.name===block.groupName)?.id;
           if(!id||!api.canRead(id,'u-wangyilin'))continue;
           const list=state.messages[id]||(state.messages[id]=[]);
-          block.messages.forEach(([senderId,time,text],index)=>{
-            const fixtureId=(id==='all:prod'?'supply-chat-v2:':'supply-chat-v1:')+id+':'+index;
+          block.messages.forEach((entry,index)=>{
+            const record=Array.isArray(entry)?{kind:'text',senderId:entry[0],time:entry[1],text:entry[2]}:entry;
+            const {senderId,time,text}=record;
+            const fixtureId=record.fixtureId||(id==='all:prod'?'supply-chat-v2:':'supply-chat-v1:')+id+':'+index;
             const projectAgent=senderId==='project-agent:prod'&&agentIn(id)?.projectId==='prod';
             if(list.some(m=>m.fixtureId===fixtureId)||(!projectAgent&&(!person(senderId)||!api.canRead(id,senderId))))return;
-            list.push({fixtureId,kind:'text',sender:projectAgent?agentSender('prod'):{...person(senderId),uid:senderId},time,text});changed=true;
+            const payload=JSON.parse(JSON.stringify(record));delete payload.fixtureId;delete payload.senderId;
+            list.push({...payload,fixtureId,kind:payload.kind||'text',sender:projectAgent?agentSender('prod'):{...person(senderId),uid:senderId},time,...(text===undefined?{}:{text})});changed=true;
           });
           if(block.notice&&!state.chatSettings[id]?.notice){state.chatSettings[id]={...state.chatSettings[id],notice:block.notice};changed=true;}
         }

@@ -90,7 +90,8 @@
 .eva-ai-team__identity-heading:focus-within .eva-ai-team__identity-action,
 .eva-ai-team__new-session.is-active { opacity: 1; pointer-events: auto; }
 .eva-ai-team__identity-action:hover { color: var(--eva-rail-primary); background: var(--eva-rail-selected); }
-.eva-ai-team__new-session.is-active { background: var(--eva-rail-selected); color: var(--eva-rail-primary); }
+.eva-ai-team__new-session.is-active { background: transparent; color: var(--eva-rail-secondary); }
+.eva-ai-team__new-session:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-action:focus-visible { opacity: 1; pointer-events: auto; outline: 2px solid var(--gds-color-action-primary); outline-offset: -2px; }
 .eva-ai-team__sidebar-header .eva-ai-team__new {
   background: var(--semi-color-text-0, #1c1f23);

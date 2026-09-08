@@ -87,11 +87,32 @@
       const s=useState(),people=s.people.filter(p=>p.active!==false&&p.id!==s.actorId&&(!projectId||s.projects[projectId]?.humans.some(m=>m.id===p.id)));
       return h(MemberPicker,{key:projectId+':'+s.actorId,title:'新建群聊',visible,withName:true,submit:'创建群聊',items:[...humanItems(people,projectId,true),...cloneItems(s.actorId,projectId)],onCancel:onClose,onSubmit:(chosen,name)=>{const id='group-'+Date.now().toString(36);store.transaction(staged=>{staged.createGroup(id,name,projectId,s.actorId,chosen.filter(p=>p.kind==='clone').map(p=>p.id));chosen.filter(p=>p.kind==='human').forEach(p=>staged.addMember(id,s.actorId,p.id));});onCreated(id);onClose();}});
     }
+    function FileLibrarySave({file,source,onClose,onSaved,allowedKinds}){
+      const s=useState(),actor=s.actorId;
+      R.useSyncExternalStore(files.subscribe,files.getSnapshot);
+      const allTargets=files.writableSpaces(actor),targets=allowedKinds?.length?allTargets.filter(item=>allowedKinds.includes(item.kind)):allTargets;
+      const defaultTarget=source?.projectId&&targets.some(item=>item.id===source.projectId)?source.projectId:files.personalSpace(actor);
+      const [target,setTarget]=R.useState(defaultTarget),[parentId,setParentId]=R.useState(0),[error,setError]=R.useState(''),[savedId,setSavedId]=R.useState(null);
+      R.useEffect(()=>{const next=source?.projectId&&targets.some(item=>item.id===source.projectId)?source.projectId:files.personalSpace(actor);setTarget(next);setParentId(0);setError('');setSavedId(null);},[file?.id,file?.name,source?.messageId,actor]);
+      const targetInfo=targets.find(item=>item.id===target),folders=target?files.list(target,actor).filter(item=>item.type==='folder'&&!item.deletedAt):[];
+      const folderName=id=>{const names=[];let current=folders.find(item=>item.id===id),guard=0;while(current&&guard++<20){names.unshift(current.name);current=folders.find(item=>item.id===current.parent_id);}return names.join(' / ');};
+      const folderOptions=[{value:0,label:'空间根目录'},...folders.map(item=>({value:item.id,label:folderName(item.id)}))];
+      const sourceLabel=source?.type==='ai-conversation'?'我的 AI 团队 · '+(source.identityName||'AI'):source?.type==='chat'?'私聊 · '+(source.senderName||source.conversationTitle||'会话成员'):'群聊 · '+(source?.groupName||source?.conversationTitle||'来源群');
+      const save=()=>{try{if(!target)throw Error('请选择目标空间');const id=files.saveConversationFile(actor,target,parentId,file,source);const record=files.snapshot(actor).find(item=>item.id===id);root.EvaFileMessage.markSaved(file,source,record);setSavedId(id);setError('');onSaved?.(record);}catch(e){setError(e.message||'保存失败');}};
+      const open=()=>{if(savedId&&typeof root.__evaOpenDriveFile==='function')root.__evaOpenDriveFile(savedId);onClose();};
+      return h(Modal,{className:'eva-members-modal eva-file-save-modal',title:savedId?'已存到文件库':'存到文件库',visible:!!file,onCancel:onClose,footer:null,width:520},file&&h(R.Fragment,null,
+        h('div',{className:'eva-file-save-modal__file'},h('strong',{title:file.name},file.name),h('span',null,sourceLabel)),
+        !savedId&&h(R.Fragment,null,
+          h('div',{className:'eva-members-field'},h('label',null,'目标空间'),h(Select,{className:'eva-members-select',value:target,onChange:value=>{setTarget(value);setParentId(0);setError('');},optionList:targets.map(item=>({value:item.id,label:item.name}))})),
+          h('div',{className:'eva-members-field'},h('label',null,'目标文件夹'),h(Select,{className:'eva-members-select',value:parentId,onChange:setParentId,optionList:folderOptions})),
+          targetInfo&&targetInfo.kind!=='personal'&&h('div',{className:'eva-members-notice'},h('strong',null,'保存后，目标空间成员可访问该文件'),h('p',null,'不会因此获得原会话、其他消息或其他附件的访问权限。')),
+          h('p',{className:'eva-members-muted'},'文件只有在你确认后才会存入文件库，系统关联由来源自动生成。')),
+        savedId&&h('div',{className:'eva-members-notice'},h('strong',null,'保存成功'),h('p',null,'已生成独立文件，并保留只读的来源关联。')),
+        error&&h('p',{role:'alert',className:'eva-members-error'},error),
+        h('div',{className:'eva-picker-footer'},h(Button,{onClick:onClose},savedId?'关闭':'取消'),h(Button,{theme:'solid',type:'primary',onClick:savedId?open:save},savedId?'打开所在位置':'确认保存'))));
+    }
     function FileTransfer({file,source,onClose}){
-      const s=useState(),[target,setTarget]=R.useState(null),[error,setError]=R.useState(''),[done,setDone]=R.useState(false);
-      R.useEffect(()=>{setError('');setDone(false);},[file,source?.groupId,s.actorId]);
-      const targets=Object.values(s.projects).filter(p=>store.canRead(p.id,s.actorId)),p=s.projects[target];
-      return h(Modal,{className:'eva-members-modal',title:done?'已转存到项目':'转存到项目',visible:!!file,onCancel:onClose,okText:done?'完成':'确认转存',cancelText:'取消',onOk:()=>{if(done){onClose();return;}try{if(!target)throw Error('请选择目标项目');files.transfer(s.actorId,target,file,source);setDone(true);setError('');}catch(e){setError(e.message);}}},file&&h(R.Fragment,null,h('h4',null,file.name),h('p',{className:'eva-members-muted'},'来源：'+(source?.groupName||'群聊')+(source?.threadName?' / 子区 '+source.threadName:'')+(source?.taskId?' / 任务 '+source.taskId:'')),!done&&h(Select,{className:'eva-members-select',placeholder:'选择已加入的项目',value:target,onChange:setTarget,optionList:targets.map(p=>({value:p.id,label:p.name}))}),p&&h('div',{className:'eva-members-notice'},h('strong',null,'共享范围：'+p.name),h('p',null,`${p.humans.length} 位人类、${p.cloneIds.length} 个分身可访问，后续随项目成员变化。`),h('p',null,'将生成当前文件版本的项目共享副本。来源群的聊天记录和其他文件仍按原权限访问。')),done&&h('p',null,'可在目标项目 → 团队文件中预览或下载。'),error&&h('p',{role:'alert',className:'eva-members-error'},error)));
+      return h(FileLibrarySave,{file,source:{...source,type:'group',conversationId:source?.threadId||source?.groupId,messageId:source?.messageId||((source?.threadId||source?.groupId)+':'+(file?.id||file?.name)),projectId:source?.projectId},allowedKinds:['project'],onClose});
     }
     function MentionPicker({scopeId,members:sourceMembers,visible,onClose,onChoose}){
       const s=useState(),members=sourceMembers||(scopeId&&store.canRead(scopeId,s.actorId)?store.groupMembers(scopeId):[]);
@@ -99,6 +120,6 @@
     }
     const cards=root.EvaIdentityCard.create({React:R,Modal,Button,BackIcon,useNavigate},store);
     const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,PlusIcon,CloseIcon,BackIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,useNavigate},store);
-    return {...cards,HumanIdentity,ChatSettings,AccountSwitcher,Members,CloneChoice,ActorPicker,useState,CreateGroup,FileTransfer,MentionPicker};
+    return {...cards,HumanIdentity,ChatSettings,AccountSwitcher,Members,CloneChoice,ActorPicker,useState,CreateGroup,FileLibrarySave,FileTransfer,MentionPicker};
   }};
 })(window);

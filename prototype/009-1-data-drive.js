@@ -157,4 +157,56 @@ window.__EVA_FILE_SAMPLE_URLS = {
 
 Object.assign(window.__EVA_FILE_SAMPLE_URLS, {"EVA-上传恢复排查清单.md": "prototype/assets/file-samples/EVA-上传恢复排查清单.md", "EVA-分享权限验收矩阵.csv": "prototype/assets/file-samples/EVA-分享权限验收矩阵.csv", "EVA-会议行动项模板.md": "prototype/assets/file-samples/EVA-会议行动项模板.md"});
 
+Object.assign(window.__EVA_FILE_SAMPLE_URLS, {
+  'A-2409现场复核清单.md': 'prototype/assets/file-samples/A-2409现场复核清单.md',
+  'A-2409排产影响测算.html': 'prototype/assets/file-samples/A-2409排产影响测算.html',
+  'A-2409临时放行评审纪要.docx': 'prototype/assets/file-samples/A-2409临时放行评审纪要.docx.html'
+});
+
 Object.assign(window.__EVA_FILE_SAMPLE_URLS, {"供应链晨会行动清单.md":"prototype/assets/file-samples/供应链晨会行动清单.md","A-2409整改证据检查表.csv":"prototype/assets/file-samples/A-2409整改证据检查表.csv","采购合同评审提纲.md":"prototype/assets/file-samples/采购合同评审提纲.md"});
+
+window.__EVA_FILE_DOWNLOAD_FALLBACK_URL = 'prototype/assets/file-samples/file-placeholder.txt';
+
+Object.assign(window.__EVA_FILE_SAMPLE_URLS, {
+  '项目复盘备忘.md': 'prototype/assets/file-samples/EVA-会议行动项模板.md',
+  '0905-供应链周会纪要.md': 'prototype/assets/file-samples/EVA-会议行动项模板.md',
+  'EVA-分享权限验收矩阵.xlsx': 'prototype/assets/file-samples/EVA-分享权限验收矩阵.csv',
+  '本季度间接采购需求清单.xlsx': 'prototype/assets/file-samples/EVA-分享权限验收矩阵.csv',
+  '核心供应商资质汇总.xlsx': 'prototype/assets/file-samples/EVA-分享权限验收矩阵.csv',
+  '秋季发布会素材清单.xlsx': 'prototype/assets/file-samples/EVA-分享权限验收矩阵.csv',
+  '合作方准入检查表.xlsx': 'prototype/assets/file-samples/EVA-分享权限验收矩阵.csv'
+});
+
+window.__EVA_FILE_PREVIEW_FIXTURES = Object.assign(window.__EVA_FILE_PREVIEW_FIXTURES || {}, {
+  'A-2409临时放行评审纪要.docx': {
+    pages: [
+      {kicker:'供应商质量评审',title:'A-2409 临时放行评审纪要',subtitle:'会议日期：2026-09-08 · 待评审',paragraphs:['A-2409 异常批次已隔离，供应商验证数据与现场复核仍待确认。本纪要用于记录事实、证据缺口和人工决策事项。'],sections:[{title:'一、评审结论',text:'当前资料不足以自动得出临时放行结论。质量复核和排产影响确认后，由王宜林作最终人工决定。'},{title:'二、执行条件',text:'上线前完成 100% 外观检查与关键尺寸复测；异常件单独隔离，并由 SQE 每日汇总复核结果。'}]},
+      {kicker:'会议纪要 · 第 2 页',title:'责任人与跟进计划',subtitle:'所有事项须在关闭前留存验证记录',paragraphs:['供应商需在两个工作日内提交 8D 初版，采购负责同步后续交付节奏，生产计划根据复测结果滚动调整。'],sections:[{title:'三、行动项',text:'林晓：完成复测清单；周远：确认补货节点；王宜林：组织 9 月 10 日关闭评审。'},{title:'四、签署',text:'会签尚未完成。质量复核人与项目负责人确认前，不下发放行或排产指令。'}]}
+    ]
+  },
+  'EVA-分享权限验收矩阵.xlsx': {
+    sheets: [
+      {name:'权限验收',columns:['场景','Owner','Manager','Editor','结果'],rows:[['查看与下载','允许','允许','允许','通过'],['上传与新建','允许','允许','允许','通过'],['成员管理','允许','允许','禁止','通过'],['永久删除','允许','允许','禁止','通过'],['转移所有权','允许','禁止','禁止','通过']]},
+      {name:'回归记录',columns:['日期','版本','执行人','通过率'],rows:[['09-05','V3.8','王宜林','100%'],['09-06','V3.9','何静','100%'],['09-07','V4.0','林晓','100%']]}
+    ]
+  },
+  'UI设计师发展前景.pptx': {
+    slides: [
+      {eyebrow:'2026 行业观察',title:'UI 设计师的发展前景',subtitle:'从界面执行走向体验决策',accent:'violet'},
+      {eyebrow:'01 · 行业变化',title:'交付物正在改变',subtitle:'团队更关注业务判断、系统一致性与落地效率',bullets:['AI 降低基础界面制作成本','复杂业务需要更强的信息架构能力','设计与产品、研发的边界继续融合'],accent:'blue'},
+      {eyebrow:'02 · 岗位路径',title:'三条可持续成长路线',subtitle:'专家、产品体验负责人、设计工程方向',metric:'3 条路径',accent:'orange'},
+      {eyebrow:'03 · 核心能力',title:'把能力建立在问题上',subtitle:'研究、决策、系统化与协作将成为共同底座',bullets:['定义问题','建立证据','推动决策','验证结果'],accent:'green'},
+      {eyebrow:'04 · 团队行动',title:'下一步从真实项目开始',subtitle:'用一个季度完成能力盘点和岗位升级试点',metric:'90 天计划',accent:'violet'},
+      {eyebrow:'结论',title:'界面能力仍重要，但不再是终点',subtitle:'持续创造可验证的体验价值',accent:'blue'}
+    ]
+  },
+  '项目复盘备忘.md': {
+    markdown:{title:'项目复盘备忘',summary:'记录本轮文件库改造中的关键判断、验证结果与后续行动。',sections:[{title:'本轮结论',paragraph:'文件预览与文件信息需要拆成两条清晰路径，用户点击文件名时只进入内容阅读。',items:['预览固定从右侧栏打开','点击内容区即可关闭预览','文件信息仅由三点菜单进入']},{title:'后续行动',paragraph:'补齐不同格式的演示内容，并用同一套验收口径覆盖个人文件和项目文件。',items:['检查 Word 分页效果','检查 Excel 横向滚动','检查 PPT 翻页与 ZIP 目录']}]}
+  },
+  '品牌视觉素材.zip': {
+    archive:{originalSize:'42.8 MB',compressedSize:'24.6 MB',entries:[{path:'品牌规范/',type:'folder',size:'—'},{path:'品牌规范/Logo 使用说明.pdf',type:'PDF',size:'2.4 MB'},{path:'Logo/Octo_Primary.svg',type:'SVG',size:'128 KB'},{path:'Logo/Octo_Monochrome.svg',type:'SVG',size:'96 KB'},{path:'发布物料/秋季发布会-KV.png',type:'PNG',size:'18.7 MB'},{path:'字体/README.txt',type:'TXT',size:'4 KB'}]}
+  },
+  '新供应商准入合规材料.zip': {
+    archive:{originalSize:'31.2 MB',compressedSize:'18 MB',entries:[{path:'01-企业资质/',type:'folder',size:'—'},{path:'01-企业资质/营业执照.pdf',type:'PDF',size:'3.1 MB'},{path:'02-质量体系/ISO9001.pdf',type:'PDF',size:'4.8 MB'},{path:'03-准入检查/现场审核表.xlsx',type:'XLSX',size:'680 KB'},{path:'04-整改记录/问题关闭说明.docx',type:'DOCX',size:'320 KB'}]}
+  }
+});

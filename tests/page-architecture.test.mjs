@@ -148,6 +148,23 @@ test('消息关注中的群聊可双击收缩子区并显示状态指示', () =>
   assert.match(hierarchyCss, /padding-inline-start:\s*calc\(var\(--eva-space-group-indent\) - var\(--gds-space-0-5\)\)/);
 });
 
+test('所有子区入口统一使用圆形气泡折角箭头图标', () => {
+  const imPatch = read('prototype/009-5-patch-im.js');
+  const { source } = createPatchedRuntime();
+
+  assert.match(imPatch, /统一子区图标/);
+  assert.match(source, /ThreadIcon=createLucideIcon\("message-circle-arrow-down-right"/);
+  for (const path of [
+    'M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719',
+    'M8.5 8.5V11a3 3 0 0 0 3 3h5',
+    'm14 11.5 2.5 2.5-2.5 2.5',
+  ]) assert.ok(source.includes(`d:"${path}"`), `统一子区图标缺少路径 ${path}`);
+  assert.doesNotMatch(source, /ThreadIcon=\(\{size:/);
+  assert.match(source, /title:"创建子区",icon:React\.createElement\(ThreadIcon,\{size:18\}\)/);
+  assert.match(source, /wk-thread-created-link"\},React\.createElement\(ThreadIcon,\{size:14/);
+  assert.doesNotMatch(source, /wk-thread-created-link"\},"🧵"/);
+});
+
 test('消息内嵌项目隐藏群聊标签并在会话选择时返回群聊', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
   const hierarchyCss = read('prototype/016-message-hierarchy.css');
@@ -159,10 +176,10 @@ test('消息内嵌项目隐藏群聊标签并在会话选择时返回群聊', ()
   assert.match(imPatch, /Za=\(ci,Zi\)=>\{setEvaInlineProjectId\(null\),xt\(ci\),Nt\(Zi\)/);
 });
 
-test('点击群聊内容区会关闭已打开的子区或聊天信息面板', () => {
+test('点击群聊内容区会关闭已打开的子区、聊天信息或文件预览面板', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
 
-  assert.match(imPatch, /ch-main__stream",onClick:ci=>\{\(Mt===\"threads\"\|\|Mt===\"info\"\)&&!ci\.target\.closest\(\"\.wk-messageinput-box, \.wk-contextmenus\"\)&&Dt\(\"none\"\)\}/);
+  assert.match(imPatch, /ch-main__stream",onClick:ci=>\{\(Mt===\"threads\"\|\|Mt===\"info\"\|\|Mt===\"file\"\)&&!ci\.target\.closest\?\.\(\"\.wk-messageinput-box, \.wk-contextmenus, \.wk-message-file\"\)/);
 });
 
 test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', () => {
@@ -346,22 +363,22 @@ test('个人 Eva GDS 设计采用规范首页、原生输入和单一生命周�
   const workspace = read('prototype/052-personal-eva-gds.js');
   const workspaceCss = read('prototype/051-personal-eva-gds.css');
   const componentCss = read('prototype/048-gds-components.css');
-  for (const text of ['你好，我是Eva同学', '调用技能与指令', '星睿智能体', '邮件操作', '数据分析', '技能开发', '知识助手']) {
+  for (const text of ['AI随行', '工作随心', '调用技能与指令', '星睿智能体', '邮件操作', '数据分析', '技能开发', '知识助手']) {
     assert.ok(workspace.includes(text), `GDS 首页缺少：${text}`);
   }
   assert.doesNotMatch(workspace, /百万亿Token激励计划|eva-personal-workspace__campaign/);
   assert.match(workspace, /<textarea class="eva-composer-prompt"/);
   assert.match(workspace, /event\.isComposing/);
   assert.match(workspace, /data-eva-selected-assistant/);
-  assert.match(workspace, /heroHTML\(\) \+ railHTML\(\)/);
+  assert.match(workspace, /heroHTML\(\) \+.*eva-personal-workspace__composer/);
   assert.match(workspace, /state === 'completed' \? '' : assistantRailHTML\(\)/);
   assert.match(workspace, /aria-activedescendant/);
   assert.match(workspace, /if \(hash\.indexOf\('#\/guid'\) === 0\) \{\s*selectedConversation = '';/);
   assert.match(workspaceCss, /width: min\(100%, var\(--eva-main-col-w\)\)/);
   assert.match(componentCss, /\.eva-composer-wrap\s*\{[^}]*width:\s*var\(--eva-main-col-w\);[^}]*height:\s*166px;/s);
   assert.match(componentCss, /\.eva-composer\s*\{[^}]*width:\s*768px;[^}]*height:\s*118px;/s);
-  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*height:\s*62px;/s);
-  assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*margin-top:\s*var\(--eva-space-4\)/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*height:\s*48px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*margin-top:\s*var\(--eva-space-1\)/s);
 });
 
 test('侧栏展开默认宽度为 180、折叠宽度为 80 且不渲染广告栏', () => {

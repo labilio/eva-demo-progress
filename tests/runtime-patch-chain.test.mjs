@@ -71,3 +71,13 @@ test('所有字符串替换统一经过注册器的锚点校验', () => {
     assert.equal(/source\s*=\s*source\.replace\(/.test(source), false, `${file} 绕过了 __evaCut 锚点校验`);
   }
 });
+
+test('群聊文件卡和历史消息缺少可选字段时不会导致消息页白屏', () => {
+  const runtime = createPatchedRuntime().source;
+
+  assert.equal(runtime.includes('location.hash.split("?")'), false, '文件卡仍直接读取可能被遮蔽的 location.hash');
+  assert.ok(runtime.includes('String(window.location?.hash||"").split("?")'), '文件卡没有安全读取当前路由');
+  assert.ok(runtime.includes('function evaRenderableMessage(message)'), '消息渲染缺少历史数据归一化');
+  assert.ok(runtime.includes('ci=evaRenderableMessage(ci);if(ci.kind==="divider")'), '归一化没有接入消息渲染入口');
+  assert.ok(runtime.includes('SENDERS[zs]?.color??"#8a8f99"'), '未知子区参与者仍会导致头像渲染异常');
+});

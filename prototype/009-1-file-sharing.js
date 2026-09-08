@@ -41,6 +41,9 @@
     file('lab-script','lab','客户XX公司销售话术.docx',131072,'销售话术专家','销售话术专家','2026-09-06T09:26:00+08:00',{type:'task',label:'任务 · 客户销售准备'},'专家任务产出，文件归属项目空间','lab-folder-delivery'),
     {id:'personal-brand',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'品牌视觉素材.zip',type:'blob',size:25794969,extension:'zip',creator:'王宜林',editor:'未编辑过',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-06T18:05:00+08:00',source:{type:'upload',label:'本地上传'},description:'个人空间中的品牌素材'},
     {id:'personal-notes',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'项目复盘备忘.md',type:'blob',size:18640,extension:'md',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-06T16:40:00+08:00',source:{type:'upload',label:'本地上传'},description:'个人空间文件'},
+    {id:'personal-word-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'A-2409临时放行评审纪要.docx',type:'blob',size:28416,extension:'docx',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T17:35:00+08:00',source:{type:'upload',label:'本地上传'},description:'供应商异常临时放行评审纪要'},
+    {id:'personal-sheet-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'EVA-分享权限验收矩阵.xlsx',type:'blob',size:48640,extension:'xlsx',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T16:20:00+08:00',source:{type:'upload',label:'本地上传'},description:'不同角色与分享范围的验收矩阵'},
+    {id:'personal-slides-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'UI设计师发展前景.pptx',type:'blob',size:2516582,extension:'pptx',creator:'王宜林',editor:'未编辑过',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T15:45:00+08:00',source:{type:'task',label:'Eva 任务产出'},description:'管理层同步使用的六页演示文稿'},
     sharedFolder('shared-brand-guides','shared:brand','品牌规范','王宜林','2026-09-06T16:20:00+08:00'),
     sharedFile('shared-brand-pdf','shared:brand','品牌使用说明.pdf',806912,'何静','何静','2026-09-06T18:05:00+08:00',{type:'library-copy',label:'从私聊保存 · 何静'},'保存到共享空间后的独立副本','shared-brand-guides'),
     sharedFile('shared-brand-assets','shared:brand','秋季发布会素材清单.xlsx',184320,'王宜林','王宜林','2026-09-07T09:15:00+08:00',{type:'upload',label:'王宜林本地上传'},'市场素材制作与发布进度'),
@@ -62,6 +65,9 @@
     'lab-script':{tags:['销售','客户'],systemRelations:[relation('task','LAB-12','客户销售准备','已完成 · 负责人：苏航')]},
     'personal-brand':{tags:['品牌','素材']},
     'personal-notes':{tags:['复盘']},
+    'personal-word-demo':{tags:['评审','纪要']},
+    'personal-sheet-demo':{tags:['权限','验收']},
+    'personal-slides-demo':{tags:['汇报','设计']},
     'shared-brand-pdf':{tags:['品牌','规范'],systemRelations:[relation('chat','dm:u-hejing','私聊 · 何静','来源文件')]},
     'shared-brand-assets':{tags:['市场','发布会']},
     'shared-partner-plan':{tags:['合作伙伴','方案'],systemRelations:[relation('group','partner-chat','合作伙伴沟通群','群聊 · 来源文件')]},
@@ -115,16 +121,68 @@
       const target=record(targetParentId);
       if(target.type!=='folder'||target.spaceId!==item.spaceId)fail('不能跨空间移动或复制');
     };
-    const descendants=id=>{const ids=new Set([id]);let changed=true;while(changed){changed=false;for(const item of records){if(ids.has(item.parent_id)&&!ids.has(item.id)){ids.add(item.id);changed=true;}}}return ids;};
+    const descendants=(id,spaceId)=>{const scope=spaceId??record(id).spaceId,ids=new Set([id]);let changed=true;while(changed){changed=false;for(const item of records){if(item.spaceId===scope&&ids.has(item.parent_id)&&!ids.has(item.id)){ids.add(item.id);changed=true;}}}return ids;};
+    const activeDescendants=(id,spaceId)=>{const scope=spaceId??record(id).spaceId,ids=new Set([id]);let changed=true;while(changed){changed=false;for(const item of records){if(item.spaceId===scope&&!item.deletedAt&&ids.has(item.parent_id)&&!ids.has(item.id)){ids.add(item.id);changed=true;}}}return ids;};
+    const isTrashRoot=item=>{
+      if(!item?.deletedAt)return false;
+      if(typeof item.directTrash==='boolean')return item.directTrash;
+      if(item.trashRootId)return item.trashRootId===item.id;
+      const parentId=item.originalParentId??item.parent_id??0;if(!parentId)return true;
+      const parent=records.find(candidate=>candidate.id===parentId&&candidate.spaceId===item.spaceId);
+      return !parent?.deletedAt;
+    };
+    const migrateLegacyTrashMetadata=()=>{
+      const pending=records.filter(item=>item.deletedAt&&!item.trashRootId);
+      const roots=pending.filter(item=>{const parentId=item.originalParentId??item.parent_id??0;return !parentId||!pending.some(candidate=>candidate.id===parentId&&candidate.spaceId===item.spaceId);});
+      for(const rootItem of roots){
+        const batchId='legacy:'+rootItem.id+':'+String(rootItem.deletedAt||'unknown'),ids=descendants(rootItem.id,rootItem.spaceId);
+        for(const target of pending){if(target.spaceId===rootItem.spaceId&&ids.has(target.id)&&!target.trashRootId){target.deletionBatchId=batchId;target.trashRootId=rootItem.id;target.directTrash=target.id===rootItem.id;}}
+      }
+    };
+    migrateLegacyTrashMetadata();
+    const trashUnitRecords=item=>{
+      if(item.deletionBatchId)return records.filter(target=>target.spaceId===item.spaceId&&target.deletedAt&&target.deletionBatchId===item.deletionBatchId&&target.trashRootId===item.id);
+      const ids=descendants(item.id,item.spaceId);return records.filter(target=>target.spaceId===item.spaceId&&target.deletedAt&&ids.has(target.id));
+    };
+    const requireTrashRoot=(item,message)=>{
+      if(!item.deletedAt)fail('文件不在回收站');
+      if(!isTrashRoot(item))fail(message||'请操作整个文件夹');
+    };
+    const restoredName=(item,parentId)=>{
+      const conflict=name=>records.some(candidate=>candidate.id!==item.id&&!candidate.deletedAt&&candidate.spaceId===item.spaceId&&candidate.parent_id===(parentId||0)&&candidate.name===name);
+      if(!conflict(item.name))return item.name;
+      const extension=item.type==='folder'?'':(String(item.name).match(/(\.[^.]+)$/)?.[1]||''),stem=extension?item.name.slice(0,-extension.length):item.name;
+      const base=stem.replace(/（已恢复(?: \d+)?）$/,'');let index=1,candidate='';
+      do{candidate=base+'（已恢复'+(index===1?'':' '+index)+'）'+extension;index++;}while(conflict(candidate));
+      return candidate;
+    };
     const shortcutSource=item=>item.type==='shortcut'?records.find(candidate=>candidate.id===item.sourceFileId)||null:null;
     const shortcutStatus=(item,actorId)=>{
       if(item.type!=='shortcut')return'available';
       const source=shortcutSource(item);if(!source||source.deletedAt)return'missing';
       return role(source.spaceId,actorId)?'available':'forbidden';
     };
+    const sourceReadable=(item,actorId)=>{
+      if(item.source?.type==='ai-conversation-copy')return item.source.ownerId===actorId;
+      if(item.source?.type==='chat-copy')return Boolean(membership.canReadDirect?.(item.source.conversationId,actorId));
+      if(item.source?.type==='group-copy')return Boolean(membership.canRead(item.source.threadId||item.source.groupId||item.source.conversationId,actorId));
+      return true;
+    };
     const visibleRecord=(item,actorId)=>{
       const value=clone(item),agent=membership.projectAgent?.(item.projectId||item.spaceId);
       if(agent)for(const key of ['creator','editor','createdBy','updatedBy'])if(root.EvaAIIdentity.projectAgentLegacyNames({name:agent.name.replace(/ · 项目管家$/,'')}).includes(value[key]))value[key]=agent.name;
+      delete value.identity;
+      if(actorId&&!sourceReadable(item,actorId)){
+        const sourceType=item.source?.type;
+        value.source={type:sourceType,label:sourceType==='ai-conversation-copy'?'从 AI 会话保存':sourceType==='chat-copy'?'从私聊保存':'从群聊保存'};
+        value.systemRelations=(value.systemRelations||[]).map(itemRelation=>{
+          if(itemRelation.type==='ai-conversation')return{type:'ai-conversation',id:null,label:'来源 AI 会话',meta:'你无权访问原会话',restricted:true,navigable:false};
+          if(itemRelation.type==='chat')return{type:'chat',id:null,label:'来源私聊',meta:'你无权访问原会话',restricted:true,navigable:false};
+          if(itemRelation.type==='group')return{type:'group',id:null,label:'来源群聊',meta:'你无权访问来源消息',restricted:true,navigable:false};
+          return itemRelation;
+        });
+        delete value.conversationArtifact;
+      }
       if(item.type!=='shortcut'||!actorId)return value;
       const status=shortcutStatus(item,actorId),source=shortcutSource(item);value.shortcutStatus=status;
       if(status==='available'){
@@ -135,6 +193,22 @@
       return value;
     };
     const normalizeTags=value=>Array.from(new Set((Array.isArray(value)?value:String(value||'').split(/[，,]/)).map(tag=>String(tag).trim()).filter(Boolean))).slice(0,8).map(tag=>tag.slice(0,20));
+    const conversationReadable=(source,actorId)=>{
+      if(source?.type==='ai-conversation')return Boolean(membership.person(actorId)&&source.ownerId===actorId);
+      if(source?.type==='chat')return Boolean(membership.canReadDirect?.(source.conversationId,actorId));
+      if(source?.type==='group')return Boolean(membership.canRead(source.threadId||source.groupId||source.conversationId,actorId));
+      return false;
+    };
+    const conversationIdentity=(spaceId,parentId,sourceFile,source)=>JSON.stringify([
+      spaceId,parentId||0,source.type,source.ownerId||null,source.conversationId||source.groupId||null,
+      source.messageId,sourceFile.id||sourceFile.attachmentId||(source.messageId+':'+sourceFile.name),sourceFile.version||1
+    ]);
+    const availableName=(spaceId,parentId,name)=>{
+      const occupied=new Set(records.filter(item=>!item.deletedAt&&item.spaceId===spaceId&&item.parent_id===(parentId||0)).map(item=>item.name));
+      if(!occupied.has(name))return name;
+      const match=String(name).match(/^(.*?)(\.[^.]*)?$/),base=match?.[1]||name,suffix=match?.[2]||'';
+      let index=2,candidate;do{candidate=base+' ('+index+++')'+suffix;}while(occupied.has(candidate));return candidate;
+    };
     const spaceLabel=(spaceId,actorId)=>{
       if(spaceId===personalSpace(actorId))return'个人空间';
       const shared=sharedSpace(spaceId);if(shared)return shared.name;
@@ -175,6 +249,8 @@
         }
         return clone(item.systemRelations||[]).map(itemRelation=>{
           if(itemRelation.type==='group'&&itemRelation.id&&!membership.canRead(itemRelation.id,actorId))return {...itemRelation,label:'来源群聊',meta:'你无权访问来源消息',restricted:true};
+          if(itemRelation.type==='chat'&&itemRelation.id&&!membership.canReadDirect?.(itemRelation.id,actorId))return{type:'chat',id:null,label:'来源私聊',meta:'你无权访问原会话',restricted:true,navigable:false};
+          if(itemRelation.type==='ai-conversation'&&itemRelation.target?.ownerId!==actorId)return{type:'ai-conversation',id:null,label:'来源 AI 会话',meta:'你无权访问原会话',restricted:true,navigable:false};
           return itemRelation;
         });
       },
@@ -182,6 +258,8 @@
         const item=typeof idOrRecord==='string'?record(idOrRecord):idOrRecord;
         if(item.type==='shortcut'){const info=api.shortcutInfo(item,actorId);return info.status==='available'?'快捷方式 · '+info.sourceSpaceName:info.statusLabel;}
         if(item.source?.groupId&&!membership.canRead(item.source.groupId,actorId))return'从群聊保存';
+        if(item.source?.type==='chat-copy'&&!membership.canReadDirect?.(item.source.conversationId,actorId))return'从私聊保存';
+        if(item.source?.type==='ai-conversation-copy'&&item.source.ownerId!==actorId)return'从 AI 会话保存';
         return item.source?.label||'空间内创建';
       },
       sharedSpaces(actorId){return clone(sharedSpaces.filter(space=>space.members.some(member=>member.id===actorId)));},
@@ -215,7 +293,10 @@
         if(!role(spaceId,actorId))return[];
         return clone(records.filter(item=>item.spaceId===spaceId&&(options.deleted?Boolean(item.deletedAt):!item.deletedAt)).map(item=>visibleRecord(item,actorId)));
       },
-      trashList(spaceId,actorId){requireAction('view-trash',spaceId,actorId);return clone(records.filter(item=>item.spaceId===spaceId&&item.deletedAt).map(item=>visibleRecord(item,actorId)));},
+      trashList(spaceId,actorId){
+        requireAction('view-trash',spaceId,actorId);
+        return clone(records.filter(item=>item.spaceId===spaceId&&isTrashRoot(item)).map(item=>({...visibleRecord(item,actorId),trashedItemCount:Math.max(0,trashUnitRecords(item).length-1)})));
+      },
       all(actorId){return clone(records.filter(item=>!item.deletedAt&&Boolean(role(item.spaceId,actorId))).map(item=>visibleRecord(item,actorId)));},
       createFolder(actorId,spaceId,name,parentId=0){
         requireAction('create-folder',spaceId,actorId);name=String(name||'').trim();if(!name)fail('请输入文件夹名称');
@@ -231,6 +312,39 @@
       move(actorId,id,parentId=0){const item=record(id);requireAction('move',item.spaceId,actorId);if(id===parentId||descendants(id).has(parentId))fail('不能移动到自身或子文件夹');ensureSameSpace(item,parentId);item.parent_id=parentId||0;item.updatedBy=actorName(actorId);item.editor=actorName(actorId);item.updated_at=stamp();notify();},
       updateTags(actorId,id,tags){
         const item=record(id);requireAction('edit-tags',item.spaceId,actorId);if(item.type==='folder')fail('文件夹无需设置标签');item.tags=normalizeTags(tags);notify();
+      },
+      findConversationFile(actorId,sourceFile,source){
+        if(!sourceFile?.name||!source?.messageId)return null;
+        const fileIdentity=sourceFile.id||sourceFile.attachmentId||(source.messageId+':'+sourceFile.name),sourceProjectId=source.type==='group'&&source.projectId?source.projectId:null;
+        const found=records.find(item=>!item.deletedAt&&item.conversationArtifact&&item.conversationArtifact.sourceType===source.type&&item.conversationArtifact.conversationId===(source.conversationId||source.groupId)&&item.conversationArtifact.messageId===source.messageId&&item.conversationArtifact.fileIdentity===fileIdentity&&(item.sourceVersion||1)===(sourceFile.version||1)&&(!sourceProjectId||item.spaceId===sourceProjectId)&&Boolean(role(item.spaceId,actorId)));
+        return found?clone(found):null;
+      },
+      saveConversationFile(actorId,targetSpaceId,targetParentId,sourceFile,source){
+        if(!sourceFile?.name)fail('文件不存在');
+        if(!source?.messageId||!['group','chat','ai-conversation'].includes(source.type))fail('文件来源信息不完整');
+        if(!conversationReadable(source,actorId))fail('你无权访问来源会话，不能保存此文件');
+        requireAction('upload',targetSpaceId,actorId);
+        const parentId=targetParentId||0,targetProbe={spaceId:targetSpaceId};ensureSameSpace(targetProbe,parentId);
+        const identity=conversationIdentity(targetSpaceId,parentId,sourceFile,source),old=records.find(item=>!item.deletedAt&&item.identity===identity);
+        if(old)return old.id;
+        const now=stamp(),area=areaForSpace(targetSpaceId),name=availableName(targetSpaceId,parentId,String(sourceFile.name));
+        const conversationId=source.conversationId||source.groupId,fileIdentity=sourceFile.id||sourceFile.attachmentId||(source.messageId+':'+sourceFile.name);
+        const target={ownerId:source.ownerId||null,conversationKind:source.conversationKind||source.type,identityId:source.identityId||null,sessionId:source.sessionId||conversationId,messageId:source.messageId,groupId:source.groupId||null,threadId:source.threadId||null};
+        let sourceRecord,systemRelations;
+        if(source.type==='ai-conversation'){
+          sourceRecord={type:'ai-conversation-copy',label:'从我的 AI 团队保存',ownerId:source.ownerId,conversationId,identityId:source.identityId||null,identityName:source.identityName||'AI'};
+          systemRelations=[{...relation('ai-conversation',conversationId,source.conversationTitle||'AI 会话',(source.identityName||'AI')+' · 我的 AI 团队'),target,navigable:true}];
+        }else if(source.type==='chat'){
+          sourceRecord={type:'chat-copy',label:'从私聊保存',conversationId,senderId:source.senderId||null,senderName:source.senderName||null};
+          systemRelations=[{...relation('chat',conversationId,source.conversationTitle||'来源私聊',(source.senderName||'会话成员')+' · 来源文件'),target,navigable:true}];
+        }else{
+          const groupId=source.groupId||conversationId;
+          sourceRecord={type:'group-copy',label:'从群聊保存',groupId,groupName:source.groupName||source.conversationTitle||'来源群',conversationId,threadId:source.threadId||null,threadName:source.threadName||null,taskId:source.taskId||sourceFile.taskId||null};
+          systemRelations=[{...relation('group',groupId,source.groupName||source.conversationTitle||'来源群','群聊 · 来源文件'),target,navigable:true}];
+          if(sourceRecord.taskId)systemRelations.push(relation('task',sourceRecord.taskId,'任务 · '+sourceRecord.taskId,'来源任务'));
+        }
+        const id='saved-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),item={id,identity,spaceId:targetSpaceId,projectId:projectForSpace(targetSpaceId),area,parent_id:parentId,name,type:'blob',size:Number(sourceFile.size||0),extension:sourceFile.extension||ext(name),sourceVersion:sourceFile.version||1,sourceFileName:sourceFile.sourceFileName||sourceFile.name,previewUrl:sourceFile.previewUrl||null,url:sourceFile.url||null,source:sourceRecord,systemRelations,tags:normalizeTags(sourceFile.tags||[]),conversationArtifact:{sourceType:source.type,conversationId,messageId:source.messageId,fileIdentity},creator:actorName(actorId),editor:'未编辑过',createdBy:actorName(actorId),updatedBy:actorName(actorId),createdAt:now,updated_at:now,description:'从会话手动保存到文件库的独立文件'};
+        records.unshift(item);notify();return id;
       },
       createShortcut(actorId,sourceId,targetSpaceId,targetParentId=0){
         const source=record(sourceId);if(source.type==='folder')fail('当前版本不支持文件夹快捷方式');if(source.type==='shortcut')fail('不能为快捷方式再次创建快捷方式');if(source.deletedAt)fail('源文件已进入回收站');
@@ -251,9 +365,26 @@
         }
         notify();return mapping.get(id);
       },
-      trash(actorId,id){const item=record(id);requireAction('trash',item.spaceId,actorId);const when=stamp(),ids=descendants(id);for(const target of records){if(ids.has(target.id)){target.deletedAt=when;target.deletedBy=actorName(actorId);target.originalParentId=target.parent_id;}}notify();},
-      restore(actorId,id){const item=record(id);requireAction('restore',item.spaceId,actorId);const ids=descendants(id),restoreParent=item.originalParentId||0;for(const target of records){if(ids.has(target.id)){delete target.deletedAt;delete target.deletedBy;delete target.originalParentId;}}item.parent_id=restoreParent;notify();},
-      removeForever(actorId,id){const item=record(id);requireAction('delete-forever',item.spaceId,actorId);const ids=descendants(id);records=records.filter(target=>!ids.has(target.id));notify();},
+      trash(actorId,id){
+        const item=record(id);requireAction('trash',item.spaceId,actorId);if(item.deletedAt)fail('文件已在回收站');
+        const when=stamp(),batchId='trash:'+id+':'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),ids=activeDescendants(id,item.spaceId);
+        for(const target of records){if(ids.has(target.id)){target.deletedAt=when;target.deletedBy=actorName(actorId);target.originalParentId=target.parent_id;target.deletionBatchId=batchId;target.trashRootId=id;target.directTrash=target.id===id;}}
+        notify();
+      },
+      restore(actorId,id){
+        const item=record(id);requireAction('restore',item.spaceId,actorId);requireTrashRoot(item,'请恢复整个文件夹');
+        const unit=trashUnitRecords(item),originalParentId=item.originalParentId||0,parent=originalParentId?records.find(candidate=>candidate.id===originalParentId):null;
+        const parentAvailable=Boolean(parent&&!parent.deletedAt&&parent.type==='folder'&&parent.spaceId===item.spaceId),restoreParent=parentAvailable?originalParentId:0,restoredToRoot=Boolean(originalParentId&&!parentAvailable);
+        item.name=restoredName(item,restoreParent);
+        for(const target of unit){delete target.deletedAt;delete target.deletedBy;delete target.originalParentId;delete target.deletionBatchId;delete target.trashRootId;delete target.directTrash;}
+        item.parent_id=restoreParent;notify();return{restoredToRoot,parentId:restoreParent,restoredCount:unit.length};
+      },
+      removeForever(actorId,id){
+        const item=record(id);requireAction('delete-forever',item.spaceId,actorId);requireTrashRoot(item);
+        const unit=trashUnitRecords(item),ids=new Set(unit.map(target=>target.id));
+        for(const target of records){if(target.spaceId===item.spaceId&&!target.deletedAt&&ids.has(target.parent_id))target.parent_id=0;}
+        records=records.filter(target=>!(target.deletedAt&&ids.has(target.id)));notify();return{removedCount:unit.length};
+      },
       resetProjectDemo(projectId){records=records.filter(r=>r.projectId!==projectId);records.push(...clone(resetSeed.filter(r=>r.projectId===projectId)).map(normalizeRecord));notify();},
       transfer(actorId,projectId,sourceFile,source){
         if(!membership.canRead(source.groupId,actorId))fail('你已不在来源群，无法转存此文件');
@@ -274,8 +405,11 @@
   }
 
   function bootstrap(membership){
-    const key='eva:file-store:v5';let saved,spaces;
-    try{const value=JSON.parse(root.localStorage.getItem(key));if(value?.schema===5&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;}}catch{}
+    const key='eva:file-store:v6';let saved,spaces,previewDemoInitialized=false;
+    try{const value=JSON.parse(root.localStorage.getItem(key));if(value?.schema===6&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;previewDemoInitialized=true;}}catch{}
+    if(!saved){
+      try{const value=JSON.parse(root.localStorage.getItem('eva:file-store:v5'));if(value?.schema===5&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;}}catch{}
+    }
     if(!saved){
       saved=clone(DEFAULT_RECORDS);spaces=clone(DEFAULT_SHARED_SPACES);
       try{
@@ -295,7 +429,10 @@
       }catch{}
       try{const legacy=JSON.parse(root.localStorage.getItem('eva:shared-files:v1'));if(Array.isArray(legacy))saved.push(...legacy.map(item=>({...item,spaceId:item.projectId,area:'project'})));}catch{}
     }
-    return create(membership,saved,(records,sharedSpaces)=>{try{root.localStorage.setItem(key,JSON.stringify({schema:5,records,sharedSpaces}));}catch{}},DEFAULT_RECORDS,spaces||DEFAULT_SHARED_SPACES);
+    const previewDemoIds=new Set(['personal-word-demo','personal-sheet-demo','personal-slides-demo']);
+    const existingIds=new Set(saved.map(item=>item.id));
+    DEFAULT_RECORDS.filter(item=>!previewDemoInitialized&&previewDemoIds.has(item.id)&&!existingIds.has(item.id)).forEach(item=>saved.push(clone(item)));
+    return create(membership,saved,(records,sharedSpaces)=>{try{root.localStorage.setItem(key,JSON.stringify({schema:6,records,sharedSpaces}));}catch{}},DEFAULT_RECORDS,spaces||DEFAULT_SHARED_SPACES);
   }
 
   root.EvaFileSharing=Object.freeze({create,bootstrap,DEFAULT_RECORDS:clone(DEFAULT_RECORDS),DEFAULT_SHARED_SPACES:clone(DEFAULT_SHARED_SPACES)});

@@ -27,7 +27,7 @@
 
 /* Ownership is contextual metadata, independent from the identity name and AI badge. */
 .eva-identity-owner { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--semi-color-text-2); font-weight: 400; }
-.eva-identity-owner--inline { flex: 0 1 auto; min-width: 3em; max-width: 40%; font-size: var(--gds-type-label-font-size); }
+.eva-identity-owner--inline { flex: 0 1 auto; min-width: 3em; font-size: var(--gds-type-label-font-size); }
 .eva-identity-copy { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
 .eva-identity-owner--candidate { display: block; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); text-align: left; }
 .eva-identity-owner--detail { font-size: var(--gds-type-label-font-size); }
