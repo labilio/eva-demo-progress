@@ -10,8 +10,8 @@ test('review comments use an independent hidden launcher instead of Eva feedback
   assert.match(source, /data-review-launcher/);
   assert.doesNotMatch(source, /label === ['"]反馈问题['"]/);
   assert.match(source, /<aside[^>]*class="eva-review-panel"[^>]*hidden[^>]*aria-label="原型批注"/);
-  assert.match(source, /role="radiogroup"[^>]*aria-label="全局批注显示"/);
-  assert.match(source, /全部查看[\s\S]*仅已确认[\s\S]*关闭批注/);
+  assert.match(source, /role="switch" data-review-markers/);
+  assert.doesNotMatch(source, /data-review-pin-mode/);
   assert.match(source, /class="eva-review-picker-shield"/);
   assert.match(source, /document\.elementFromPoint\(x, y\)/);
   assert.doesNotMatch(source, /stopImmediatePropagation/);
@@ -99,10 +99,10 @@ test('cross-page locating waits for the destination route surface before restori
   assert.match(source, /if \(!await waitForRouteSurface\(row\)\) return toast\(['"]页面切换未完成，请重试['"]\)/);
 });
 
-test('review panel and launcher can move, collapse, hide, and restore without changing shared data', () => {
+test('review panel and launcher can move and collapse with one close action without changing shared data', () => {
   assert.match(source, /data-review-drag-handle/);
-  assert.match(source, /data-review-hide/);
-  assert.match(source, /data-review-restore/);
+  assert.doesNotMatch(source, /data-review-hide/);
+  assert.doesNotMatch(source, /data-review-restore/);
   assert.match(source, /eva-review-panel-position/);
   assert.match(source, /eva-review-launcher-position/);
   assert.match(source, /eva-review-entry-hidden/);

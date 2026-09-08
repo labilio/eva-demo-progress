@@ -23,6 +23,7 @@ const STATUSES = {
   doing: '原型修改中',
   done: '原型已改完',
 };
+if (state.pinMode === 'approved') state.pinMode = 'all';
 const savedStatusFilter = localStorage.getItem('eva-review-status-filter');
 state.statusFilter = Object.hasOwn(STATUSES, savedStatusFilter) ? savedStatusFilter : 'all';
 
@@ -156,17 +157,10 @@ function ensureUI() {
     <div class="eva-review-hover" data-review-ui hidden></div>
     <div class="eva-review-picker-shield" data-review-ui hidden aria-label="选择批注位置"></div>
     <button type="button" class="eva-review-launcher" data-review-ui data-review-launcher aria-expanded="false" aria-controls="eva-review-panel">${icon('comment',15)}<span>批注</span></button>
-    <button type="button" class="eva-review-restore" data-review-ui data-review-restore hidden aria-label="显示批注">${icon('eye',15)}</button>
     <aside id="eva-review-panel" class="eva-review-panel" data-review-ui hidden aria-label="原型批注">
-      <header class="eva-review-head" data-review-drag-handle><div><strong>批注</strong><a data-review-developer href="/review/developer.html" target="_blank" rel="noopener" title="勾选批注，复制修改提示词给 AI（新页面）">${window.__evaLucide('external-link',{size:13,strokeWidth:1.8})}开发工作台</a></div><div class="eva-review-head-actions"><div class="eva-review-updates"><button type="button" data-review-load-updates>检查更新</button><span data-review-update-status role="status" aria-live="polite"></span></div><select class="eva-review-status-filter" data-review-status-filter aria-label="筛选批注状态"><option value="all">全部状态</option>${Object.entries(STATUSES).map(([value, label]) => `<option value="${value}"${state.statusFilter === value ? ' selected' : ''}>${label}</option>`).join('')}</select><button type="button" class="eva-review-icon-button" data-review-hide aria-label="隐藏批注入口">${icon('eyeOff')}</button><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
-      <div class="eva-review-toolbar">
-        <button type="button" class="eva-review-primary" data-review-add>${icon('add')}添加批注</button>
-      </div>
-      <div class="eva-review-visibility" role="radiogroup" aria-label="全局批注显示">
-        <button type="button" data-review-pin-mode="all" aria-pressed="${state.pinMode === 'all'}">全部查看</button>
-        <button type="button" data-review-pin-mode="approved" aria-pressed="${state.pinMode === 'approved'}">仅已确认</button>
-        <button type="button" data-review-pin-mode="off" aria-pressed="${state.pinMode === 'off'}">关闭批注</button>
-      </div>
+      <header class="eva-review-head" data-review-drag-handle><strong>批注</strong><div class="eva-review-head-actions"><a data-review-developer href="/review/developer.html" target="_blank" rel="noopener" title="勾选批注，复制修改提示词给 AI（新页面）">${window.__evaLucide('external-link',{size:13,strokeWidth:1.8})}开发工作台</a><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
+      <div class="eva-review-toolbar"><button type="button" class="eva-review-primary" data-review-add>${icon('add')}添加批注</button><div class="eva-review-updates"><button type="button" data-review-load-updates>检查更新</button><span data-review-update-status role="status" aria-live="polite"></span></div></div>
+      <div class="eva-review-filters"><label>状态<select class="eva-review-status-filter" data-review-status-filter aria-label="筛选批注状态"><option value="all">全部状态</option>${Object.entries(STATUSES).map(([value,label])=>`<option value="${value}"${state.statusFilter===value?' selected':''}>${label}</option>`).join('')}</select></label><label class="eva-review-marker-toggle"><input type="checkbox" role="switch" data-review-markers ${state.pinMode!=='off'?'checked':''}>页面标记</label></div>
       <div class="eva-review-list"></div>
     </aside>
     <div class="eva-review-dialog" data-review-ui hidden role="dialog" aria-modal="true" aria-labelledby="eva-review-title">
@@ -187,13 +181,11 @@ function ensureUI() {
     state.statusFilter = Object.hasOwn(STATUSES, event.target.value) ? event.target.value : 'all';
     localStorage.setItem('eva-review-status-filter', state.statusFilter);
     document.querySelector('.eva-review-list').scrollTop = 0;
-    renderList();
+    renderList(); schedulePins();
   };
-  document.querySelector('[data-review-hide]').onclick = hideReviewEntry;
-  document.querySelector('[data-review-restore]').onclick = restoreReviewEntry;
   document.querySelector('[data-review-add]').onclick = startPicking;
   document.querySelectorAll('[data-review-cancel]').forEach(button => button.onclick = closeDialog);
-  document.querySelectorAll('[data-review-pin-mode]').forEach(button => button.onclick = () => setPinMode(button.dataset.reviewPinMode));
+  document.querySelector('[data-review-markers]').onchange = event => setPinMode(event.target.checked ? 'all' : 'off');
   document.querySelector('[data-review-change-author]').onclick = () => { localStorage.removeItem('eva-review-author'); renderIdentity({ focus:true }); };
   const pickerShield = document.querySelector('.eva-review-picker-shield');
   pickerShield.onpointermove = event => updatePickerTarget(event.clientX, event.clientY);
@@ -249,18 +241,8 @@ function bindFloatingDrag(element, handle, storageKey) {
 }
 
 function syncReviewEntryVisibility() {
-  const hidden = localStorage.getItem('eva-review-entry-hidden') === 'true';
-  document.querySelector('[data-review-restore]').hidden = !hidden;
-  if (hidden) { document.querySelector('[data-review-launcher]').hidden = true; document.querySelector('.eva-review-panel').hidden = true; }
-}
-
-function hideReviewEntry() {
-  localStorage.setItem('eva-review-entry-hidden', 'true'); cancelPicking(); syncReviewEntryVisibility();
-}
-
-function restoreReviewEntry() {
+  // Retire the old hidden-entry preference: closing now only collapses the panel.
   localStorage.removeItem('eva-review-entry-hidden');
-  document.querySelector('[data-review-restore]').hidden = true; document.querySelector('[data-review-launcher]').hidden = false;
 }
 
 function renderIdentity({ focus = false } = {}) {
@@ -379,15 +361,12 @@ function renderList() {
     .filter(item => item.getBoundingClientRect().bottom > listTop)
     .map(item => ({ id: item.dataset.reviewItem, offset: item.getBoundingClientRect().top - listTop }));
   const rows = state.rows
-    .filter(row => state.pinMode === 'all' || (state.pinMode === 'approved' && row.status === 'approved'))
     .filter(row => state.statusFilter === 'all' || row.status === state.statusFilter)
     .sort((a,b) => Number(b.seq || 0) - Number(a.seq || 0));
   if (!rows.length) {
-    list.innerHTML = state.pinMode === 'off'
-      ? '<div class="eva-review-empty"><strong>批注已关闭</strong><span>切换到“全部查看”或“仅已确认”即可恢复。</span></div>'
-      : state.statusFilter !== 'all'
-        ? '<div class="eva-review-empty"><strong>当前范围内没有此状态的批注</strong><span>可切换状态或选择“全部查看”。</span></div>'
-      : '<div class="eva-review-empty"><strong>这里还没有批注</strong><span>点击“添加批注”，再选择页面中的具体位置。</span></div>';
+    list.innerHTML = state.statusFilter !== 'all'
+      ? '<div class="eva-review-empty"><strong>没有此状态的批注</strong><span>切换为“全部状态”查看其他批注。</span></div>'
+      : '<div class="eva-review-empty"><strong>这里还没有批注</strong><span>点击“添加批注”，选择页面中的具体位置。</span></div>';
     return;
   }
   const { pending, completed } = partitionCommentsByCompletion(rows);
@@ -668,10 +647,9 @@ function waitForAnchor(anchor, attempts = 40) {
 }
 
 function setPinMode(mode) {
-  state.pinMode = ['all', 'approved', 'off'].includes(mode) ? mode : 'all';
-  document.querySelectorAll('[data-review-pin-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.reviewPinMode === state.pinMode)));
+  state.pinMode = mode === 'off' ? 'off' : 'all';
+  document.querySelector('[data-review-markers]').checked = state.pinMode !== 'off';
   localStorage.setItem('eva-review-pin-mode', state.pinMode);
-  renderList();
   schedulePins();
 }
 
@@ -681,7 +659,7 @@ function schedulePins() { cancelAnimationFrame(pinFrame); pinFrame = requestAnim
 function renderPins() {
   const layer = document.querySelector('.eva-review-pin-layer'); if (!layer) return;
   layer.innerHTML = '';
-  state.rows.filter(row => isVisiblePin(row, currentPage(), state.pinMode)).forEach(row => {
+  state.rows.filter(row => isVisiblePin(row, currentPage(), state.pinMode) && (state.statusFilter === 'all' || row.status === state.statusFilter)).forEach(row => {
     const target = resolveAnchor(row.anchor); if (!target) return;
     const rect = target.getBoundingClientRect();
     if (rect.bottom < 0 || rect.top > innerHeight || rect.right < 0 || rect.left > innerWidth) return;
