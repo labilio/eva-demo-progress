@@ -265,13 +265,13 @@
     // Import the former project-directory preference once. Future pin changes
     // are owned by the member store and shared with the follow list.
     if(!saved.pinnedProjects){
-      let ids=['prod'];
+      let ids=['prod','official'];
       try{
         const raw=root.localStorage.getItem('eva:pinned-project-ids:v3');
         const legacy=raw===null?root.localStorage.getItem('eva:pinned-project-ids:v2'):null;
-        const value=JSON.parse(raw??legacy??'["prod"]');
+        const value=JSON.parse(raw??legacy??'["prod","official"]');
         ids=Array.isArray(value)?value.slice(0,6):ids;
-        if(raw===null&&ids.length===1&&ids[0]==='drive-design')ids=['prod'];
+        if(raw===null&&ids.length===1&&ids[0]==='drive-design')ids=['prod','official'];
       }catch{}
       saved.pinnedProjects={'u-wangyilin':ids};
     }
