@@ -167,11 +167,11 @@ function ensureUI() {
       <div class="eva-review-list"></div>
     </aside>
     <div class="eva-review-dialog" data-review-ui hidden role="dialog" aria-modal="true" aria-labelledby="eva-review-title">
-      <form class="eva-review-card">
+      <form class="eva-review-card" autocomplete="off">
         <header><div><h2 id="eva-review-title">添加批注</h2><p data-review-quote></p></div><button type="button" class="eva-review-icon-button" data-review-cancel aria-label="关闭">${icon('close')}</button></header>
-        <div class="eva-review-identity"><label data-review-author-field>你的名字（选填）<input name="author" maxlength="40" autocomplete="name" placeholder="不填则显示匿名同事"></label><div data-review-author-saved hidden><span>提交人</span><strong data-review-author-name></strong><button type="button" data-review-change-author>更换</button></div></div>
+        <div class="eva-review-identity"><label data-review-author-field>你的名字（选填）<input name="author" maxlength="40" autocomplete="off" placeholder="不填则显示匿名同事"></label><div data-review-author-saved hidden><span>提交人</span><strong data-review-author-name></strong><button type="button" data-review-change-author>更换</button></div></div>
         <label>批注类型<select name="kind"><option value="copy">改文案</option><option value="ui">调整 UI</option><option value="rebuild">重做</option><option value="function">补充/优化功能</option><option value="ready">已基本定稿</option></select></label>
-        <label>批注内容<textarea name="body" maxlength="2000" placeholder="哪里需要调整？希望改成什么样？" required></textarea></label>
+        <label>批注内容<textarea name="body" autocomplete="off" maxlength="2000" placeholder="哪里需要调整？希望改成什么样？" required></textarea></label>
         <div class="eva-review-error" role="alert"></div>
         <footer><button type="button" class="eva-review-secondary" data-review-cancel>取消</button><button type="submit" class="eva-review-primary">提交批注</button></footer>
       </form>
@@ -322,7 +322,7 @@ function commentHtml(row) {
     <button type="button" class="eva-review-anchor" data-review-locate="${escapeHtml(row.id)}">${icon('locate',14)}<span>${escapeHtml(row.anchor?.quote?.slice(0,54) || `前往${pageLabel(row.page_path)}`)}</span></button>
     <div class="eva-review-body">${escapeHtml(row.body)}</div>
     ${replies.length ? `<div class="eva-review-replies">${replies.map(reply => `<div><header><strong>${escapeHtml(reply.author_name)}</strong><time>${escapeHtml(shortTime(reply.created_at))}</time></header><p>${escapeHtml(reply.body)}</p></div>`).join('')}</div>` : ''}
-    ${replying ? `<form class="eva-review-reply${savedAuthor ? ' has-author' : ''}" data-review-reply="${escapeHtml(row.id)}">${savedAuthor ? '' : `<input name="author" value="${escapeHtml(draft.author)}" ${submitting ? 'readonly' : ''} maxlength="40" placeholder="你的名字（选填）" aria-label="回复人姓名">`}<input name="body" value="${escapeHtml(draft.body)}" ${submitting ? 'readonly' : ''} maxlength="2000" placeholder="回复这条批注" aria-label="回复内容" required><button type="submit" ${submitting ? 'disabled' : ''} aria-label="发送回复">${icon('send',15)}</button></form>` : ''}
+    ${replying ? `<form class="eva-review-reply${savedAuthor ? ' has-author' : ''}" data-review-reply="${escapeHtml(row.id)}" autocomplete="off">${savedAuthor ? '' : `<input name="author" autocomplete="off" value="${escapeHtml(draft.author)}" ${submitting ? 'readonly' : ''} maxlength="40" placeholder="你的名字（选填）" aria-label="回复人姓名">`}<input name="body" autocomplete="off" value="${escapeHtml(draft.body)}" ${submitting ? 'readonly' : ''} maxlength="2000" placeholder="回复这条批注" aria-label="回复内容" required><button type="submit" ${submitting ? 'disabled' : ''} aria-label="发送回复">${icon('send',15)}</button></form>` : ''}
     <footer><label class="eva-review-status"><span class="eva-review-status-light is-${escapeHtml(row.status)}" aria-hidden="true"></span><select data-review-status="${escapeHtml(row.id)}" aria-label="批注状态">${options}</select></label><div class="eva-review-actions">${row.status === 'done' ? '' : `<button type="button" class="eva-review-icon-button is-complete" data-review-complete="${escapeHtml(row.id)}" aria-label="标记为原型已改完">${icon('check')}</button>`}<button type="button" class="eva-review-icon-button" data-review-reply-toggle="${escapeHtml(row.id)}" aria-expanded="${replying}" aria-label="${replying ? '收起回复' : '回复批注'}">${icon('reply')}</button><button type="button" class="eva-review-icon-button is-danger" data-review-delete="${escapeHtml(row.id)}" aria-label="删除批注">${icon('trash')}</button></div></footer>
   </article>`;
 }
