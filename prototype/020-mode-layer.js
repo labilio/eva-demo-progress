@@ -371,12 +371,14 @@
     var canEdit = context.files.can('rename', resource.spaceId, actor);
     var canEditTags = resource.type !== 'folder' && context.files.can('edit-tags', resource.spaceId, actor);
     var canTrash = context.files.can('trash', resource.spaceId, actor);
+    var canRestore = context.files.can('restore', resource.spaceId, actor);
+    var canDeleteForever = context.files.can('delete-forever', resource.spaceId, actor);
     var isTrash = Boolean(resource.deletedAt);
     return [
       '<div class="eva-drive__inspector-head"><h2>文件详情</h2><button class="eva-drive__inspector-close" type="button" data-eva-drive-inspector-close="true" aria-label="关闭文件详情">×</button></div>',
-      '<div class="eva-file-detail__identity' + (!isTrash ? ' eva-file-detail__identity--with-action' : '') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-file-detail__identity-content"><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(resourceFileType(resource) + (resource.type === 'folder' ? '' : ' · ' + formatDriveBytes(resource.size))) + '</small></span>' + (!isTrash ? '<button class="eva-file-detail__copy-link" type="button" data-drive-action="copy-link" aria-label="复制内部链接" title="复制内部链接">' + icon('link') + '</button>' : '') + '</div>',
+      '<div class="eva-file-detail__identity' + (!isTrash ? ' eva-file-detail__identity--with-action' : '') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-file-detail__identity-content"><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(resourceFileType(resource) + (resource.type === 'folder' ? (isTrash && resource.trashedItemCount ? ' · 包含 ' + resource.trashedItemCount + ' 项' : '') : ' · ' + formatDriveBytes(resource.size))) + '</small></span>' + (!isTrash ? '<button class="eva-file-detail__copy-link" type="button" data-drive-action="copy-link" aria-label="复制内部链接" title="复制内部链接">' + icon('link') + '</button>' : '') + '</div>',
       resource.projectId && !isTrash ? '<div class="eva-drive__inspector-actions"><button class="eva-drive__text-button" type="button" data-drive-action="open-project">' + icon('external') + '在项目中打开</button></div>' : '',
-      isTrash ? '<div class="eva-drive__management-actions"><button type="button" data-drive-action="restore">恢复</button><button class="is-danger" type="button" data-drive-action="delete-forever">永久删除</button></div>' : '',
+      isTrash && (canRestore || canDeleteForever) ? '<div class="eva-drive__management-actions">' + (canRestore ? '<button type="button" data-drive-action="restore">恢复</button>' : '') + (canDeleteForever ? '<button class="is-danger" type="button" data-drive-action="delete-forever">永久删除</button>' : '') + '</div>' : '',
       canEdit && !isTrash ? '<div class="eva-drive__management-actions"><button type="button" data-drive-action="rename">重命名</button><button type="button" data-drive-action="move">移动</button>' + (resource.type !== 'shortcut' ? '<button type="button" data-drive-action="copy">创建副本</button>' : '') + (resource.type !== 'shortcut' && resource.type !== 'folder' ? '<button type="button" data-drive-action="create-shortcut">创建快捷方式</button>' : '') + (canTrash ? '<button class="is-danger" type="button" data-drive-action="trash">移至回收站</button>' : '') + '</div>' : '',
       resource.type !== 'folder' ? '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>标签</h3>' + (canEditTags && !isTrash ? '<button type="button" data-drive-action="tags">编辑</button>' : '') + '</div><div class="eva-file-detail__classification">' + (tagsHTML(resource) || '<span class="eva-file-muted">暂无标签</span>') + '</div></section>' : '',
       resource.type !== 'folder' ? '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>系统关联</h3><span class="eva-file-readonly">只读</span></div>' + relationDetailsHTML(resource) + '</section>' : '',
@@ -672,8 +674,8 @@
       var folders = fileContext().files.list(resource.spaceId, fileActor()).filter(function (item) { return item.type === 'folder' && item.id !== resource.id; });
       content = '<label class="eva-drive-dialog__field"><span>目标文件夹</span><select id="eva-drive-dialog-parent"><option value="0">根目录</option>' + folders.map(function (item) { return '<option value="' + escapeHTML(item.id) + '">' + escapeHTML(item.name) + '</option>'; }).join('') + '</select></label><p class="eva-drive-dialog__hint">仅允许在当前空间内移动。</p>';
     }
-    if (type === 'trash') content = '<p>将“' + escapeHTML(resource.name) + '”移至回收站？Owner 或 Manager 可恢复。</p>';
-    if (type === 'delete-forever') content = '<p>永久删除“' + escapeHTML(resource.name) + '”后不可恢复。</p>';
+    if (type === 'trash') content = '<p>将“' + escapeHTML(resource.name) + '”' + (resource.type === 'folder' ? '及其中内容' : '') + '移至回收站？Owner 或 Manager 可恢复。</p>';
+    if (type === 'delete-forever') content = '<p>永久删除“' + escapeHTML(resource.name) + '”' + (resource.type === 'folder' ? '及其中内容' : '') + '后不可恢复。</p>';
     var confirmLabel = type === 'target-upload' ? '选择文件' : type === 'new-shared-space' ? '创建空间' : type === 'shared-settings' ? '保存设置' : type === 'transfer-shared' ? '确认转移' : type === 'create-shortcut' ? '创建快捷方式' : type === 'tags' ? '保存' : type === 'trash' ? '移至回收站' : type === 'delete-forever' ? '永久删除' : '确认';
     var noShortcutTarget = type === 'create-shortcut' && !fileContext().files.writableSpaces(fileActor(), resource.spaceId).length;
     var confirm = type === 'shared-manage' || type === 'shared-members' || type === 'shared-audit' || noShortcutTarget ? '' : '<button class="' + (type === 'delete-forever' || type === 'trash' || type === 'transfer-shared' ? 'is-danger' : 'is-primary') + '" type="button" data-drive-action="dialog-confirm">' + confirmLabel + '</button>';
@@ -1063,7 +1065,11 @@
     if (name === 'move') openDialog('move', resource);
     if (name === 'copy') { fileContext().files.copy(fileActor(), resource.id); showToast('已在当前空间创建副本'); }
     if (name === 'trash') openDialog('trash', resource);
-    if (name === 'restore') { fileContext().files.restore(fileActor(), resource.id); state.selectedId = null; showToast('已恢复到原位置'); }
+    if (name === 'restore') {
+      var restoreResult = fileContext().files.restore(fileActor(), resource.id);
+      state.selectedId = null;
+      showToast(restoreResult && restoreResult.restoredToRoot ? '原位置不存在，已恢复到空间根目录' : '已恢复到原位置');
+    }
     if (name === 'delete-forever') openDialog('delete-forever', resource);
     if (name === 'dialog-close') closeDialog();
     if (name === 'dialog-confirm') confirmDialog();

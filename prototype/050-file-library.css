@@ -1638,6 +1638,22 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
   font-size: 12px;
 }
 
+.eva-project-files__notice {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 45;
+  max-width: min(360px, calc(100% - 48px));
+  padding: 10px 14px;
+  border: 1px solid var(--gds-color-border-faint, #e5e7eb);
+  border-radius: 10px;
+  color: var(--gds-color-text-primary, #1e1e1e);
+  background: var(--gds-color-surface-primary, #fff);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 14%);
+  font-size: 13px;
+  line-height: 20px;
+}
+
 .eva-project-file-preview {
   min-height: 360px;
 }
