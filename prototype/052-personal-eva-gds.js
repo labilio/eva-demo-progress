@@ -327,7 +327,6 @@
       + '<header class="eva-topbar eva-personal-workspace__topbar">'
       + '<span class="eva-personal-topbar__mark">' + icon('monitor', 18, 'eva-i-nav') + '</span>'
       + '<span class="ttl eva-t-header">' + escapeHTML(taskTitle()) + '</span>'
-      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="更多操作">' + icon('ellipsis', 16, 'eva-i') + '</button>'
       + '<span style="flex:1 1 auto"></span>'
       + '<div class="eva-topbar-icons">'
       + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="收起侧栏">' + icon('arrow-left', 16, 'eva-i') + '</button>'
@@ -368,7 +367,7 @@
       + '<span class="ttl eva-t-header">' + escapeHTML(detail.title) + '</span>'
       + '<span class="eva-history-header__assistant eva-t-label">' + escapeHTML(personalAssistantName()) + '</span>'
       + '<span style="flex:1 1 auto"></span>'
-      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="更多操作">' + icon('ellipsis', 16, 'eva-i') + '</button></header>'
+      + '</header>'
       + '<div class="eva-personal-workspace__stream"><div class="eva-flow eva-history-flow">'
       + detail.messages.map(function (message) { return historyMessageHTML(message, personalAssistantName()); }).join('')
       + '</div></div><div class="eva-personal-workspace__dock">' + composerPanelHTML() + '</div></section>';
@@ -407,7 +406,6 @@
       + '<span class="eva-tool-sep"></span>'
       + '<span class="eva-personal-topbar__mark">' + icon('monitor', 18, 'eva-i-nav') + '</span>'
       + '<span class="ttl eva-t-header">' + escapeHTML(taskTitle()) + '</span>'
-      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="更多操作">' + icon('ellipsis', 16, 'eva-i') + '</button>'
       + '</header>'
       + '<div class="eva-personal-completed__stream"><div class="eva-flow">'
       + userMessageHTML()
