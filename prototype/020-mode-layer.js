@@ -1068,7 +1068,7 @@
     var externalURLInput = document.getElementById('eva-drive-dialog-external-url');
     try {
       if (externalNameInput) dialog.name = externalNameInput.value;
-      if (externalURLInput) dialog.url = externalURLInput.value;
+      if (externalURLInput) { if (dialog.url !== externalURLInput.value) dialog.confirmHostChange = false; dialog.url = externalURLInput.value; }
       state.dialog = null;
       if (dialog.type === 'new-folder') {
         var targetSpace = spaceInput ? spaceInput.value : dialog.spaceId || scopeSpaceId();
@@ -1172,7 +1172,9 @@
     var action = event.target.closest('[data-drive-action]');
     if (!action && row) {
       closeRowMenu();
+      if (state.driveScope === 'trash') { renderDrive(); return; }
       if (resource.type === 'folder') {
+        if (state.driveScope === 'pinned') { openResourceLocation(resource, true); return; }
         if (state.driveScope !== 'trash') {
           state.parentId = resource.id;
           state.crumbs = [{ id: resource.id, name: resource.name }];
@@ -1180,7 +1182,8 @@
         }
       } else {
         try {
-          fileContext().files.resolveFile(resource, fileActor());
+          var rowTarget = fileContext().files.resolveFile(resource, fileActor());
+          if (rowTarget.type === 'external_link') { openExternalResource(resource); return; }
           state.previewId = resource.id;
           state.previewPage = 0;
           state.previewSheet = 0;

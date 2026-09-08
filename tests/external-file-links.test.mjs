@@ -162,3 +162,21 @@ test('回收站外链不能编辑，移动外链不能造成同目录重复 URL'
   files.trash('a', first);
   assert.throws(() => files.updateExternalLink('a', first, {name: '非法更新'}), /回收站/);
 });
+
+test('恢复外链不会在原目录生成重复 URL', () => {
+  const {files}=setup();
+  const first=files.createExternalLink('a','p',{name:'旧入口',url:'https://example.com'});
+  files.trash('a',first);
+  files.createExternalLink('a','p',{name:'新入口',url:'https://example.com/'});
+  assert.throws(()=>files.restore('a',first),/已存在/);
+  assert.ok(files.trashList('p','a').some(item=>item.id===first));
+});
+
+test('文件库更改待确认 URL 后必须重新确认，不能沿用前一个地址的确认',()=>{
+  const source=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
+  const start=source.indexOf('  function confirmDialog()'),end=source.indexOf('  function bridgeSelectedResource()',start);
+  let submitted;
+  const state={dialog:{type:'edit-external-link',id:'link',url:'https://second.example/',confirmHostChange:true}};
+  vm.runInNewContext(source.slice(start,end)+';confirmDialog();',{state,fileActor:()=> 'a',fileContext:()=>({files:{snapshot:()=>[{id:'link'}],updateExternalLink:(actor,id,draft)=>{submitted=draft;}}}),document:{getElementById:id=>id==='eva-drive-dialog-external-url'?{value:'https://third.example/'}:null},renderDrive:()=>{},showToast:()=>{}});
+  assert.equal(submitted.confirmHostChange,false);
+});

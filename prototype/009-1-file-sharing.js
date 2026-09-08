@@ -453,6 +453,7 @@
         const item=record(id);requireAction('restore',item.spaceId,actorId);requireTrashRoot(item,'请恢复整个文件夹');
         const unit=trashUnitRecords(item),originalParentId=item.originalParentId||0,parent=originalParentId?records.find(candidate=>candidate.id===originalParentId):null;
         const parentAvailable=Boolean(parent&&!parent.deletedAt&&parent.type==='folder'&&parent.spaceId===item.spaceId),restoreParent=parentAvailable?originalParentId:0,restoredToRoot=Boolean(originalParentId&&!parentAvailable);
+        if(item.type==='external_link'&&records.some(candidate=>candidate.id!==item.id&&!candidate.deletedAt&&candidate.type==='external_link'&&candidate.spaceId===item.spaceId&&candidate.parent_id===restoreParent&&candidate.external?.url===item.external?.url))fail('恢复位置已存在该外部链接，请先整理现有入口');
         item.name=restoredName(item,restoreParent);
         for(const target of unit){delete target.deletedAt;delete target.deletedBy;delete target.originalParentId;delete target.deletionBatchId;delete target.trashRootId;delete target.directTrash;}
         item.parent_id=restoreParent;notify();return{restoredToRoot,parentId:restoreParent,restoredCount:unit.length};
