@@ -19,7 +19,7 @@ function create({React:R,Button,Input,SearchIcon,store,ui}){
     h('img',{className:'eva-contacts__avatar',src:person.avatar,alt:''}),
     h('span',{className:'eva-contacts__human-copy'},h('strong',{className:'eva-contacts__person-name',title:person.name},person.name),h('span',{className:'eva-contacts__department',title:person.departmentL2},person.departmentL2))),
    h('div',{className:'eva-contacts__clone-group',role:'group','aria-label':person.name+'的 AI 分身，共 '+personas.length+' 个'},
-    h('div',{className:'eva-contacts__clone-heading'},personas.length?'AI 分身 · '+personas.length:'暂无 AI 分身',filtered&&visible.length!==personas.length&&h('span',null,'匹配 '+visible.length+' 个')),
+    !personas.length&&h('span',{className:'eva-contacts__clone-empty'},'暂无分身'),
     h('div',{id:groupId,className:'eva-contacts__clone-list'},visible.map(p=>h('button',{type:'button',key:p.id,className:'eva-contacts__ai-row eva-contact-identity-button',onClick:()=>onProfile(p.id),'aria-label':'查看 '+p.name+' 的资料'},
      h(IdentityAppearance,{profile:p,size:28}),h('span',{className:'eva-contacts__ai-identity'},h('span',{className:'eva-contacts__ai-name',title:p.name},p.name),root.EvaAIIdentity.badge(h))))),
     !filtered&&personas.length>6&&h(Button,{className:'eva-contacts__disclosure',theme:'borderless',type:'tertiary',size:'small','aria-expanded':expanded,'aria-controls':groupId,onClick:()=>setExpanded(v=>!v)},expanded?'收起分身':'展开其余 '+hiddenCount+' 个分身')));
