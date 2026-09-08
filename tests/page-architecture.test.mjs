@@ -370,7 +370,8 @@ test('个人 Eva GDS 设计采用规范首页、原生输入和单一生命周�
   assert.match(workspace, /<textarea class="eva-composer-prompt"/);
   assert.match(workspace, /event\.isComposing/);
   assert.match(workspace, /data-eva-selected-assistant/);
-  assert.match(workspace, /heroHTML\(\) \+.*eva-personal-workspace__composer/);
+  assert.match(workspace, /heroHTML\(\) \+ '<div class="eva-personal-workspace__composer">'/);
+  assert.match(workspace, /\+ '<\/div><\/div>' \+ railHTML\(\) \+ '<\/div><\/div>';/);
   assert.match(workspace, /state === 'completed' \? '' : assistantRailHTML\(\)/);
   assert.match(workspace, /aria-activedescendant/);
   assert.match(workspace, /if \(hash\.indexOf\('#\/guid'\) === 0\) \{\s*selectedConversation = '';/);

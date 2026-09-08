@@ -1,5 +1,8 @@
 (function(root){
   'use strict';
+  const projectAgentName=project=>root.EvaAIIdentity?.projectAgentName?.(project)||(project?.name?String(project.name)+' · 项目管家':'项目管家');
+  const projectAgentLegacyNames=project=>root.EvaAIIdentity?.projectAgentLegacyNames?.(project)||['Eva 项目管理专员','Eva 项目助手',...(project?.name?[String(project.name)+'项目管家']:[])];
+  const projectAgentAppearance=project=>root.EvaAIIdentity?.projectAgentAppearance?.(project)||{name:projectAgentName(project),sourceName:'Eva',avatar:'prototype/assets/project-agent-bot.svg',logo:root.__EVA_COLLEAGUE_PORTRAIT,markerKind:'bot'};
   // Business state only. React subscribes to this store; DOM is never a state source.
   function create(seed, persist, resolveProjectInfo){
     let state=JSON.parse(JSON.stringify({people:[],clones:[],projects:{},groups:{},threads:{},threadDetails:{},messages:{},chatSettings:{},chatPreferences:{},memberAdditions:[],sequence:0,...seed}));
@@ -20,7 +23,7 @@
     const dissolve=id=>{delete state.groups[id];Object.keys(state.threads).filter(t=>state.threads[t]===id).forEach(t=>delete state.threads[t]);};
     const employee=id=>{const a=root.EvaDigitalEmployeesStore?.get(id);return a?{...a,kind:'employee',ai:true,identityAppearance:root.EvaDigitalEmployeesStore.appearance(a)}:null;};
     const employeeRows=s=>(s.employeeIds||[]).map(employee).filter(Boolean);
-    const agentFor=pid=>state.projects[pid]?{id:'project-agent:'+pid,name:root.EvaAIIdentity.projectAgentName(projectInfo(pid)),kind:'project-agent',ai:true,projectId:pid,cloud:true,removable:false,ownership:'project',identityAppearance:root.EvaAIIdentity?.projectAgentAppearance(projectInfo(pid))}:null;
+    const agentFor=pid=>state.projects[pid]?{id:'project-agent:'+pid,name:projectAgentName(projectInfo(pid)),kind:'project-agent',ai:true,projectId:pid,cloud:true,removable:false,ownership:'project',identityAppearance:projectAgentAppearance(projectInfo(pid))}:null;
     const agentIn=id=>{id=state.threads[id]||id;return agentFor(id.startsWith('all:')?id.slice(4):projectId(id));};
     const projectInfo=pid=>({...state.projects[pid],...resolveProjectInfo?.(pid)});
     const agentSender=pid=>{const agent=agentFor(pid);return {...agent,uid:agent.id,color:'#1563EB'};};
@@ -30,8 +33,8 @@
       const projectAgent=agentIn(id),context=projectAgent?projectInfo(projectAgent.projectId):group;
       if(!context)return message;
       // Legacy group AI keeps its identity and access scope; only its display name follows the group.
-      const agent=projectAgent||{id:'b-eva-octo',name:root.EvaAIIdentity.projectAgentName(context),identityAppearance:{...root.EvaAIIdentity.projectAgentAppearance(),name:root.EvaAIIdentity.projectAgentName(context)}};
-      const legacyNames=new Set(root.EvaAIIdentity.projectAgentLegacyNames(context));
+      const agent=projectAgent||{id:'b-eva-octo',name:projectAgentName(context),identityAppearance:{...projectAgentAppearance(),name:projectAgentName(context)}};
+      const legacyNames=new Set(projectAgentLegacyNames(context));
       if(message.sender?.kind==='project-agent'&&message.sender.name&&message.sender.name!==agent.name)legacyNames.add(message.sender.name);
       const isAgent=value=>value&&(value.kind==='project-agent'||value.uid===agent.id||value.id===agent.id||value.uid==='b-eva-octo');
       const visit=value=>{
@@ -224,7 +227,7 @@
       createGroup(id,name,pid,uid,ids){requireHuman(uid);if(state.groups[id]||state.projects[id])fail('群已存在');if(pid&&!member(pid,uid))fail('请先加入项目');const clones=selected(uid,ids,pid);state.groups[id]={id,name,projectId:pid||null,ownerId:uid,humans:[{id:uid,role:'member'}],cloneIds:clones};notify();return id;},
       createThread(id,gid,details={},uid){if(!state.groups[gid]&&!(gid.startsWith('all:')&&state.projects[gid.slice(4)]))fail('父群不存在');if(uid&&!api.canRead(gid,uid))fail('请先加入父群');state.threads[id]=gid;state.threadDetails[id]={...details,id};notify();},
       updateThread(id,patch,uid){if(!api.canRead(id,uid))fail('请先加入父群');state.threadDetails[id]={...state.threadDetails[id],...patch,id};notify();},
-      sendMessage(id,uid,text){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id);if(agent&&text.includes('@'+agent.name)){const project=projectInfo(agent.projectId),owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}notify();},
+      sendMessage(id,uid,text){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id),project=agent&&projectInfo(agent.projectId),mentionsAgent=agent&&[agent.name,...projectAgentLegacyNames(project)].some(name=>text.includes('@'+name));if(mentionsAgent){const owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}notify();},
       messagesFor(id,uid){
         if(!api.canRead(id,uid))return [];
         const candidates=[{name:'@所有人',uid:'all'},{name:'@全体成员',uid:'all'},...api.groupMembers(id).map(m=>({name:'@'+m.name,uid:m.id}))];
@@ -355,7 +358,7 @@
         for(const t of officialDemo.threads){saved.threads[t.id]=officialDemo.id;saved.threadDetails[t.id]={status:1,...t,created_at:root.__EVA_DEMO_TIME?.T1};}
         for(const [id,messages] of Object.entries(officialDemo.messages))saved.messages[id]=messages.map((m,index)=>{
           const {senderId,...message}=m;
-          const sender=senderId==='project-agent:official'?{id:senderId,uid:senderId,name:root.EvaAIIdentity.projectAgentName(saved.projects.official),kind:'project-agent',ai:true,projectId:'official'}:saved.people.find(p=>p.id===senderId)||saved.clones.find(p=>p.id===senderId);
+          const sender=senderId==='project-agent:official'?{id:senderId,uid:senderId,name:projectAgentName(saved.projects.official),kind:'project-agent',ai:true,projectId:'official'}:saved.people.find(p=>p.id===senderId)||saved.clones.find(p=>p.id===senderId);
           return {...message,fixtureId:'official-community-v1:'+id+':'+index,sender:{...sender,uid:senderId,...(cloneIds.includes(senderId)?{ai:true}: {})}};
         });
       }
