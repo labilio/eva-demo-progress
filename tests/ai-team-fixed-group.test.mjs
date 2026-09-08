@@ -7,7 +7,7 @@ const members=[{id:'u-wangyilin',name:'王宜林',kind:'human'},{id:'persona',na
 test('fixed group derives all member kinds without duplicates and isolates history',()=>{
  const group=window.EvaMyAITeamGroup.createStore({storage:null});
  const source=group.source([...members,members[1]]),channel=source.channels[0];
- assert.equal(channel.name,'我的 AI');assert.equal(channel.members,4);assert.equal(channel.channel_type,2);
+ assert.equal(channel.name,'我的 OPT');assert.equal(channel.members,4);assert.equal(channel.channel_type,2);
  assert.equal(channel.replyPolicy,'mention-only');assert.equal(channel.memberIds.join(','),members.map(m=>m.id).join(','));
  source.onSend('普通群消息');assert.equal(group.source(members).messages[group.id].length,1);
  source.onSend('@通用助理 请整理');let history=group.source(members).messages[group.id];assert.equal(history.length,3);assert.equal(history[2].sender.uid,'assistant');
@@ -19,6 +19,15 @@ test('fixed group retains its channel, messages and draft after reload',()=>{
  const group=window.EvaMyAITeamGroup.createStore({storage});group.source(members).onSend('群记录');group.source(members).onDraftChange('未发送草稿');
  const restored=window.EvaMyAITeamGroup.createStore({storage});assert.equal(restored.id,group.id);const source=restored.source(members);
  assert.equal(source.initialDraft,'未发送草稿');assert.equal(source.messages[group.id][0].text,'群记录');
+});
+test('legacy default group name is normalized while custom team names are retained',()=>{
+ const saved=JSON.stringify({schemaVersion:2,groups:[
+  {id:'my-ai-team:u-wangyilin',name:'我的 AI',system:true,messages:[],draft:'',threads:[]},
+  {id:'my-ai-group:legacy',name:'原有团队',system:false,memberIds:['assistant'],messages:[],draft:'',threads:[]}
+ ]});
+ const storage={getItem:key=>key==='eva:my-ai-groups:v2'?saved:null,setItem:()=>{}};
+ const group=window.EvaMyAITeamGroup.createStore({storage});
+ assert.equal(group.get(group.id).name,'我的 OPT');assert.equal(group.get('my-ai-group:legacy').name,'原有团队');
 });
 test('group and subzones isolate messages and drafts across reloads',()=>{
  let saved;const storage={getItem:()=>saved,setItem:(_,v)=>{saved=v;}};

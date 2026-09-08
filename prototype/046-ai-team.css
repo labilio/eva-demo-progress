@@ -97,6 +97,7 @@
 .eva-ai-team__identity-heading:focus-within .eva-ai-team__identity-action,
 .eva-ai-team__new-session.is-active { opacity: 1; pointer-events: auto; }
 .eva-ai-team__identity-action:hover { color: var(--eva-rail-primary); background: var(--eva-rail-selected); }
+.eva-ai-team__edit-config:hover { background: var(--eva-rail-hover); }
 .eva-ai-team__new-session.is-active { background: transparent; color: var(--eva-rail-secondary); }
 .eva-ai-team__new-session:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-action:focus-visible { opacity: 1; pointer-events: auto; outline: 2px solid var(--gds-color-action-primary); outline-offset: -2px; }
@@ -107,9 +108,16 @@
 }
 .eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-2) var(--gds-space-2-5) var(--gds-space-3); }
 .eva-ai-team__section + .eva-ai-team__section { margin-top: var(--gds-space-4); padding-top: var(--gds-space-3); border-top: var(--gds-border-standard) solid var(--gds-color-border-subtle); }
-.eva-ai-team__section-title { display: flex; min-height: 28px; align-items: center; justify-content: space-between; gap: var(--gds-space-2); padding: 0 var(--gds-space-2); color: var(--eva-rail-caption); }
-.eva-ai-team__section-title h2 { margin: 0; color: inherit; font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--gds-font-weight-semibold); }
-.eva-ai-team__section-title > span { color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); }
+.eva-ai-team__section-title { display: flex; min-height: 40px; box-sizing: border-box; align-items: center; justify-content: space-between; gap: var(--gds-space-2); margin-bottom: var(--gds-space-1); padding: 0 var(--gds-space-2); background: transparent; color: var(--eva-rail-primary); }
+.eva-ai-team__section-title h2 { min-width: 0; flex: 1; margin: 0; color: inherit; font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--gds-font-weight-semibold); }
+.eva-ai-team__section-count { min-width: 18px; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-medium); text-align: right; }
+.eva-ai-team__section-toggle { display: flex; width: 100%; min-height: 40px; align-items: center; gap: var(--gds-space-2); padding: 0 var(--gds-space-1); border: 0; border-radius: var(--gds-radius-key); background: transparent; color: inherit; text-align: left; font: inherit; cursor: pointer; }
+.eva-ai-team__section-toggle:hover { background: var(--gds-color-overlay-hover); }
+.eva-ai-team__section-toggle:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
+.eva-ai-team__section-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
+.eva-ai-team__section-chevron.is-expanded { transform: rotate(90deg); }
+.eva-ai-team__section-icon { display: grid; width: 20px; height: 20px; flex: 0 0 20px; place-items: center; color: var(--gds-color-text-secondary); }
+.eva-ai-team__section-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-ai-team__teams { display: flex; flex-direction: column; }
 .eva-ai-team__team-heading { position: relative; display: flex; min-height: var(--eva-rail-identity-height); align-items: center; border-radius: var(--eva-rail-primary-row-radius); }
 .eva-ai-team__team-heading:hover,
@@ -124,9 +132,6 @@
 .eva-ai-team__team-heading:hover .eva-ai-team__team-menu,
 .eva-ai-team__team-heading:focus-within .eva-ai-team__team-menu { opacity: 1; pointer-events: auto; }
 .eva-ai-team__team-menu .semi-button { width: 28px; height: 28px; min-height: 28px; padding: 0; }
-.eva-ai-team__team-heading:has(.eva-ai-team__team-menu) .eva-ai-team__group-count { display: inline; }
-.eva-ai-team__team-heading:has(.eva-ai-team__team-menu):hover .eva-ai-team__group-count,
-.eva-ai-team__team-heading:has(.eva-ai-team__team-menu):focus-within .eva-ai-team__group-count { display: none; }
 .eva-ai-team__team-threads .wk-conv-compact-item--thread { padding-left: calc(var(--eva-rail-identity-content-inset) + var(--eva-rail-level-indent)); min-height: var(--eva-rail-identity-height); }
 .eva-ai-team__direct-groups { margin-top: var(--gds-space-1); }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
@@ -440,12 +445,19 @@
 .eva-ai-team-editor .semi-modal-body { min-height: 0; padding-top: 0; overflow-y: auto; }
 .eva-ai-team-editor__form { display: flex; flex-direction: column; gap: var(--gds-space-4); color: var(--gds-color-text-primary); font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); }
 .eva-ai-team-editor__identity { display: flex; align-items: flex-start; gap: var(--gds-space-3); }
-.eva-ai-team-editor__avatar { display: grid; width: 44px; height: 44px; flex: 0 0 44px; place-items: center; overflow: hidden; border-radius: 50%; background: var(--gds-color-surface-subtle); color: var(--gds-color-text-secondary); }
+.eva-ai-team-editor__avatar-upload { width: 44px; flex: 0 0 44px; }
+.eva-ai-team-editor__avatar { position: relative; display: grid; width: 44px; height: 44px; place-items: center; overflow: visible; padding: 0; border: 0; border-radius: 50%; background: var(--gds-color-surface-subtle); color: var(--gds-color-text-secondary); cursor: pointer; }
 .eva-ai-team-editor__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.eva-ai-team-editor__avatar:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: var(--gds-space-0-5); }
+.eva-ai-team-editor__avatar-action { position: absolute; right: -2px; bottom: -2px; display: grid; width: 18px; height: 18px; place-items: center; border: var(--gds-border-standard) solid var(--gds-color-border-default); border-radius: 50%; background: var(--gds-color-surface-primary); color: var(--gds-color-text-primary); }
+.eva-ai-team-editor__avatar:hover .eva-ai-team-editor__avatar-action,
+.eva-ai-team-editor__avatar:focus-visible .eva-ai-team-editor__avatar-action { background: var(--gds-color-action-dark); color: var(--gds-color-text-inverse); }
 .eva-ai-team-editor__primary-fields { display: grid; min-width: 0; flex: 1; grid-template-columns: minmax(0, 1fr); gap: var(--gds-space-2); }
 .eva-ai-team-editor__primary-fields label { display: flex; align-items: center; justify-content: space-between; gap: var(--gds-space-2); color: var(--gds-color-text-primary); font-weight: var(--gds-font-weight-medium); }
 .eva-ai-team-editor__primary-fields label:not(:first-child) { margin-top: var(--gds-space-1); }
 .eva-ai-team-editor__primary-fields label span { color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); font-weight: var(--gds-font-weight-regular); }
+.eva-ai-team-editor__avatar-help { display: flex; min-height: 24px; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gds-space-2); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); }
+.eva-ai-team-editor__avatar-help .semi-button { flex-shrink: 0; }
 .eva-ai-team-editor__toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--gds-space-2); }
 .eva-ai-team-editor__picker { display: grid; min-height: 284px; grid-template-columns: minmax(0, 3fr) minmax(190px, 2fr); overflow: hidden; border: var(--gds-border-standard) solid var(--gds-color-border-default); border-radius: var(--gds-radius-panel); }
 .eva-ai-team-editor__candidates,
@@ -465,7 +477,8 @@
 .eva-ai-team-editor__selected-head strong { font-weight: var(--gds-font-weight-medium); }
 .eva-ai-team-editor__selected-list { padding: var(--gds-space-2); }
 .eva-ai-team-editor__selected-item { display: flex; min-height: 40px; align-items: center; gap: var(--gds-space-2); padding: 0 var(--gds-space-1); }
-.eva-ai-team-editor__selected-item > span { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-ai-team-editor__selected-avatar { display: inline-flex; width: 28px; height: 28px; flex: 0 0 28px; align-items: center; justify-content: center; }
+.eva-ai-team-editor__selected-name { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-ai-team-editor__selected-item .semi-button { flex-shrink: 0; }
 .eva-ai-team-editor__selected-list > p,
 .eva-ai-team-editor__empty { margin: var(--gds-space-6) var(--gds-space-3); color: var(--gds-color-text-secondary); text-align: center; }

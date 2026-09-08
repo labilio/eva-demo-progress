@@ -117,7 +117,8 @@ function EvaAssistantEditorHost({children}) {
   const [request,setRequest]=reactExports.useState(null), host=reactExports.useRef(null);
   reactExports.useEffect(()=>{const open=options=>setRequest(options?.role==='persona'?{...options,key:Date.now()}:null);window.__evaOpenAssistantEditor=open;return()=>{if(window.__evaOpenAssistantEditor===open)delete window.__evaOpenAssistantEditor;};},[]);
   reactExports.useEffect(()=>{const close=()=>setRequest(null);window.addEventListener('hashchange',close);return()=>window.removeEventListener('hashchange',close);},[]);
-  return React.createElement(React.Fragment,null,children,React.createElement('div',{className:'eva-editor-host',ref:host}),request&&React.createElement(EvaAssistantEditor,{key:request.key,request,host,onClose:()=>setRequest(null)}));
+  const close=()=>{const target=request?.returnFocus;setRequest(null);if(target?.focus)requestAnimationFrame(()=>target.isConnected&&target.focus());};
+  return React.createElement(React.Fragment,null,children,React.createElement('div',{className:'eva-editor-host',ref:host}),request&&React.createElement(EvaAssistantEditor,{key:request.key,request,host,onClose:close}));
 }
 function EvaAssistantEditor({request,host,onClose}) {
   const h=React.createElement, store=window.EvaAITeam, snapshot=reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot,store.getSnapshot);
@@ -238,6 +239,7 @@ function evaRevealMessage(messageId) {
 
 function EvaAITeamGroupEditor({visible,record,candidates,onClose,onSubmit,getContainer}) {
   const h=React.createElement;
+  const avatarInput=reactExports.useRef(null);
   const [name,setName]=reactExports.useState(''),[avatar,setAvatar]=reactExports.useState(''),[selected,setSelected]=reactExports.useState([]),[query,setQuery]=reactExports.useState(''),[error,setError]=reactExports.useState('');
   reactExports.useEffect(()=>{
     if(!visible)return;
@@ -246,18 +248,23 @@ function EvaAITeamGroupEditor({visible,record,candidates,onClose,onSubmit,getCon
   const visibleCandidates=candidates.filter(item=>item.name.toLowerCase().includes(query.trim().toLowerCase()));
   const groups=[['persona','云端分身'],['assistant','个人助理'],['digital','数字员工']];
   const toggle=(id,checked)=>{setSelected(value=>checked?[...new Set([...value,id])]:value.filter(item=>item!==id));setError('');};
+  const uploadAvatar=event=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;
+    if(!['image/png','image/jpeg','image/webp'].includes(file.type)){setError('头像仅支持 PNG、JPG 或 WebP 图片');return;}
+    if(file.size>1024*1024){setError('头像图片请小于 1 MB');return;}
+    const reader=new FileReader();reader.onerror=()=>setError('头像读取失败，请重新选择');reader.onload=()=>{if(typeof reader.result==='string'){setAvatar(reader.result);setError('');}};reader.readAsDataURL(file);};
   const canSubmit=!!name.trim()&&name.trim().length<=50&&selected.length>0;
   const submit=()=>{try{if(!canSubmit)throw new Error(!name.trim()?'请输入团队名称':'至少选择 1 个 AI 成员');onSubmit({name:name.trim(),avatar:avatar.trim(),memberIds:selected});}catch(e){setError(e.message||'创建失败');}};
   const footer=h('div',{className:'eva-ai-team-editor__footer'},h(Button,{onClick:onClose},'取消'),h(Button,{theme:'solid',type:'primary',disabled:!canSubmit,onClick:submit},record?'保存':'创建'));
   return h(Modal,{visible,title:record?'编辑 AI 团队':'新建 AI 团队',className:'eva-ai-team__modal eva-ai-team-editor',width:720,footer,getPopupContainer:getContainer,onCancel:onClose,maskClosable:false},
     h('div',{className:'eva-ai-team-editor__form'},
       h('div',{className:'eva-ai-team-editor__identity'},
-        h('div',{className:'eva-ai-team-editor__avatar'},avatar?h('img',{src:avatar,alt:''}):h(Users,{size:22,'aria-hidden':true})),
+        h('div',{className:'eva-ai-team-editor__avatar-upload'},
+          h('input',{ref:avatarInput,type:'file',hidden:true,accept:'image/png,image/jpeg,image/webp','aria-label':'选择团队头像图片',onChange:uploadAvatar}),
+          h('button',{type:'button',className:'eva-ai-team-editor__avatar','aria-label':avatar?'更换团队头像':'上传团队头像','aria-describedby':'eva-ai-team-avatar-help',onClick:()=>avatarInput.current?.click()},avatar?h('img',{src:avatar,alt:''}):h(Users,{size:22,'aria-hidden':true}),h('span',{className:'eva-ai-team-editor__avatar-action','aria-hidden':true},h(Plus$c,{size:14,strokeWidth:1.75})))),
         h('div',{className:'eva-ai-team-editor__primary-fields'},
           h('label',{htmlFor:'eva-ai-team-name'},'团队名称',h('span',null,name.length+' / 50')),
           h(ForwardInput,{id:'eva-ai-team-name',value:name,onChange:value=>{setName(value);setError('');},maxLength:50,placeholder:'例如：产品发布协作组',autoFocus:true}),
-          h('label',{htmlFor:'eva-ai-team-avatar'},'团队头像（可选）'),
-          h(ForwardInput,{id:'eva-ai-team-avatar',value:avatar,onChange:setAvatar,placeholder:'粘贴头像图片地址'}))),
+          h('div',{className:'eva-ai-team-editor__avatar-help',id:'eva-ai-team-avatar-help'},h('span',null,'点击左侧头像上传 PNG、JPG 或 WebP 图片，最大 1 MB。'),avatar&&h(Button,{theme:'borderless',type:'tertiary',size:'small',onClick:()=>{setAvatar('');setError('');}},'恢复默认头像')))),
       h('div',{className:'eva-ai-team-editor__toolbar'},
         h(ForwardInput,{value:query,onChange:setQuery,showClear:true,prefix:h(Search$1,{size:16}),placeholder:'搜索我的 AI 成员','aria-label':'搜索我的 AI 成员'}),
         h(Button,{theme:'borderless',type:'tertiary',disabled:!visibleCandidates.length,onClick:()=>setSelected(value=>[...new Set([...value,...visibleCandidates.map(item=>item.id)])])},'全选当前结果')),
@@ -267,7 +274,7 @@ function EvaAITeamGroupEditor({visible,record,candidates,onClose,onSubmit,getCon
           !visibleCandidates.length&&h('p',{className:'eva-ai-team-editor__empty'},'没有匹配的 AI 成员')),
         h('aside',{className:'eva-ai-team-editor__selected','aria-label':'已选 AI 成员'},
           h('div',{className:'eva-ai-team-editor__selected-head'},h('strong',null,'已选 '+selected.length),h(Button,{theme:'borderless',type:'tertiary',size:'small',disabled:!selected.length,onClick:()=>setSelected([])},'清空')),
-          h('div',{className:'eva-ai-team-editor__selected-list'},candidates.filter(item=>selected.includes(item.id)).map(item=>h('div',{key:item.id,className:'eva-ai-team-editor__selected-item'},window.EvaAIIdentity.avatar(item.appearance,28,h),h('span',{title:item.name},item.name),h(Button,{theme:'borderless',type:'tertiary',size:'small','aria-label':'移除 '+item.name,onClick:()=>toggle(item.id,false)},'移除'))),!selected.length&&h('p',null,'从左侧选择团队成员')))),
+          h('div',{className:'eva-ai-team-editor__selected-list'},candidates.filter(item=>selected.includes(item.id)).map(item=>h('div',{key:item.id,className:'eva-ai-team-editor__selected-item'},h('span',{className:'eva-ai-team-editor__selected-avatar'},window.EvaAIIdentity.avatar(item.appearance,28,h)),h('span',{className:'eva-ai-team-editor__selected-name',title:item.name},item.name),h(Button,{theme:'borderless',type:'tertiary',size:'small','aria-label':'移除 '+item.name,onClick:()=>toggle(item.id,false)},'移除'))),!selected.length&&h('p',null,'从左侧选择团队成员')))),
       h('p',{className:'eva-ai-team-editor__hint'},'你本人会自动加入团队，不占用 AI 成员名额。团队创建后拥有独立消息、子区和草稿。'),
       error&&h('p',{className:'eva-ai-team__error',role:'alert'},error)));
 }
@@ -305,6 +312,7 @@ function EvaAITeamPage() {
     setCollapsed(value=>({...value,[requestedIdentity.id]:false}));
   },[teamSearch,requestedIdentity?.id]);
   const [collapsedGroups,setCollapsedGroups]=reactExports.useState({assistant:false,persona:false,digital:false});
+  const [sectionCollapsed,setSectionCollapsed]=reactExports.useState({teams:false,assistants:false});
   const [groupEditor,setGroupEditor]=reactExports.useState(null);
   const groupEditorOpener=reactExports.useRef(null);
   const rail = reactExports.useRef(null);
@@ -352,6 +360,10 @@ function EvaAITeamPage() {
         h(Dropdown.Item,{onClick:()=>{if(employee)owner.deleteSession(identityId,record.id);else owner.deleteSession(record.id);if(selection.sessionId===record.id){const remaining=employee?owner.sessions(identityId):owner.getSnapshot().sessions.filter(s=>s.identityId===identityId).sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||b.updatedAt.localeCompare(a.updatedAt));choose(identityId,remaining[0]?.id||null);}}},'删除'))},
       h('span',{className:'eva-ai-team__menu-anchor'},h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(EllipsisIcon),title:'会话操作','aria-label':'会话操作 '+record.title})));
   }
+  function assistantConfigAction(i){
+    if(i.role!=='assistant')return null;
+    return h(TooltipComponent,{content:'编辑配置',position:'right'},h('span',{className:'eva-ai-team__menu-anchor'},h('button',{type:'button',className:'eva-ai-team__identity-action eva-ai-team__edit-config','aria-label':'编辑配置 '+i.name,onClick:event=>{event.stopPropagation();window.__evaOpenAssistantEditor?.({mode:'edit',role:'assistant',id:i.sourceAssistantId,returnFocus:event.currentTarget});}},h(Settings,{size:14,strokeWidth:1.75,'aria-hidden':true}))));
+  }
   function identityItem(i){
     const sessions=snapshot.sessions.filter(s=>s.identityId===i.id).sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||b.updatedAt.localeCompare(a.updatedAt));
     const expanded=collapsed[i.id]===false, abnormal=i.status==='offline'||(i.role==='persona'&&i.syncStatus!=='synced');
@@ -361,7 +373,7 @@ function EvaAITeamPage() {
           h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(i),size:22}),
           h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:i.name},i.name),h(AiBadge,{size:'small'})),
           h(ChevronRight,{size:12,className:'eva-ai-team__chevron'+(expanded?' is-expanded':'')})),
-        h(TooltipComponent,{content:'新建会话',position:'right'},h('span',{className:'eva-ai-team__new-session-anchor'},h('button',{type:'button',className:'eva-ai-team__identity-action eva-ai-team__new-session'+(identity?.id===i.id?' is-active':''),'aria-label':'新建会话',onClick:event=>{event.stopPropagation();newConversation(i.id);}},h(Plus$c,{size:14,strokeWidth:1.75}))))),
+        h(TooltipComponent,{content:'新建会话',position:'right'},h('span',{className:'eva-ai-team__new-session-anchor'},h('button',{type:'button',className:'eva-ai-team__identity-action eva-ai-team__new-session'+(identity?.id===i.id?' is-active':''),'aria-label':'新建会话',onClick:event=>{event.stopPropagation();newConversation(i.id);}},h(Plus$c,{size:14,strokeWidth:1.75})))),assistantConfigAction(i)),
       abnormal&&h('p',{className:'eva-ai-team__identity-status'},status(i)),
       expanded&&h('div',{className:'eva-ai-team__sessions',id:'ai-sessions-'+i.id},
         identity?.id===i.id&&!session&&h('button',{type:'button',className:'eva-ai-team__session is-selected','aria-current':'true',onClick:()=>choose(i.id,null)},h('span',{className:'eva-ai-team__session-title'},'新对话')),
@@ -397,6 +409,7 @@ function EvaAITeamPage() {
         h('span',{className:'eva-ai-team__group-title'},label),h('span',{className:'eva-ai-team__group-count'},items.length)),
       !groupCollapsed&&h('div',{className:'eva-ai-team__group-content',id:groupId},items.map(role==='digital'?employeeItem:identityItem)));
   }
+  function sectionTitle(section,label,count,contentId,titleId,Icon){const collapsed=sectionCollapsed[section];return h('div',{className:'eva-ai-team__section-title'},h('h2',{id:titleId},h('button',{type:'button',className:'eva-ai-team__section-toggle','aria-expanded':!collapsed,'aria-controls':contentId,onClick:()=>setSectionCollapsed(value=>({...value,[section]:!value[section]}))},h(ChevronRight,{size:12,className:'eva-ai-team__section-chevron'+(collapsed?'':' is-expanded'),'aria-hidden':true}),h('span',{className:'eva-ai-team__section-icon','aria-hidden':true},h(Icon,{size:15,strokeWidth:1.75})),h('span',{className:'eva-ai-team__section-label'},label))),h('span',{className:'eva-ai-team__section-count','aria-label':label+'数量 '+count},count));}
   function teamGroupItem(group){
     const groupSource=groupStore.source(group.id,fixedMembers),channel=groupSource.channels[0],expanded=collapsed[group.id]===false,selected=selection.identityId===group.id;
     return h('section',{className:'eva-ai-team__team',key:group.id},
@@ -405,8 +418,7 @@ function EvaAITeamPage() {
           h(ChevronRight,{size:12,className:'eva-ai-team__group-chevron'+(expanded?' is-expanded':'')}),
           h('img',{className:'eva-ai-team__team-avatar',src:group.avatar||window.EvaAvatar.uri({kind:'group',id:group.id}),alt:''}),
           h('span',{className:'eva-ai-team__team-name',title:group.name},group.name),
-          group.system&&h('span',{className:'eva-ai-team__team-default'},'默认'),
-          h('span',{className:'eva-ai-team__group-count'},Math.max(0,channel.members-1))),
+          group.system&&h('span',{className:'eva-ai-team__team-default'},'默认')),
         !group.system&&h(Dropdown,{trigger:'click',position:'bottomRight',clickToHide:true,getPopupContainer:()=>rail.current,render:h(Dropdown.Menu,null,h(Dropdown.Item,{onClick:()=>setGroupEditor({mode:'edit',record:group})},'编辑团队'))},h('span',{className:'eva-ai-team__team-menu',onFocus:event=>{groupEditorOpener.current=event.target;}},h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(EllipsisIcon,{size:16}),'aria-label':group.name+'的团队操作'})))),
       expanded&&h('div',{className:'eva-ai-team__team-threads',id:'ai-team-threads-'+group.id},channel.threads.filter(item=>item.status!==2).map(item=>h(ConvCompactItem,{key:item.id,isThread:true,name:item.name,selected:selected&&selection.sessionId===item.id,onClick:()=>choose(group.id,item.id)}))));
   }
@@ -422,8 +434,8 @@ function EvaAITeamPage() {
         h(Dropdown.Item,{icon:h(Users,{size:16}),onClick:()=>setGroupEditor({mode:'create'})},'新建 AI 团队'),
         h(Dropdown.Item,{icon:h(Sparkles,{size:16}),onClick:openPersonalAssistant},'新建个人助理'))},h('span',{onFocus:event=>{groupEditorOpener.current=event.target;}},h(Button,{className:'eva-ai-team__create',theme:'borderless',type:'tertiary',icon:h(Plus$c,{size:18,strokeWidth:1.75}),title:'新建','aria-label':'新建'})))),
       h('div',{className:'eva-ai-team__roles'},
-        h('section',{className:'eva-ai-team__section','aria-labelledby':'eva-ai-team-section-title'},h('div',{className:'eva-ai-team__section-title'},h('h2',{id:'eva-ai-team-section-title'},'AI 团队'),h('span',null,teamGroups.length)),h('div',{className:'eva-ai-team__teams'},teamGroups.map(teamGroupItem))),
-        h('section',{className:'eva-ai-team__section eva-ai-team__section--direct','aria-labelledby':'eva-ai-direct-section-title'},h('div',{className:'eva-ai-team__section-title'},h('h2',{id:'eva-ai-direct-section-title'},'AI 私聊'),h('span',null,availableIdentities.length)),h('div',{className:'eva-ai-team__direct-groups'},roleGroup('persona','云端分身',personas),roleGroup('assistant','个人助理',teamIdentities.filter(i=>i.role==='assistant')),roleGroup('digital','数字员工',digitalEmployees))))),
+        h('section',{className:'eva-ai-team__section'+(sectionCollapsed.teams?' is-collapsed':''),'aria-labelledby':'eva-ai-team-section-title'},sectionTitle('teams','AI 团队',teamGroups.length,'eva-ai-team-section-content','eva-ai-team-section-title',Users),!sectionCollapsed.teams&&h('div',{className:'eva-ai-team__teams',id:'eva-ai-team-section-content'},teamGroups.map(teamGroupItem))),
+        h('section',{className:'eva-ai-team__section eva-ai-team__section--direct'+(sectionCollapsed.assistants?' is-collapsed':''),'aria-labelledby':'eva-ai-assistant-section-title'},sectionTitle('assistants','AI 助理',availableIdentities.length,'eva-ai-assistant-section-content','eva-ai-assistant-section-title',Sparkles),!sectionCollapsed.assistants&&h('div',{className:'eva-ai-team__direct-groups',id:'eva-ai-assistant-section-content'},roleGroup('persona','云端分身',personas),roleGroup('assistant','个人助理',teamIdentities.filter(i=>i.role==='assistant')),roleGroup('digital','数字员工',digitalEmployees))))),
     h('main',{className:'eva-ai-team__main'},
       snapshot.storageWarning&&h('p',{className:'eva-ai-team__notice',role:'status'},snapshot.storageWarning),
       groupSelected?h(ChannelsView,{key:selectedGroup.id+':'+(selection.sessionId||'group'),source,onOpenTask:()=>{}}):employee?h(ChannelsView,{key:'digital-chat:'+employee.id+':'+(employeeSession?.id||'empty'),source,onOpenTask:()=>{}}):identity?h(React.Fragment,null,
