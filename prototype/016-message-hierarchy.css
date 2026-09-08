@@ -838,8 +838,8 @@ body.eva-message-hierarchy-ready .eva-channel-surface[data-eva-message-mode="my-
   display: none !important;
 }
 
-/* “我的 AI”不再有独立顶部操作；新会话属于具体助理。助理或其任一
-   session 被选中时才固定显示高亮加号，Hover／键盘焦点时临时显示。 */
+/* 旧版身份级顶部快捷操作保持隐藏；模块级“新建”菜单由我的 AI 中栏
+   标题区承载。具体 AI 的新会话仍属于该身份，并按 Hover／键盘焦点显示。 */
 body.eva-message-hierarchy-ready
   .eva-channel-surface[data-eva-message-mode="my-ai"]
   .eva-my-ai-identity-new-session {
