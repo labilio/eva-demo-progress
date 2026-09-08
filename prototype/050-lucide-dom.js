@@ -23,6 +23,11 @@
      ============================================================ */
 
   var NODES = {
+    'bot': [["path",{d:"M12 8V4H8",key:"hb8ula"}],["rect",{width:"16",height:"12",x:"4",y:"8",rx:"2",key:"enze0r"}],["path",{d:"M2 14h2",key:"vft8re"}],["path",{d:"M20 14h2",key:"4cs60a"}],["path",{d:"M15 13v2",key:"1xurst"}],["path",{d:"M9 13v2",key:"rq6x2g"}]],
+    'message-square': [["path",{d:"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z",key:"18887p"}]],
+    'hard-drive': [["path",{d:"M10 16h.01",key:"1ra8yu"}],["path",{d:"M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z",key:"1jiv2b"}],["path",{d:"M21.946 12.013H2.054",key:"12xlhc"}],["path",{d:"M6 16h.01",key:"1l4qyb"}]],
+    'book-user': [["path",{d:"M15 13a3 3 0 1 0-6 0",key:"book-user-avatar"}],["path",{d:"M17 18a5 5 0 0 0-10 0",key:"book-user-profile"}],["path",{d:"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20",key:"book-user-book"}]],
+    'unplug': [["path",{d:"M17 19a1 1 0 0 1-1-1v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a1 1 0 0 1-1 1z",key:"unplug-socket"}],["path",{d:"M17 21v-2",key:"unplug-socket-pin"}],["path",{d:"M19 14V6.5a1 1 0 0 0-7 0v11a1 1 0 0 1-7 0V10",key:"unplug-cable"}],["path",{d:"M21 21v-2",key:"unplug-socket-pin-2"}],["path",{d:"M3 5V3",key:"unplug-plug-pin"}],["path",{d:"M4 10a2 2 0 0 1-2-2V6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a2 2 0 0 1-2 2z",key:"unplug-plug"}],["path",{d:"M7 5V3",key:"unplug-plug-pin-2"}]],
     'arrow-left': [["path", {d: "m12 19-7-7 7-7"}], ["path", {d: "M19 12H5"}]],
     'arrow-up': [["path", {d: "m5 12 7-7 7 7"}], ["path", {d: "M12 19V5"}]],
     'at-sign': [["circle", {cx: "12", cy: "12", r: "4"}], ["path", {d: "M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"}]],

@@ -5,6 +5,13 @@ import { MENUS, STATUS_LABELS, KIND_LABELS, menuOf, filterRows, sourceHints, pro
 const store = createCommentsStore(COMMENTS_CONFIG);
 const $ = selector => document.querySelector(selector);
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
+const icon = name => window.__evaLucide(name, {size:16, strokeWidth:1.8});
+const menuIcons = {all:'layout-grid',personal:'sparkles',messages:'message-square',projects:'layout-grid',contacts:'book-user',drive:'hard-drive',workboard:'list-checks',employees:'bot',skills:'unplug',automation:'clock',sites:'globe','agent-create':'sparkles',other:'ellipsis'};
+const menuIcon = id => id === 'my-ai' ? '<img class="menu-icon" src="../prototype/assets/my-ai-collaboration.svg" alt="">' : icon(menuIcons[id]);
+for (const [selector,name] of [['.head-links a','arrow-left'],['#copy','copy'],['#claim-copy','check'],['#retry-copy','copy'],['#reply-form button','send']]) {
+  const button=$(selector); button.insertAdjacentHTML('afterbegin',icon(name === 'send' ? 'arrow-up' : name));
+}
+document.querySelectorAll('[data-close]').forEach(button=>button.insertAdjacentHTML('afterbegin',icon('x')));
 const params = new URLSearchParams(location.search);
 let saved = {}, selectedIds = [];
 try { saved = JSON.parse(localStorage.getItem('eva-developer-filters') || '{}') || {}; } catch {}
@@ -36,7 +43,12 @@ function updateSelection() {
 }
 function render() {
   const scroll = $('.table-scroll'); const top = scroll.scrollTop; const left = scroll.scrollLeft;
-  $('#menus').innerHTML = MENUS.map(([id,label]) => `<button type="button" data-menu="${id}" aria-current="${state.filters.menu===id}"><span>${label}</span><small>${state.rows.filter(r => id==='all' || menuOf(r.page_path)===id).length}</small></button>`).join('');
+  const menuButton = id => {
+    const label=MENUS.find(menu=>menu[0]===id)[1];
+    return `<button type="button" data-menu="${id}" aria-current="${state.filters.menu===id}"><span class="menu-label">${menuIcon(id)}<span>${label}</span></span><small>${state.rows.filter(r=>id==='all'||menuOf(r.page_path)===id).length}</small></button>`;
+  };
+  const groups=[['个人',['personal','workboard','automation','skills']],['团队协作',['messages','my-ai','projects','contacts','drive','sites']],['其他',['employees','agent-create','other']]];
+  $('#menus').innerHTML=menuButton('all')+groups.map(([label,ids])=>`<section class="menu-group" aria-label="${label}"><h3>${label}</h3>${ids.map(menuButton).join('')}</section>`).join('');
   $('#menu-title').textContent = MENUS.find(([id]) => id===state.filters.menu)[1];
   const visible = filterRows(state.rows,state.filters);
   $('#counts').textContent = `${visible.length} 条批注 / 共 ${state.rows.length} 条`;
@@ -46,7 +58,7 @@ function render() {
     <td><p class="body-text">${escape(row.body)}</p><span class="anchor-text" title="${escape(row.anchor?.quote || row.page_path)}">${escape(row.anchor?.quote || row.page_path)}</span></td>
     <td>${escape(KIND_LABELS[row.kind]||row.kind)}</td><td><span class="status-label ${escape(row.status)}">${escape(STATUS_LABELS[row.status]||row.status)}</span></td>
     <td>${escape(row.author_name)}</td><td>${escape(row.claimed_by||'未认领')}</td><td>${date(row.updated_at||row.created_at)}</td>
-    <td><div class="cell-actions"><button type="button" data-detail="${escape(row.id)}">详情${row.replies?.length?' · '+row.replies.length:''}</button><a href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener">查看原型</a></div></td></tr>`).join('');
+    <td><div class="cell-actions"><button type="button" data-detail="${escape(row.id)}">${icon('file-text')}详情${row.replies?.length?' · '+row.replies.length:''}</button><a href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener">${icon('external-link')}查看原型</a></div></td></tr>`).join('');
   $('#empty').hidden = !!visible.length;
   $('#empty').textContent = state.loaded ? '当前筛选没有批注，可切换状态或功能菜单。' : '正在读取共享批注…';
   scroll.scrollTop = top; scroll.scrollLeft = left;
@@ -58,7 +70,7 @@ function applyRows(rows) {
   render(); updateNotice();
 }
 function updateNotice() {
-  $('#refresh').textContent = state.pending ? '有更新，点击加载' : '检查更新';
+  $('#refresh').innerHTML = icon('rotate-ccw') + `<span>${state.pending ? '有更新，点击加载' : '检查更新'}</span>`;
   $('#refresh').classList.toggle('has-updates',!!state.pending);
 }
 async function refresh(background=false) {
@@ -117,7 +129,7 @@ $('#copy').onclick=()=>handoff(false);$('#claim-copy').onclick=()=>handoff(true)
 function showDetail(id){
   const row=state.rows.find(r=>r.id===id);if(!row)return;state.detailId=id;
   $('#detail-title').textContent=`批注 #${row.seq}`;
-  $('#detail-content').innerHTML=`<div class="detail-meta">${escape(STATUS_LABELS[row.status])} · 提出者 ${escape(row.author_name)} · 认领者 ${escape(row.claimed_by||'未认领')}${row.claimed_at?' · '+date(row.claimed_at):''}</div><p>${escape(row.body)}</p><a href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener">查看原型位置</a><h3>前端定位与源码参照</h3><pre>${escape(JSON.stringify({page:row.page_path,anchor:row.anchor,sources:sourceHints(row)},null,2))}</pre><h3>讨论与开发结果</h3>${(row.replies||[]).map(r=>`<div class="reply-entry"><strong>${escape(r.author_name)}</strong> <span class="detail-meta">${date(r.created_at)}</span><p>${escape(r.body)}</p></div>`).join('')||'<p class="detail-meta">暂无回复</p>'}${row.claimed_by?'<button type="button" id="release-claim">释放认领</button>':''}`;
+  $('#detail-content').innerHTML=`<div class="detail-meta">${escape(STATUS_LABELS[row.status])} · 提出者 ${escape(row.author_name)} · 认领者 ${escape(row.claimed_by||'未认领')}${row.claimed_at?' · '+date(row.claimed_at):''}</div><p>${escape(row.body)}</p><a href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener">${icon('external-link')}查看原型位置</a><h3>前端定位与源码参照</h3><pre>${escape(JSON.stringify({page:row.page_path,anchor:row.anchor,sources:sourceHints(row)},null,2))}</pre><h3>讨论与开发结果</h3>${(row.replies||[]).map(r=>`<div class="reply-entry"><strong>${escape(r.author_name)}</strong> <span class="detail-meta">${date(r.created_at)}</span><p>${escape(r.body)}</p></div>`).join('')||'<p class="detail-meta">暂无回复</p>'}${row.claimed_by?'<button type="button" id="release-claim">释放认领</button>':''}`;
   $('#reply-body').value=sessionStorage.getItem('eva-developer-draft:'+id)||'';$('#reply-error').textContent='';
   $('#release-claim')?.addEventListener('click',async event=>{
     event.target.disabled=true;
@@ -136,7 +148,7 @@ $('#reply-form').onsubmit=async event=>{
   try{const reply=await store.addReply(id,{body,author_name:author});state.revision++;sessionStorage.removeItem('eva-developer-draft:'+id);state.rows=state.rows.map(r=>r.id===id?{...r,replies:[...(r.replies||[]),reply]}:r);render();if(state.detailId===id)$('#detail').close();message('开发结果已回填到原批注');}
   catch(error){$('#reply-error').textContent=error.message;}finally{button.disabled=false;}
 };
-render();
+render(); updateNotice();
 try{const response=await fetch('./build-context.json',{cache:'no-store'});if(!response.ok)throw new Error();state.context=await response.json();$('#build-info').textContent=`${state.context.branch} / ${state.context.commit?.slice(0,8)} / ${state.context.version}`;}
 catch{$('#build-info').textContent='构建版本不可用';message('构建信息暂不可用，提示词会明确标注未知。',true);}
 await refresh();
