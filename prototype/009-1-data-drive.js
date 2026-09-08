@@ -210,3 +210,27 @@ window.__EVA_FILE_PREVIEW_FIXTURES = Object.assign(window.__EVA_FILE_PREVIEW_FIX
     archive:{originalSize:'31.2 MB',compressedSize:'18 MB',entries:[{path:'01-企业资质/',type:'folder',size:'—'},{path:'01-企业资质/营业执照.pdf',type:'PDF',size:'3.1 MB'},{path:'02-质量体系/ISO9001.pdf',type:'PDF',size:'4.8 MB'},{path:'03-准入检查/现场审核表.xlsx',type:'XLSX',size:'680 KB'},{path:'04-整改记录/问题关闭说明.docx',type:'DOCX',size:'320 KB'}]}
   }
 });
+
+// External-link samples stay in the demo-data registry; the file model consumes them as normal resources.
+window.__EVA_EXTERNAL_LINK_SAMPLES = [{
+  id: 'prod-feishu-docs-link',
+  spaceId: 'prod',
+  projectId: 'prod',
+  area: 'project',
+  parent_id: 0,
+  name: '供应链项目飞书协作文档',
+  type: 'external_link',
+  size: 0,
+  extension: '',
+  external: {url: 'https://www.feishu.cn/', provider: 'feishu', kind: 'document', host: 'www.feishu.cn'},
+  creator: '王宜林',
+  editor: '未编辑过',
+  createdBy: '王宜林',
+  updatedBy: '王宜林',
+  createdAt: '2026-09-07T14:22:00+08:00',
+  updated_at: '2026-09-07T14:22:00+08:00',
+  tags: ['协作入口'],
+  systemRelations: [],
+  source: {type: 'external-link', label: '手动添加外部链接'},
+  description: '外部协作文档入口；内容与版本仍由飞书维护'
+}];

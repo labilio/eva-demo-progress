@@ -147,6 +147,7 @@ body.eva-message-hierarchy-ready .eva-drive__actions,
 .eva-drive__actions {
   margin: 0;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -357,6 +358,15 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
 .eva-drive__file-mark.is-shortcut {
   color: #315b92;
   background: #edf4ff;
+}
+
+.eva-drive__file-mark.is-external-link {
+  color: var(--gds-color-action-primary, #1563eb);
+  background: rgb(21 99 235 / 8%);
+}
+
+.eva-relation-chip.is-external {
+  color: var(--gds-color-action-primary, #1563eb);
 }
 
 .eva-drive__file-mark.is-shortcut::after {
@@ -1680,6 +1690,26 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   font: inherit;
 }
 
+.eva-external-link-warning {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--semi-color-warning-light-active, #f0d79a);
+  border-radius: var(--gds-radius-control, 8px);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--gds-color-text-secondary, #4a4a4a);
+  background: var(--semi-color-warning-light-default, #fff7e6);
+  font-size: var(--gds-type-caption-font-size, 12px);
+  line-height: 18px;
+}
+
+.eva-external-link-warning .eva-drive-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
 .eva-drive-dialog__field textarea {
   min-height: 80px;
   padding: 9px 10px;
@@ -2095,6 +2125,7 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   min-height: 58px;
   padding: 12px 24px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -2248,6 +2279,11 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
 
   .eva-drive__header > div:first-child > span {
     display: none;
+  }
+
+  .eva-project-files__toolbar .eva-drive__side-search {
+    width: 100%;
+    margin-left: 0;
   }
 
   body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__table-head,
