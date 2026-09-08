@@ -453,20 +453,36 @@
     }
     return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, setSessionFlag, deleteSession });
   }
-  // A fixed multi-AI group has its own channel/history; membership is derived live.
+  // “我的 AI”默认群动态包含所有 AI；自定义团队保存创建时的成员快照。
   function createTeamGroupStore(options = {}) {
-    const id = 'my-ai-team:u-wangyilin', key = 'eva:my-ai-team-group:v1';
-    let storage, state = {messages: [], draft: '', threads: []}, revision = 0;
+    const id = 'my-ai-team:u-wangyilin', key = 'eva:my-ai-groups:v2';
+    const blankGroup = (record = {}) => ({id:record.id || id, name:record.name || '我的 AI', avatar:record.avatar || '', system:record.system !== false,
+      memberIds:record.system === false ? [...new Set((record.memberIds || []).filter(Boolean))] : null,
+      messages:Array.isArray(record.messages) ? record.messages : [], draft:typeof record.draft === 'string' ? record.draft : '',
+      threads:Array.isArray(record.threads) ? record.threads : [], collaborationStoriesV1:!!record.collaborationStoriesV1,
+      createdAt:record.createdAt || new Date().toISOString(), updatedAt:record.updatedAt || record.createdAt || new Date().toISOString()});
+    let storage, state = {schemaVersion:2, groups:[blankGroup()]}, revision = 0, serial = 0;
     const listeners = new Set();
     try {
       storage = Object.hasOwn(options, 'storage') ? options.storage : window.localStorage;
-      const saved = JSON.parse(storage?.getItem(key) || 'null');
-      if (saved && Array.isArray(saved.messages) && typeof saved.draft === 'string') state = saved;
+      const saved = JSON.parse(storage?.getItem(key) || storage?.getItem('eva:my-ai-team-group:v1') || 'null');
+      if (saved?.schemaVersion === 2 && Array.isArray(saved.groups) && saved.groups.length) {
+        const groups=saved.groups.filter(group=>group&&typeof group.id==='string'&&typeof group.name==='string').map(blankGroup);
+        if(groups.length)state={schemaVersion:2,groups};
+      } else if (saved && Array.isArray(saved.messages) && typeof saved.draft === 'string') {
+        state={schemaVersion:2,groups:[blankGroup(saved)]};
+      }
     } catch (_) {}
-    state.threads ||= [];
-    const target = channelId => {
-      if (!channelId || channelId === id) return state;
-      const thread = state.threads.find(item => item.id === channelId && !item.deleted);
+    if(!state.groups.some(group=>group.id===id))state.groups.unshift(blankGroup());
+    const groupById = groupId => {
+      const group=state.groups.find(item=>item.id===(groupId||id));
+      if(!group)throw new Error('AI 团队不存在');
+      return group;
+    };
+    const target = (groupId, channelId) => {
+      const group=groupById(groupId);
+      if (!channelId || channelId === group.id) return group;
+      const thread = group.threads.find(item => item.id === channelId && !item.deleted);
       if (!thread) throw new Error('子区不存在');
       return thread;
     };
@@ -474,41 +490,70 @@
       try { storage?.setItem(key, JSON.stringify(state)); } catch (_) {}
       revision++; listeners.forEach(fn => fn());
     }
+    const publicGroup=group=>freeze(copy({id:group.id,name:group.name,avatar:group.avatar,system:group.system,memberIds:group.memberIds,createdAt:group.createdAt,updatedAt:group.updatedAt}));
+    const normalizeMembers=members=>[...new Map((members||[]).filter(member=>member?.id).map(member=>[member.id,member])).values()];
+    const argsForSource=(groupOrMembers,membersOrThread,threadMaybe)=>Array.isArray(groupOrMembers)
+      ? {groupId:id,members:groupOrMembers,selectedThreadId:membersOrThread}
+      : {groupId:groupOrMembers||id,members:membersOrThread||[],selectedThreadId:threadMaybe};
+    const argsForThread=(groupOrRecord,recordMaybe)=>recordMaybe===undefined?{groupId:id,record:groupOrRecord}:{groupId:groupOrRecord||id,record:recordMaybe};
     return Object.freeze({
       id, getSnapshot: () => revision,
       subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-      createThread(record) {
+      groups() { return state.groups.map(publicGroup); },
+      get(groupId) { return publicGroup(groupById(groupId)); },
+      createGroup(record) {
+        const name=String(record?.name||'').trim(),memberIds=[...new Set((record?.memberIds||[]).filter(Boolean))];
+        if(!name||name.length>50)throw new Error('请输入 1–50 个字符的团队名称');
+        if(!memberIds.length)throw new Error('至少选择 1 个 AI 成员');
+        let groupId;do{groupId='my-ai-group:'+Date.now().toString(36)+'-'+(++serial);}while(state.groups.some(group=>group.id===groupId));
+        const group=blankGroup({id:groupId,name,avatar:String(record?.avatar||'').trim(),system:false,memberIds});
+        state.groups.push(group);publish();return groupId;
+      },
+      updateGroup(groupId, patch) {
+        const group=groupById(groupId);if(group.system)throw new Error('默认团队不可编辑');
+        if(patch.name!==undefined){const name=String(patch.name||'').trim();if(!name||name.length>50)throw new Error('请输入 1–50 个字符的团队名称');group.name=name;}
+        if(patch.avatar!==undefined)group.avatar=String(patch.avatar||'').trim();
+        if(patch.memberIds!==undefined){const ids=[...new Set((patch.memberIds||[]).filter(Boolean))];if(!ids.length)throw new Error('至少选择 1 个 AI 成员');group.memberIds=ids;}
+        group.updatedAt=new Date().toISOString();publish();
+      },
+      removeGroup(groupId) { const group=groupById(groupId);if(group.system)throw new Error('默认团队不可删除');state.groups=state.groups.filter(item=>item.id!==groupId);publish(); },
+      createThread(groupOrRecord, recordMaybe) {
+        const {groupId,record}=argsForThread(groupOrRecord,recordMaybe),group=groupById(groupId);
         const name = String(record.name || '').trim();
         if (!name || name.length > 100) throw new Error('请输入 1–100 个字符的子区名称');
         const shortId = record.short_id || record.id || 'thread-' + Date.now().toString(36);
-        const channelId = id + '____' + shortId;
-        if (state.threads.some(item => item.id === channelId)) throw new Error('子区已存在');
-        state.threads.push({...record, id:channelId, short_id:shortId, group_no:id, channel_id:channelId,
+        const channelId = group.id + '____' + shortId;
+        if (group.threads.some(item => item.id === channelId)) throw new Error('子区已存在');
+        group.threads.push({...record, id:channelId, short_id:shortId, group_no:group.id, channel_id:channelId,
           channel_type:5, name, status:1, created_at:new Date().toISOString(), updated_at:new Date().toISOString(), messages:[], draft:''});
-        publish(); return channelId;
+        group.updatedAt=new Date().toISOString();publish(); return channelId;
       },
-      updateThread(channelId, patch) {
-        const thread = target(channelId);
-        if (thread === state) throw new Error('请选择子区');
+      updateThread(groupOrChannelId, channelOrPatch, patchMaybe) {
+        const groupId=patchMaybe===undefined?id:groupOrChannelId,channelId=patchMaybe===undefined?groupOrChannelId:channelOrPatch,patch=patchMaybe===undefined?channelOrPatch:patchMaybe;
+        const group=groupById(groupId),thread=target(group.id,channelId);
+        if (thread === group) throw new Error('请选择子区');
         if (patch.name !== undefined) {
           const name = String(patch.name).trim();
           if (!name || name.length > 100) throw new Error('请输入 1–100 个字符的子区名称');
           thread.name = name;
         }
-        for (const key of ['status','deleted','joined','is_joined','member_count']) if (patch[key] !== undefined) thread[key] = patch[key];
-        thread.updated_at = new Date().toISOString(); publish();
+        for (const field of ['status','deleted','joined','is_joined','member_count']) if (patch[field] !== undefined) thread[field] = patch[field];
+        thread.updated_at = new Date().toISOString();group.updatedAt=thread.updated_at;publish();
       },
-      source(members, selectedThreadId) {
-        const unique = [...new Map(members.map(member => [member.id, member])).values()];
-        if(!state.collaborationStoriesV1&&unique.some(m=>m.kind!=='human')&&window.__EVA_MY_AI_GROUP_STORIES){
-          const ai=unique.filter(m=>m.kind!=='human'),human={uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT};
+      source(groupOrMembers, membersOrThread, threadMaybe) {
+        const {groupId,members,selectedThreadId}=argsForSource(groupOrMembers,membersOrThread,threadMaybe),group=groupById(groupId),all=normalizeMembers(members);
+        const owner=all.find(member=>member.kind==='human'||member.id==='u-wangyilin');
+        const ai=all.filter(member=>member.kind!=='human'&&member.id!=='u-wangyilin');
+        const unique=group.system?[...(owner?[owner]:[]),...ai]:[...(owner?[owner]:[]),...group.memberIds.map(memberId=>ai.find(member=>member.id===memberId)).filter(Boolean)];
+        if(group.system&&!group.collaborationStoriesV1&&ai.length&&window.__EVA_MY_AI_GROUP_STORIES){
+          const human={uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT};
           window.__EVA_MY_AI_GROUP_STORIES.forEach((story,index)=>{
-            const member=ai[index%ai.length],sender={uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},channelId=id+'____demo-'+story.id;
+            const member=ai[index%ai.length],sender={uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},channelId=group.id+'____demo-'+story.id;
             const messages=[{id:channelId+':1',kind:'text',sender:human,time:'09:00',text:'@'+member.name+' '+story.request},{id:channelId+':2',kind:'text',sender,time:'09:01',text:story.reply},{id:channelId+':3',kind:'text',sender:human,time:'09:03',text:'@'+member.name+' '+story.follow},{id:channelId+':4',kind:'text',sender,time:'09:04',text:'已整理为 **'+story.file+'**，请下载补充并确认。'},{id:channelId+':5',kind:'file',sender,time:'09:04',file:{name:story.file,size:new TextEncoder().encode(story.content).length,extension:story.file.split('.').pop()}}];
-            if(!state.threads.some(t=>t.id===channelId))state.threads.push({id:channelId,short_id:'demo-'+story.id,group_no:id,channel_id:channelId,channel_type:5,name:story.name,status:1,created_at:window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:window.__EVA_DEMO_TIME.AI_REVIEW_START,messages,draft:''});
+            if(!group.threads.some(t=>t.id===channelId))group.threads.push({id:channelId,short_id:'demo-'+story.id,group_no:group.id,channel_id:channelId,channel_type:5,name:story.name,status:1,created_at:window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:window.__EVA_DEMO_TIME.AI_REVIEW_START,messages,draft:''});
           });
-          const member=ai[0];state.messages.unshift({id:id+':demo-start',kind:'text',sender:human,time:'08:55',text:'今天围绕供应链运营协同推进三件事：保供晨会、供应商整改、合同评审。各项材料放到对应子区。\n@'+member.name+' 请帮我整理协作安排。'},{id:id+':demo-plan',kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time:'08:56',text:'## 今日协作安排\n\n- **保供晨会**：风险排序和行动清单。\n- **供应商整改**：核对证据，保留待确认项。\n- **合同评审**：整理条款差异与人工决策事项。\n\n各子区已准备讨论材料和文件示例，业务结论由你确认。'});
-          state.collaborationStoriesV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
+          const member=ai[0];group.messages.unshift({id:group.id+':demo-start',kind:'text',sender:human,time:'08:55',text:'今天围绕供应链运营协同推进三件事：保供晨会、供应商整改、合同评审。各项材料放到对应子区。\n@'+member.name+' 请帮我整理协作安排。'},{id:group.id+':demo-plan',kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time:'08:56',text:'## 今日协作安排\n\n- **保供晨会**：风险排序和行动清单。\n- **供应商整改**：核对证据，保留待确认项。\n- **合同评审**：整理条款差异与人工决策事项。\n\n各子区已准备讨论材料和文件示例，业务结论由你确认。'});
+          group.collaborationStoriesV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
         }
         const evaMember=unique.find(m=>m.id==='ai-general');
         if(evaMember && !state.singleEvaV1){
@@ -524,26 +569,19 @@
         // Convert text mentions to the shared IM identity contract, including saved demo history.
         const mentionCandidates=[{uid:'all',name:'@所有人'},{uid:'all',name:'@全体成员'},...unique.map(member=>({uid:member.id,name:'@'+member.name}))];
         const renderMessages=messages=>copy(messages).map(message=>({...message,mentions:[...(message.mentions||[]),...mentionCandidates.filter(candidate=>message.text?.includes(candidate.name)&&!message.mentions?.some(item=>item.uid===candidate.uid&&item.name===candidate.name))]}));
-        const channel = {id, name: '我的AI团队', chatType: 'group', channel_type: 2,
-          ownerId: 'u-wangyilin', memberIds: unique.map(member => member.id), members: unique.length,
-          fixedMembers: unique, threads: state.threads.filter(item=>!item.deleted).map(({messages,draft,...thread})=>({...thread,created_at:thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:thread.updated_at||thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name})), unread: 0, replyPolicy: 'mention-only'};
-        return {conversationOnly: true, sidebarVariant: 'ai-team-group', selectedThreadId, channels: [channel],
-          cats: [], messages: {[id]: renderMessages(state.messages)}, threadMessages: Object.fromEntries(state.threads.filter(item=>!item.deleted).map(item=>[item.id,renderMessages(item.messages)])), scopeNameOf: {},
-          initialDraft: target(selectedThreadId).draft,
-          getDraft: channelId => target(channelId).draft,
-          onDraftChange(text, channelId) { const current=target(channelId || selectedThreadId); if (current.draft !== text) {current.draft = text; publish();} },
-          onSend(text, channelId) {
-            const current = target(channelId || selectedThreadId);
-            if (!text.trim()) return false;
-            const time = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
-            const messageId = 'team-group:' + Date.now() + ':' + current.messages.length;
-            current.messages.push({id:messageId, kind:'text', sender:{uid:'u-wangyilin', name:'王宜林', avatar:window.__EVA_CURRENT_USER_PORTRAIT}, time, text});
-            unique.filter(member => member.kind !== 'human' && (text.includes('@' + member.name + ' ') || text.endsWith('@' + member.name))).forEach(member => {
-              current.messages.push({id:messageId+':'+member.id, kind:'text', sender:{uid:member.id, name:member.name, ai:true, identityAppearance:member.identityAppearance}, time,
-                text:'【原型】已收到你的请求，当前未调用真实服务。'});
-            });
-            current.draft = ''; current.updated_at = new Date().toISOString(); publish(); return true;
-          }
+        const channel = {id:group.id, name:group.name, identityAvatarUrl:group.avatar||undefined, chatType:'group', channel_type:2,
+          ownerId:'u-wangyilin', memberIds:unique.map(member=>member.id), members:unique.length, fixedMembers:unique,
+          threads:group.threads.filter(item=>!item.deleted).map(({messages,draft,...thread})=>({...thread,created_at:thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:thread.updated_at||thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name})), unread:0, replyPolicy:'mention-only'};
+        return {conversationOnly:true, sidebarVariant:'ai-team-group', selectedThreadId, channels:[channel], cats:[],
+          messages:{[group.id]:renderMessages(group.messages)},threadMessages:Object.fromEntries(group.threads.filter(item=>!item.deleted).map(item=>[item.id,renderMessages(item.messages)])),scopeNameOf:{},
+          initialDraft:target(group.id,selectedThreadId).draft,
+          getDraft:channelId=>target(group.id,channelId).draft,
+          onDraftChange(text,channelId){const current=target(group.id,channelId||selectedThreadId);if(current.draft!==text){current.draft=text;publish();}},
+          onSend(text,channelId){const current=target(group.id,channelId||selectedThreadId);if(!text.trim())return false;
+            const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),messageId='team-group:'+Date.now()+':'+current.messages.length;
+            current.messages.push({id:messageId,kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text});
+            unique.filter(member=>member.kind!=='human'&&(text.includes('@'+member.name+' ')||text.endsWith('@'+member.name))).forEach(member=>current.messages.push({id:messageId+':'+member.id,kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time,text:'【原型】已收到你的请求，当前未调用真实服务。'}));
+            current.draft='';current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;}
         };
       }
     });
