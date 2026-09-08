@@ -115,7 +115,41 @@
       const target=record(targetParentId);
       if(target.type!=='folder'||target.spaceId!==item.spaceId)fail('不能跨空间移动或复制');
     };
-    const descendants=id=>{const ids=new Set([id]);let changed=true;while(changed){changed=false;for(const item of records){if(ids.has(item.parent_id)&&!ids.has(item.id)){ids.add(item.id);changed=true;}}}return ids;};
+    const descendants=(id,spaceId)=>{const scope=spaceId??record(id).spaceId,ids=new Set([id]);let changed=true;while(changed){changed=false;for(const item of records){if(item.spaceId===scope&&ids.has(item.parent_id)&&!ids.has(item.id)){ids.add(item.id);changed=true;}}}return ids;};
+    const activeDescendants=(id,spaceId)=>{const scope=spaceId??record(id).spaceId,ids=new Set([id]);let changed=true;while(changed){changed=false;for(const item of records){if(item.spaceId===scope&&!item.deletedAt&&ids.has(item.parent_id)&&!ids.has(item.id)){ids.add(item.id);changed=true;}}}return ids;};
+    const isTrashRoot=item=>{
+      if(!item?.deletedAt)return false;
+      if(typeof item.directTrash==='boolean')return item.directTrash;
+      if(item.trashRootId)return item.trashRootId===item.id;
+      const parentId=item.originalParentId??item.parent_id??0;if(!parentId)return true;
+      const parent=records.find(candidate=>candidate.id===parentId&&candidate.spaceId===item.spaceId);
+      return !parent?.deletedAt;
+    };
+    const migrateLegacyTrashMetadata=()=>{
+      const pending=records.filter(item=>item.deletedAt&&!item.trashRootId);
+      const roots=pending.filter(item=>{const parentId=item.originalParentId??item.parent_id??0;return !parentId||!pending.some(candidate=>candidate.id===parentId&&candidate.spaceId===item.spaceId);});
+      for(const rootItem of roots){
+        const batchId='legacy:'+rootItem.id+':'+String(rootItem.deletedAt||'unknown'),ids=descendants(rootItem.id,rootItem.spaceId);
+        for(const target of pending){if(target.spaceId===rootItem.spaceId&&ids.has(target.id)&&!target.trashRootId){target.deletionBatchId=batchId;target.trashRootId=rootItem.id;target.directTrash=target.id===rootItem.id;}}
+      }
+    };
+    migrateLegacyTrashMetadata();
+    const trashUnitRecords=item=>{
+      if(item.deletionBatchId)return records.filter(target=>target.spaceId===item.spaceId&&target.deletedAt&&target.deletionBatchId===item.deletionBatchId&&target.trashRootId===item.id);
+      const ids=descendants(item.id,item.spaceId);return records.filter(target=>target.spaceId===item.spaceId&&target.deletedAt&&ids.has(target.id));
+    };
+    const requireTrashRoot=(item,message)=>{
+      if(!item.deletedAt)fail('文件不在回收站');
+      if(!isTrashRoot(item))fail(message||'请操作整个文件夹');
+    };
+    const restoredName=(item,parentId)=>{
+      const conflict=name=>records.some(candidate=>candidate.id!==item.id&&!candidate.deletedAt&&candidate.spaceId===item.spaceId&&candidate.parent_id===(parentId||0)&&candidate.name===name);
+      if(!conflict(item.name))return item.name;
+      const extension=item.type==='folder'?'':(String(item.name).match(/(\.[^.]+)$/)?.[1]||''),stem=extension?item.name.slice(0,-extension.length):item.name;
+      const base=stem.replace(/（已恢复(?: \d+)?）$/,'');let index=1,candidate='';
+      do{candidate=base+'（已恢复'+(index===1?'':' '+index)+'）'+extension;index++;}while(conflict(candidate));
+      return candidate;
+    };
     const shortcutSource=item=>item.type==='shortcut'?records.find(candidate=>candidate.id===item.sourceFileId)||null:null;
     const shortcutStatus=(item,actorId)=>{
       if(item.type!=='shortcut')return'available';
@@ -213,7 +247,10 @@
         if(!role(spaceId,actorId))return[];
         return clone(records.filter(item=>item.spaceId===spaceId&&(options.deleted?Boolean(item.deletedAt):!item.deletedAt)).map(item=>visibleRecord(item,actorId)));
       },
-      trashList(spaceId,actorId){requireAction('view-trash',spaceId,actorId);return clone(records.filter(item=>item.spaceId===spaceId&&item.deletedAt).map(item=>visibleRecord(item,actorId)));},
+      trashList(spaceId,actorId){
+        requireAction('view-trash',spaceId,actorId);
+        return clone(records.filter(item=>item.spaceId===spaceId&&isTrashRoot(item)).map(item=>({...visibleRecord(item,actorId),trashedItemCount:Math.max(0,trashUnitRecords(item).length-1)})));
+      },
       all(actorId){return clone(records.filter(item=>!item.deletedAt&&Boolean(role(item.spaceId,actorId))).map(item=>visibleRecord(item,actorId)));},
       createFolder(actorId,spaceId,name,parentId=0){
         requireAction('create-folder',spaceId,actorId);name=String(name||'').trim();if(!name)fail('请输入文件夹名称');
@@ -249,9 +286,26 @@
         }
         notify();return mapping.get(id);
       },
-      trash(actorId,id){const item=record(id);requireAction('trash',item.spaceId,actorId);const when=stamp(),ids=descendants(id);for(const target of records){if(ids.has(target.id)){target.deletedAt=when;target.deletedBy=actorName(actorId);target.originalParentId=target.parent_id;}}notify();},
-      restore(actorId,id){const item=record(id);requireAction('restore',item.spaceId,actorId);const ids=descendants(id),restoreParent=item.originalParentId||0;for(const target of records){if(ids.has(target.id)){delete target.deletedAt;delete target.deletedBy;delete target.originalParentId;}}item.parent_id=restoreParent;notify();},
-      removeForever(actorId,id){const item=record(id);requireAction('delete-forever',item.spaceId,actorId);const ids=descendants(id);records=records.filter(target=>!ids.has(target.id));notify();},
+      trash(actorId,id){
+        const item=record(id);requireAction('trash',item.spaceId,actorId);if(item.deletedAt)fail('文件已在回收站');
+        const when=stamp(),batchId='trash:'+id+':'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),ids=activeDescendants(id,item.spaceId);
+        for(const target of records){if(ids.has(target.id)){target.deletedAt=when;target.deletedBy=actorName(actorId);target.originalParentId=target.parent_id;target.deletionBatchId=batchId;target.trashRootId=id;target.directTrash=target.id===id;}}
+        notify();
+      },
+      restore(actorId,id){
+        const item=record(id);requireAction('restore',item.spaceId,actorId);requireTrashRoot(item,'请恢复整个文件夹');
+        const unit=trashUnitRecords(item),originalParentId=item.originalParentId||0,parent=originalParentId?records.find(candidate=>candidate.id===originalParentId):null;
+        const parentAvailable=Boolean(parent&&!parent.deletedAt&&parent.type==='folder'&&parent.spaceId===item.spaceId),restoreParent=parentAvailable?originalParentId:0,restoredToRoot=Boolean(originalParentId&&!parentAvailable);
+        item.name=restoredName(item,restoreParent);
+        for(const target of unit){delete target.deletedAt;delete target.deletedBy;delete target.originalParentId;delete target.deletionBatchId;delete target.trashRootId;delete target.directTrash;}
+        item.parent_id=restoreParent;notify();return{restoredToRoot,parentId:restoreParent,restoredCount:unit.length};
+      },
+      removeForever(actorId,id){
+        const item=record(id);requireAction('delete-forever',item.spaceId,actorId);requireTrashRoot(item);
+        const unit=trashUnitRecords(item),ids=new Set(unit.map(target=>target.id));
+        for(const target of records){if(target.spaceId===item.spaceId&&!target.deletedAt&&ids.has(target.parent_id))target.parent_id=0;}
+        records=records.filter(target=>!(target.deletedAt&&ids.has(target.id)));notify();return{removedCount:unit.length};
+      },
       resetProjectDemo(projectId){records=records.filter(r=>r.projectId!==projectId);records.push(...clone(resetSeed.filter(r=>r.projectId===projectId)).map(normalizeRecord));notify();},
       transfer(actorId,projectId,sourceFile,source){
         if(!membership.canRead(source.groupId,actorId))fail('你已不在来源群，无法转存此文件');

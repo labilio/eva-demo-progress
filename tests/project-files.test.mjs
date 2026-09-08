@@ -9,6 +9,149 @@ test('项目文件列表适配保留结构化来源与共享版本',async()=>{co
 test('项目团队文件复用文件库组件并移除旧筛选和旧上传文案',async()=>{const {createPatchedRuntime}=await import('../tools/build-runtime.mjs');const {source}=createPatchedRuntime();assert.match(source,/FilesView=\(\)=>window\.EvaProjectFilesUI\.render/);const ui=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');assert.match(ui,/搜索当前项目/);assert.match(ui,/上传本地文件/);assert.match(ui,/eva-project-files__inspector/);assert.doesNotMatch(ui,/TYPE_PILLS|搜索云盘文件|Owner · 项目负责人/);const entry=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.ok(entry.indexOf('prototype\/009-1-project-files-ui.js')<entry.indexOf('vendor\/eva-runtime.module.js'));});
 test('Editor 可整理和上传项目文件，但不能删除、查看或恢复回收站',()=>{const {members,files}=setup();files.createFolder('b','p','成员资料');files.upload('b','p',{name:'本地清单.xlsx',size:2048});const uploaded=files.list('p','b').find(item=>item.name==='本地清单.xlsx');files.rename('b',uploaded.id,'本地清单-更新.xlsx');files.copy('b',uploaded.id);assert.equal(files.role('p','b'),'editor');assert.equal(files.can('move','p','b'),true);assert.equal(files.can('trash','p','b'),false);assert.equal(files.can('view-trash','p','b'),false);assert.throws(()=>files.trash('b',uploaded.id));assert.throws(()=>files.trashList('p','b'));});
 test('Owner 与 Manager 可管理回收站，只有 Owner 可转移空间所有权',()=>{const {members,files}=setup();members.addMember('p','a','c');members.setAdmin('p','a','c',true);files.upload('c','p',{name:'管理员上传.pdf',size:1024});const item=files.list('p','c').find(entry=>entry.name==='管理员上传.pdf');files.trash('c',item.id);assert.equal(files.trashList('p','c').length,1);files.restore('c',item.id);assert.equal(files.list('p','c').some(entry=>entry.id===item.id),true);assert.equal(files.can('manage-members','p','c'),true);assert.equal(files.can('transfer-ownership','p','c'),false);assert.equal(files.can('transfer-ownership','p','a'),true);});
+test('Editor 即使知道回收站记录 ID 也不能直接恢复或永久删除',()=>{
+  const {files}=setup();
+  const fileId=files.upload('a','p',{name:'管理员删除.pdf',size:1});
+  files.trash('a',fileId);
+  assert.throws(()=>files.restore('b',fileId),/当前角色无此操作权限/);
+  assert.throws(()=>files.removeForever('b',fileId),/当前角色无此操作权限/);
+  assert.ok(files.snapshot().find(item=>item.id===fileId));
+});
+test('删除文件夹形成单一回收站条目，禁止单独恢复随文件夹删除的子项',()=>{
+  const {files}=setup();
+  const folderId=files.createFolder('a','p','交付资料');
+  const nestedFolderId=files.createFolder('a','p','合同',folderId);
+  const fileId=files.upload('a','p',{name:'合同.pdf',size:10},nestedFolderId);
+  files.trash('a',folderId);
+  const trash=files.trashList('p','a');
+  assert.equal(trash.length,1);
+  assert.equal(trash[0].id,folderId);
+  assert.equal(trash[0].trashedItemCount,2);
+  assert.throws(()=>files.restore('a',fileId),/请恢复整个文件夹/);
+  const result=files.restore('a',folderId);
+  assert.equal(JSON.stringify(result),JSON.stringify({restoredToRoot:false,parentId:0,restoredCount:3}));
+  assert.equal(files.list('p','a').filter(item=>[folderId,nestedFolderId,fileId].includes(item.id)).length,3);
+});
+test('独立删除项的原父目录不可用时恢复到空间根目录',()=>{
+  const {files}=setup();
+  const parentId=files.createFolder('a','p','旧目录');
+  const fileId=files.upload('a','p',{name:'需保留.pdf',size:10},parentId);
+  files.trash('a',fileId);
+  const firstDeletion=files.snapshot().find(item=>item.id===fileId);
+  files.trash('a',parentId);
+  const afterParentDeletion=files.snapshot().find(item=>item.id===fileId);
+  assert.equal(afterParentDeletion.deletionBatchId,firstDeletion.deletionBatchId);
+  assert.equal(afterParentDeletion.trashRootId,fileId);
+  assert.equal(afterParentDeletion.directTrash,true);
+  files.removeForever('a',parentId);
+  assert.equal(files.trashList('p','a').some(item=>item.id===fileId),true);
+  const result=files.restore('a',fileId);
+  assert.equal(JSON.stringify(result),JSON.stringify({restoredToRoot:true,parentId:0,restoredCount:1}));
+  assert.equal(files.list('p','a').find(item=>item.id===fileId).parent_id,0);
+});
+test('永久删除旧回收站目录不会删除已恢复的活跃子项',()=>{
+  const {members,sharing}=setup();
+  const files=sharing.create(members,[
+    {id:'legacy-folder',spaceId:'p',projectId:'p',area:'project',parent_id:0,name:'已删除目录',type:'folder',size:0,deletedAt:'2026-09-01T10:00:00+08:00',originalParentId:0},
+    {id:'restored-file',spaceId:'p',projectId:'p',area:'project',parent_id:'legacy-folder',name:'已恢复.pdf',type:'blob',size:1}
+  ]);
+  files.removeForever('a','legacy-folder');
+  const restored=files.snapshot().find(item=>item.id==='restored-file');
+  assert.ok(restored);
+  assert.equal(restored.parent_id,0);
+});
+test('Manager 永久删除文件夹整批回收站项且保留已恢复的活跃子项',()=>{
+  const {members,sharing}=setup();
+  members.addMember('p','a','c');
+  members.setAdmin('p','a','c',true);
+  const deletedAt='2026-09-01T10:00:00+08:00',batchId='trash:manager-folder:batch';
+  const files=sharing.create(members,[
+    {id:'manager-folder',spaceId:'p',projectId:'p',area:'project',parent_id:0,name:'整批删除',type:'folder',size:0,deletedAt,deletionBatchId:batchId,trashRootId:'manager-folder',directTrash:true,originalParentId:0},
+    {id:'manager-deleted-child',spaceId:'p',projectId:'p',area:'project',parent_id:'manager-folder',name:'待永久删除.pdf',type:'blob',size:1,deletedAt,deletionBatchId:batchId,trashRootId:'manager-folder',directTrash:false,originalParentId:'manager-folder'},
+    {id:'manager-restored-child',spaceId:'p',projectId:'p',area:'project',parent_id:'manager-folder',name:'已恢复.pdf',type:'blob',size:1}
+  ]);
+  assert.equal(files.removeForever('c','manager-folder').removedCount,2);
+  assert.equal(files.snapshot().some(item=>item.id==='manager-folder'||item.id==='manager-deleted-child'),false);
+  const active=files.snapshot().find(item=>item.id==='manager-restored-child');
+  assert.ok(active);
+  assert.equal(active.parent_id,0);
+});
+test('旧数据中的文件夹删除树也仅展示根项并整体恢复',()=>{
+  const {members,sharing}=setup();
+  const deletedAt='2026-09-01T10:00:00+08:00';
+  const files=sharing.create(members,[
+    {id:'legacy-root',spaceId:'p',projectId:'p',area:'project',parent_id:0,name:'旧资料',type:'folder',size:0,deletedAt,originalParentId:0},
+    {id:'legacy-child',spaceId:'p',projectId:'p',area:'project',parent_id:'legacy-root',name:'旧文件.pdf',type:'blob',size:1,deletedAt,originalParentId:'legacy-root'}
+  ]);
+  assert.equal(JSON.stringify(files.trashList('p','a').map(item=>item.id)),JSON.stringify(['legacy-root']));
+  assert.throws(()=>files.restore('a','legacy-child'),/请恢复整个文件夹/);
+  assert.equal(files.restore('a','legacy-root').restoredCount,2);
+  assert.equal(files.list('p','a').length,2);
+});
+test('恢复位置已有同名文件时自动增加可递增的已恢复后缀',()=>{
+  const {files}=setup();
+  const firstId=files.upload('a','p',{name:'报告.pdf',size:1});
+  files.trash('a',firstId);
+  files.upload('a','p',{name:'报告.pdf',size:2});
+  files.restore('a',firstId);
+  assert.equal(files.snapshot().find(item=>item.id===firstId).name,'报告（已恢复）.pdf');
+
+  const secondId=files.upload('a','p',{name:'清单.xlsx',size:1});
+  files.trash('a',secondId);
+  files.upload('a','p',{name:'清单.xlsx',size:2});
+  files.upload('a','p',{name:'清单（已恢复）.xlsx',size:3});
+  files.restore('a',secondId);
+  assert.equal(files.snapshot().find(item=>item.id===secondId).name,'清单（已恢复 2）.xlsx');
+});
+test('个人、共享和项目空间都按单一删除单元处理文件夹',()=>{
+  const {members,sharing}=setup();
+  const files=sharing.create(members,[],undefined,[],[{id:'shared:test',name:'测试共享空间',ownerId:'a',members:[{id:'a',role:'owner'},{id:'b',role:'manager'},{id:'c',role:'editor'}]}]);
+  for(const [spaceId,actor] of [['personal:a','a'],['shared:test','b'],['p','a']]){
+    const folderId=files.createFolder(actor,spaceId,'空间资料');
+    const fileId=files.upload(actor,spaceId,{name:'子文件.pdf',size:1},folderId);
+    files.trash(actor,folderId);
+    const trash=files.trashList(spaceId,actor);
+    assert.equal(trash.length,1);
+    assert.equal(trash[0].id,folderId);
+    assert.equal(trash[0].trashedItemCount,1);
+    assert.equal(files.restore(actor,folderId).restoredCount,2);
+    assert.equal(files.list(spaceId,actor).some(item=>item.id===fileId),true);
+  }
+});
+test('异常跨空间 parent_id 不会扩大复制、删除、迁移或永久删除范围',()=>{
+  const {members,sharing}=setup();
+  const deletedAt='2026-09-01T10:00:00+08:00',batchId='shared-batch-id';
+  const files=sharing.create(members,[
+    {id:'project-root',spaceId:'p',projectId:'p',area:'project',parent_id:0,name:'项目目录',type:'folder',size:0},
+    {id:'foreign-active',spaceId:'personal:a',projectId:null,area:'personal',parent_id:'project-root',name:'个人文件.pdf',type:'blob',size:1},
+    {id:'deleted-root',spaceId:'p',projectId:'p',area:'project',parent_id:0,name:'待永久删除',type:'folder',size:0,deletedAt,deletionBatchId:batchId,trashRootId:'deleted-root',directTrash:true,originalParentId:0},
+    {id:'foreign-deleted',spaceId:'personal:a',projectId:null,area:'personal',parent_id:'deleted-root',name:'不得删除.pdf',type:'blob',size:1,deletedAt,deletionBatchId:batchId,trashRootId:'deleted-root',directTrash:false,originalParentId:'deleted-root'},
+    {id:'foreign-restored',spaceId:'personal:a',projectId:null,area:'personal',parent_id:'deleted-root',name:'不得重挂.pdf',type:'blob',size:1}
+  ]);
+  const personalCount=files.list('personal:a','a').length;
+  files.copy('a','project-root');
+  assert.equal(files.list('personal:a','a').length,personalCount);
+  files.trash('a','project-root');
+  assert.equal(files.snapshot().find(item=>item.id==='foreign-active').deletedAt,undefined);
+  assert.equal(files.trashList('p','a').find(item=>item.id==='project-root').trashedItemCount,0);
+  assert.equal(files.trashList('p','a').find(item=>item.id==='deleted-root').trashedItemCount,0);
+  files.removeForever('a','deleted-root');
+  const snapshot=files.snapshot();
+  assert.ok(snapshot.find(item=>item.id==='foreign-deleted'));
+  assert.equal(snapshot.find(item=>item.id==='foreign-restored').parent_id,'deleted-root');
+});
+test('旧回收站数据迁移不会将跨空间同 parent_id 记录并入同一删除批次',()=>{
+  const {members,sharing}=setup();
+  const deletedAt='2026-09-01T10:00:00+08:00';
+  const files=sharing.create(members,[
+    {id:'legacy-project-root',spaceId:'p',projectId:'p',area:'project',parent_id:0,name:'项目旧目录',type:'folder',size:0,deletedAt,originalParentId:0},
+    {id:'legacy-foreign',spaceId:'personal:a',projectId:null,area:'personal',parent_id:'legacy-project-root',name:'个人旧文件.pdf',type:'blob',size:1,deletedAt,originalParentId:'legacy-project-root'}
+  ]);
+  const projectRoot=files.trashList('p','a')[0],personalRoot=files.trashList('personal:a','a')[0];
+  assert.equal(projectRoot.trashedItemCount,0);
+  assert.equal(personalRoot.id,'legacy-foreign');
+  assert.notEqual(projectRoot.deletionBatchId,personalRoot.deletionBatchId);
+});
 test('移动和复制只能发生在同一空间',()=>{const {members,files}=setup();members.createProject('other','其他项目','a',[]);const folderId=files.createFolder('a','p','项目内文件夹');files.upload('a','p',{name:'报告.pdf',size:10});const item=files.list('p','a').find(entry=>entry.name==='报告.pdf');files.move('a',item.id,folderId);const otherFolder=files.createFolder('a','other','其他空间文件夹');assert.throws(()=>files.move('a',item.id,otherFolder));assert.throws(()=>files.copy('a',item.id,otherFolder));});
 test('项目专家和项目专员按 Editor 写入任务产出，文件仍归属项目空间',()=>{const {files}=setup();const actor='project-agent:p';assert.equal(files.role('p',actor),'editor');files.upload(actor,'p',{name:'任务总结.md',size:120});const output=files.list('p','a').find(entry=>entry.name==='任务总结.md');assert.equal(output.projectId,'p');assert.equal(output.creator,'Eva 项目管理专员');assert.equal(files.can('trash','p',actor),false);});
 test('共享空间是独立多空间，按 Owner、Manager、Editor 控制文件操作',()=>{const {members,sharing}=setup();const shared=sharing.create(members,[],undefined,[],[{id:'shared:g',name:'协作资料',ownerId:'a',members:[{id:'a',role:'owner'},{id:'b',role:'manager'},{id:'c',role:'editor'}]}]);assert.equal(shared.sharedSpaces('b').length,1);assert.equal(shared.role('shared:g','a'),'owner');assert.equal(shared.role('shared:g','b'),'manager');assert.equal(shared.role('shared:g','c'),'editor');const id=shared.upload('c','shared:g',{name:'群文件.pdf',size:12});const item=shared.list('shared:g','b').find(entry=>entry.id===id);assert.equal(item.area,'shared');assert.equal(item.projectId,null);shared.rename('c',id,'协作文件.pdf');assert.equal(shared.can('trash','shared:g','c'),false);assert.throws(()=>shared.trash('c',id));shared.trash('b',id);shared.restore('b',id);assert.equal(shared.can('manage-members','shared:g','b'),true);assert.equal(shared.can('transfer-ownership','shared:g','b'),false);assert.throws(()=>shared.setSharedMemberRole('b','shared:g','c','manager'));shared.setSharedMemberRole('a','shared:g','c','manager');assert.equal(shared.role('shared:g','c'),'manager');shared.transferSharedOwnership('a','shared:g','b');assert.equal(shared.role('shared:g','b'),'owner');assert.equal(shared.role('shared:g','a'),'manager');});
@@ -28,3 +171,5 @@ test('两个文件入口点击文件名直接预览，操作列通过三点菜�
 test('详情面板将复制内部链接收纳为文件标题旁的紧凑图标按钮',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');assert.match(drive,/class="eva-file-detail__copy-link"[^>]*data-drive-action="copy-link"/);assert.match(project,/className:'eva-file-detail__copy-link'[^}]*aria-label':'复制内部链接'/);assert.doesNotMatch(drive,/class="eva-drive__ghost-button"[^>]*data-drive-action="copy-link"/);assert.doesNotMatch(project,/className:'eva-drive__ghost-button'[^}]*onClick:\(\)=>copyLink/);assert.match(styles,/\.eva-file-detail__copy-link\s*\{[\s\S]*?width:\s*32px;[\s\S]*?height:\s*32px;/);assert.match(styles,/\.eva-file-detail__identity--with-action\s*\{[\s\S]*?grid-template-columns:\s*42px minmax\(0, 1fr\) 32px;/);});
 test('三点操作菜单脱离列表滚动层并根据可用空间上下展开',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');assert.match(drive,/rowMenuAnchor\(action/);assert.match(drive,/visualViewport/);assert.match(project,/setMenuAnchor/);assert.match(project,/roomBelow<menuHeight/);assert.match(styles,/\.eva-drive__row-menu\s*\{[\s\S]*position:\s*fixed/);assert.match(styles,/max-height:\s*calc\(100vh - 24px\)/);});
 test('两个文件入口使用可输入下拉框选择已有标签或新建标签',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');for(const source of [drive,project]){assert.match(source,/从下拉框选择已有标签/);assert.match(source,/没有匹配标签，按回车新建/);assert.match(source,/toLowerCase\(\)\s*===\s*input\.toLowerCase\(\)/);assert.match(source,/tagDropdownOpen/);assert.doesNotMatch(source,/多个标签用逗号分隔/);}assert.match(drive,/data-drive-action="tag-option"/);assert.match(drive,/role="combobox"/);assert.match(project,/role:'listbox'/);assert.match(styles,/\.eva-tag-editor__dropdown/);assert.match(styles,/\.eva-tag-editor__chip/);});
+test('两个文件入口按文件夹删除单元提示，并反馈恢复到根目录',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');for(const source of [drive,project]){assert.match(source,/及其中内容/);assert.match(source,/trashedItemCount/);assert.match(source,/restoredToRoot/);assert.match(source,/原位置不存在，已恢复到空间根目录/);}});
+test('两个文件详情入口按实时角色隐藏恢复和永久删除动作',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');for(const source of [drive,project]){assert.match(source,/canRestore/);assert.match(source,/canDeleteForever/);assert.match(source,/can\('restore'/);assert.match(source,/can\('delete-forever'/);}});
