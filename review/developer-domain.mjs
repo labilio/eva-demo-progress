@@ -2,7 +2,7 @@
 export const STATUS_LABELS = { open: '待讨论', approved: '已确认', doing: '原型修改中', done: '原型已改完' };
 export const KIND_LABELS = { copy: '改文案', ui: '调整 UI', rebuild: '重做', function: '补充／优化功能', ready: '已基本定稿' };
 export const MENUS = [
-  ['all', '全部功能'], ['personal', 'Eva 同学'], ['messages', '消息'], ['my-ai', '我的 AI'],
+  ['all', '全部功能'], ['personal', 'Eva 同学'], ['messages', '消息'], ['my-ai', '我的 AI 团队'],
   ['projects', '项目'], ['contacts', '通讯录'], ['drive', '文件库'], ['workboard', '任务看板'],
   ['employees', '数字员工市场'], ['skills', '连接中心'], ['automation', '自动化任务'], ['sites', '站点'], ['agent-create', 'Agent 创建中心'], ['other', '其他／跨模块'],
 ];

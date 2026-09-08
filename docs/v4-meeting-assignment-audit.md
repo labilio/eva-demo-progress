@@ -38,7 +38,7 @@
 
 | 事项 | 状态 | 证据与限制 |
 | --- | --- | --- |
-| 我的 AI 支持直接加入数字员工 | 完成（源码） | `prototype/009-5-patch-im.js` 的 EvaAITeamPage 已有员工选择与分组 session；`prototype/047-digital-employees.js:71` 有加入 AI 团队操作。此处是个人收藏/协作对象，不应推导为有权限配置项目员工。 |
+| 我的 AI 团队支持直接加入数字员工 | 完成（源码） | `prototype/009-5-patch-im.js` 的 EvaAITeamPage 已有员工选择与分组 session；`prototype/047-digital-employees.js:71` 有加入 AI 团队操作。此处是个人收藏/协作对象，不应推导为有权限配置项目员工。 |
 | 任务必须保留项目前缀，支持完整编号查找 | 完成（源码与定向测试） | `prototype/009-6-patch-general.js:183`–`:210` 恢复前缀设置、格式及跨项目冲突检查；`:222` 新建任务按项目生成完整编号，`:224` 接受完整 identifier 查找。旧任务编号不重写。旧调用缺少 issuePrefix 的兼容已修复，项目设置测试全部通过，新增完整编号创建与详情查询测试亦通过。 |
 
 ## 定向执行证据
