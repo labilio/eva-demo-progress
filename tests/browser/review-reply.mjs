@@ -1,0 +1,81 @@
+// Run with npm start, then NODE_PATH=<directory containing playwright> node tests/browser/review-reply.mjs
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+const { chromium } = createRequire(import.meta.url)('playwright');
+const browser = await chromium.launch({ channel: 'msedge', headless: true });
+const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
+let failRead = false;
+let reads = 0;
+let failReply = false;
+let replyRequests = 0;
+let releaseReply;
+let pendingReply;
+const rows = ['first', 'second'].map((id, i) => ({ id, seq: 2-i, page_path: '#/guid', anchor: {}, author_name: '测试同事', body: `回复回归测试 ${id}`, kind: 'function', status: 'open', created_at: new Date().toISOString(), replies: [] }));
+await page.route('**/rest/v1/eva_demo_comment*', async route => {
+  // Every request is fulfilled locally; no test records reach the shared database.
+  if (route.request().method() === 'POST') {
+    replyRequests++;
+    const payload = route.request().postDataJSON();
+    if (pendingReply) await pendingReply;
+    const reply = { id: `reply-${replyRequests}`, ...payload, created_at: new Date().toISOString() };
+    if (!failReply) rows.find(row => row.id === payload.comment_id).replies.push(reply);
+    return route.fulfill({ status: failReply ? 503 : 201, json: failReply ? { message: '回复失败测试' } : [reply] });
+  }
+  assert.equal(route.request().method(), 'GET');
+  reads++;
+  await route.fulfill({ status: failRead ? 503 : 200, json: failRead ? { message: '测试断网' } : rows });
+});
+try {
+  await page.goto(process.env.EVA_REVIEW_URL || 'http://127.0.0.1:4173/#/guid');
+  await page.locator('[data-review-launcher]').click();
+  await page.locator('[data-review-reply-toggle="first"]').click();
+  const input = page.getByRole('textbox', { name: '回复内容', exact: true });
+  await input.focus();
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Input.imeSetComposition', { text: '中文回复写到一半', selectionStart: 2, selectionEnd: 5 });
+  await input.evaluate(el => { window.originalReplyInput = el; el.setSelectionRange(2, 5); });
+  const before = reads;
+  await new Promise(resolve => setTimeout(resolve, 16000));
+  assert.ok(reads > before, '15-second polling must run');
+  assert.equal(await input.inputValue(), '中文回复写到一半', 'poll must retain reply draft');
+  assert.equal(await input.evaluate(el => el === window.originalReplyInput && document.activeElement === el && el.selectionStart === 2 && el.selectionEnd === 5), true, 'poll must preserve the live input and selection');
+  await cdp.send('Input.insertText', { text: '中文回复写到一半' });
+  failRead = true;
+  await new Promise(resolve => setTimeout(resolve, 16000));
+  assert.equal(await input.inputValue(), '中文回复写到一半', 'failed poll must retain draft');
+  failRead = false;
+  await page.locator('[data-review-reply-toggle="second"]').click();
+  await input.fill('第二条独立草稿');
+  await page.locator('[data-review-reply-toggle="first"]').click();
+  assert.equal(await input.inputValue(), '中文回复写到一半', 'switching replies must isolate and restore drafts');
+  await page.locator('[data-review-close]').click();
+  await page.locator('[data-review-launcher]').click();
+  assert.equal(await input.inputValue(), '中文回复写到一半', 'reopening must retain draft');
+  await input.focus();
+  assert.equal(await input.evaluate(el => !el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true, cancelable: true }))), true, 'IME Enter must not submit');
+  assert.equal(replyRequests, 0);
+  await page.evaluate(() => { location.hash = '#/contacts'; });
+  await page.waitForURL('**/#/contacts');
+  await page.evaluate(() => { location.hash = '#/guid'; });
+  await page.waitForURL('**/#/guid');
+  assert.equal(await input.inputValue(), '中文回复写到一半', 'route roundtrip must retain draft');
+  failReply = true;
+  await page.getByRole('button', { name: '发送回复', exact: true }).click();
+  await page.getByText('回复失败测试', { exact: true }).waitFor();
+  assert.equal(await input.inputValue(), '中文回复写到一半', 'send failure must retain draft');
+  assert.equal(await input.evaluate(el => el.readOnly), false);
+  failReply = false;
+  pendingReply = new Promise(resolve => { releaseReply = resolve; });
+  await page.getByRole('button', { name: '发送回复', exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('[data-review-reply] [name=body]').readOnly);
+  await page.locator('[data-review-reply-toggle="second"]').click();
+  assert.equal(await input.inputValue(), '第二条独立草稿');
+  releaseReply();
+  await page.getByText('回复已同步', { exact: true }).waitFor();
+  assert.equal(await input.inputValue(), '第二条独立草稿', 'late send success must not close another reply');
+  await page.locator('[data-review-reply-toggle="first"]').click();
+  assert.equal(await input.inputValue(), '', 'success clears only the submitted draft');
+  assert.equal(await page.locator('[data-review-item="first"] .eva-review-replies p').textContent(), '中文回复写到一半');
+  await page.screenshot({ path: '/tmp/eva-review-reply.png' });
+  console.log('PASS: Edge 1200×800; polling, read failure, focus/selection, IME, independent drafts, reopen, route roundtrip, send failure/success, concurrent reply switching');
+} finally { await browser.close(); }
