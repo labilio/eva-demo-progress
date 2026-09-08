@@ -9,13 +9,13 @@
     bottom: 0;
     left: var(--eva-drive-left, 260px);
     overflow: auto;
-    background: #fff;
-    color: #1f2329;
+    background: var(--eva-surface-primary);
+    color: var(--eva-text-primary);
   }
 
   .eva-connection-center[hidden] { display: none; }
 
-  .eva-connection-center-native-host { height: 100%; overflow: auto; background: #fff; }
+  .eva-connection-center-native-host { height: 100%; overflow: auto; background: var(--eva-surface-primary); }
   .eva-connection-center.eva-connection-center--native {
     position: relative;
     z-index: auto;
@@ -29,31 +29,30 @@
 
   .eva-connection-center__head {
     display: flex;
-    min-height: 68px;
+    min-height: 52px; box-sizing: border-box;
     align-items: center;
     gap: 16px;
-    padding: 0 26px;
-    border-bottom: 1px solid #e5e6eb;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--eva-border-faint);
   }
 
   .eva-connection-center__head h1 {
     margin: 0;
-    font-size: 20px;
-    line-height: 28px;
+    font: var(--eva-fw-medium) 16px/24px var(--eva-font-sans);
   }
 
   .eva-connection-center__head p {
     margin: 0;
-    color: #7b828b;
-    font-size: 13px;
+    color: var(--eva-text-secondary-accessible);
+    font-size: 14px; line-height: 22px;
   }
 
-  .eva-connection-center__body { padding: 24px 30px 34px; }
+  .eva-connection-center__body { padding: 24px max(24px, calc((100% - 1084px) / 2)) 48px; }
 
   .eva-connection-tabs {
     display: flex;
     gap: 4px;
-    border-bottom: 1px solid #e5e6eb;
+    border-bottom: 1px solid var(--eva-border-faint);
   }
 
   .eva-connection-tab {
@@ -66,14 +65,14 @@
     padding: 10px 16px 13px;
     border: 0;
     background: transparent;
-    color: #646a73;
+    color: var(--eva-text-secondary);
     font: inherit;
     font-weight: 500;
     cursor: pointer;
   }
 
-  .eva-connection-tab:hover { color: #302447; }
-  .eva-connection-tab.is-active { color: #5b2da6; font-weight: 600; }
+  .eva-connection-tab:hover { color: var(--eva-text-primary); }
+  .eva-connection-tab.is-active { color: var(--eva-action-primary); font-weight: 600; }
   .eva-connection-tab.is-active::after {
     position: absolute;
     right: 12px;
@@ -81,7 +80,7 @@
     left: 12px;
     height: 2px;
     border-radius: 2px 2px 0 0;
-    background: #6f3eb8;
+    background: var(--eva-action-primary);
     content: '';
   }
 
@@ -89,9 +88,9 @@
     min-width: 20px;
     padding: 1px 6px;
     border-radius: 999px;
-    background: #f0ecf8;
-    color: #7043ae;
-    font-size: 11px;
+    background: var(--eva-surface-subtle);
+    color: var(--eva-action-primary);
+    font-size: 12px;
     line-height: 18px;
   }
 
@@ -107,7 +106,7 @@
   }
 
   .eva-connection-panel__top h2 { margin: 0 0 4px; font-size: 16px; }
-  .eva-connection-panel__top p { margin: 0; color: #7b828b; font-size: 13px; }
+  .eva-connection-panel__top p { margin: 0; color: var(--eva-text-secondary-accessible); font-size: 14px; line-height: 22px; }
 
   .eva-connection-search {
     display: flex;
@@ -116,10 +115,10 @@
     align-items: center;
     gap: 8px;
     padding: 0 12px;
-    border: 1px solid #dfe1e6;
+    border: 1px solid var(--eva-border-subtle);
     border-radius: 8px;
-    color: #8b929b;
-    font-size: 13px;
+    color: var(--eva-text-secondary-accessible);
+    font-size: 14px; line-height: 22px;
   }
 
   .eva-connection-search svg,
@@ -128,30 +127,30 @@
     height: 18px;
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.8;
+    stroke-width: 1.5;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
   .eva-connection-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(230px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    gap: 16px;
   }
 
   .eva-connection-card {
     display: flex;
-    min-height: 160px;
+    min-height: 188px; box-sizing: border-box;
     flex-direction: column;
-    padding: 17px;
-    border: 1px solid #e1e3e6;
-    border-radius: 13px;
-    background: #fff;
+    padding: 16px;
+    border: 1px solid var(--eva-border-subtle);
+    border-radius: var(--eva-radius-panel);
+    background: var(--eva-surface-primary);
   }
 
   .eva-connection-card:hover {
-    border-color: #c9b8e4;
-    box-shadow: 0 3px 12px rgba(51, 38, 76, .06);
+    border-color: var(--eva-border-default);
+    background: var(--eva-surface-subtle);
   }
 
   .eva-connection-card__head { display: flex; align-items: center; gap: 11px; }
@@ -161,22 +160,34 @@
     height: 38px;
     flex: 0 0 38px;
     place-items: center;
-    border-radius: 10px;
-    background: #f0ebf8;
-    color: #6f3eb8;
+    border-radius: var(--eva-radius-chip);
+    background: var(--eva-surface-subtle);
+    color: var(--eva-action-primary);
   }
   .eva-connection-card__title { min-width: 0; }
   .eva-connection-card__title strong { display: block; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
-  .eva-connection-card__title span { display: block; margin-top: 3px; color: #8a919a; font-size: 12px; }
-  .eva-connection-card__desc { flex: 1; margin: 14px 0; color: #5f666f; font-size: 13px; line-height: 20px; }
-  .eva-connection-card__foot { display: flex; align-items: center; padding-top: 12px; border-top: 1px solid #eef0f2; color: #858c95; font-size: 12px; }
-  .eva-connection-card__status { margin-left: auto; padding: 2px 8px; border-radius: 6px; background: #e9f7ee; color: #27804d; }
-  .eva-connection-card__status--off { background: #f1f2f4; color: #747b84; }
-  .eva-connection-card__action { margin-left: auto; padding: 4px 9px; border: 1px solid #dfe1e6; border-radius: 6px; background: #fff; color: #4e3a70; font: inherit; font-size: 12px; cursor: pointer; }
-  .eva-connection-card__action:hover { background: #f4f1f8; }
+  .eva-connection-card__title span { display: block; margin-top: 3px; color: var(--eva-text-secondary-accessible); font-size: 12px; }
+  .eva-connection-card__desc { flex: 1; margin: 14px 0; color: var(--eva-text-secondary); font-size: 14px; line-height: 22px; line-height: 20px; }
+  .eva-connection-card__foot { display: flex; align-items: center; padding-top: 12px; border-top: 1px solid var(--eva-border-faint); color: var(--eva-text-secondary-accessible); font-size: 12px; }
+  .eva-connection-card__status { margin-left: auto; padding: 2px 8px; border-radius: var(--eva-radius-control); background: #e9f7ee; color: #27804d; }
+  .eva-connection-card__status--off { background: var(--eva-surface-subtle); color: var(--eva-text-secondary-accessible); }
+  .eva-connection-card__action { margin-left: auto; min-height: 32px; padding: 0 12px; border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-control); background: var(--eva-surface-primary); color: var(--eva-text-secondary); font: inherit; font-size: 12px; cursor: pointer; }
+  .eva-connection-card__action:hover { background: var(--eva-surface-subtle); }
 
-  #eva-connection-center-nav.is-active { background: #e2e3e5; color: #1f2329; }
+  #eva-connection-center-nav.is-active { background: #e2e3e5; color: var(--eva-text-primary); }
 
-  @media (max-width: 1100px) {
-    .eva-connection-grid { grid-template-columns: repeat(2, minmax(230px, 1fr)); }
+  @media (max-width: 1280px) {
+    .eva-connection-grid { grid-template-columns: repeat(2, minmax(280px, 1fr)); }
   }
+
+  .eva-connection-center__head { flex-wrap: wrap; padding-block: 12px; }
+  .eva-connection-center__head h1 { flex-shrink: 0; }
+  .eva-connection-card__title { flex: 1; }
+  .eva-connection-card__title strong { font-weight: var(--eva-fw-medium); }
+  .eva-connection-card__status { flex-shrink: 0; white-space: nowrap; }
+  .eva-connection-card__foot { flex-wrap: wrap; gap: 8px; }
+  .eva-connection-card__desc { line-height: 24px; overflow-wrap: anywhere; }
+  .eva-connection-search { box-sizing: border-box; }
+  .eva-connection-search:focus-within { border-color: var(--eva-border-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--eva-action-primary) 12%, transparent); }
+  .eva-connection-center button:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
+  @media (max-width: 760px) { .eva-connection-grid { grid-template-columns: minmax(0, 1fr); } }

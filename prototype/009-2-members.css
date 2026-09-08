@@ -56,30 +56,30 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-account-options{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow:auto;margin-bottom:12px}
 .eva-account-options>.semi-button{height:auto;min-height:44px;justify-content:space-between;padding:6px 12px}
 
-.eva-project-settings-info{box-sizing:border-box;width:100%;max-width:1120px;margin:0 auto;padding:28px 40px 56px;color:var(--gds-color-text-primary);font-family:var(--gds-font-family-sans)}
+.eva-project-settings-info{box-sizing:border-box;width:100%;max-width:824px;margin:0 auto;padding:24px;color:var(--gds-color-text-primary);font-family:var(--gds-font-family-sans)}
 .eva-project-settings-info .eva-project-info-field{width:100%;display:flex;flex-direction:column;gap:var(--gds-space-2)}
 .eva-project-settings-info .eva-project-info-field label{font-size:var(--gds-type-label-medium-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-label-medium-line-height);color:var(--gds-color-text-primary)}
 .eva-project-settings-info .eva-project-info-field textarea{box-sizing:border-box;width:100%;min-height:72px;resize:vertical;padding:var(--gds-space-2) var(--gds-space-2-5);border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary);color:var(--gds-color-text-primary);font:inherit;font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
 .eva-project-settings-info .eva-project-info-field textarea:focus-visible{outline:var(--gds-border-focus) solid var(--gds-color-border-focus);outline-offset:2px}
 .eva-project-settings-info .eva-project-info-field p{margin:0}
-.eva-project-settings-info__hero{align-items:start}
+.eva-project-settings-info > .eva-project-settings-info__hero{align-items:start;grid-template-columns:1fr;gap:24px}
 .eva-project-settings-info__hero .eva-project-info__eyebrow{align-items:end}
-.eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field{width:132px;gap:3px}
+.eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field{width:160px;gap:8px}
 .eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field label{font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height);color:var(--gds-color-text-secondary-accessible)}
-.eva-project-settings-info__hero .eva-project-info-field{margin-top:14px}
+.eva-project-settings-info__hero .eva-project-info-field{margin-top:24px}
 .eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field{margin-top:0}
 .eva-project-settings-info__hero .eva-project-info-field .semi-input-wrapper{background:var(--semi-color-bg-0)}
 .eva-project-settings-info__hero .eva-project-info-field .semi-input{font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
-.eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input{height:40px;padding:0;color:var(--gds-color-text-strong);font-size:32px;font-weight:var(--gds-font-weight-semibold);line-height:40px}
-.eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input-wrapper{padding-inline:0;border:0;background:transparent}
-.eva-project-settings-info__facts{min-width:280px}
-.eva-project-settings-info__facts dt{margin-bottom:6px}
+.eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input{height:32px;padding:0 12px;color:var(--gds-color-text-strong);font-size:16px;font-weight:var(--gds-font-weight-medium);line-height:24px}
+.eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input-wrapper{padding-inline:0;border:1px solid var(--gds-color-border-subtle);background:var(--gds-color-surface-primary)}
+.eva-project-settings-info .eva-project-settings-info__facts{min-width:0;grid-template-columns:1fr 1fr;gap:24px}.eva-project-settings-info .eva-project-settings-info__facts>div{padding:0}.eva-project-settings-info .eva-project-settings-info__facts>div+div{border:0}
+.eva-project-settings-info__facts dt{margin-bottom:8px}
 .eva-project-settings-info__facts label{font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height);color:var(--gds-color-text-secondary-accessible)}
 .eva-project-settings-info__facts .semi-input-wrapper{min-width:0;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__facts dd{font-weight:400}
 .eva-project-settings-info__period{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center}
 .eva-project-settings-info__period>span{color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-caption-line-height)}
-.eva-project-settings-info__grid{margin-top:16px}
+.eva-project-settings-info > .eva-project-settings-info__grid{margin-top:16px;grid-template-columns:1fr}
 .eva-project-settings-info__card-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
 .eva-project-settings-info__card-title h2{margin:0}
 .eva-project-settings-info__row{display:flex;min-width:0;align-items:center;gap:4px}
@@ -87,13 +87,33 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-project-settings-info__goals li{grid-template-columns:28px minmax(0,1fr)}
 .eva-project-settings-info__goals .semi-button{flex:none}
 .eva-project-settings-info__timeline{gap:10px}
-.eva-project-settings-info__timeline .eva-project-info__milestone{grid-template-columns:88px minmax(0,1fr) auto;min-height:72px}
+.eva-project-settings-info__timeline .eva-project-info__milestone{grid-template-columns:112px minmax(0,1fr) auto;min-height:48px}
 .eva-project-settings-info__timeline .semi-input-wrapper{min-width:0;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__milestone-copy{display:grid;min-width:0;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center}
-.eva-project-settings-info__milestone-copy select{height:30px;padding:0 24px 0 8px;border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary);color:var(--gds-color-text-secondary);font:inherit;font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-caption-line-height)}
+.eva-project-settings-info__milestone-copy select{height:32px;padding:0 24px 0 8px;border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary);color:var(--gds-color-text-secondary);font:inherit;font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-caption-line-height)}
 .eva-project-settings-info__empty{margin:0;color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
-.eva-project-settings-info__advanced{margin-top:16px;padding:18px 24px;border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-panel);background:var(--gds-color-surface-primary)}
+.eva-project-settings-info__advanced{margin-top:16px;padding:24px;border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-panel);background:var(--gds-color-surface-primary)}
 .eva-project-settings-info__advanced .eva-project-info-field{max-width:440px}
 .eva-project-settings-info__actions{display:flex;min-height:40px;align-items:center;justify-content:space-between;gap:16px;margin-top:20px}
 .eva-project-settings-info__actions p{margin:0}
-@media (max-width:900px){.eva-project-settings-info{padding-inline:28px}.eva-project-settings-info__hero .eva-project-info__eyebrow{align-items:start}.eva-project-settings-info__facts{min-width:0}.eva-project-settings-info__timeline .eva-project-info__milestone{grid-template-columns:76px minmax(0,1fr) auto}.eva-project-settings-info__milestone-copy{grid-template-columns:1fr}.eva-project-settings-info__actions{align-items:flex-start;flex-direction:column}}
+@media (max-width:900px){.eva-project-settings-info{padding-inline:24px}.eva-project-settings-info__hero .eva-project-info__eyebrow{align-items:start}.eva-project-settings-info .eva-project-settings-info__facts{min-width:0}.eva-project-settings-info__timeline .eva-project-info__milestone{grid-template-columns:76px minmax(0,1fr) auto}.eva-project-settings-info__milestone-copy{grid-template-columns:1fr}.eva-project-settings-info__actions{align-items:flex-start;flex-direction:column}}
+
+/* GDS form and member-management states. AI avatar geometry stays in 003. */
+.eva-project-settings-info .eva-project-info-field textarea { font-size:15px;line-height:24px;padding:12px; }
+.eva-project-settings-info__hero .eva-project-info__eyebrow { flex-wrap:wrap;gap:16px; }
+.eva-project-settings-info__actions { position:sticky;bottom:0;padding:16px 0;background:var(--eva-surface-primary);border-top:1px solid var(--eva-border-subtle); }
+.eva-project-settings-info__milestone-copy select:focus-visible { outline:2px solid var(--eva-action-primary);outline-offset:2px; }
+.eva-project-settings-info__milestone-copy select { font-size:14px;line-height:22px; }
+.eva-members { font:400 14px/22px var(--eva-font-sans); }
+.eva-members h3,.eva-members h4 { font-size:16px;line-height:24px;font-weight:500; }
+.eva-members-toolbar p { line-height:22px; }
+.eva-members-muted,.eva-members-actor small,.eva-members-role,.eva-members-human-role { color:var(--gds-color-text-secondary-accessible);line-height:16px; }
+.eva-members-table .semi-table-row-head { padding:12px 16px;line-height:16px; }
+.eva-members-table .semi-button { min-height:32px;font-size:14px;line-height:22px; }
+.eva-members-modal .semi-modal-content { padding:0;border-radius:20px;box-shadow:var(--eva-shadow-floating); }
+.eva-members-modal .semi-modal-header { margin:0;padding:20px 24px 16px; }
+.eva-members-modal .semi-modal-body { margin:0;max-height:calc(100vh - var(--topbar-height) - 200px);overflow:auto;padding:0 24px; }
+.eva-members-modal .semi-modal-footer { margin:0;padding:16px 24px 24px; }
+.eva-members-modal .eva-members-field + .eva-members-field { margin-top:24px; }
+.eva-members-notice { border-radius:12px;padding:12px 16px;line-height:22px; }
+@media(max-width:900px) { .eva-project-settings-info__facts { grid-template-columns:1fr; } }

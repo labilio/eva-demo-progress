@@ -12,21 +12,21 @@
   height: 100%;
   pointer-events: auto;
 }
-.eva-loop-task-create-portal .eva-loop-task-create { overflow: hidden; padding: 0; }
+.eva-loop-task-create-portal .eva-loop-task-create { position: absolute; inset: 0; height: 100%; overflow: hidden; padding: 0; pointer-events: none; }
 /* Loop's original .loop-ci classes own the editor and property-pill styling. */
 .eva-loop-task-create .semi-modal {
   width: 600px; max-width: calc(100vw - 32px);
   margin: 32px auto; padding: 0;
 }
 .eva-loop-task-create .semi-modal-content {
-  padding: 0; overflow: hidden; border-radius: 12px;
+  padding: 0; overflow: hidden; border-radius: var(--eva-radius-window);
   max-height: calc(100vh - var(--topbar-height) - 64px);
 }
 .eva-loop-task-create .semi-modal-body { margin: 0; overflow: auto; }
 .eva-loop-task-create .loop-ci__desc { min-height: 84px; }
 .eva-loop-task-create .loop-ci__title, .eva-loop-task-create .loop-ci__desc { box-sizing: border-box; }
 .eva-loop-task-create__assignee.semi-select {
-  width: auto; min-width: 100px; max-width: 240px; height: 28px;
+  width: auto; min-width: 100px; max-width: 240px; height: 32px;
   border: 1px solid var(--semi-color-border); border-radius: 999px;
   background: transparent;
 }
@@ -51,3 +51,14 @@
 
 /* Child popups share the modal stacking context, outside its scroll clipping. */
 .eva-loop-task-create-portal .semi-portal { pointer-events: auto; }
+
+.eva-loop-task-create .loop-ci__head { min-height: 52px; box-sizing: border-box; padding: 12px 24px; }
+.eva-loop-task-create .loop-ci__title { padding: 8px 24px; font: 500 16px/24px var(--eva-font-sans); }
+.eva-loop-task-create .loop-ci__desc { padding: 8px 24px; font: 400 15px/24px var(--eva-font-sans); }
+.eva-loop-task-create .loop-ci__toolbar { padding: 16px 24px 12px; gap: 8px; }
+.eva-loop-task-create .loop-ci__labels { padding: 0 24px 16px; }
+.eva-loop-task-create .loop-ci__footer { padding: 16px 24px; }
+.eva-loop-task-create .loop-ci__close { width: 32px; height: 32px; border-radius: var(--eva-radius-control); }
+.eva-loop-task-create .loop-ci__toolbar button { min-height: 32px; }
+.eva-loop-task-create__tag-menu { border-radius: var(--eva-radius-panel); box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline); }
+.eva-loop-task-create__tag-menu button { font: 400 14px/22px var(--eva-font-sans); min-height: 36px; padding: 6px 12px; }

@@ -31,9 +31,9 @@
     display: flex;
     flex: 0 0 auto;
     align-items: center;
-    height: 56px;
+    height: var(--eva-topbar-h);
     padding: 0 16px;
-    gap: 9px;
+    gap: var(--eva-space-2);
     border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
   }
 
@@ -110,8 +110,8 @@
 
   .eva-contacts__search-action {
     position: relative;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     flex: none;
   }
 
@@ -151,12 +151,12 @@
   .eva-contacts__search-toggle {
     display: inline-grid;
     place-items: center;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     margin-left: 2px;
     padding: 0;
     border: 0;
-    border-radius: 7px;
+    border-radius: var(--eva-radius-control);
     color: var(--gds-color-text-secondary-accessible);
     background: transparent;
     cursor: pointer;
@@ -180,7 +180,7 @@
     grid-template-columns: minmax(180px, .8fr) minmax(240px, 1.2fr);
     min-height: 36px;
     align-items: center;
-    column-gap: 28px;
+    column-gap: var(--eva-space-8);
     border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
     color: var(--gds-color-text-secondary-accessible);
     background: var(--gds-color-surface-primary);
@@ -195,9 +195,9 @@
   .eva-contacts__person.semi-list-item {
     align-items: center;
     width: 100%;
-    min-height: 60px;
+    min-height: 64px;
     margin: 0;
-    padding: 8px 0;
+    padding: var(--eva-space-3);
     color: var(--gds-color-text-primary);
     background: transparent;
   }
@@ -207,14 +207,14 @@
     grid-template-columns: minmax(180px, .8fr) minmax(240px, 1.2fr);
     min-width: 0;
     align-items: center;
-    column-gap: 28px;
+    column-gap: var(--eva-space-8);
   }
 
   .eva-contacts__cell {
     display: flex;
     align-items: center;
     min-width: 0;
-    gap: 10px;
+    gap: var(--eva-space-3);
   }
 
   .eva-contacts__cell--ai-list {
@@ -279,42 +279,6 @@
     outline-offset: 1px;
   }
 
-  .eva-contacts__ai-avatar {
-    position: relative;
-    display: inline-flex;
-    width: 40px;
-    height: 40px;
-    flex: 0 0 40px;
-    align-items: flex-start;
-    justify-content: flex-start;
-  }
-
-  .eva-contacts__ai-avatar .semi-avatar.eva-contacts__bot-avatar {
-    display: inline-flex;
-    width: 36px;
-    height: 36px;
-    flex: 0 0 36px;
-    align-items: center;
-    justify-content: center;
-    color: var(--eva-bot-color);
-    background: var(--eva-bot-bg);
-  }
-
-  .eva-contacts__bot-avatar svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .eva-contacts__ai-avatar .semi-avatar.eva-contacts__owner-avatar {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--gds-color-surface-primary);
-    background: var(--gds-color-surface-subtle);
-  }
-
   .eva-contacts__ai-identity {
     display: flex;
     align-items: center;
@@ -376,3 +340,23 @@
   font-size: var(--gds-type-caption-font-size);
   line-height: var(--gds-type-caption-line-height);
 }
+
+/* Shared column padding aligns the human and AI labels with their row content. */
+.eva-contacts__columns {
+  min-height: 38px;
+  margin: 0 0 var(--eva-space-1);
+  padding: 0 var(--eva-space-3);
+  border: 0;
+  border-radius: var(--eva-radius-control);
+  background: var(--eva-surface-subtle);
+}
+.eva-contacts__more { min-width: 32px; min-height: 32px; }
+.eva-contacts__search-popover:focus-within {
+  border-color: var(--eva-border-focus);
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+  outline-offset: var(--eva-space-0-5);
+}
+.eva-contacts__person-name { flex-shrink: 0; max-width: 50%; }
+.eva-contacts__cell--ai-list { column-gap: var(--eva-space-4); }
+.eva-contacts__main-head { padding-inline: var(--eva-space-6); }
+.eva-contacts__list { padding: var(--eva-space-3) var(--eva-space-6) var(--eva-space-6); }

@@ -97,3 +97,33 @@
 body {
   font-family: var(--eva-font-sans);
 }
+
+/* GDS all-page adaptation: shared semantic palette.
+   Product layout, status colors and AI identity geometry retain their owners.
+   Body scope also supplies the same tokens to portalled controls. */
+body {
+  --semi-color-text-0: var(--eva-text-primary);
+  --semi-color-text-1: var(--eva-text-secondary);
+  --semi-color-text-2: var(--eva-text-secondary-accessible);
+  --semi-color-text-3: var(--eva-text-muted);
+  --semi-color-bg-0: var(--eva-surface-primary);
+  --semi-color-bg-1: var(--eva-surface-primary);
+  --semi-color-border: var(--eva-border-faint);
+  --semi-color-fill-0: var(--eva-surface-subtle);
+  --semi-color-fill-1: var(--eva-overlay-hover);
+  --semi-color-primary: var(--eva-action-primary);
+  --semi-color-primary-hover: var(--eva-action-primary-hover);
+  --semi-color-primary-light-default: var(--eva-action-primary-08);
+  --semi-border-radius-small: var(--eva-radius-control);
+  --semi-border-radius-medium: var(--eva-radius-control);
+  --color-bg-2: var(--eva-surface-primary);
+  --bg-2: var(--eva-surface-subtle);
+  --color-border-2: var(--eva-border-faint);
+  --wk-text-primary: var(--eva-text-primary);
+  --wk-text-secondary: var(--eva-text-secondary);
+  --wk-icon-muted: var(--eva-text-secondary-accessible);
+  --wk-font-sans: var(--eva-font-sans);
+  --text-primary: var(--eva-text-primary);
+  --text-tertiary: var(--eva-text-muted);
+  color: var(--eva-text-primary);
+}

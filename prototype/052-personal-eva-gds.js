@@ -2,38 +2,11 @@
 (function () {
   'use strict';
 
-  /* ============================================================
-     个人 Eva · GDS 六态渲染器
-     替代 044-final-layout-convergence.js 里那串头像气泡（design.md:424
-     明令禁止的形态）。布局与状态切换见 051-personal-eva-gds.css，
-     组件外观见 048-gds-components.css，色值见 047-gds-tokens.css。
-
-     六态与 GDS spec/components.json 的 pageStates 对应。新会话首页按
-     2026-09-07 用户提供的现行参考图调整为欢迎语、任务输入器和快捷能力排；
-     生成中、已完成与历史会话仍沿用原 GDS 生命周期。
-     required／forbidden：
-       home         欢迎语 + 空输入器 + 快捷能力排
-       input        同上，输入器带文字与 @ 技能提示
-       skill-picker 同上 + 技能选择器（压在输入器上方）
-       operation    同上 + 操作卡
-       generating   会话顶栏 + 生成中流 + 会话态输入器（无 hero／场景排）
-       completed    390 会话列 + 810 编辑列（无 hero／场景排／技能选择器）
-
-     Demo 级交互（本仓库是演示原型，不接真模型）：
-       输入文字            home → input
-       输入 @              input → skill-picker（Esc 或选中关闭）
-       点场景 chip／选技能  → operation（带操作卡的技能）或 input
-       Enter 或点发送       → generating，2400ms 后 → completed
-       助理行「新建会话」    → home，并选中对应助理
-
-     图标一律走 050-lucide-dom.js 的 window.__evaLucide（官方 Lucide
-     node 数组），不出现任何 Unicode 代用字形（AGENTS.md:151）。
-     打包运行时里的 lucide-react v0.577.0 没有 presentation／chart-*／
-     type／panel-left／undo-2／redo-2／thumbs-up 等名字，凡是缺的就用
-     语义最近的现有图标（PPT→monitor、数据分析→layout-grid、
-     产品开发→cpu、收起侧栏→arrow-left、有帮助→circle-check），
-     绝不手绘路径补齐。
-     ============================================================ */
+  /* GDS personal lifecycle: native personal sessions retain their own rail and
+     data. One active lifecycle is rendered at a time. Completed tasks replace
+     the assistant rail with a 390px context column beside the editor; the
+     application navigation/titlebar remain owned by the router shell.
+     All generated artifacts here are explicitly local prototype previews. */
 
   /* history 是已有会话的上下文态；它不属于一次新任务的六态生命周期，
      但与 generating 共用 GDS 的会话骨架和输入器。 */
@@ -60,13 +33,6 @@
   var TASK_TITLE = 'UI设计师发展前景的PPT';
   var TASK_SKILL = SKILLS[0];
 
-  var GENERATING_TOOLS = [
-    { state: 'success', text: '已理解需求：面向设计团队的行业前景汇报' },
-    { state: 'success', text: '检索公开资料', path: '· 14 个来源' },
-    { state: 'success', text: '生成大纲', path: '· 6 页' },
-    { state: 'running', text: '正在排版第 4 页', path: '· 岗位能力模型' }
-  ];
-
   var SLIDES = [
     { kicker: 'UI DESIGNER · 2026', title: 'UI设计师<br>发展前景', by: '汇报人 <em>王宜林</em>', hint: '数据截至 2026 年 8 月' },
     { kicker: '01 行业现状', title: '需求结构正在迁移', sm: true, bullets: [['从界面产出到体验决策', '交付物从视觉稿转向可运行的设计系统'], ['AI 承接重复排版', '设计师的时间回到问题定义'] ] },
@@ -80,7 +46,16 @@
   var draft = '';
   var activeSkill = null;
   var pickerQuery = '';
+  var pickerIndex = 0;
+  var conversationPickerOpen = false;
   var generatingTimer = 0;
+  var submitted = null;
+  var activeDocument = 'presentation';
+  var slideIndex = 0;
+  var slideDrafts = Object.create(null);
+  var zoom = 100;
+  var feedback = '';
+  var editing = false;
   var root = null;
   var selectedConversation = '';
   var selectedAssistantId = 'assistant-general';
@@ -119,6 +94,35 @@
     return state === 'home' || state === 'input' || state === 'skill-picker' || state === 'operation';
   }
 
+  function skillPickerOpen() {
+    return state === 'skill-picker' || conversationPickerOpen;
+  }
+
+  // The personal page owns the picker. Within a conversation it only updates
+  // the composer, leaving the result DOM, selection and editor undo stack intact.
+  function updateConversationComposer() {
+    var composer = root.querySelector('[data-eva-personal-composer]');
+    if (composer) composer.outerHTML = composerPanelHTML(state === 'completed' ? 'eva-composer-narrow' : '');
+    var input = root.querySelector('.eva-composer-prompt');
+    if (input) { input.focus({preventScroll:true}); input.setSelectionRange(input.value.length, input.value.length); }
+  }
+
+  function openSkillPicker() {
+    pickerQuery = ''; pickerIndex = 0;
+    if (state === 'completed' || state === 'history') {
+      conversationPickerOpen = true;
+      updateConversationComposer();
+    } else setState('skill-picker');
+  }
+
+  function closeSkillPicker() {
+    pickerQuery = '';
+    if (conversationPickerOpen) {
+      conversationPickerOpen = false;
+      updateConversationComposer();
+    } else setState(activeSkill && activeSkill.operation ? 'operation' : draft || activeSkill ? 'input' : 'home');
+  }
+
   function assistantRailHTML() {
     var assistants = window.__EVA_PERSONAL_ASSISTANTS || [];
     var tasks = window.__EVA_PERSONAL_ASSISTANT_TASKS || {};
@@ -149,8 +153,8 @@
     return '<div class="eva-personal-workspace__hero">'
       + '<div class="eva-personal-workspace__hero-grid" aria-hidden="true"></div>'
       + '<h1 class="eva-personal-workspace__welcome">'
-      + '<span>AI随行</span><span class="eva-personal-workspace__welcome-avatar" aria-hidden="true"><img src="prototype/assets/eva-wave.png" alt=""></span><span>工作随心</span>'
-      + '</h1>'
+      + '<span>你好，我是Eva同学</span>'
+      + '</h1><span class="eva-personal-workspace__hi" aria-hidden="true">hi</span><img class="eva-personal-workspace__mascot" src="prototype/assets/eva-wave.png" alt="">'
       + '</div>';
   }
 
@@ -165,38 +169,13 @@
       + '</div>';
   }
 
-  /* ---- 输入器 ----------------------------------------------
-     四种 prompt 形态严格照 GDS：
-       homeEmpty  占位文案 + @ 提示
-       homeFilled 技能 mention + 已输入文字
-       skillQuery @ + 光标 + 「输入技能名称」
-       conversation 会话态（无外框、无快捷技能）
-     -------------------------------------------------------- */
-  function promptHTML() {
-    if (state === 'skill-picker') {
-      return '<span class="eva-t-body">@</span><span class="eva-caret"></span>'
-        + (pickerQuery
-          ? '<span class="eva-t-body">' + escapeHTML(pickerQuery) + '</span>'
-          : '<span class="eva-t-body eva-composer-ph">输入技能名称</span>');
-    }
-    var mention = activeSkill
-      ? '<span class="eva-mention eva-t-body-medium">' + icon(activeSkill.icon, 16, 'eva-i') + escapeHTML(activeSkill.name) + '</span>'
-      : '';
-    if (draft) return mention + '<span class="eva-t-body">' + escapeHTML(draft) + '</span>';
-    if (mention) return mention + '<span class="eva-t-body eva-composer-ph">补充你的要求</span>';
-    if (isNewConversationState()) {
-      return '<span class="eva-t-body eva-composer-ph">分配一个任务或提问任何问题</span>';
-    }
-    return '<span class="eva-t-body eva-composer-ph">要我帮你做些什么？</span>'
-      + '<span class="eva-at">@</span><span class="eva-t-body eva-composer-ph">调用技能与指令</span>';
-  }
-
+  /* Native composer: selection, paste and IME are browser-owned. */
   function sendHTML() {
     if (state === 'generating') {
       return '<button class="eva-send" type="button" data-state="running" data-eva-personal-stop aria-label="停止生成">'
         + '<span class="eva-personal-tool__icon">' + icon('square', 12, 'eva-i') + '</span></button>';
     }
-    var ready = Boolean(draft || activeSkill);
+    var ready = !skillPickerOpen() && Boolean(draft.trim());
     return '<button class="eva-send" type="button" data-state="' + (ready ? 'enabled' : 'disabled') + '"'
       + (ready ? ' data-eva-personal-send' : ' disabled')
       + ' aria-label="' + (ready ? '发送' : '发送（输入后可用）') + '">'
@@ -204,32 +183,25 @@
   }
 
   function actionsHTML() {
-    if (isNewConversationState()) {
-      var assistant = selectedAssistant();
-      return '<div class="eva-composer-actions eva-newchat-actions">'
-        + '<button class="eva-newchat-icon-action" type="button" aria-label="添加附件">' + icon('plus', 20, 'eva-i') + '</button>'
-        + '<button class="eva-newchat-context" type="button">' + icon('folder', 18, 'eva-i') + '<span>Eva</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
-        + '<button class="eva-newchat-context" type="button" data-eva-selected-assistant="' + escapeHTML(assistant.id) + '">' + icon('brain', 18, 'eva-i') + '<span>' + escapeHTML(assistant.name) + '</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
-        + '<span class="eva-newchat-actions__spacer"></span>'
-        + '<button class="eva-newchat-model" type="button"><span>Qwen3.8 Max</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
-        + sendHTML()
-        + '</div>';
-    }
     return '<div class="eva-composer-actions">'
-      + '<button class="eva-round eva-round-ghost" type="button" aria-label="添加附件">' + icon('plus', 16, 'eva-i') + '</button>'
+      + '<button class="eva-round eva-round-ghost" type="button" disabled title="原型暂未实现此操作" aria-label="添加附件">' + icon('plus', 16, 'eva-i') + '</button>'
       + '<span style="flex:1 1 auto"></span>'
-      + '<button class="eva-model eva-t-label" type="button">Auto' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
-      + '<button class="eva-round eva-round-plain" type="button" aria-label="语音输入">' + icon('mic', 16, 'eva-i') + '</button>'
+      + '<button class="eva-model eva-t-label" type="button" disabled title="当前原型使用 Auto">Auto' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
+      + '<button class="eva-round eva-round-plain" type="button" disabled title="原型暂未实现此操作" aria-label="语音输入">' + icon('mic', 16, 'eva-i') + '</button>'
       + sendHTML()
       + '</div>';
   }
 
   function composerPanelHTML(extraClass) {
-    var newConversationClass = isNewConversationState() ? ' eva-composer-newchat' : '';
-    return '<div class="eva-composer' + newConversationClass + (extraClass ? ' ' + extraClass : '') + '" data-eva-personal-composer>'
-      + '<div class="eva-composer-prompt" role="textbox" aria-label="向 Eva 同学提问" tabindex="0">' + promptHTML() + '</div>'
-      + actionsHTML()
-      + '</div>';
+    var value = skillPickerOpen() ? pickerQuery : draft;
+    var mention = activeSkill && !skillPickerOpen()
+      ? '<span class="eva-mention eva-t-body-medium">' + icon(activeSkill.icon, 16, 'eva-i') + escapeHTML(activeSkill.name) + '</span>' : '';
+    return '<div class="eva-composer' + (extraClass ? ' ' + extraClass : '') + '" data-eva-personal-composer>'
+      + (conversationPickerOpen ? pickerHTML() : '')
+      + '<div class="eva-composer-input-area">' + (skillPickerOpen() ? '<span aria-hidden="true">@</span>' : '') + mention
+      + '<textarea class="eva-composer-prompt" aria-label="向 Eva 同学提问"' + (skillPickerOpen() ? ' role="combobox" aria-expanded="true" aria-controls="eva-skill-list" aria-activedescendant="eva-skill-option-' + pickerIndex + '"' : '') + ' placeholder="' + (skillPickerOpen() ? '输入技能名称' : '要我帮你做些什么？ @ 调用技能与指令') + '"'
+      + (state === 'generating' ? ' disabled' : '') + '>' + escapeHTML(value) + '</textarea></div>'
+      + actionsHTML() + '</div>';
   }
 
   /* ---- 技能选择器 ------------------------------------------ */
@@ -239,18 +211,19 @@
       return !query || skill.name.toLowerCase().indexOf(query) >= 0 || skill.desc.indexOf(pickerQuery) >= 0;
     });
     return '<div class="eva-personal-workspace__pickerhost">'
-      + '<div class="eva-picker" role="listbox" aria-label="技能">'
+      + '<div class="eva-picker" role="listbox" id="eva-skill-list" aria-label="技能">'
       + '<div class="eva-picker-head eva-t-label-medium">技能(' + rows.length + ')</div>'
       + '<div class="eva-picker-list">'
       + rows.map(function (skill, index) {
-        return '<button class="eva-skillrow" type="button" role="option" aria-selected="false"'
-          + (index === 0 ? ' data-active="true"' : '')
-          + ' data-eva-skill="' + skill.id + '">'
+        return '<button class="eva-skillrow" type="button" role="option" aria-selected="' + String(index === pickerIndex) + '"'
+          + (index === pickerIndex ? ' data-active="true"' : '')
+          + ' id="eva-skill-option-' + index + '" data-eva-skill="' + skill.id + '">'
           + '<span class="ic eva-personal-tool__icon">' + icon(skill.icon, 16, 'eva-i') + '</span>'
           + '<span class="nm eva-t-label">' + escapeHTML(skill.name) + '</span>'
           + '<span class="ds eva-t-label">' + escapeHTML(skill.desc) + '</span>'
           + '</button>';
       }).join('')
+      + (rows.length ? '' : '<div class="eva-picker-empty eva-t-label" role="status">没有匹配的技能，换个关键词试试</div>')
       + '</div></div></div>';
   }
 
@@ -259,29 +232,27 @@
     return '<div class="eva-personal-workspace__opcard">'
       + '<aside class="eva-opcard" aria-label="运营推荐">'
       + '<div class="eva-opcard-img">'
-      + '<div class="eva-slide" style="font-size:9px"><div class="pad">'
-      + '<div class="kicker">EVA · NEW MODEL</div>'
-      + '<h4 class="sm">更强的<br>长任务能力</h4>'
-      + '<div class="hint">支持更长的上下文与多步工具调用</div>'
-      + '</div></div>'
+      + '<img src="prototype/assets/operation-card.png" alt="Eva 新模型介绍">'
       + '<button class="eva-dismiss" type="button" aria-label="关闭" data-eva-personal-dismiss>' + icon('x', 12, 'eva-i') + '</button>'
       + '</div>'
       + '<div class="eva-opcard-copy">'
       + '<p class="eva-t-label">Eva同学上线新模型啦～功能更加强悍，更加聪明。</p>'
-      + '<button class="eva-opcard-cta eva-t-label-medium" type="button">立即体验</button>'
+      + '<button class="eva-opcard-cta eva-t-label-medium" type="button" data-eva-personal-dismiss>立即体验</button>'
       + '</div></aside></div>';
   }
 
   /* ---- 会话流片段 ------------------------------------------ */
+  function taskTitle() { return submitted ? submitted.text : TASK_TITLE; }
+  function isPresentation() { return !submitted || submitted.skill && submitted.skill.id === 'ppt'; }
   function userMessageHTML() {
+    var skill = submitted ? submitted.skill : TASK_SKILL;
     return '<div class="eva-usermsg"><div>'
-      + '<span class="eva-mention eva-t-body-medium">' + icon(TASK_SKILL.icon, 16, 'eva-i') + escapeHTML(TASK_SKILL.name) + '</span>'
-      + '<span class="eva-t-body">' + escapeHTML(TASK_TITLE) + '</span>'
-      + '</div></div>';
+      + (skill ? '<span class="eva-mention eva-t-body-medium">' + icon(skill.icon, 16, 'eva-i') + escapeHTML(skill.name) + '</span>' : '')
+      + '<span class="eva-t-body">' + escapeHTML(taskTitle()) + '</span></div></div>';
   }
 
   function statusHTML(text) {
-    return '<div class="eva-status eva-t-label"><span>' + escapeHTML(text) + '</span>'
+    return '<div class="eva-status eva-t-label" role="status" aria-live="polite"><span>' + escapeHTML(text) + '</span>'
       + icon('chevron-down', 12, 'eva-i-chevron') + '</div>';
   }
 
@@ -299,17 +270,17 @@
     return '<section class="eva-personal-workspace__conversation">'
       + '<header class="eva-topbar eva-personal-workspace__topbar">'
       + '<span class="eva-personal-topbar__mark">' + icon('monitor', 18, 'eva-i-nav') + '</span>'
-      + '<span class="ttl eva-t-header">' + escapeHTML(TASK_TITLE) + '</span>'
-      + '<button class="eva-iconbtn" type="button" aria-label="更多操作">' + icon('ellipsis', 16, 'eva-i') + '</button>'
+      + '<span class="ttl eva-t-header">' + escapeHTML(taskTitle()) + '</span>'
+      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="更多操作">' + icon('ellipsis', 16, 'eva-i') + '</button>'
       + '<span style="flex:1 1 auto"></span>'
       + '<div class="eva-topbar-icons">'
-      + '<button class="eva-iconbtn" type="button" aria-label="收起侧栏">' + icon('arrow-left', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="收起侧栏">' + icon('arrow-left', 16, 'eva-i') + '</button>'
       + '</div></header>'
       + '<div class="eva-personal-workspace__stream"><div class="eva-flow">'
       + userMessageHTML()
-      + statusHTML('已处理 1分钟 52秒')
-      + '<p class="eva-para eva-t-body">先把行业数据和岗位画像对齐，再按汇报节奏排 6 页；每页只保留一个结论。</p>'
-      + GENERATING_TOOLS.map(toolHTML).join('')
+      + statusHTML('正在准备本地预览')
+      + toolHTML({state:'success', text:'已收到你的要求'})
+      + toolHTML({state:'running', text:'正在加载原型示例'})
       + '</div></div>'
       + '<div class="eva-personal-workspace__dock">' + composerPanelHTML() + '</div>'
       + '</section>';
@@ -328,7 +299,7 @@
       body += '<div class="eva-history-artifact"><span class="eva-history-artifact__icon">' + icon('file-text', 16, 'eva-i') + '</span><span><span class="eva-history-artifact__name eva-t-label-medium">' + escapeHTML(message.artifact[0]) + '</span><span class="eva-history-artifact__meta eva-t-caption">' + escapeHTML(message.artifact[1]) + '</span></span><span class="eva-history-artifact__action">' + icon('download', 16, 'eva-i') + '</span></div>';
     }
     return '<article class="eva-history-message' + (isUser ? ' is-user' : ' is-assistant') + '">'
-      + '<div class="eva-history-message__sender eva-t-label">' + escapeHTML(isUser ? '王宜林' : assistantName) + (isUser ? '' : '<span class="eva-history-message__ai">AI</span>') + '</div>'
+      + '<div class="eva-history-message__sender eva-t-label">' + escapeHTML(isUser ? '王宜林' : assistantName) + '' + '</div>'
       + '<div class="eva-history-message__body">' + body + '</div></article>';
   }
 
@@ -341,7 +312,7 @@
       + '<span class="ttl eva-t-header">' + escapeHTML(detail.title) + '</span>'
       + '<span class="eva-history-header__assistant eva-t-label">' + escapeHTML(detail.assistant) + '</span>'
       + '<span style="flex:1 1 auto"></span>'
-      + '<button class="eva-iconbtn" type="button" aria-label="更多操作">' + icon('ellipsis', 16, 'eva-i') + '</button></header>'
+      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="更多操作">' + icon('ellipsis', 16, 'eva-i') + '</button></header>'
       + '<div class="eva-personal-workspace__stream"><div class="eva-flow eva-history-flow">'
       + detail.messages.map(function (message) { return historyMessageHTML(message, detail.assistant); }).join('')
       + '</div></div><div class="eva-personal-workspace__dock">' + composerPanelHTML() + '</div></section>';
@@ -374,22 +345,22 @@
   function completedConversationHTML() {
     return '<aside class="eva-cv-col eva-personal-completed__conversation">'
       + '<header class="eva-topbar" style="gap:6px;padding:14px 12px">'
-      + '<button class="eva-iconbtn" type="button" aria-label="收起侧栏">' + icon('arrow-left', 16, 'eva-i') + '</button>'
-      + '<button class="eva-iconbtn" type="button" aria-label="搜索会话">' + icon('search', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="收起侧栏">' + icon('arrow-left', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="搜索会话">' + icon('search', 16, 'eva-i') + '</button>'
       + '<button class="eva-iconbtn" type="button" aria-label="新建任务" data-eva-personal-new>' + icon('plus', 16, 'eva-i') + '</button>'
       + '<span class="eva-tool-sep"></span>'
       + '<span class="eva-personal-topbar__mark">' + icon('monitor', 18, 'eva-i-nav') + '</span>'
-      + '<span class="ttl eva-t-header">' + escapeHTML(TASK_TITLE) + '</span>'
-      + '<button class="eva-iconbtn" type="button" aria-label="更多操作">' + icon('ellipsis', 16, 'eva-i') + '</button>'
+      + '<span class="ttl eva-t-header">' + escapeHTML(taskTitle()) + '</span>'
+      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="更多操作">' + icon('ellipsis', 16, 'eva-i') + '</button>'
       + '</header>'
       + '<div class="eva-personal-completed__stream"><div class="eva-flow">'
       + userMessageHTML()
-      + statusHTML('用时 9分钟 47秒')
-      + '<p class="eva-para eva-t-body">已完成 6 页演示文稿：行业现状、岗位画像、能力模型、薪酬区间和结论各一页，首页是封面。</p>'
+      + statusHTML('本地预览已就绪')
+      + '<p class="eva-para eva-t-body">' + (isPresentation() ? '以下为预置的 6 页演示稿，用于体验预览与编辑。' : '已记录你的要求，可在右侧继续编辑。') + '此原型未调用模型生成内容。</p>'
       + '<div class="eva-artifact">'
       + '<span class="eva-filemark ppt">P</span>'
-      + '<span class="meta"><span class="nm eva-t-body">UI设计师发展前景.pptx</span>'
-      + '<span class="sub eva-t-caption">6 页 · 2.4 MB</span></span>'
+      + '<span class="meta"><span class="nm eva-t-body">' + (isPresentation() ? 'UI设计师发展前景.pptx' : '任务草稿.txt') + '</span>'
+      + '<span class="sub eva-t-caption">本地示例预览</span></span>'
       + '<button class="eva-iconbtn" type="button" aria-label="打开文件">' + icon('external-link', 16, 'eva-i') + '</button>'
       + '</div>'
       + '<div class="eva-actionrow">'
@@ -397,35 +368,35 @@
       + '<button type="button" aria-label="有帮助">' + icon('circle-check', 16, 'eva-i') + '</button>'
       + '<button type="button" aria-label="没帮助">' + icon('circle-slash', 16, 'eva-i') + '</button>'
       + '<button type="button" aria-label="重新生成">' + icon('rotate-ccw', 16, 'eva-i') + '</button>'
-      + '<button type="button" aria-label="更多">' + icon('ellipsis', 16, 'eva-i') + '</button>'
-      + '</div>'
+      + '<button type="button" disabled title="原型暂未实现此操作" aria-label="更多">' + icon('ellipsis', 16, 'eva-i') + '</button>'
+      + '</div><span class="eva-t-caption" role="status" data-eva-feedback>' + escapeHTML(feedback) + '</span>'
       + '</div></div>'
       + '<div class="eva-personal-completed__dock">' + composerPanelHTML('eva-composer-narrow') + '</div>'
       + '</aside>';
   }
 
   function toolbarButton(label, name) {
-    return '<button class="eva-tool-btn eva-t-toolbar" type="button">'
+    return '<button class="eva-tool-btn eva-t-toolbar" type="button" aria-label="' + escapeHTML(label) + '"' + (label === '文字' ? ' data-eva-edit-text aria-pressed="false"' : ' disabled title="原型暂未实现此编辑操作"') + '>'
       + icon(name, 20, 'eva-i-toolbar') + '<span class="lb">' + escapeHTML(label) + '</span></button>';
   }
 
   function completedEditorHTML() {
     return '<section class="eva-ed-col" aria-label="演示文稿编辑">'
       + '<div class="eva-tabbar" role="tablist">'
-      + '<button class="eva-tab eva-t-label" type="button" role="tab" aria-selected="true">'
+      + '<button class="eva-tab eva-t-label" type="button" role="tab" aria-selected="true" data-eva-document="presentation">'
       + '<span class="eva-filemark ppt" style="width:14px;height:18px;font-size:9px">P</span>'
       + '<span class="nm">UI设计师发展前景.pptx</span>'
-      + '<span class="cl">' + icon('x', 14, 'eva-i') + '</span></button>'
-      + '<button class="eva-tab eva-t-label" type="button" role="tab" aria-selected="false">'
+      + '</button>'
+      + '<button class="eva-tab eva-t-label" type="button" role="tab" aria-selected="false" data-eva-document="document">'
       + '<span class="eva-filemark doc" style="width:14px;height:18px;font-size:9px">W</span>'
-      + '<span class="nm">行业数据摘要.docx</span>'
-      + '<span class="cl">' + icon('x', 14, 'eva-i') + '</span></button>'
+      + '<span class="nm">任务草稿.txt</span>'
+      + '</button>'
       + '</div>'
       + '<div class="eva-fileheader">'
-      + '<span class="nm eva-t-body">UI设计师发展前景.pptx</span>'
-      + '<button class="eva-iconbtn" type="button" aria-label="保存">' + icon('save', 16, 'eva-i') + '</button>'
-      + '<button class="eva-iconbtn" type="button" aria-label="分享">' + icon('upload', 16, 'eva-i') + '</button>'
-      + '<button class="eva-iconbtn" type="button" aria-label="下载">' + icon('download', 16, 'eva-i') + '</button>'
+      + '<span class="nm eva-t-body">' + (isPresentation() ? 'UI设计师发展前景.pptx' : '任务草稿.txt') + '</span>'
+      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="保存">' + icon('save', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="分享">' + icon('upload', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="下载">' + icon('download', 16, 'eva-i') + '</button>'
       + '</div>'
       + '<div class="eva-personal-completed__body">'
       + '<div class="eva-rail-slides" role="tablist" aria-label="页面">'
@@ -433,7 +404,7 @@
         return '<div class="eva-sliderow">'
           + '<span class="no eva-t-caption">' + (index + 1) + '</span>'
           + '<button class="eva-thumb" type="button" role="tab" aria-current="' + (index === 0 ? 'true' : 'false') + '"'
-          + ' aria-label="第 ' + (index + 1) + ' 页" data-eva-personal-slide="' + index + '">'
+          + ' aria-selected="' + String(index === 0) + '" aria-label="第 ' + (index + 1) + ' 页" data-eva-personal-slide="' + index + '">'
           + slideHTML(slide, 5.45) + '</button></div>';
       }).join('')
       + '</div>'
@@ -448,41 +419,75 @@
       + '<span class="eva-tool-sep"></span>'
       + toolbarButton('单页样式', 'sliders-horizontal')
       + '</div>'
-      + '<div class="eva-viewport"><div class="eva-canvas" data-eva-personal-canvas>' + slideHTML(SLIDES[0], 16) + '</div></div>'
+      + '<div class="eva-viewport"><div class="eva-canvas" data-eva-personal-canvas>' + slideHTML(SLIDES[0], 16) + '</div></div></div></div>'
       + '<div class="eva-statusbar eva-t-caption">'
       + '<span data-eva-personal-page>第 1 页</span><span>第 ' + SLIDES.length + ' 页</span>'
       + '<span class="sp"></span>'
       + '<button class="eva-iconbtn" type="button" aria-label="适应窗口">' + icon('maximize-2', 16, 'eva-i') + '</button>'
       + '<button class="eva-iconbtn" type="button" aria-label="缩小">' + icon('minus', 16, 'eva-i') + '</button>'
-      + '<span>155%</span>'
+      + '<span data-eva-zoom>100%</span>'
       + '<button class="eva-iconbtn" type="button" aria-label="放大">' + icon('plus', 16, 'eva-i') + '</button>'
-      + '</div></div></div></section>';
+      + '</div></section>';
   }
 
   /* ---- 整页 ------------------------------------------------ */
   function workspaceHTML() {
-    return assistantRailHTML() + '<div class="eva-personal-workspace__stage"><div class="eva-personal-workspace__scroll">'
-      + '<div class="eva-personal-workspace__column">'
-      + heroHTML()
-      + '<div class="eva-personal-workspace__composer">'
-      + pickerHTML()
-      + '<div class="eva-composer-wrap' + (isNewConversationState() ? ' eva-composer-wrap--newchat' : '') + '">' + composerPanelHTML() + '</div>'
-      + '</div>'
-      + railHTML()
-      + '</div></div>'
-      + generatingHTML()
-      + historyConversationHTML()
-      + '<div class="eva-personal-workspace__completed">'
-      + completedConversationHTML()
-      + completedEditorHTML()
-      + '</div>'
-      + opcardHTML() + '</div>';
+    var content;
+    if (isNewConversationState()) {
+      content = '<div class="eva-personal-workspace__scroll"><div class="eva-personal-workspace__column">'
+        + heroHTML() + railHTML() + '<div class="eva-personal-workspace__composer">'
+        + (skillPickerOpen() ? pickerHTML() : '')
+        + '<div class="eva-composer-wrap">' + composerPanelHTML()
+        + '<div class="eva-personal-quickskills"><button type="button" data-eva-open-skills>' + icon('sparkles', 16, 'eva-i') + '调用技能' + icon('chevron-down', 12, 'eva-i-chevron')
+        + '</button><span data-eva-selected-assistant="' + escapeHTML(selectedAssistant().id) + '">' + icon('brain', 16, 'eva-i') + escapeHTML(selectedAssistant().name) + '</span></div></div></div></div></div>';
+    } else if (state === 'generating') content = generatingHTML();
+    else if (state === 'history') content = historyConversationHTML();
+    else content = '<div class="eva-personal-workspace__completed">' + completedConversationHTML() + completedEditorHTML() + '</div>';
+    return (state === 'completed' ? '' : assistantRailHTML())
+      + '<div class="eva-personal-workspace__stage">' + content + '</div>'
+      + (state === 'operation' ? opcardHTML() : '');
   }
 
   function render() {
     if (!root) return;
+    var input = root.querySelector('.eva-composer-prompt');
+    var focused = input && document.activeElement === input;
+    var caret = input ? input.selectionStart : 0;
     root.setAttribute('data-eva-state', state);
     root.innerHTML = workspaceHTML();
+    if (state === 'completed') syncEditor();
+    if (focused) {
+      input = root.querySelector('.eva-composer-prompt');
+      if (input && !input.disabled) {
+        input.focus({preventScroll:true});
+        input.setSelectionRange(Math.min(caret,input.value.length), Math.min(caret,input.value.length));
+      }
+    }
+  }
+
+  function syncEditor() {
+    if (!root) return;
+    root.querySelectorAll('[data-eva-document]').forEach(function(tab) {
+      tab.setAttribute('aria-selected', String(tab.dataset.evaDocument === activeDocument));
+    });
+    var headerName = root.querySelector('.eva-fileheader .nm');
+    if (headerName) headerName.textContent = activeDocument === 'presentation' ? 'UI设计师发展前景.pptx' : '任务草稿.txt';
+    var body = root.querySelector('.eva-personal-completed__body');
+    if (!body) return;
+    body.dataset.document = activeDocument;
+    var doc = body.querySelector('.eva-document-preview');
+    if (!doc) {
+      doc = document.createElement('article');
+      doc.className = 'eva-document-preview eva-t-body';
+      doc.setAttribute('contenteditable','true');
+      doc.setAttribute('aria-label','编辑任务草稿');
+      doc.textContent = taskTitle() + '\n\n此处记录你的任务要求，可直接修改和补充。';
+      body.appendChild(doc);
+    }
+    var canvas = root.querySelector('[data-eva-personal-canvas]');
+    if (canvas) { canvas.style.transform = 'scale(' + zoom / 100 + ')'; }
+    var scale = root.querySelector('[data-eva-zoom]');
+    if (scale) scale.textContent = zoom + '%';
   }
 
   function ensureRoot(host) {
@@ -502,13 +507,18 @@
       clearTimeout(generatingTimer);
       generatingTimer = 0;
     }
+    conversationPickerOpen = false;
     state = next;
     render();
     return state;
   }
 
   function startGenerating() {
-    if (!draft && !activeSkill) return;
+    if (!draft.trim()) return;
+    submitted = {text:draft.trim(), skill:activeSkill};
+    draft = ''; activeSkill = null; feedback = ''; slideIndex = 0; zoom = 100;
+    slideDrafts = Object.create(null); editing = false;
+    activeDocument = isPresentation() ? 'presentation' : 'document';
     setState('generating');
     generatingTimer = setTimeout(function () {
       generatingTimer = 0;
@@ -519,6 +529,7 @@
   function resetToHome() {
     draft = '';
     activeSkill = null;
+    submitted = null;
     pickerQuery = '';
     setState('home');
   }
@@ -531,6 +542,36 @@
     if (!root || !root.isConnected) return;
     var inside = event.target.closest && event.target.closest('#eva-personal-workspace');
     if (!inside) return;
+
+    if (event.target.closest('[data-eva-edit-text]')) {
+      editing = !editing;
+      event.target.closest('button').setAttribute('aria-pressed', String(editing));
+      var editableCanvas = root.querySelector('[data-eva-personal-canvas]');
+      editableCanvas.setAttribute('contenteditable', String(editing));
+      editableCanvas.setAttribute('aria-label', '编辑当前幻灯片文字');
+      if (editing) editableCanvas.focus();
+      return;
+    }
+
+    var documentTab = event.target.closest('[data-eva-document]');
+    if (documentTab) { activeDocument = documentTab.dataset.evaDocument; syncEditor(); return; }
+    var action = event.target.closest('button[aria-label]');
+    if (state === 'completed' && action) {
+      var label = action.getAttribute('aria-label');
+      if (label === '缩小' || label === '放大' || label === '适应窗口') {
+        zoom = label === '适应窗口' ? 100 : Math.max(50, Math.min(150, zoom + (label === '放大' ? 10 : -10)));
+        syncEditor(); return;
+      }
+      if (label === '有帮助' || label === '没帮助') {
+        action.setAttribute('aria-pressed','true');
+        feedback = '已记录反馈'; root.querySelector('[data-eva-feedback]').textContent = feedback; return;
+      }
+      if (label === '重新生成') { draft = taskTitle(); activeSkill = submitted && submitted.skill; startGenerating(); return; }
+      if (label === '打开文件') { root.querySelector('.eva-ed-col').scrollIntoView({block:'nearest'}); return; }
+      if (label === '复制') {
+        navigator.clipboard.writeText(taskTitle()).then(function() { if(root && root.querySelector('[data-eva-feedback]')) root.querySelector('[data-eva-feedback]').textContent='已复制'; }); return;
+      }
+    }
 
     var scenario = event.target.closest('[data-eva-scenario]');
     if (scenario) {
@@ -550,8 +591,10 @@
       event.preventDefault();
       activeSkill = SKILLS.filter(function (item) { return item.id === skillRow.dataset.evaSkill; })[0] || null;
       pickerQuery = '';
-      draft = activeSkill && activeSkill.id === 'ppt' ? TASK_TITLE : draft;
-      setState(activeSkill && activeSkill.operation ? 'operation' : 'input');
+      draft = !draft.trim() && activeSkill && activeSkill.id === 'ppt' ? TASK_TITLE : draft;
+      closeSkillPicker();
+      var input = root.querySelector('.eva-composer-prompt');
+      if (input) { input.focus(); input.setSelectionRange(input.value.length,input.value.length); }
       return;
     }
 
@@ -569,7 +612,8 @@
 
     if (event.target.closest('[data-eva-personal-stop]')) {
       event.preventDefault();
-      setState('completed');
+      draft = submitted ? submitted.text : ''; activeSkill = submitted ? submitted.skill : null;
+      setState('input');
       return;
     }
 
@@ -615,11 +659,13 @@
     if (thumb) {
       event.preventDefault();
       var index = Number(thumb.dataset.evaPersonalSlide) || 0;
+      slideIndex = index;
       root.querySelectorAll('[data-eva-personal-slide]').forEach(function (item) {
         item.setAttribute('aria-current', item === thumb ? 'true' : 'false');
+        item.setAttribute('aria-selected', item === thumb ? 'true' : 'false');
       });
       var canvas = root.querySelector('[data-eva-personal-canvas]');
-      if (canvas) canvas.innerHTML = slideHTML(SLIDES[index], 16);
+      if (canvas) canvas.innerHTML = slideDrafts[index] ?? slideHTML(SLIDES[index], 16);
       var label = root.querySelector('[data-eva-personal-page]');
       if (label) label.textContent = '第 ' + (index + 1) + ' 页';
       return;
@@ -629,61 +675,84 @@
     if (prompt) prompt.focus();
   }, true);
 
-  /* 输入器是 GDS 的复合展示件（mention + 占位 + @ 提示），不是原生
-     input，所以在 keydown 上做 demo 级录入：可打字、退格、@ 开选择器、
-     Esc 关闭、Enter 发送。 */
-  document.addEventListener('keydown', function (event) {
-    if (!root || !root.isConnected) return;
-    if (state === 'generating' || state === 'completed') return;
-    var prompt = event.target.closest && event.target.closest('#eva-personal-workspace .eva-composer-prompt');
-    if (!prompt) return;
+  document.addEventListener('keydown', function(event) {
+    if (!root || !root.contains(event.target)) return;
+    var tab = event.target.closest('[role="tab"]');
+    if (!tab || !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)) return;
+    var list = tab.closest('[role="tablist"]');
+    var tabs = Array.from(list.querySelectorAll('[role="tab"]'));
+    var current = tabs.indexOf(tab);
+    var next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length-1 : (current + (['ArrowLeft','ArrowUp'].includes(event.key) ? -1 : 1) + tabs.length) % tabs.length;
+    event.preventDefault(); tabs[next].focus(); tabs[next].click();
+  });
 
-    if (event.key === 'Escape') {
-      if (state === 'skill-picker') {
+  // Keep edits with their slide for this generated result, not with the active DOM node.
+  document.addEventListener('input', function(event) {
+    if (!root || !root.contains(event.target)) return;
+    var canvas = event.target.closest('[data-eva-personal-canvas]');
+    if (canvas && editing) slideDrafts[slideIndex] = canvas.innerHTML;
+  });
+
+  // Native textarea owns IME composition, paste, selection and undo. Updating
+  // draft never replaces the focused input; only the picker list is refreshed.
+  document.addEventListener('input', function (event) {
+    if (!root || !root.contains(event.target) || !event.target.matches('.eva-composer-prompt')) return;
+    if (skillPickerOpen()) {
+      pickerQuery = event.target.value;
+      pickerIndex = 0;
+      var host = root.querySelector('.eva-personal-workspace__pickerhost');
+      if (host) host.outerHTML = pickerHTML();
+      if (root.querySelector('[data-eva-skill]')) event.target.setAttribute('aria-activedescendant','eva-skill-option-0');
+      else event.target.removeAttribute('aria-activedescendant');
+    } else {
+      draft = event.target.value;
+      if (isNewConversationState() && state !== 'operation') {
+        state = draft || activeSkill ? 'input' : 'home';
+        root.dataset.evaState = state;
+      }
+      var send = root.querySelector('.eva-send');
+      if (send) send.outerHTML = sendHTML();
+    }
+  });
+  document.addEventListener('keydown', function (event) {
+    if (!root || !root.contains(event.target) || !event.target.matches('.eva-composer-prompt') || event.isComposing || event.keyCode === 229) return;
+    if (skillPickerOpen()) {
+      var rows = Array.from(root.querySelectorAll('[data-eva-skill]'));
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
-        pickerQuery = '';
-        setState(draft || activeSkill ? 'input' : 'home');
+        pickerIndex = rows.length ? (pickerIndex + (event.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length : 0;
+        rows.forEach(function(row, i) { row.dataset.active = String(i === pickerIndex); row.setAttribute('aria-selected', String(i === pickerIndex)); });
+        event.target.setAttribute('aria-activedescendant','eva-skill-option-' + pickerIndex);
+        if (rows[pickerIndex]) rows[pickerIndex].scrollIntoView({block:'nearest'});
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        if (rows[pickerIndex]) rows[pickerIndex].click();
+      } else if (event.key === 'Escape') {
+        event.preventDefault(); closeSkillPicker();
       }
       return;
     }
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      if (state === 'skill-picker') {
-        var first = root.querySelector('[data-eva-skill]');
-        if (first) first.click();
-        return;
-      }
-      startGenerating();
-      return;
-    }
-    if (event.key === 'Backspace') {
-      event.preventDefault();
-      if (state === 'skill-picker') {
-        if (pickerQuery) { pickerQuery = pickerQuery.slice(0, -1); render(); }
-        else setState(draft || activeSkill ? 'input' : 'home');
-        return;
-      }
-      if (draft) { draft = draft.slice(0, -1); setState(draft || activeSkill ? 'input' : 'home'); return; }
-      if (activeSkill) { activeSkill = null; setState('home'); }
-      return;
-    }
-    if (event.key === '@' && state !== 'skill-picker') {
-      event.preventDefault();
-      pickerQuery = '';
-      setState('skill-picker');
-      return;
-    }
-    if (event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
-      event.preventDefault();
-      if (state === 'skill-picker') { pickerQuery += event.key; render(); return; }
-      draft += event.key;
-      setState('input');
+    if (event.key === '@') {
+      event.preventDefault(); openSkillPicker();
+    } else if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault(); startGenerating();
     }
   }, true);
+  document.addEventListener('click', function(event) {
+    if (!root || !root.contains(event.target)) return;
+    if (event.target.closest('[data-eva-open-skills]')) {
+      openSkillPicker();
+      root.querySelector('.eva-composer-prompt').focus();
+    }
+    if (event.target.closest('.eva-rail-next')) {
+      root.querySelector('.eva-rail').scrollBy({left:200, behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+    }
+  });
 
   /* 路由是会话选中态的唯一权威源。/guid 是新对话首页，/conversation/:id
      从数据仓恢复所选助理与会话；组件重挂载时同样调用这个函数。 */
   function syncRouteState() {
+    conversationPickerOpen = false;
     var hash = String(location.hash || '');
     var match = hash.match(/^#\/conversation\/([^?]+)/);
     var detail = match && conversationForId(decodeURIComponent(match[1]));
@@ -723,6 +792,7 @@
     syncRouteState();
     render();
     return function () {
+      conversationPickerOpen = false;
       if (generatingTimer) { clearTimeout(generatingTimer); generatingTimer = 0; }
       if (root.parentElement === host) root.remove();
     };

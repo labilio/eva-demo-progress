@@ -1,6 +1,8 @@
 (function (root) {
   'use strict';
   root.__evaPatch('general', function (source) {
+    // A queued textarea resize may run after a configuration pane unmounts.
+    source = root.__evaCut(source, 'getSizingData=rt=>{const ct=window.getComputedStyle(rt);', 'getSizingData=rt=>{if(!rt||!rt.isConnected)return null;const ct=window.getComputedStyle(rt);', 'ignore detached textarea resize');
         var evaRelease = root.__EVA_RELEASE;
         if (!evaRelease || !/^\d{2}-\d{2} v\d+$/.test(evaRelease.version || '') || !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(evaRelease.updatedAt || '')) {
           throw new Error('release.json 缺失或格式错误');
@@ -334,6 +336,11 @@
     source=root.__evaCut(source,'listComments=rt=>{const ct=', 'listComments=rt=>{if(!rt||!issuesOf().some(issue=>issue.id===rt))return Promise.resolve([]);const ct=', '评论限制当前项目任务');
     source=root.__evaCut(source,'listChildren=rt=>Promise.resolve(issuesOf().filter(ct=>ct.parent_issue_id===rt))','listChildren=rt=>Promise.resolve(rt&&issuesOf().some(issue=>issue.id===rt)?issuesOf().filter(ct=>ct.parent_issue_id===rt):[])','子任务限制当前项目父任务');
     source=root.__evaCut(source,'listTimeline().then(no=>{Wi()&&sr(no)})','listTimeline(rt).then(no=>{Wi()&&sr(no)})','任务动态明确任务ID');
+    source=root.__evaCut(source,'const sa=skillSource();return React.createElement("div",{className:"loop-sd"}', 'const sa=["github","local","workspace"].includes(mt.source_type)?mt.source_type:"workspace";return React.createElement("div",{className:"loop-sd"}', '技能来源读取元数据而非异步内容请求');
+    const contributionStart=source.indexOf('getAgentContributions=rt=>{'),contributionEnd=source.indexOf(',getAgentEnv=',contributionStart);
+    if(contributionStart<0||contributionEnd<contributionStart)throw new Error('专家活跃记录边界不匹配');
+    source=root.__evaCut(source,source.slice(contributionStart,contributionEnd),String.raw`getAgentContributions=rt=>listAgentTasks(rt).then(runs=>{const counts=new Map();for(const run of runs){const day=String(run.created_at||'').slice(0,10);if(day)counts.set(day,(counts.get(day)||0)+1);}const end=new Date();end.setUTCHours(0,0,0,0);return Array.from({length:120},(_,index)=>{const date=new Date(end.getTime()-(119-index)*864e5).toISOString().slice(0,10);return {date,count:counts.get(date)||0};});})`,'专家活跃统计取自同一运行记录');
+    source=root.__evaCut(source,'ut("loop.agent.successAvg",{values:{pct:bi.successPct,avg:formatDurationMs(bi.avgMs)}})', 'bi.terminalCount?ut("loop.agent.successAvg",{values:{pct:bi.successPct,avg:formatDurationMs(bi.avgMs)}}):"暂无已结束运行，成功率与耗时尚不可用"', '专家无运行时不显示虚构成功率');
     return source;
   });
 })(window);

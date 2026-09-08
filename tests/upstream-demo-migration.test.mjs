@@ -1,0 +1,19 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+test('upstream demo consolidation preserves local group messages, subzones and settings',()=>{
+ let saved;
+ const window={__EVA_MEMBERSHIP_CLONES:[],localStorage:{getItem:key=>key==='eva:project-members:v1'&&saved?JSON.stringify(saved):null,setItem:()=>{}}};
+ vm.runInNewContext(fs.readFileSync('prototype/009-2-membership.js','utf8'),{window});
+ const seed=window.EvaMembership.create({schema:2,actorId:'u-wangyilin',people:[{id:'u-wangyilin',name:'王宜林',active:true}]});
+ seed.createProject('official','EVA Official Space','u-wangyilin',[]);
+ for(const id of ['c-official-announcements','c-official-feedback','c-official-community'])seed.createGroup(id,id,'official','u-wangyilin',[]);
+ seed.createThread('local-thread','c-official-feedback');
+ saved=seed.snapshot();saved.messages['local-thread']=[{kind:'text',text:'保留我的讨论',sender:{uid:'u-wangyilin'}}];saved.chatSettings['c-official-community']={name:'我的交流组'};
+ const result=window.EvaMembership.bootstrap([],[],{}).snapshot();
+ assert.equal(result.groups['c-official-announcements'],undefined);
+ assert.ok(result.groups['c-official-feedback']);assert.equal(result.threads['local-thread'],'c-official-feedback');assert.equal(result.messages['local-thread'][0].text,'保留我的讨论');
+ assert.equal(result.chatSettings['c-official-community'].name,'我的交流组');assert.ok(result.groups['c-official-community']);
+ saved=result;const again=window.EvaMembership.bootstrap([],[],{}).snapshot();assert.equal(again.messages['local-thread'].length,1);
+});

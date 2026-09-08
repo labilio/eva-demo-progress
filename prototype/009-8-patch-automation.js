@@ -21,7 +21,7 @@ const EVA_PERSONAL_AUTOMATION_DEMO=[
 function EvaAutomationSettingsModal({item:rt,visible:ct,onClose:ut,onSave:pt}){
   const[mt,gt]=reactExports.useState(""),[St,Ct]=reactExports.useState(""),[xt,Pt]=reactExports.useState("");
   reactExports.useEffect(()=>{gt(rt?.name||"");Ct(rt?.instruction||rt?.description||"");Pt(rt?.schedule||"")},[rt]);
-  return React.createElement(Modal,{title:"定时任务设置",visible:ct,onCancel:ut,closeOnEsc:true,maskClosable:false,footer:React.createElement(React.Fragment,null,React.createElement(ButtonComponent$1,{onClick:ut},"取消"),React.createElement(ButtonComponent$1,{type:"primary",disabled:!mt.trim(),onClick:()=>{pt&&pt({...rt,name:mt.trim(),instruction:St.trim(),description:St.trim(),schedule:xt.trim()});ut&&ut()}},"保存"))},rt&&React.createElement("div",{className:"eva-auto-settings"},
+  return React.createElement(Modal,{width:640,title:"定时任务设置",visible:ct,onCancel:ut,closeOnEsc:true,maskClosable:false,footer:React.createElement(React.Fragment,null,React.createElement(ButtonComponent$1,{onClick:ut},"取消"),React.createElement(ButtonComponent$1,{type:"primary",disabled:!mt.trim(),onClick:()=>{pt&&pt({...rt,name:mt.trim(),instruction:St.trim(),description:St.trim(),schedule:xt.trim()});ut&&ut()}},"保存"))},rt&&React.createElement("div",{className:"eva-auto-settings"},
     React.createElement("label",null,React.createElement("span",null,"名称"),React.createElement(ForwardInput,{value:mt,onChange:gt,placeholder:"例如 每日晨报"})),
     React.createElement("label",null,React.createElement("span",null,"执行方"),React.createElement("div",{className:"eva-auto-settings__static"},rt.executor||"未指定执行方")),
     React.createElement("label",null,React.createElement("span",null,"触发时间"),React.createElement(ForwardInput,{value:xt,onChange:Pt,placeholder:"例如 工作日 09:00"})),
@@ -31,7 +31,7 @@ function EvaAutomationSettingsModal({item:rt,visible:ct,onClose:ut,onSave:pt}){
 }
 function EvaAutomationSessionResult({item:rt,onBack:ct}){
   return React.createElement("div",{className:"eva-auto-session"},
-    React.createElement("header",{className:"eva-auto-session__head"},React.createElement("button",{type:"button",className:"eva-auto-icon-button",onClick:ct,"aria-label":"返回自动化任务"},React.createElement(ChevronLeft,{size:20})),React.createElement("div",null,React.createElement("h1",null,rt.runTargetName||rt.name),React.createElement("p",null,"由自动化任务“",rt.name,"”生成的 Session"))),
+    React.createElement("header",{className:"eva-auto-session__head"},React.createElement("button",{type:"button",className:"eva-auto-icon-button",onClick:ct,"aria-label":"返回自动化任务"},React.createElement("svg",{width:20,height:20,viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:1.5,"aria-hidden":true},React.createElement("path",{d:"m15 18-6-6 6-6",strokeLinecap:"round",strokeLinejoin:"round"}))),React.createElement("div",null,React.createElement("h1",null,rt.runTargetName||rt.name),React.createElement("p",null,"由自动化任务“",rt.name,"”生成的 Session"))),
     React.createElement("main",{className:"eva-auto-session__body"},React.createElement("div",{className:"eva-auto-session__message"},React.createElement("strong",null,rt.executor||"通用助理"),React.createElement("span",null,rt.lastRun||"刚刚"),React.createElement("p",null,rt.runContent||"自动化任务已执行完成，结果已写入本次 Session。"))),
     React.createElement("footer",{className:"eva-auto-session__composer"},React.createElement("span",null,"继续追问这个 Session…"))
   );
@@ -81,6 +81,7 @@ function EvaSharedAutomationPage({scope:rt,items:ct,loading:ut,onCreate:pt,onOpe
   const Nt=Dt=>Dt.runTargetId?WKApp$1.routeRight.push(React.createElement(IssueDetailPage,{issueId:Dt.runTargetId,onChanged:xt,onClose:()=>WKApp$1.routeRight.pop()})):Toast.warning("暂无可跳转的 Loop 任务");
   return React.createElement(React.Fragment,null,React.createElement(EvaSharedAutomationPage,{scope:"project",items:Pt,loading:pt,onCreate:()=>St(true),onOpenRun:Nt,notice:"每次触发都会在当前项目中创建一个新的 Loop 任务，并保留运行记录。"}),React.createElement(CreateAutomationModal,{visible:gt,onClose:()=>St(false),onSaved:xt}));
 }` + source.slice(projectAutomationEnd);
+    source = root.__evaCut(source, 'className:"w-[min(560px,calc(100vw-32px))] max-w-560px",unmountOnExit:!0', 'className:"eva-auto-create-modal w-[min(560px,calc(100vw-32px))] max-w-560px",unmountOnExit:!0', '自动化创建样式宿主');
     return source;
   });
 })(window);

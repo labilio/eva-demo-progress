@@ -271,7 +271,10 @@
       saved.seededDriveDiscussionV1=true;
     }
     if(!saved.officialGroupConsolidationV1){
-      const retired=new Set(['c-official-announcements','c-official-feedback','c-official-community']);
+      const retired=new Set(['c-official-announcements','c-official-feedback','c-official-community'].filter(id=>{
+        const children=Object.entries(saved.threads||{}).filter(([,parent])=>parent===id).map(([tid])=>tid);
+        return ![id,...children].some(cid=>(saved.messages?.[cid]||[]).length||saved.chatSettings?.[cid]||saved.threadDetails?.[cid]);
+      }));
       for(const [id,parent] of Object.entries(saved.threads||{})){if(retired.has(parent)){delete saved.threads[id];delete saved.threadDetails?.[id];delete saved.messages?.[id];}}
       for(const id of retired){delete saved.groups[id];delete saved.messages?.[id];delete saved.chatSettings?.[id];}
       if(saved.groups['official-community']?.name==='用户反馈与开发交流')saved.groups['official-community'].name='用户使用反馈与开发交流';

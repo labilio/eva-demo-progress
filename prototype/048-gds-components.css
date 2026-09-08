@@ -108,7 +108,7 @@
   color: var(--eva-text-primary);
   white-space: nowrap;
   cursor: pointer;
-  font: inherit;
+  font: var(--eva-fw-regular) 14px/20px var(--eva-font-sans);
 }
 .eva-chip:hover { background: var(--eva-surface-subtle); }
 .eva-chip:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
@@ -687,3 +687,76 @@
 .eva-slide .bullets b { display: block; font-weight: 700; }
 .eva-slide .bullets p { margin: 0.15em 0 0; color: #8a8a80; line-height: 1.4; }
 .eva-slide .dot { color: #6b4bd6; margin-right: 0.4em; }
+
+/* Shared Semi controls: GDS desktop adaptation across all product routes.
+   Semantic types and size variants are retained; page layouts own their widths. */
+.semi-button {
+  border-radius: var(--eva-radius-control);
+  font-family: var(--eva-font-sans);
+  font-weight: var(--eva-fw-medium);
+}
+.semi-button-primary.semi-button-solid {
+  background: var(--eva-action-primary);
+  color: var(--eva-text-inverse);
+  border-color: var(--eva-action-primary);
+}
+.semi-button-primary.semi-button-solid:hover:not(.semi-button-disabled) {
+  background: var(--eva-action-primary-hover);
+}
+.semi-button-primary:is(.semi-button-light,.semi-button-borderless) {
+  color: var(--eva-text-secondary);
+  background: transparent;
+}
+.semi-button-primary:is(.semi-button-light,.semi-button-borderless):hover:not(.semi-button-disabled) {
+  background: var(--eva-overlay-hover);
+}
+.semi-button.semi-button-disabled {
+  background: var(--eva-action-disabled-fill);
+  color: var(--eva-text-muted);
+  cursor: not-allowed;
+}
+.semi-input-wrapper,.semi-select,.semi-input-textarea-wrapper {
+  border-radius: var(--eva-radius-control);
+  border-color: var(--eva-border-subtle);
+  background: var(--eva-surface-subtle);
+}
+.semi-input-wrapper:focus-within,.semi-select:focus-within,.semi-input-textarea-wrapper:focus-within {
+  border-color: var(--eva-border-focus);
+}
+.semi-input,.semi-input-textarea,.semi-select-selection {
+  font-family: var(--eva-font-sans);
+  color: var(--eva-text-primary);
+}
+.semi-modal-content {
+  border-radius: var(--eva-radius-window);
+  background: var(--eva-surface-primary);
+  box-shadow: var(--eva-shadow-floating),var(--eva-shadow-hairline);
+}
+.semi-popover-wrapper {
+  border-radius: var(--eva-radius-panel);
+  background: var(--eva-surface-glass);
+  backdrop-filter: blur(var(--eva-blur-floating));
+  box-shadow: var(--eva-shadow-floating),var(--eva-shadow-hairline);
+}
+.semi-select-option-list {
+  background: var(--eva-surface-primary);
+  border-radius: var(--eva-radius-panel);
+}
+:where(.app-shell) :is(button,a,[role="button"],[role="tab"]):focus-visible,
+:is(.semi-modal,.semi-popover) :is(button,a,[role="button"],[role="option"]):focus-visible {
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+  outline-offset: var(--eva-space-0-5);
+}
+:where(.app-shell) svg.lucide {
+  stroke-width: var(--eva-icon-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(.app-shell) * {
+    transition-duration: 0s;
+    animation-duration: .01ms;
+    animation-iteration-count: 1;
+    scroll-behavior: auto;
+  }
+}

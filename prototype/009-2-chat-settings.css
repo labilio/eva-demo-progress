@@ -1,22 +1,22 @@
 /* Octo settings card and member-grid layout, adapted to Eva's existing IM tokens. */
 .eva-chat-settings { height:100%; display:flex; flex-direction:column; background:var(--wk-bg-base,#fff); color:var(--wk-text-primary,#202127); font-size:14px; }
-.eva-chat-settings-head { height:56px; flex:none; display:flex; align-items:center; gap:16px; padding:0 16px; background:var(--wk-color-secondary,#f5f5f6); border-bottom:1px solid var(--wk-border-subtle,#e6e7e9); }
-.eva-chat-settings-head h3 { margin:0; font-size:17px; font-weight:600; }
+.eva-chat-settings-head { height:52px; flex:none; display:flex; align-items:center; gap:16px; padding:0 16px; background:var(--wk-color-secondary,#f5f5f6); border-bottom:1px solid var(--wk-border-subtle,#e6e7e9); }
+.eva-chat-settings-head h3 { margin:0; font-size:16px; line-height:24px; font-weight:500; }
 .eva-chat-settings-head button { display:grid; place-items:center; background:none; border:0; color:var(--wk-text-secondary,#767a80); width:32px; height:32px; border-radius:8px; cursor:pointer; }
-.eva-chat-settings-body { overflow-y:auto; flex:1; min-height:0; padding:12px; }
-.eva-chat-setting-section { background:var(--wk-color-secondary,#f5f6f7); border:1px solid var(--wk-border-subtle,#e4e5e7); border-radius:8px; margin-bottom:10px; overflow:hidden; }
-.eva-chat-setting-row { box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; min-height:48px; padding:12px 16px; border:0; border-bottom:1px solid var(--wk-border-subtle,#e4e5e7); background:transparent; color:inherit; font:inherit; text-align:left; }
+.eva-chat-settings-body { overflow-y:auto; flex:1; min-height:0; padding:16px; }
+.eva-chat-setting-section { background:var(--wk-color-secondary,#f5f6f7); border:1px solid var(--wk-border-subtle,#e4e5e7); border-radius:16px; margin-bottom:16px; overflow:hidden; }
+.eva-chat-setting-row { box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; min-height:56px; padding:12px 16px; border:0; border-bottom:1px solid var(--wk-border-subtle,#e4e5e7); background:transparent; color:inherit; font:inherit; text-align:left; }
 .eva-chat-setting-row:last-child { border-bottom:0; }
 button.eva-chat-setting-row { cursor:pointer; }
 button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { background:var(--wk-bg-hover,#e9eaec); }
 .eva-chat-setting-value { color:var(--wk-text-secondary,#666b73); max-width:65%; text-align:right; overflow-wrap:anywhere; white-space:pre-wrap; }
 .eva-chat-setting-row.is-danger { color:var(--semi-color-danger); }
-.eva-chat-setting-edit { padding:14px 16px; border-bottom:1px solid var(--wk-border-subtle,#e4e5e7); }
-.eva-chat-setting-edit label { display:block; margin-bottom:10px; font-weight:500; }
-.eva-chat-setting-edit textarea { box-sizing:border-box; width:100%; resize:vertical; min-height:100px; max-height:360px; background:var(--wk-bg-base,#fff); color:inherit; border:1px solid var(--wk-border-subtle,#ddd); border-radius:6px; padding:10px; font:inherit; }
+.eva-chat-setting-edit { padding:16px; border-bottom:1px solid var(--wk-border-subtle,#e4e5e7); }
+.eva-chat-setting-edit label { display:block; margin-bottom:8px; font-weight:500; }
+.eva-chat-setting-edit textarea { box-sizing:border-box; width:100%; resize:vertical; min-height:100px; max-height:360px; background:var(--wk-bg-base,#fff); color:inherit; border:1px solid var(--wk-border-subtle,#ddd); border-radius:8px; padding:12px; font:inherit; }
 .eva-chat-setting-edit-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; padding:10px 0 0; }
 .eva-chat-setting-edit-actions small { margin-right:auto; color:var(--wk-text-secondary,#767a80); }
-.eva-chat-member-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:18px 8px; padding:20px 12px 12px; }
+.eva-chat-member-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:16px 8px; padding:16px; }
 .eva-chat-member-tile { position:relative; min-width:0; padding:0; border:0; background:none; color:inherit; font:inherit; cursor:pointer; }
 .eva-chat-member-tile .eva-members-human-identity,.eva-chat-member-tile .eva-members-ai-identity { display:flex; flex-direction:column; gap:8px; width:100%; }
 .eva-chat-member-tile .eva-members-human-avatar { width:48px; height:48px; }
@@ -26,7 +26,7 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-member-role { position:absolute; top:35px; left:50%; transform:translateX(-50%); font-size:10px; line-height:16px; padding:0 4px; color:var(--wk-text-inverse,#fff); background:var(--wk-text-primary,#202127); border-radius:3px; white-space:nowrap; }
 .eva-chat-member-role.is-owner { background:var(--semi-color-warning); }
 .eva-chat-member-add { border:1px solid var(--wk-border-subtle,#ddd); background:var(--wk-bg-base,#fff); color:var(--wk-text-secondary,#767a80); width:48px; height:48px; border-radius:50%; display:grid; place-items:center; justify-self:center; cursor:pointer; }
-.eva-chat-member-list-row { display:flex; align-items:center; gap:10px; padding:14px; border-bottom:1px solid var(--wk-border-subtle,#ddd); }
+.eva-chat-member-list-row { display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid var(--wk-border-subtle,#ddd); }
 .eva-chat-member-list-row>button:first-child { border:0; padding:0; background:none; font:inherit; text-align:left; cursor:pointer; flex:1; }
 .eva-chat-member-list-row .eva-members-human-identity,.eva-chat-member-list-row .eva-members-ai-identity { flex:1; min-width:0; }
 .eva-chat-person-card { width:100%; border:0; padding:20px; background:none; font:inherit; color:inherit; text-align:left; cursor:pointer; }
@@ -35,12 +35,23 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-settings button:focus-visible { outline:2px solid var(--semi-color-primary); outline-offset:-2px; }
 
 .eva-chat-member-tile>.eva-ai-avatar { margin:0 auto; }
-.eva-chat-tile-caption { display:flex; justify-content:center; align-items:center; gap:3px; margin-top:8px; font-size:12px; line-height:18px; }
+.eva-chat-tile-caption { display:flex; justify-content:center; align-items:center; gap:3px; margin-top:8px; font-size:12px; line-height:16px; }
 .eva-chat-tile-caption>span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 
 .eva-chat-settings-note { color:var(--wk-text-secondary,#767a80); font-size:12px; line-height:1.6; }
 
-/* Concrete subzone settings use Octo's surface + grouped base cards. */
-.eva-thread-settings .eva-chat-settings-body { background:var(--wk-bg-surface,#f5f6f7); padding:8px 16px 16px; }
-.eva-thread-settings .eva-chat-setting-section { background:var(--wk-bg-base,#fff); margin-bottom:8px; }
-.eva-thread-setting-label i { display:block; margin-top:8px; color:var(--wk-text-tertiary,#8a8f99); font-size:12px; line-height:1.5; font-style:normal; }
+/* GDS settings composition; retain the existing shared membership model. */
+.eva-chat-settings { line-height:22px; }
+.eva-chat-settings-head { background:var(--eva-surface-primary); }
+.eva-chat-setting-section { background:var(--eva-surface-primary); }
+.eva-chat-setting-edit textarea { font-size:15px;line-height:24px; }
+.eva-chat-setting-edit textarea:focus-visible { outline:2px solid var(--eva-action-primary);outline-offset:2px; }
+.eva-chat-settings-note { color:var(--gds-color-text-secondary-accessible);line-height:16px; }
+.eva-chat-member-tile { border-radius:8px; }
+.eva-chat-member-grid { grid-template-columns:repeat(auto-fit,minmax(56px,1fr)); }
+
+.eva-chat-member-tile .eva-members-ai-identity { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 4px;align-items:center; }
+.eva-chat-member-tile .eva-members-ai-identity > .eva-ai-avatar { grid-column:1 / -1;justify-self:center; }
+/* Subzone details share the GDS group/direct settings shell and spacing. */
+.eva-thread-settings .eva-chat-settings-body { background:var(--eva-surface-subtle); }
+.eva-thread-setting-label i { display:block; margin-top:8px; color:var(--gds-color-text-secondary-accessible); font-size:12px; line-height:16px; font-style:normal; }

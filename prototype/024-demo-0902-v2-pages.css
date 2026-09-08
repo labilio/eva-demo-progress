@@ -38,31 +38,40 @@
   .eva-ui-btn--primary:hover { background: #6510da; }
   .eva-ui-btn svg, .eva-feature-page svg, .eva-project-detail-page svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-  .eva-board-topline { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-  .eva-board-topline .eva-feature-intro { margin: 0; }
-  .eva-board-stats { display: grid; grid-template-columns: repeat(5, minmax(150px, 1fr)); gap: 14px; margin: 20px 0; }
-  .eva-board-stat { min-height: 92px; padding: 18px 20px; border: 1px solid #e3e5e8; border-radius: 16px; background: #f5f6f7; }
-  .eva-board-stat span { display: flex; align-items: center; gap: 8px; color: #737a84; font-size: 13px; }
-  .eva-board-stat strong { display: block; margin-top: 12px; font-size: 25px; line-height: 30px; }
-  .eva-board-filter { padding: 16px; border: 1px solid #e2e4e7; border-radius: 16px; background: #f4f5f7; }
-  .eva-board-filter__row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 12px; }
-  .eva-faux-field { display: flex; height: 38px; align-items: center; gap: 9px; padding: 0 13px; border: 1px solid #e1e3e6; border-radius: 10px; background: #fff; color: #30343a; font-size: 13px; }
-  .eva-faux-field--muted { color: #8b929b; }
-  .eva-board-check { display: flex; align-items: center; gap: 8px; margin-top: 13px; color: #646a73; font-size: 13px; }
-  .eva-board-check input { width: 15px; height: 15px; }
-  .eva-board-scroll { overflow-x: auto; padding: 18px 0 8px; }
-  .eva-board-columns { display: grid; min-width: 1500px; grid-template-columns: repeat(5, 300px); gap: 14px; }
-  .eva-board-column { min-height: 500px; padding: 14px; border: 1px solid #e2e4e7; border-radius: 15px; background: #fff; }
-  .eva-board-column--todo { border-color: #98dcfb; background: #f4fbff; }
-  .eva-board-column--planned { border-color: #d8b6ff; background: #fbf7ff; }
-  .eva-board-column--ready { border-color: #98e8c4; background: #f4fff9; }
-  .eva-board-column__head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
-  .eva-board-column__dot { width: 10px; height: 10px; border-radius: 50%; background: #9da6b2; }
+  /* GDS adaptation: a business board keeps its five workflow columns;
+     horizontal scrolling belongs to the board, never the whole window. */
+  [data-eva-page="workboard"] .eva-feature-head { box-sizing: border-box; min-height: 52px; }
+  [data-eva-page="workboard"] .eva-feature-head h1 { font: var(--eva-fw-medium) 16px/24px var(--eva-font-sans); }
+  [data-eva-page="workboard"] .eva-feature-body { padding: 24px; }
+  [data-eva-page="workboard"] .eva-ui-btn { height: 32px; gap: 8px; padding: 0 12px; border-radius: var(--eva-radius-control); font: 14px/22px var(--eva-font-sans); }
+  [data-eva-page="workboard"] .eva-ui-btn--primary { background: var(--eva-action-primary); border-color: var(--eva-action-primary); color: #fff; }
+  [data-eva-page="workboard"] .eva-ui-btn--primary:hover { background: color-mix(in srgb, var(--eva-action-primary), black 6%); }
+  [data-eva-page="workboard"] :is(button, input, [tabindex]):focus-visible { outline: 2px solid var(--eva-action-primary); outline-offset: 2px; }
+  [data-eva-page="workboard"] svg { width: 16px; height: 16px; flex-shrink: 0; stroke-width: 1.5; }
+  .eva-board-topline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+  .eva-board-topline .eva-feature-intro { margin: 0; font: 14px/22px var(--eva-font-sans); color: var(--eva-text-secondary); }
+  .eva-board-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 24px 0; }
+  .eva-board-stat { box-sizing: border-box; min-height: 112px; padding: 16px; border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-panel); background: var(--eva-surface-primary); }
+  .eva-board-stat span { display: flex; align-items: center; gap: 8px; color: var(--eva-text-secondary-accessible); font: 12px/16px var(--eva-font-sans); }
+  .eva-board-stat strong { display: block; margin-top: 16px; color: var(--eva-text-primary); font: var(--eva-fw-medium) 24px/32px var(--eva-font-sans); }
+  .eva-board-filter { padding: 16px; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); background: var(--eva-surface-subtle); }
+  .eva-board-filter__row { display: grid; grid-template-columns: minmax(260px, 2fr) repeat(3, minmax(100px, 1fr)); gap: 12px; }
+  .eva-faux-field { display: flex; min-width: 0; height: 36px; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-control); background: var(--eva-surface-primary); color: var(--eva-text-secondary); font: 14px/22px var(--eva-font-sans); white-space: nowrap; overflow: hidden; }
+  .eva-faux-field--muted { color: var(--eva-text-secondary-accessible); }
+  .eva-faux-field__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .eva-board-check { display: flex; align-items: center; gap: 8px; min-height: 32px; margin-top: 8px; color: var(--eva-text-secondary); font: 14px/22px var(--eva-font-sans); }
+  .eva-board-check input { width: 16px; height: 16px; accent-color: var(--eva-action-primary); }
+  .eva-board-scroll { overflow-x: auto; overscroll-behavior-x: contain; padding: 16px 0 8px; scrollbar-gutter: stable; }
+  .eva-board-columns { display: grid; width: max-content; min-width: 100%; grid-template-columns: repeat(5, minmax(240px, 1fr)); gap: 12px; }
+  .eva-board-column { box-sizing: border-box; min-height: 320px; padding: 12px; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); background: var(--eva-surface-subtle); }
+  .eva-board-column__head { display: flex; align-items: center; gap: 8px; min-height: 24px; font: var(--eva-fw-medium) 14px/22px var(--eva-font-sans); }
+  .eva-board-column__dot { width: 8px; height: 8px; border-radius: 50%; background: #6b7280; }
   .eva-board-column--todo .eva-board-column__dot { background: #2ea7e8; }
   .eva-board-column--planned .eva-board-column__dot { background: #8b18ef; }
   .eva-board-column--ready .eva-board-column__dot { background: #18b978; }
-  .eva-board-column__count { margin-left: auto; padding: 1px 8px; border-radius: 7px; background: #f0f1f2; color: #858c95; font-size: 12px; }
-  .eva-board-column__empty { display: grid; min-height: 450px; margin-top: 12px; place-items: center; border: 1px dashed #e1e4e8; border-radius: 12px; color: #8d949d; font-size: 13px; }
+  .eva-board-column__count { margin-left: auto; padding: 2px 8px; border-radius: var(--eva-radius-chip); background: var(--eva-surface-primary); color: var(--eva-text-secondary-accessible); font: 12px/16px var(--eva-font-sans); }
+  .eva-board-column__empty { display: grid; min-height: 252px; margin-top: 12px; place-items: center; color: var(--eva-text-secondary-accessible); font: 14px/22px var(--eva-font-sans); }
+  @media (max-width: 900px) { .eva-board-filter__row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
   .eva-auto-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
   .eva-auto-tabs { display: flex; gap: 24px; border-bottom: 1px solid #e5e6eb; }

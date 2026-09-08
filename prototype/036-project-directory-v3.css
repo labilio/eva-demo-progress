@@ -5,7 +5,7 @@
     max-width: 1180px;
     min-width: 0;
     margin-inline: auto;
-    padding: 24px 48px 56px;
+    padding: var(--eva-space-8) var(--eva-space-12) 56px;
   }
 
   .eva-project-directory-actions {
@@ -147,9 +147,9 @@
   .eva-project-list-item {
     position: relative;
     display: flex;
-    gap: 14px;
+    gap: var(--eva-space-4);
     min-height: 76px;
-    padding: 15px 58px 15px 18px;
+    padding: var(--eva-space-4) 64px var(--eva-space-4) var(--eva-space-5);
     align-items: flex-start;
     cursor: pointer;
     transition: background-color 120ms ease;
@@ -177,11 +177,11 @@
   }
 
   .eva-project-pin-button {
-    width: 28px;
-    height: 28px;
-    flex: 0 0 28px;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
     padding: 0;
-    border-radius: 7px;
+    border-radius: var(--eva-radius-control);
     background: transparent;
     color: var(--semi-color-text-2, #8a8f99);
   }
@@ -229,7 +229,7 @@
 
   @media (max-width: 900px) {
     body.eva-message-hierarchy-ready .eva-project-directory {
-      padding-inline: 28px;
+      padding-inline: 24px;
     }
 
     .eva-project-pinned-grid {
@@ -326,20 +326,20 @@
     height: 100%;
     min-height: 0;
     width: 100%;
-    max-width: 1120px;
+    max-width: 1084px;
     margin-inline: auto;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 28px 40px 56px;
+    padding: 24px;
     color: var(--gds-color-text-primary);
   }
 
   .eva-project-info__hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 48px;
-    padding: 28px 30px;
+    gap: 32px;
+    padding: 24px;
     border: 1px solid var(--gds-color-border-subtle);
     border-radius: var(--gds-radius-panel);
     background: var(--gds-color-surface-primary);
@@ -383,7 +383,7 @@
   display: grid;
   gap: 4px;
   max-width: 640px;
-  margin-top: 18px;
+  margin-top: 24px;
 }
 
 .eva-project-info__background strong {
@@ -429,7 +429,7 @@
 
   .eva-project-info__card {
     min-width: 0;
-    padding: 22px 24px;
+    padding: 24px;
     border: 1px solid var(--gds-color-border-subtle);
     border-radius: var(--gds-radius-panel);
     background: var(--gds-color-surface-primary);
@@ -442,7 +442,7 @@
 
   .eva-project-info__goals {
     display: grid;
-    gap: 11px;
+    gap: 16px;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -477,9 +477,9 @@
   .eva-project-info__milestone {
     position: relative;
     display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) auto;
+    grid-template-columns: 64px minmax(0, 1fr) auto;
     gap: 10px;
-    min-height: 54px;
+    min-height: 56px;
     padding-left: 18px;
     align-items: start;
   }
@@ -533,7 +533,7 @@
 
   @media (max-width: 900px) {
     .eva-project-info {
-      padding-inline: 28px;
+      padding-inline: 24px;
     }
 
     .eva-project-info__hero,
@@ -542,3 +542,46 @@
     }
 
   }
+
+/* Directory density: 32px page rhythm, 16px panels, 32px pin targets. */
+.eva-project-directory { background: var(--eva-surface-primary); }
+.eva-project-directory-list { border: 1px solid var(--eva-border-subtle); }
+.eva-project-directory-search .semi-input-wrapper {
+  background: var(--eva-surface-primary);
+  border: 1px solid var(--eva-border-subtle);
+  border-radius: var(--eva-radius-control);
+}
+.eva-project-directory .collab-btn-primary.semi-button {
+  background: var(--eva-action-primary);
+  border-radius: var(--eva-radius-control);
+  padding-inline: var(--eva-space-4);
+}
+.eva-project-directory .collab-btn-primary.semi-button:hover { background: var(--eva-action-primary-hover); }
+.eva-project-directory-icon svg { width: var(--eva-icon-content); height: var(--eva-icon-content); }
+  .eva-project-pinned-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 420px));
+    align-items: stretch;
+  }
+  .eva-project-pinned-card {
+    min-height: 112px;
+    border-color: var(--eva-border-subtle);
+    border-radius: var(--eva-radius-panel);
+    box-shadow: none;
+  }
+  .eva-project-pinned-card .semi-card-header {
+    min-height: 56px;
+    padding: var(--eva-space-3) var(--eva-space-4);
+  }
+  .eva-project-pinned-card .semi-card-body { padding: 0 var(--eva-space-4) var(--eva-space-4); }
+  .eva-project-pinned-card:hover {
+    border-color: var(--eva-border-default);
+    background: var(--eva-surface-subtle);
+    box-shadow: none;
+  }
+
+/* Readable project overview: body copy and dates share a stable baseline. */
+.eva-project-info__hero p,
+.eva-project-info__goals p { font-size: 15px; line-height: 24px; }
+.eva-project-info__milestone time { white-space: nowrap; line-height: 22px; }
+.eva-project-info__milestone-state { line-height: 22px; }
+.eva-project-info__goals li > span { line-height: 24px; }

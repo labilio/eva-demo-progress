@@ -102,3 +102,38 @@
       padding-inline: 10px;
     }
   }
+
+/* Task views share GDS typography and spacing, while preserving status groups. */
+.loop-page:has(.eva-task-view-switcher) { font: 400 14px/22px var(--eva-font-sans); }
+.loop-page .loop-board { gap: 16px; overscroll-behavior: contain; }
+.loop-page .loop-board__col { border-radius: var(--eva-radius-panel); padding: 0 12px 12px; background: var(--eva-surface-subtle); border-color: var(--eva-border-faint); }
+.loop-page .loop-board__col-head { min-height: 44px; font: 500 14px/22px var(--eva-font-sans); }
+.loop-page .loop-card { padding: 12px; gap: 10px; border-radius: var(--eva-radius-chip); border-color: var(--eva-border-subtle); box-shadow: none; }
+.loop-page .loop-card:hover { border-color: var(--eva-border-default); box-shadow: var(--eva-shadow-hairline); }
+.loop-page .loop-card__title { font: 500 14px/22px var(--eva-font-sans); overflow-wrap: anywhere; }
+.loop-page :is(.loop-card__id,.loop-card__time,.loop-card__project) { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
+.loop-page .loop-card__foot { flex-wrap: wrap; gap: 8px; }
+.loop-page .loop-abadge { max-width: 100%; }
+.loop-page .loop-groupboard__head { padding-block: 16px; font: 500 14px/22px var(--eva-font-sans); }
+.loop-page .loop-list__row { min-height: 48px; gap: 12px; }
+.loop-page .loop-list__title { font: 400 14px/22px var(--eva-font-sans); }
+.loop-page :is(.loop-list__id,.loop-list__time,.loop-list__project) { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
+.loop-page :is(.loop-card,.loop-list__row):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
+
+/* Task detail remains a content pane plus its existing property inspector. */
+.loop-idp { font: 400 14px/22px var(--eva-font-sans); }
+.loop-idp .loop-idp__topbar { min-height: 52px; box-sizing: border-box; padding-inline: 24px; }
+.loop-idp .loop-idp__main { padding: 24px 24px 48px; }
+.loop-idp .loop-idp__main > * { max-width: var(--eva-main-col-w); }
+.loop-idp .loop-idp__title { font: 500 16px/24px var(--eva-font-sans); }
+.loop-idp :is(.loop-idp__desc,.loop-md,.loop-cmt__body,.loop-composer__editor) { font: 400 15px/24px var(--eva-font-sans); overflow-wrap: anywhere; }
+.loop-idp .loop-idp__aside { padding: 8px 20px 24px; }
+.loop-idp .loop-idp__asec { padding: 16px 0; gap: 12px; }
+.loop-idp .loop-idp__prop { min-height: 32px; }
+.loop-idp .loop-idp__prop-k { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
+.loop-idp .loop-idp__section { margin-top: 24px; }
+.loop-idp .loop-cmt { border-radius: var(--eva-radius-panel); border-color: var(--eva-border-faint); }
+.loop-idp .loop-cmt__row { padding: 16px; }
+.loop-idp .loop-cmt__reply-stub { min-height: 32px; border-radius: var(--eva-radius-control); }
+.loop-idp .loop-composer { border-radius: var(--eva-radius-panel); }
+@media (prefers-reduced-motion: reduce) { .loop-page .loop-card { transition: none; } }

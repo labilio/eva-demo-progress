@@ -49,13 +49,13 @@
 .eva-digital-dialog .semi-modal-footer .eva-picker-footer{margin:0;padding:0;border:0;justify-content:flex-end}
 
 /* Five entry points: personal identities above, shared capabilities below. */
-.eva-creator-catalog { padding: 28px 32px; }
+.eva-creator-catalog { padding: var(--eva-space-8); }
 .eva-creator-catalog > .eva-digital-center__head { margin-bottom: 24px; }
 .eva-creator-grid--self { grid-template-columns: repeat(2,minmax(0,1fr)); }
 .eva-creator-grid--public { grid-template-columns: repeat(3,minmax(0,1fr)); }
-.eva-creator-card { gap: 8px; border-radius: var(--gds-radius-panel); }
+.eva-creator-card { gap: var(--eva-space-3); padding: var(--eva-space-5); border-radius: var(--eva-radius-panel); border-color: var(--eva-border-subtle); }
 .eva-creator-card__heading { display: flex; align-items: center; gap: 10px; }
-.eva-creator-card__heading h3 { margin: 0; font-size: 16px; }
+.eva-creator-card__heading h3 { margin: 0; font: var(--eva-fw-medium) 16px/24px var(--eva-font-sans); }
 .eva-creator-card p { margin: 0; }
 .eva-creator-card .eva-creator-card__tag { color: var(--semi-color-text-1); }
 .eva-creator-card .eva-creator-card__boundary { font-size: 12px; padding-top: 8px; border-top: 1px solid var(--semi-color-border); }
@@ -69,3 +69,67 @@
 
 /* The overlay host is click-through; interactive popup descendants are not. */
 .eva-digital-center__modal .semi-portal { pointer-events: auto; }
+
+/* Creator workspace: shared GDS scale with a readable 776px configuration column.
+   The two identity cards and three integration cards retain their business grouping. */
+.eva-creator-workspace { font: 400 14px/22px var(--eva-font-sans); }
+.eva-creator-workspace h1 { font: 600 16px/24px var(--eva-font-sans); }
+.eva-creator-workspace p { color: var(--eva-text-secondary-accessible); line-height: 22px; }
+.eva-creator-card ul { margin: 0; padding-left: var(--eva-space-5); line-height: 22px; }
+.eva-creator-card li + li { margin-top: var(--eva-space-1); }
+.eva-creator-card__heading > svg { flex: none; width: var(--eva-icon-toolbar); height: var(--eva-icon-toolbar); color: var(--eva-text-secondary); }
+.eva-creator-card > .semi-button { min-height: 36px; padding-inline: var(--eva-space-4); }
+.eva-creator-card .eva-creator-card__boundary { font: 400 12px/16px var(--eva-font-sans); padding-top: var(--eva-space-3); }
+.eva-creator-workspace .eva-digital-center__main:not(.eva-creator-catalog) { padding: var(--eva-space-8) var(--eva-space-6); }
+.eva-creator-workspace .eva-digital-center__form { max-width: var(--eva-main-col-w); margin-inline: auto; }
+.eva-creator-workspace .eva-digital-center__field { max-width: none; margin-bottom: var(--eva-space-6); gap: var(--eva-space-2); }
+.eva-creator-workspace .eva-digital-center__field > label { font: 500 14px/22px var(--eva-font-sans); }
+.eva-creator-workspace .eva-digital-center__field small { font: 400 12px/16px var(--eva-font-sans); }
+.eva-creator-workspace :is(.semi-input,.semi-input-textarea,.semi-select-selection) { font: 400 15px/24px var(--eva-font-sans); }
+.eva-creator-workspace .eva-digital-center__rail { border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-panel); backdrop-filter: blur(var(--eva-blur-glass)); }
+.eva-creator-workspace .eva-digital-center__rail .semi-button { min-height: 38px; font: 500 14px/22px var(--eva-font-sans); }
+.eva-creator-workspace .eva-digital-center__main:not(.eva-creator-catalog) > .eva-digital-center__head { align-items: flex-start; gap: var(--eva-space-6); margin-bottom: var(--eva-space-8); }
+.eva-creator-workspace .eva-digital-center__head > div:first-child { min-width: 0; }
+.eva-creator-workspace .eva-digital-center__head h1 { overflow-wrap: anywhere; }
+.eva-creator-workspace .eva-digital-center__actions { gap: var(--eva-space-2); }
+
+/* Employee market: preserve the catalog table and its business filters. */
+.eva-market-workspace { font: 400 14px/22px var(--eva-font-sans); }
+.eva-market-workspace h1 { font: 500 16px/24px var(--eva-font-sans); }
+.eva-market-workspace h3 { font: 500 14px/22px var(--eva-font-sans); }
+.eva-market-workspace p { font: 400 14px/22px var(--eva-font-sans); color: var(--eva-text-secondary); }
+.eva-market-workspace .eva-digital-center__main { padding: 24px; }
+.eva-market-workspace .eva-digital-center__head { margin-bottom: 24px; }
+.eva-market-workspace .eva-digital-center__rail { padding: 24px 12px; }
+.eva-market-workspace .eva-digital-center__rail h2 { font: 500 16px/24px var(--eva-font-sans); padding-inline: 12px; margin-bottom: 20px; }
+.eva-market-workspace .eva-digital-center__rail .semi-button { min-height: 56px; padding: 8px 12px; font: 500 14px/22px var(--eva-font-sans); }
+.eva-market-workspace .eva-digital-center__rail small { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
+.eva-market-workspace .eva-digital-center__filters { margin: 16px 0 24px; gap: 8px; }
+.eva-market-workspace .eva-digital-center__filters .semi-button { min-height: 32px; border-radius: var(--eva-radius-chip); font: 400 14px/20px var(--eva-font-sans); }
+.eva-market-workspace .eva-digital-center__section { margin-bottom: 32px; }
+.eva-market-workspace .eva-digital-center__section-head { align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+.eva-market-workspace .eva-digital-center__section-head .semi-button { flex-shrink: 0; }
+.eva-market-workspace .eva-digital-center__table { border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); overscroll-behavior-x: contain; }
+.eva-market-workspace .eva-digital-center__table .semi-table { min-width: 780px; font: 400 14px/22px var(--eva-font-sans); }
+.eva-market-workspace .eva-digital-center__table :is(.semi-table-row-head,.semi-table-row-cell) { padding: 12px; font: 400 14px/22px var(--eva-font-sans); }
+.eva-market-workspace .eva-digital-center__table .semi-table-row-head { background: var(--eva-surface-subtle); color: var(--eva-text-secondary); font-weight: 500; }
+.eva-market-workspace .eva-digital-center__table .eva-digital-center__identity { gap: 10px; }
+.eva-market-workspace .eva-digital-center__table .eva-digital-center__identity strong { font: 500 14px/22px var(--eva-font-sans); }
+.eva-market-workspace .eva-digital-center__table .eva-digital-center__identity small { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
+.eva-market-workspace .eva-digital-center__table .eva-digital-center__actions { min-width: 0; flex-wrap: wrap; gap: 4px 8px; }
+.eva-market-workspace .eva-digital-center__table .semi-button { min-height: 32px; padding: 0 8px; font: 400 12px/16px var(--eva-font-sans); }
+.eva-market-workspace :is(.eva-digital-center__table,.semi-table-row):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
+.eva-market-workspace .eva-digital-dialog .semi-modal-body { font: 400 15px/24px var(--eva-font-sans); }
+.eva-market-workspace .eva-digital-dialog h3 { margin-top: 24px; margin-bottom: 8px; }
+.eva-market-workspace .eva-digital-dialog .eva-digital-center__filters { margin: 12px 0; }
+.eva-market-workspace .eva-digital-center__document { font: 400 14px/22px var(--eva-font-sans); }
+.eva-market-workspace .eva-digital-project-identity strong { font-size: 14px; }
+.eva-market-workspace .eva-digital-project-identity small { font-size: 12px; color: var(--eva-text-secondary-accessible); }
+
+.eva-market-workspace .eva-digital-center__table .semi-table-thead > .semi-table-row > .semi-table-row-head,
+.eva-market-workspace .eva-digital-center__table .semi-table-tbody > .semi-table-row > .semi-table-row-cell { padding: 12px; font: 400 14px/22px var(--eva-font-sans); }
+.eva-market-workspace .eva-digital-center__rail { background: var(--eva-surface-glass); backdrop-filter: blur(var(--eva-blur-glass)); }
+.eva-market-workspace .eva-digital-center__filters .semi-button[aria-pressed="true"],
+.eva-market-workspace .eva-digital-center__rail .semi-button[aria-pressed="true"] { color: var(--eva-action-primary); background: color-mix(in srgb, var(--eva-action-primary) 8%, var(--eva-surface-primary)); }
+.eva-market-workspace .eva-digital-center__filters .semi-button { border: 1px solid var(--eva-border-faint); }
+.eva-market-workspace .eva-digital-center__filters .semi-button[aria-pressed="true"] { border-color: var(--eva-border-focus); }

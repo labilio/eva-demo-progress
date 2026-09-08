@@ -5,7 +5,7 @@
       "tag": "script",
       "name": "shell-seed",
       "file": "prototype/000-shell-seed.js",
-      "bytes": 2115,
+      "bytes": 2095,
       "role": "prototype"
     },
     {
@@ -29,7 +29,7 @@
       "tag": "script",
       "name": "my-assistant-identity",
       "file": "prototype/003-my-assistant-identity.js",
-      "bytes": 2050,
+      "bytes": 2045,
       "role": "prototype"
     },
     {
@@ -37,7 +37,7 @@
       "tag": "style",
       "name": "ai-identity",
       "file": "prototype/003-ai-identity.css",
-      "bytes": 1618,
+      "bytes": 1107,
       "role": "prototype"
     },
     {
@@ -45,7 +45,7 @@
       "tag": "script",
       "name": "project-appearance",
       "file": "prototype/004-project-appearance.js",
-      "bytes": 2090,
+      "bytes": 2104,
       "role": "prototype"
     },
     {
@@ -53,7 +53,7 @@
       "tag": "script",
       "name": "project-registry",
       "file": "prototype/004-project-registry.js",
-      "bytes": 1588,
+      "bytes": 1537,
       "role": "prototype"
     },
     {
@@ -117,7 +117,7 @@
       "tag": "script",
       "name": "data-drive",
       "file": "prototype/009-1-data-drive.js",
-      "bytes": 9593,
+      "bytes": 10765,
       "role": "prototype"
     },
     {
@@ -125,7 +125,7 @@
       "tag": "script",
       "name": "data-supply",
       "file": "prototype/009-2-data-supply.js",
-      "bytes": 18980,
+      "bytes": 26027,
       "role": "prototype"
     },
     {
@@ -133,7 +133,7 @@
       "tag": "script",
       "name": "data-im",
       "file": "prototype/009-3-data-im.js",
-      "bytes": 19351,
+      "bytes": 31300,
       "role": "prototype"
     },
     {
@@ -141,7 +141,7 @@
       "tag": "script",
       "name": "ai-team-store",
       "role": "prototype",
-      "bytes": 28369,
+      "bytes": 36508,
       "order": 17
     },
     {
@@ -150,7 +150,7 @@
       "name": "digital-employees-data",
       "role": "prototype",
       "order": 18,
-      "bytes": 371584
+      "bytes": 372328
     },
     {
       "file": "prototype/009-3-digital-employees-store.js",
@@ -158,7 +158,7 @@
       "name": "digital-employees-store",
       "role": "prototype",
       "order": 19,
-      "bytes": 9187
+      "bytes": 9990
     },
     {
       "file": "prototype/047-digital-employees.js",
@@ -166,7 +166,7 @@
       "name": "digital-employees-page",
       "role": "prototype",
       "order": 20,
-      "bytes": 33079
+      "bytes": 34083
     },
     {
       "file": "prototype/048-settings-usage.js",
@@ -174,7 +174,7 @@
       "name": "settings-usage",
       "role": "prototype",
       "order": 21,
-      "bytes": 6052
+      "bytes": 6198
     },
     {
       "file": "prototype/049-loop-task-create.js",
@@ -182,7 +182,7 @@
       "name": "loop-task-create",
       "role": "prototype",
       "order": 22,
-      "bytes": 11791
+      "bytes": 11835
     },
     {
       "file": "prototype/047-digital-employees.css",
@@ -190,14 +190,14 @@
       "name": "digital-employees-style",
       "role": "prototype",
       "order": 23,
-      "bytes": 6698
+      "bytes": 15279
     },
     {
       "order": 24,
       "tag": "script",
       "name": "membership-controller",
       "file": "prototype/009-2-membership.js",
-      "bytes": 26994,
+      "bytes": 33327,
       "role": "prototype"
     },
     {
@@ -206,14 +206,14 @@
       "name": "file-sharing-controller",
       "file": "prototype/009-1-file-sharing.js",
       "role": "prototype",
-      "bytes": 20931
+      "bytes": 32072
     },
     {
       "order": 26,
       "tag": "script",
       "name": "member-picker-preview",
       "file": "prototype/009-2-picker-preview.js",
-      "bytes": 6465,
+      "bytes": 6361,
       "role": "prototype"
     },
     {
@@ -229,7 +229,7 @@
       "tag": "script",
       "name": "009-3-contact-identities",
       "file": "prototype/009-3-contact-identities.js",
-      "bytes": 3768,
+      "bytes": 3881,
       "role": "prototype"
     },
     {
@@ -245,7 +245,7 @@
       "tag": "style",
       "name": "009-3-identity-card",
       "file": "prototype/009-3-identity-card.css",
-      "bytes": 3213,
+      "bytes": 3265,
       "role": "prototype"
     },
     {
@@ -253,7 +253,7 @@
       "tag": "script",
       "name": "chat-settings",
       "file": "prototype/009-2-chat-settings.js",
-      "bytes": 11828,
+      "bytes": 11930,
       "role": "prototype"
     },
     {
@@ -261,7 +261,7 @@
       "tag": "style",
       "name": "chat-settings-style",
       "file": "prototype/009-2-chat-settings.css",
-      "bytes": 5198,
+      "bytes": 6438,
       "role": "prototype"
     },
     {
@@ -269,7 +269,7 @@
       "tag": "script",
       "name": "membership-components",
       "file": "prototype/009-2-members-ui.js",
-      "bytes": 18092,
+      "bytes": 18293,
       "role": "prototype"
     },
     {
@@ -277,7 +277,7 @@
       "tag": "link",
       "name": "membership-style",
       "file": "prototype/009-2-members.css",
-      "bytes": 9788,
+      "bytes": 12015,
       "role": "prototype"
     },
     {
@@ -301,7 +301,7 @@
       "tag": "script",
       "name": "runtime-patch-im",
       "file": "prototype/009-5-patch-im.js",
-      "bytes": 81018,
+      "bytes": 89000,
       "role": "build-input"
     },
     {
@@ -309,7 +309,7 @@
       "tag": "script",
       "name": "runtime-patch-general",
       "file": "prototype/009-6-patch-general.js",
-      "bytes": 64341,
+      "bytes": 72625,
       "role": "build-input"
     },
     {
@@ -317,7 +317,7 @@
       "tag": "script",
       "name": "runtime-patch-sider",
       "file": "prototype/009-7-patch-sider.js",
-      "bytes": 23670,
+      "bytes": 23762,
       "role": "build-input"
     },
     {
@@ -325,7 +325,7 @@
       "tag": "script",
       "name": "runtime-patch-automation",
       "file": "prototype/009-8-patch-automation.js",
-      "bytes": 12353,
+      "bytes": 12792,
       "role": "build-input"
     },
     {
@@ -349,7 +349,7 @@
       "tag": "style",
       "name": "mode-layer",
       "file": "prototype/012-mode-layer.css",
-      "bytes": 24483,
+      "bytes": 25646,
       "role": "prototype"
     },
     {
@@ -365,7 +365,7 @@
       "tag": "script",
       "name": "avatar",
       "file": "prototype/014-avatar.js",
-      "bytes": 3721,
+      "bytes": 4859,
       "role": "prototype"
     },
     {
@@ -381,7 +381,7 @@
       "tag": "style",
       "name": "message-hierarchy",
       "file": "prototype/016-message-hierarchy.css",
-      "bytes": 52954,
+      "bytes": 53416,
       "role": "prototype"
     },
     {
@@ -389,7 +389,7 @@
       "tag": "style",
       "name": "im-shell",
       "file": "prototype/017-im-shell.css",
-      "bytes": 11747,
+      "bytes": 13392,
       "role": "prototype"
     },
     {
@@ -413,7 +413,7 @@
       "tag": "script",
       "name": "mode-layer",
       "file": "prototype/020-mode-layer.js",
-      "bytes": 74457,
+      "bytes": 80515,
       "role": "prototype"
     },
     {
@@ -421,7 +421,7 @@
       "tag": "script",
       "name": "message-hierarchy",
       "file": "prototype/021-message-hierarchy.js",
-      "bytes": 16913,
+      "bytes": 14589,
       "role": "prototype"
     },
     {
@@ -437,7 +437,7 @@
       "tag": "style",
       "name": "demo-0902-v2-pages",
       "file": "prototype/024-demo-0902-v2-pages.css",
-      "bytes": 9856,
+      "bytes": 11771,
       "role": "prototype"
     },
     {
@@ -445,7 +445,7 @@
       "tag": "script",
       "name": "demo-0902-v2-pages",
       "file": "prototype/025-demo-0902-v2-pages.js",
-      "bytes": 16712,
+      "bytes": 16652,
       "role": "prototype"
     },
     {
@@ -453,7 +453,7 @@
       "tag": "style",
       "name": "connection-center-v2",
       "file": "prototype/026-connection-center-v2.css",
-      "bytes": 4845,
+      "bytes": 6623,
       "role": "prototype"
     },
     {
@@ -461,7 +461,7 @@
       "tag": "style",
       "name": "connection-center-functional-v2",
       "file": "prototype/028-connection-center-functional-v2.css",
-      "bytes": 5969,
+      "bytes": 7819,
       "role": "prototype"
     },
     {
@@ -469,7 +469,7 @@
       "tag": "script",
       "name": "connection-center-v2-functional",
       "file": "prototype/029-connection-center-v2-functional.js",
-      "bytes": 21988,
+      "bytes": 24427,
       "role": "prototype"
     },
     {
@@ -477,7 +477,7 @@
       "tag": "style",
       "name": "expert-center-v1",
       "file": "prototype/030-expert-center-v1.css",
-      "bytes": 938,
+      "bytes": 9763,
       "role": "prototype"
     },
     {
@@ -485,7 +485,7 @@
       "tag": "style",
       "name": "shared-automation-v2",
       "file": "prototype/031-shared-automation-v2.css",
-      "bytes": 9119,
+      "bytes": 11985,
       "role": "prototype"
     },
     {
@@ -493,7 +493,7 @@
       "tag": "style",
       "name": "contacts-redesign-v2",
       "file": "prototype/032-contacts-redesign-v2.css",
-      "bytes": 10133,
+      "bytes": 10595,
       "role": "prototype"
     },
     {
@@ -501,7 +501,7 @@
       "tag": "script",
       "name": "contacts-redesign-v2",
       "file": "prototype/033-contacts-redesign-v2.js",
-      "bytes": 4310,
+      "bytes": 4429,
       "role": "prototype"
     },
     {
@@ -509,7 +509,7 @@
       "tag": "style",
       "name": "project-task-toolbar-v3",
       "file": "prototype/034-project-task-toolbar-v3.css",
-      "bytes": 3144,
+      "bytes": 6107,
       "role": "prototype"
     },
     {
@@ -517,7 +517,7 @@
       "tag": "style",
       "name": "project-switcher-semi-v3",
       "file": "prototype/035-project-switcher-semi-v3.css",
-      "bytes": 1275,
+      "bytes": 1425,
       "role": "prototype"
     },
     {
@@ -525,7 +525,7 @@
       "tag": "style",
       "name": "project-directory-v3",
       "file": "prototype/036-project-directory-v3.css",
-      "bytes": 16222,
+      "bytes": 18136,
       "role": "prototype"
     },
     {
@@ -541,7 +541,7 @@
       "tag": "style",
       "name": "final-layout-convergence",
       "file": "prototype/043-final-layout-convergence.css",
-      "bytes": 18152,
+      "bytes": 16120,
       "role": "prototype"
     },
     {
@@ -557,7 +557,7 @@
       "tag": "style",
       "name": "ai-team",
       "role": "prototype",
-      "bytes": 24978,
+      "bytes": 30706,
       "order": 69
     },
     {
@@ -566,7 +566,7 @@
       "name": "settings-usage-style",
       "role": "prototype",
       "order": 70,
-      "bytes": 6916
+      "bytes": 8599
     },
     {
       "file": "prototype/049-loop-task-create.css",
@@ -574,14 +574,14 @@
       "name": "loop-task-create-style",
       "role": "prototype",
       "order": 71,
-      "bytes": 5287
+      "bytes": 4498
     },
     {
       "order": 72,
       "tag": "script",
       "name": "final-layout-convergence",
       "file": "prototype/044-final-layout-convergence.js",
-      "bytes": 6050,
+      "bytes": 5785,
       "role": "prototype"
     },
     {
@@ -589,7 +589,7 @@
       "tag": "script",
       "name": "personal-assistants",
       "file": "prototype/046-personal-assistants.js",
-      "bytes": 7259,
+      "bytes": 6958,
       "role": "prototype"
     },
     {
@@ -597,7 +597,7 @@
       "tag": "style",
       "name": "gds-tokens",
       "file": "prototype/047-gds-tokens.css",
-      "bytes": 7924,
+      "bytes": 8103,
       "role": "prototype"
     },
     {
@@ -605,7 +605,7 @@
       "tag": "style",
       "name": "gds-components",
       "file": "prototype/048-gds-components.css",
-      "bytes": 21801,
+      "bytes": 24433,
       "role": "prototype"
     },
     {
@@ -613,7 +613,7 @@
       "tag": "style",
       "name": "gds-brand-reroot",
       "file": "prototype/049-gds-brand-reroot.css",
-      "bytes": 4823,
+      "bytes": 6220,
       "role": "prototype"
     },
     {
@@ -629,7 +629,7 @@
       "tag": "style",
       "name": "personal-eva-gds",
       "file": "prototype/051-personal-eva-gds.css",
-      "bytes": 15629,
+      "bytes": 15385,
       "role": "prototype"
     },
     {
@@ -637,7 +637,7 @@
       "tag": "script",
       "name": "personal-eva-gds",
       "file": "prototype/052-personal-eva-gds.js",
-      "bytes": 38301,
+      "bytes": 42749,
       "role": "prototype"
     },
     {
@@ -645,7 +645,7 @@
       "tag": "style",
       "name": "sites-page",
       "file": "prototype/053-sites-page.css",
-      "bytes": 2976,
+      "bytes": 3241,
       "role": "prototype"
     },
     {
@@ -677,7 +677,7 @@
       "tag": "script",
       "name": "review-comments",
       "file": "review/comments.js",
-      "bytes": 35019,
+      "bytes": 37071,
       "role": "review-module"
     },
     {
@@ -685,7 +685,7 @@
       "tag": "style",
       "name": "050-file-library-styles",
       "file": "prototype/050-file-library.css",
-      "bytes": 34933,
+      "bytes": 40597,
       "role": "prototype"
     },
     {
@@ -693,7 +693,7 @@
       "tag": "script",
       "name": "project-files-ui",
       "file": "prototype/009-1-project-files-ui.js",
-      "bytes": 28454,
+      "bytes": 31731,
       "role": "prototype"
     }
   ]

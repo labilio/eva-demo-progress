@@ -32,6 +32,7 @@
   /* ---- color · semantic (use these) ------------------------ */
   --eva-surface-primary: var(--eva-c-white);        /* main workspace, input panel */
   --eva-surface-subtle: var(--eva-c-neutral-50);    /* composer wrapper, editor work area */
+  --eva-rail-backdrop: radial-gradient(ellipse at 0% 20%, var(--eva-decoration-dot), transparent 65%), var(--eva-surface-primary); /* [R] abstract, non-personal glass backdrop */
   --eva-surface-paper: var(--eva-c-paper);          /* presentation canvas */
   --eva-surface-glass: rgba(255, 255, 255, 0.8);    /* sidebar glass foreground */
 

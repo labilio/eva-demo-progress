@@ -1,38 +1,8 @@
-/* ============================================================
-   个人 Eva · GDS 六态工作区（布局层）
-   外观全部来自 048-gds-components.css，色值／间距／圆角全部来自
-   047-gds-tokens.css；本文件只负责「把那些固有尺寸的组件按 GDS
-   的六态摆进真实应用宿主」，因此这里没有一个十六进制字面量。
-
-   ------------------------------------------------------------
-   一、六态怎么切
-   单一根节点 .eva-personal-workspace 上的 data-eva-state 取六值之一：
-     home / input / skill-picker / operation / generating / completed；history 是已完成会话的上下文查看态
-   显隐用属性选择器，不用 [hidden] —— 045-native-page-layout.css:34-36
-   的 `.eva-native-page-host > … { display:flex }` 与 [hidden] 同为
-   0,2,0，加载更晚会赢，[hidden] 在这个宿主里是不可靠的。
-
-   评审可直接跳态：
-     window.__evaPersonalState('completed')
-     window.__evaPersonalState()            // 读当前态
-   六个态名与 GDS spec/components.json 的 pageStates 一一对应。
-
-   ------------------------------------------------------------
-   二、两处对 GDS 的有意偏离（标 [D]，其余严格照搬）
-
-   [D1] completed 态保留侧栏与标题栏。
-   GDS 的 completed.forbidden 列了 sidebar，要求 390/810 占满 1200
-   的整屏。但 AGENTS.md:8-9 规定一级页面不得从 top:0 盖住标题栏、
-   不得用全屏或 fixed 定位的根节点、只能挂进 Router Outlet 宿主。
-   两者冲突时以本仓库的架构红线为准：390 会话列按规范固定，810 编辑
-   列改成「以 810 为 flex 基线、可收缩」（见 048 的 .eva-ed-col），
-   栏比与内部所有尺寸不变。用户已就此拍板。
-
-   [D2] 新会话首页采用用户 2026-09-07 提供的现行视觉内容，但不改变
-   GDS 已确认的几何：主列仍为 776，输入器仍为 776×166 / 768×118，
-   主列随可用宽度收缩并保持居中。内部顺序按参考图调整为欢迎语、输入器、
-   快捷能力排。生成中、已完成和历史会话不使用这组首页内容。
-   ============================================================ */
+/* GDS 2.0 personal workspace, desktop adaptation.
+   Extra app navigation stays 180px (collapsed 80px); assistant rail is 260px.
+   Main column is capped at 776px and shrinks to the remaining width with 24px gutters.
+   Completed replaces the assistant rail: 390px context + flexible editor.
+   Titlebar remains unique and visible. Fonts/controls are never globally scaled. */
 
 .eva-personal-workspace {
   position: relative;
@@ -111,14 +81,14 @@
   flex-direction: column;
 }
 
-/* ---- 新会话欢迎区：仅保留欢迎标题 ---- */
+/* Hero: title and independently positioned brand artwork. */
 .eva-personal-workspace__hero {
   position: relative;
-  height: 48px;
+  height: 62px;
   flex: none;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
 }
 .eva-personal-workspace__hero-grid {
   position: absolute;
@@ -127,8 +97,7 @@
   width: 250px;
   height: 250px;
   background-image:
-    linear-gradient(var(--eva-decoration-dot) 3px, transparent 3px),
-    linear-gradient(90deg, var(--eva-decoration-dot) 3px, transparent 3px);
+    radial-gradient(circle, var(--eva-decoration-dot) 1.5px, transparent 1.5px);
   background-size: var(--eva-space-2) var(--eva-space-2);
   mask-image: radial-gradient(circle, var(--eva-text-strong), transparent 70%);
   -webkit-mask-image: radial-gradient(circle, var(--eva-text-strong), transparent 70%);
@@ -142,96 +111,20 @@
   font: var(--eva-fw-semibold) 32px/40px var(--eva-font-sans);
   white-space: nowrap;
 }
-.eva-personal-workspace__welcome-avatar {
-  position: relative;
-  width: 36px;
-  height: 36px;
-  flex: none;
-  overflow: hidden;
-  border-radius: var(--eva-radius-full);
-  background: var(--eva-decoration-dot);
-}
-.eva-personal-workspace__welcome-avatar img {
-  position: absolute;
-  top: -3px;
-  left: -14px;
-  width: 64px;
-  height: auto;
-  max-width: none;
-}
-.eva-newchat-icon-action:focus-visible,
-.eva-newchat-context:focus-visible,
-.eva-newchat-model:focus-visible {
-  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
-  outline-offset: var(--eva-space-0-5);
-}
 
-/* ---- 快捷能力排：位于输入器后，仍保持原来的 37px 高度 ---- */
+/* Scenario rail precedes the composer; single-line 37px controls. */
 .eva-personal-workspace__rail {
   flex: none;
   margin-top: var(--eva-space-2);
 }
 .eva-personal-workspace__capability .eva-i { color: var(--eva-action-primary); }
 
-/* ---- 输入器：沿用原复合输入器尺寸，只替换工具内容 ---- */
+/* Composite input: 166px wrapper, 118px panel, bottom skill strip. */
 .eva-personal-workspace__composer {
   position: relative;
   flex: none;
-  margin-top: var(--eva-space-1);
+  margin-top: var(--eva-space-4);
 }
-/* 新会话不再把快捷能力放在输入器外框内，因此隐藏原组件用于承接
-   底部快捷区的灰色底板；保留 776×166 占位，输入器本体位置不变。 */
-.eva-composer-wrap--newchat {
-  background: transparent;
-}
-.eva-newchat-actions {
-  height: 52px;
-  padding: var(--eva-space-2-5);
-  gap: var(--eva-space-2);
-}
-.eva-newchat-icon-action,
-.eva-newchat-context,
-.eva-newchat-model {
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--eva-space-1-5);
-  border: 0;
-  border-radius: var(--eva-radius-full);
-  background: transparent;
-  color: var(--eva-text-secondary-accessible);
-  cursor: pointer;
-  font: var(--eva-fw-regular) 14px/22px var(--eva-font-sans);
-}
-.eva-newchat-icon-action {
-  width: 32px;
-  flex: none;
-  padding: 0;
-}
-.eva-newchat-context,
-.eva-newchat-model { padding: 0 var(--eva-space-2); }
-.eva-newchat-context:hover,
-.eva-newchat-model:hover,
-.eva-newchat-icon-action:hover { background: var(--eva-surface-subtle); }
-.eva-newchat-context span,
-.eva-newchat-model span {
-  max-width: 132px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.eva-newchat-actions__spacer { flex: 1 1 auto; min-width: var(--eva-space-2); }
-.eva-newchat-model {
-  flex: none;
-  color: var(--eva-text-primary);
-  font-weight: var(--eva-fw-medium);
-}
-.eva-newchat-actions .eva-send {
-  width: 32px;
-  height: 32px;
-}
-
 /* ---- 技能选择器：画板 342,119，高 263.5，底边 382.5，
         正好压在输入器外框顶边上方 0.5px，浮在 hero 与 chip 排之上 ---- */
 .eva-personal-workspace__pickerhost {
@@ -254,16 +147,10 @@
 .eva-personal-workspace__stage { container-type: inline-size; }
 @container (max-width: 540px) {
   .eva-personal-workspace__scroll { padding-inline: var(--eva-space-4); }
-  .eva-personal-workspace__welcome { font-size: 24px; gap: var(--eva-space-1); }
-  .eva-newchat-context, .eva-newchat-model { min-width: 0; padding-inline: var(--eva-space-1); flex: 0 1 auto; }
-  .eva-newchat-context span, .eva-newchat-model span { min-width: 0; }
-  .eva-newchat-context svg, .eva-newchat-model svg { flex: none; }
+  .eva-personal-workspace__mascot { opacity: .35; }
 }
 
-/* ---- 操作卡 ----
-   [D] GDS 把它放在 260 侧栏底部；本仓库的侧栏是 React 拥有的
-   （009-7-patch-sider.js），DOM 侧的原生页挂不进去，因此改挂在
-   工作区左下角——离规范位置最近且不跨越所有权边界。 */
+/* Operation card overlays the native assistant rail without reflow. */
 .eva-personal-workspace__opcard {
   position: absolute;
   left: var(--eva-space-5);
@@ -390,13 +277,6 @@
   color: var(--eva-text-secondary);
 }
 .eva-history-message.is-user .eva-history-message__sender { align-self: flex-end; }
-.eva-history-message__ai {
-  padding: 0 var(--eva-space-1);
-  border-radius: var(--eva-radius-key);
-  background: var(--eva-action-primary);
-  color: var(--eva-action-primary-text);
-  font: var(--eva-fw-medium) 11px/16px var(--eva-font-sans);
-}
 .eva-history-message__body {
   display: flex;
   flex-direction: column;
@@ -464,3 +344,58 @@
   box-shadow: none;
 }
 .eva-assistant-editor-inline .eva-create-assistant-modal__body { overflow: auto; }
+
+/* GDS geometry adapted to the extra global navigation, without scaling text. */
+.eva-personal-workspace__mascot { position:absolute; width:114px; height:235px; object-fit:contain; right:8px; top:-32px; pointer-events:none; }
+.eva-personal-workspace__welcome { position:relative; z-index:1; }
+.eva-personal-workspace__rail { position:relative; z-index:1; margin-top:0; }
+.eva-personal-workspace .eva-composer-wrap { padding:4px; }
+.eva-composer-input-area { height:66px; display:flex; align-items:baseline; gap:6px; padding:14px 16px 0; box-sizing:border-box; }
+.eva-personal-workspace textarea.eva-composer-prompt { flex:1; width:100%; min-width:0; height:52px; min-height:0; padding:0; margin:0; resize:none; border:0; outline:none; background:transparent; color:var(--eva-text-primary); font:400 15px/24px var(--eva-font-sans); }
+.eva-personal-workspace textarea.eva-composer-prompt::placeholder { color:var(--eva-text-muted); }
+.eva-personal-workspace .eva-composer:focus-within { border-color:var(--eva-border-focus); }
+.eva-personal-quickskills { display:flex; align-items:center; gap:16px; height:40px; padding:0 18px; color:var(--eva-text-secondary-accessible); font:400 14px/22px var(--eva-font-sans); }
+.eva-personal-quickskills > * { display:inline-flex; align-items:center; gap:6px; min-width:0; }
+.eva-personal-quickskills button { border:0; background:transparent; color:inherit; min-height:32px; cursor:pointer; font:inherit; }
+.eva-personal-workspace__dock .eva-composer { width:min(768px, calc(100% - 28px)); }
+.eva-personal-workspace__opcard { left:14px; bottom:20px; }
+.eva-personal-workspace .eva-actionrow button { min-width:32px; min-height:32px; }
+.eva-personal-workspace .eva-tab .nm { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.eva-personal-workspace .eva-canvas { width:min(calc(100% - 32px),534px); height:auto; aspect-ratio:16/9; }
+.eva-personal-workspace .eva-toolbar { overflow-x:auto; flex-shrink:0; }
+.eva-personal-workspace .eva-tool-btn { flex-shrink:0; }
+.eva-personal-workspace__mascot { object-fit:cover; object-position:center; }
+.eva-personal-workspace .eva-rail { overflow-x:auto; scrollbar-width:none; padding-right:32px; }
+.eva-personal-workspace .eva-rail-next { position:sticky; right:0; width:32px; height:32px; margin-left:-24px; }
+
+.eva-personal-workspace *, .eva-personal-workspace *::before, .eva-personal-workspace *::after { box-sizing:border-box; }
+.eva-personal-workspace .eva-artifact { max-width:100%; }
+.eva-personal-workspace .eva-artifact :is(.nm,.sub) { display:block; }
+
+.eva-personal-workspace__hi { position:absolute; right:114px; top:12px; width:34px; height:34px; border-radius:var(--eva-radius-full); display:grid; place-items:center; background:var(--eva-action-primary); color:var(--eva-text-inverse); font:400 23px/1 var(--eva-font-display); }
+.eva-opcard-img > img { width:100%; height:100%; object-fit:cover; }
+.eva-dismiss::after { content:""; position:absolute; inset:-5px; }
+.eva-personal-workspace .eva-topbar { height:52px; flex-shrink:0; }
+.eva-personal-workspace .eva-tabbar { flex-shrink:0; }
+.eva-personal-workspace .eva-fileheader { flex-shrink:0; }
+.eva-personal-workspace .eva-statusbar { flex-shrink:0; }
+.eva-document-preview { display:none; flex:1; min-width:0; overflow:auto; margin:24px; padding:24px; white-space:pre-wrap; color:var(--eva-text-primary); background:var(--eva-surface-paper); border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-panel); }
+.eva-personal-completed__body[data-document="document"] > :is(.eva-rail-slides,.eva-ed-main) { display:none; }
+.eva-personal-completed__body[data-document="document"] > .eva-document-preview { display:block; }
+.eva-personal-workspace .eva-skillrow .ds { color:var(--eva-text-secondary-accessible); }
+.eva-personal-workspace .eva-personal-tool__icon + .tx { color:var(--eva-text-secondary-accessible); }
+.eva-picker-empty { padding:16px; color:var(--eva-text-secondary-accessible); }
+.eva-personal-workspace :is(.eva-tool-btn,.eva-model,.eva-iconbtn,.eva-round):disabled { color:var(--eva-text-muted); cursor:not-allowed; }
+.eva-personal-workspace .eva-tool-btn[aria-pressed="true"] { background:var(--eva-surface-subtle); color:var(--eva-action-primary); border-radius:var(--eva-radius-control); }
+.eva-personal-workspace .eva-canvas[contenteditable="true"] { outline:2px solid var(--eva-border-focus); outline-offset:2px; }
+
+/* Conversation skill selection stays anchored to its existing composer. */
+.eva-personal-workspace [data-eva-personal-composer] { position: relative; overflow: visible; }
+.eva-personal-workspace [data-eva-personal-composer] > .eva-personal-workspace__pickerhost {
+  display: block;
+  right: 0;
+}
+.eva-personal-workspace [data-eva-personal-composer] > .eva-personal-workspace__pickerhost .eva-picker {
+  width: 100%;
+  max-width: 100%;
+}

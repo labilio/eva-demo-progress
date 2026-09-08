@@ -6,6 +6,7 @@
   var currentFilter = 'all';
   var searchQuery = '';
   var toastTimer = null;
+  var modalReturnFocus = null;
 
   var data = {
     connectors: [
@@ -90,6 +91,7 @@
       var selected = tab.dataset.centerTab === currentTab;
       tab.classList.toggle('is-active', selected);
       tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+      tab.tabIndex = selected ? 0 : -1;
       tab.querySelector('.eva-connection-tab__count').textContent = data[tab.dataset.centerTab].length;
     });
     center.querySelector('.eva-connection-panel__top h2').textContent = copy.title;
@@ -100,6 +102,7 @@
     var filterButtons = center.querySelectorAll('[data-center-filter]');
     filterButtons.forEach(function (button) {
       button.classList.toggle('is-active', button.dataset.centerFilter === currentFilter);
+      button.setAttribute('aria-pressed', String(button.dataset.centerFilter === currentFilter));
       if (button.dataset.centerFilter === 'active') button.textContent = copy.active;
       if (button.dataset.centerFilter === 'inactive') button.textContent = copy.inactive;
     });
@@ -137,9 +140,15 @@
 
   function openModal(html) {
     var layer = ensureModalLayer();
-    layer.innerHTML = '<section class="eva-center-modal" role="dialog" aria-modal="true">' + html + '</section>';
+    if (layer.hidden) modalReturnFocus = document.activeElement;
+    layer.innerHTML = '<section class="eva-center-modal" role="dialog" aria-modal="true" aria-labelledby="eva-center-modal-title">' + html + '</section>';
     layer.hidden = false;
-    var focusable = layer.querySelector('input, select, textarea, button');
+    layer.querySelectorAll('.eva-center-field').forEach(function (field, index) {
+      var control = field.querySelector('input, select, textarea');
+      var label = field.querySelector('label');
+      if (control && label) { control.id = 'eva-center-field-' + index; label.htmlFor = control.id; }
+    });
+    var focusable = layer.querySelector('input, select, textarea') || layer.querySelector('button');
     if (focusable) focusable.focus();
   }
 
@@ -147,10 +156,12 @@
     var layer = ensureModalLayer();
     layer.hidden = true;
     layer.innerHTML = '';
+    if (modalReturnFocus && modalReturnFocus.isConnected) modalReturnFocus.focus();
+    modalReturnFocus = null;
   }
 
   function modalHead(title) {
-    return '<header class="eva-center-modal__head"><h2>' + esc(title) + '</h2><button class="eva-center-modal__close" type="button" data-center-close aria-label="关闭">×</button></header>';
+    return '<header class="eva-center-modal__head"><h2 id="eva-center-modal-title">' + esc(title) + '</h2><button class="eva-center-modal__close" type="button" data-center-close aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></header>';
   }
 
   function showToast(message) {
@@ -192,7 +203,7 @@
   function openCreate(sourceMode) {
     sourceMode = sourceMode || 'draft';
     var copy = labels[currentTab];
-    openModal(modalHead(copy.create) + '<div class="eva-center-modal__body" data-center-create-body data-source-mode="' + sourceMode + '">' + createFields(currentTab, sourceMode) + '<div class="eva-center-form-error" data-center-error hidden></div></div><footer class="eva-center-modal__footer"><button class="eva-center-secondary" type="button" data-center-close>取消</button><button class="eva-center-primary" type="button" data-center-submit-create>' + (currentTab === 'skills' && sourceMode === 'url' ? '导入' : '创建') + '</button></footer>');
+    openModal(modalHead(copy.create) + '<div class="eva-center-modal__body" data-center-create-body data-source-mode="' + sourceMode + '">' + createFields(currentTab, sourceMode) + '<div class="eva-center-form-error" data-center-error role="alert" id="eva-center-form-error" hidden></div></div><footer class="eva-center-modal__footer"><button class="eva-center-secondary" type="button" data-center-close>取消</button><button class="eva-center-primary" type="button" data-center-submit-create>' + (currentTab === 'skills' && sourceMode === 'url' ? '导入' : '创建') + '</button></footer>');
   }
 
   function submitCreate() {
@@ -208,6 +219,8 @@
     if (currentTab === 'skills' && sourceMode === 'url') name = url.split('/').filter(Boolean).pop() || '';
     var error = body.querySelector('[data-center-error]');
     if (!name || (currentTab === 'skills' && sourceMode === 'url' && !/^https?:\/\//i.test(url))) {
+      var invalid = urlInput || nameInput;
+      if (invalid) { invalid.setAttribute('aria-invalid', 'true'); invalid.setAttribute('aria-describedby', 'eva-center-form-error'); invalid.focus(); }
       error.hidden = false;
       error.textContent = currentTab === 'skills' && sourceMode === 'url' ? '请输入有效的 HTTP 或 HTTPS 地址' : '请输入名称';
       return;
@@ -247,6 +260,7 @@
   }
 
   document.addEventListener('input', function (event) {
+    if (event.target.matches('[data-center-field]')) { event.target.removeAttribute('aria-invalid'); event.target.removeAttribute('aria-describedby'); var error = document.querySelector('[data-center-error]'); if (error) error.hidden = true; }
     if (!event.target.matches('[data-center-search]')) return;
     searchQuery = event.target.value;
     renderGrid();
@@ -286,7 +300,24 @@
 
   }, true);
 
-  document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeModal(); });
+  document.addEventListener('keydown', function (event) {
+    var layer = document.querySelector('.eva-center-modal-layer:not([hidden])');
+    if (layer) {
+      if (event.key === 'Escape') { event.preventDefault(); closeModal(); return; }
+      if (event.key === 'Tab') {
+        var nodes = Array.from(layer.querySelectorAll('button, input, select, textarea, [tabindex]')).filter(function (node) { return !node.disabled && node.tabIndex >= 0 && node.getClientRects().length; });
+        var first = nodes[0], last = nodes[nodes.length - 1];
+        if (first && (event.shiftKey ? document.activeElement === first : document.activeElement === last)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+      }
+      return;
+    }
+    var tab = event.target.closest('[data-center-tab]');
+    if (tab && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(event.key) >= 0) {
+      var tabs = Array.from(tab.parentElement.querySelectorAll('[data-center-tab]'));
+      var index = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (tabs.indexOf(tab) + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      event.preventDefault(); tabs[index].click(); tabs[index].focus();
+    }
+  });
 
   window.__evaNativePages.register('connection-center', function (host) {
     var center = ensureShell();

@@ -46,8 +46,23 @@
   outline-offset: var(--gds-space-0-5);
 }
 
+.app-shell {
+  border-radius: var(--eva-radius-window);
+  overflow: hidden;
+  background: var(--eva-rail-backdrop);
+}
 .layout-sider {
   box-sizing: border-box;
+  --bg-2: var(--eva-surface-glass);
+  background: var(--eva-surface-glass);
+  backdrop-filter: blur(var(--eva-blur-glass));
+  border: 1px solid var(--eva-border-subtle);
+  border-radius: var(--eva-radius-panel);
+}
+.eva-nav-entry svg.lucide {
+  width: var(--eva-icon-nav);
+  height: var(--eva-icon-nav);
+  stroke-width: var(--eva-icon-stroke);
 }
 
 .eva-space-picker {
@@ -417,6 +432,24 @@
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Long compact navigation labels keep their full names on two semantic lines. */
+.eva-nav-section.is-collapsed .eva-nav-entry:is([data-eva-nav-id="automation"], [data-eva-nav-id="digital-employees"]) .box-border.cursor-pointer {
+  height: 64px !important;
+  min-height: 64px;
+  padding-block: 4px !important;
+  gap: 2px !important;
+}
+.eva-nav-section.is-collapsed .eva-nav-entry:is([data-eva-nav-id="automation"], [data-eva-nav-id="digital-employees"]) [class*="text-14px"] {
+  width: 4em;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+.eva-nav-section.is-collapsed .eva-nav-entry[data-eva-nav-id="automation"] [class*="text-14px"] {
+  width: 3em;
 }
 
 .eva-personal-entry {

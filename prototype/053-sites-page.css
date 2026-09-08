@@ -2,9 +2,12 @@
 .eva-sites {
   box-sizing: border-box;
   width: 100%;
-  min-height: 100%;
-  overflow: auto;
-  padding: var(--eva-space-8) var(--eva-space-10) var(--eva-space-12);
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: var(--eva-space-8) max(var(--eva-space-6), calc((100% - 1084px) / 2)) var(--eva-space-12);
   background: var(--eva-surface-primary);
   color: var(--eva-text-primary);
   font-family: var(--eva-font-sans);
@@ -31,7 +34,7 @@
 }
 .eva-sites__metric {
   display: flex;
-  min-height: 124px;
+  min-height: 112px;
   flex-direction: column;
   justify-content: space-between;
   padding: var(--eva-space-5);
@@ -45,14 +48,14 @@
 }
 .eva-sites__metric strong {
   color: var(--eva-text-primary);
-  font: var(--eva-fw-medium) 24px/32px var(--eva-font-sans);
+  font: var(--eva-fw-semibold) 32px/40px var(--eva-font-sans);
 }
 
 .eva-sites__recent h2 { margin-bottom: var(--eva-space-2); }
 .eva-sites__list { border-top: var(--eva-border-standard-w) solid var(--eva-border-faint); }
 .eva-sites__row {
   display: grid;
-  min-height: 82px;
+  min-height: 72px;
   grid-template-columns: minmax(0, 1fr) minmax(150px, .85fr) auto;
   align-items: center;
   gap: var(--eva-space-4);
@@ -90,5 +93,7 @@
   .eva-sites { padding: var(--eva-space-6) var(--eva-space-4); }
   .eva-sites__summary { grid-template-columns: 1fr; }
   .eva-sites__row { grid-template-columns: minmax(0, 1fr) auto; }
-  .eva-sites__row time { display: none; }
+  .eva-sites__row time { grid-column: 1; grid-row: 2; }
+  .eva-sites__row { padding-block: var(--eva-space-3); row-gap: var(--eva-space-1); }
+  .eva-sites__status { grid-column: 2; grid-row: 1 / span 2; }
 }
