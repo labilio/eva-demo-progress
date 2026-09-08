@@ -7,7 +7,7 @@ function harness(overrides={}){
   const hooks=[],effects=[];let cursor=0,tree;
   const R={Fragment:'Fragment',createElement:(type,props,...children)=>({type,props:props||{},children:children.flat(Infinity)}),useSyncExternalStore:()=>{},useState(init){const i=cursor++;hooks[i]??={value:typeof init==='function'?init():init};return[hooks[i].value,value=>{hooks[i].value=typeof value==='function'?value(hooks[i].value):value;}];},useRef(value){const i=cursor++;return hooks[i]??={current:value};},useEffect(fn,deps){const i=cursor++,old=hooks[i];if(!old||deps.some((v,n)=>v!==old.deps[n])){effects.push(()=>{old?.cleanup?.();hooks[i]={deps,cleanup:fn()};});}}};
   const state={actorId:'u1',people:[{id:'u1',name:'甲'},{id:'u2',name:'乙'}],clones:[{id:'c1',name:'甲分身',ownerId:'u1'}],projects:{prod:{humans:[{id:'u1'}],cloneIds:['c1'],employeeIds:[]},other:{humans:[{id:'u2'}],cloneIds:[],employeeIds:[]}}};
-  const calls=[],deps={React:R,Modal:'Modal',Button:'Button',LoopButton:'Button',Input:'Input',AutoGrowTextarea:'TextArea',LoopPropertyPill:'LoopPropertyPill',Select:'Select',Popover:'Popover',icons:{Paperclip:'Paperclip',Trash2:'Trash2'},members:{subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],createLabel:async name=>({id:'new-'+name,name}),uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
+  const calls=[],deps={React:R,Modal:'Modal',Button:'Button',LoopButton:'Button',Input:'Input',AutoGrowTextarea:'TextArea',LoopPropertyPill:'LoopPropertyPill',Select:'Select',Popover:'Popover',icons:{Paperclip:'Paperclip',Trash2:'Trash2'},members:{memberRoles:()=>[],subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],createLabel:async name=>({id:'new-'+name,name}),uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
   const root={EvaAIIdentity:{avatar:()=> 'ai-avatar',badge:()=> 'ai-badge'},EvaAvatar:{personUri:id=>'avatar:'+id}};vm.runInNewContext(code,{window:root});
   const props={visible:true,onClose:()=>calls.push('closed'),onCreated:()=>calls.push('created')};
   const render=()=>{cursor=0;const el=root.EvaLoopTaskCreateUI.render(props,deps);tree=el.type(el.props);while(effects.length)effects.shift()();return tree;};
@@ -60,4 +60,11 @@ test('任务浮层共用弹窗容器，标签选择不丢失输入且重新打�
  const option=h.all().find(n=>n.props.role==='option');option.props.onClick();h.render();assert.ok(h.find('移除标签 标签'));
  h.all().find(n=>n.type==='Popover').props.onClickOutSide();h.render();assert.equal(h.all().find(n=>n.type==='Popover').props.visible,false);
  h.props.visible=false;h.render();h.props.visible=true;h.render();h.render();assert.equal(h.all().find(n=>n.type==='Popover').props.visible,false);
+});
+
+test('项目角色仅属于成员管理，创建任务不增加角色选择',()=>{
+ const h=harness();h.fill();assert.equal(h.find('下达角色'),undefined);
+});
+test('切换操作账号时清空旧任务草稿与下达角色',()=>{
+ const h=harness();h.fill();h.state.actorId='u2';h.render();h.render();assert.equal(h.find('任务标题').props.value,'');
 });

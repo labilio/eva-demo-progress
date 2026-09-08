@@ -156,3 +156,5 @@ window.__EVA_FILE_SAMPLE_URLS = {
 };
 
 Object.assign(window.__EVA_FILE_SAMPLE_URLS, {"EVA-上传恢复排查清单.md": "prototype/assets/file-samples/EVA-上传恢复排查清单.md", "EVA-分享权限验收矩阵.csv": "prototype/assets/file-samples/EVA-分享权限验收矩阵.csv", "EVA-会议行动项模板.md": "prototype/assets/file-samples/EVA-会议行动项模板.md"});
+
+Object.assign(window.__EVA_FILE_SAMPLE_URLS, {"供应链晨会行动清单.md":"prototype/assets/file-samples/供应链晨会行动清单.md","A-2409整改证据检查表.csv":"prototype/assets/file-samples/A-2409整改证据检查表.csv","采购合同评审提纲.md":"prototype/assets/file-samples/采购合同评审提纲.md"});

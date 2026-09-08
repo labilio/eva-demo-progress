@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 function setup(){
- const window={__EVA_DEMO_TIME:{T0:'2026-09-02',T1:'2026-09-02'}};
- for(const file of ['009-2-data-supply.js','009-2-membership.js','009-1-file-sharing.js'])vm.runInNewContext(fs.readFileSync(new URL('../prototype/'+file,import.meta.url),'utf8'),{window});
+ const window={};
+ for(const file of ['009-0-demo-time.js','009-1-data-drive.js','009-2-data-supply.js','009-2-membership.js','009-1-file-sharing.js'])vm.runInNewContext(fs.readFileSync(new URL('../prototype/'+file,import.meta.url),'utf8'),{window});
  const people=['wangyilin','linxiao','zhouyuan','hejing'].map(id=>({id:'u-'+id,name:id}));
  const s=window.EvaMembership.create({people,clones:window.__EVA_MEMBERSHIP_CLONES});
  s.createProject('prod','供应链运营协同','u-wangyilin',[]);s.createProject('other','其他项目','u-wangyilin',[]);

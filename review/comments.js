@@ -157,7 +157,7 @@ function ensureUI() {
     <button type="button" class="eva-review-launcher" data-review-ui data-review-launcher aria-expanded="false" aria-controls="eva-review-panel">${icon('comment',15)}<span>批注</span></button>
     <button type="button" class="eva-review-restore" data-review-ui data-review-restore hidden aria-label="显示批注">${icon('eye',15)}</button>
     <aside id="eva-review-panel" class="eva-review-panel" data-review-ui hidden aria-label="原型批注">
-      <header class="eva-review-head" data-review-drag-handle><div><strong>批注</strong><span>所有同事共享</span></div><div class="eva-review-head-actions"><select class="eva-review-status-filter" data-review-status-filter aria-label="筛选批注状态"><option value="all">全部状态</option>${Object.entries(STATUSES).map(([value, label]) => `<option value="${value}"${state.statusFilter === value ? ' selected' : ''}>${label}</option>`).join('')}</select><button type="button" class="eva-review-icon-button" data-review-hide aria-label="隐藏批注入口">${icon('eyeOff')}</button><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
+      <header class="eva-review-head" data-review-drag-handle><div><strong>批注</strong><span>所有同事共享</span></div><div class="eva-review-head-actions"><div class="eva-review-updates"><button type="button" data-review-load-updates>检查更新</button><span data-review-update-status role="status" aria-live="polite"></span></div><select class="eva-review-status-filter" data-review-status-filter aria-label="筛选批注状态"><option value="all">全部状态</option>${Object.entries(STATUSES).map(([value, label]) => `<option value="${value}"${state.statusFilter === value ? ' selected' : ''}>${label}</option>`).join('')}</select><button type="button" class="eva-review-icon-button" data-review-hide aria-label="隐藏批注入口">${icon('eyeOff')}</button><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
       <div class="eva-review-toolbar">
         <button type="button" class="eva-review-primary" data-review-add>${icon('add')}添加批注</button>
       </div>
@@ -166,7 +166,6 @@ function ensureUI() {
         <button type="button" data-review-pin-mode="approved" aria-pressed="${state.pinMode === 'approved'}">仅已确认</button>
         <button type="button" data-review-pin-mode="off" aria-pressed="${state.pinMode === 'off'}">关闭批注</button>
       </div>
-      <div class="eva-review-updates"><button type="button" data-review-load-updates>检查更新</button><span data-review-update-status role="status" aria-live="polite"></span></div>
       <div class="eva-review-list"></div>
     </aside>
     <div class="eva-review-dialog" data-review-ui hidden role="dialog" aria-modal="true" aria-labelledby="eva-review-title">

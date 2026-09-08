@@ -8,7 +8,7 @@
 .eva-review-panel[hidden]{display:none}
 .eva-review-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px 13px;border-bottom:1px solid var(--eva-review-border);cursor:move;touch-action:none;user-select:none}
 .eva-review-head>div{display:flex;align-items:baseline;gap:9px}.eva-review-head strong{font-size:17px;line-height:24px}.eva-review-head span{color:var(--eva-review-muted);font-size:12px}
-.eva-review-head>.eva-review-head-actions{align-items:center;gap:2px}.eva-review-head-actions button{cursor:pointer}
+.eva-review-head>.eva-review-head-actions{align-items:center;gap:2px;flex-shrink:0}.eva-review-head-actions button{cursor:pointer}
 .eva-review-icon-button{display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--eva-review-muted);cursor:pointer}.eva-review-icon-button:hover,.eva-review-icon-button:focus-visible{background:var(--eva-review-fill);color:var(--eva-review-text);outline:none}
 .eva-review-toolbar{display:flex;align-items:center;padding:12px 16px 8px}.eva-review-toolbar .eva-review-primary{width:100%}
 .eva-review-primary,.eva-review-secondary{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:32px;padding:7px 14px;border:0;border-radius:6px;font:600 13px/18px inherit;cursor:pointer}.eva-review-primary{background:var(--eva-review-primary);color:#fff}.eva-review-primary:hover,.eva-review-primary:focus-visible{background:var(--eva-review-primary-hover);outline:none}.eva-review-secondary{background:var(--eva-review-fill);color:var(--eva-review-text)}.eva-review-secondary:hover,.eva-review-secondary:focus-visible{background:var(--semi-color-fill-1,#e5e6eb);outline:none}.eva-review-primary:disabled,.eva-review-secondary:disabled{cursor:not-allowed;opacity:.55}
@@ -34,7 +34,7 @@ body.eva-review-picking,body.eva-review-picking *{cursor:crosshair!important}.ev
 @media (prefers-reduced-motion:reduce){.eva-review-launcher,.eva-review-item,.eva-review-pin{transition:none}.eva-review-target{animation:none}}
 @media (max-width:640px){.eva-review-panel{inset:calc(var(--topbar-height,52px) + 8px) 8px 8px;width:auto;height:auto}.eva-review-reply{grid-template-columns:1fr 30px}.eva-review-reply input[name="author"]{grid-column:1/-1}}
 
-.eva-review-updates{display:flex;align-items:center;justify-content:center;flex:0 0 32px;margin:0 16px 4px}
+.eva-review-updates{display:flex;align-items:center;flex:0 0 auto;margin:0;white-space:nowrap}
 .eva-review-updates button{padding:4px 10px;border:0;border-radius:6px;background:transparent;color:var(--eva-review-muted);font:inherit;font-size:12px;cursor:pointer}
 .eva-review-updates button.has-updates{background:var(--eva-review-fill);color:var(--eva-review-primary);font-weight:600}
 .eva-review-updates button:hover{background:var(--eva-review-fill);color:var(--eva-review-primary)}
@@ -43,6 +43,7 @@ body.eva-review-picking,body.eva-review-picking *{cursor:crosshair!important}.ev
 [data-review-update-status]{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
 .eva-review-head>div:first-child{min-width:0}
+.eva-review-head strong{flex-shrink:0;white-space:nowrap}
 .eva-review-head>div:first-child span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .eva-review-status-filter{max-width:112px;height:26px;padding:2px 4px;border:1px solid var(--eva-review-border);border-radius:6px;background:var(--eva-review-bg);color:var(--eva-review-text);font:inherit;font-size:12px;line-height:18px;cursor:pointer}
 .eva-review-status-filter:focus-visible{outline:2px solid var(--eva-review-primary);outline-offset:2px}
