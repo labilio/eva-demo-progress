@@ -20,16 +20,42 @@
     const dissolve=id=>{delete state.groups[id];Object.keys(state.threads).filter(t=>state.threads[t]===id).forEach(t=>delete state.threads[t]);};
     const employee=id=>{const a=root.EvaDigitalEmployeesStore?.get(id);return a?{...a,kind:'employee',ai:true,identityAppearance:root.EvaDigitalEmployeesStore.appearance(a)}:null;};
     const employeeRows=s=>(s.employeeIds||[]).map(employee).filter(Boolean);
-    const agentFor=pid=>state.projects[pid]?{id:'project-agent:'+pid,name:'Eva 项目管理专员',kind:'project-agent',ai:true,projectId:pid,cloud:true,removable:false,ownership:'project',identityAppearance:root.EvaAIIdentity?.projectAgentAppearance(projectInfo(pid))}:null;
+    const agentFor=pid=>state.projects[pid]?{id:'project-agent:'+pid,name:root.EvaAIIdentity.projectAgentName(projectInfo(pid)),kind:'project-agent',ai:true,projectId:pid,cloud:true,removable:false,ownership:'project',identityAppearance:root.EvaAIIdentity?.projectAgentAppearance(projectInfo(pid))}:null;
     const agentIn=id=>{id=state.threads[id]||id;return agentFor(id.startsWith('all:')?id.slice(4):projectId(id));};
     const projectInfo=pid=>({...state.projects[pid],...resolveProjectInfo?.(pid)});
     const agentSender=pid=>{const agent=agentFor(pid);return {...agent,uid:agent.id,color:'#1563EB'};};
+    // Project AI names are derived at the shared message boundary, including saved history and quotes.
+    const projectAgentMessage=(id,message)=>{
+      const gid=state.threads[id]||id,group=state.groups[gid]||root.__EVA_IM_DEMO?.channels?.find(c=>c.id===gid);
+      const projectAgent=agentIn(id),context=projectAgent?projectInfo(projectAgent.projectId):group;
+      if(!context)return message;
+      // Legacy group AI keeps its identity and access scope; only its display name follows the group.
+      const agent=projectAgent||{id:'b-eva-octo',name:root.EvaAIIdentity.projectAgentName(context),identityAppearance:{...root.EvaAIIdentity.projectAgentAppearance(),name:root.EvaAIIdentity.projectAgentName(context)}};
+      const legacyNames=new Set(root.EvaAIIdentity.projectAgentLegacyNames(context));
+      if(message.sender?.kind==='project-agent'&&message.sender.name&&message.sender.name!==agent.name)legacyNames.add(message.sender.name);
+      const isAgent=value=>value&&(value.kind==='project-agent'||value.uid===agent.id||value.id===agent.id||value.uid==='b-eva-octo');
+      const visit=value=>{
+        if(Array.isArray(value))return value.map(visit);
+        if(!value||typeof value!=='object')return value;
+        const result=Object.fromEntries(Object.entries(value).map(([key,item])=>[key,visit(item)]));
+        if(isAgent(value)){result.name=(String(value.name||'').startsWith('@')?'@':'')+agent.name;result.identityAppearance=agent.identityAppearance;}
+        for(const key of ['text','content','name','senderName']){
+          if(typeof result[key]!=='string')continue;
+          for(const old of legacyNames)result[key]=result[key].split(old).join(agent.name);
+        }
+        return result;
+      };
+      const result=visit(message);
+      if(result.mentions)result.mentions=result.mentions.filter(m=>typeof m.name==='string'&&m.name.replace(/^@+/,'').trim()).map(m=>({...m,name:'@'+m.name.replace(/^@+/,'')}));
+      if(message.sender?.kind==='project-agent'&&message.sender.name&&message.sender.name!==agent.name&&message.fixtureId?.startsWith('project-agent-welcome:'))result.text=result.text?.replace(message.sender.name,agent.name);
+      return result;
+    };
     const agentWelcome=(pid,goal)=>{
       const list=state.messages['all:'+pid]||(state.messages['all:'+pid]=[]),fixtureId='project-agent-welcome:'+pid;
       if(list.some(m=>m.fixtureId===fixtureId))return;
       for(const prefs of Object.values(state.chatPreferences)){const pref=prefs['all:'+pid];if(pref?.clearedCount>0)pref.clearedCount++;}
       const p=projectInfo(pid),owner=person(state.projects[pid].ownerId);
-      list.unshift({fixtureId,kind:'text',sender:agentSender(pid),time:'09:00',text:'@所有人 大家好，我是 Eva 项目管理专员。\n项目：'+p.name+'\n共同目标：'+(goal||p.desc||'尚未填写，可在项目信息中补充')+'\n负责人：'+(owner?.name||'未指定')+'\n我是本项目的云端 AI，了解项目目标、成员、各群进展及共享资料，电脑关闭后也可继续服务。每位项目成员都可以 @我 提问，我会结合整个项目的信息回答。',notifiedHumanIds:state.projects[pid].humans.map(m=>m.id)});
+      list.unshift({fixtureId,kind:'text',sender:agentSender(pid),time:'09:00',text:'@所有人 大家好，我是 '+agentFor(pid).name+'。\n项目：'+p.name+'\n共同目标：'+(goal||p.desc||'尚未填写，可在项目信息中补充')+'\n负责人：'+(owner?.name||'未指定')+'\n我是本项目的云端 AI，了解项目目标、成员、各群进展及共享资料，电脑关闭后也可继续服务。每位项目成员都可以 @我 提问，我会结合整个项目的信息回答。',notifiedHumanIds:state.projects[pid].humans.map(m=>m.id)});
     };
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
@@ -146,7 +172,7 @@
         if(Object.keys(patch).some(k=>!['mute','top','clearedCount'].includes(k)))fail('未知个人设置');
         state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],...patch};notify();
       },
-      visibleMessages(id,uid,messages){return messages.slice(api.chatPreferences(id,uid).clearedCount||0);},
+      visibleMessages(id,uid,messages){return messages.slice(api.chatPreferences(id,uid).clearedCount||0).map(m=>projectAgentMessage(id,m));},
       setActor(uid){requireHuman(uid);state.actorId=uid;notify();},
       seedSupplyChatContent(){
         let changed=false;
@@ -202,7 +228,7 @@
       messagesFor(id,uid){
         if(!api.canRead(id,uid))return [];
         const candidates=[{name:'@所有人',uid:'all'},{name:'@全体成员',uid:'all'},...api.groupMembers(id).map(m=>({name:'@'+m.name,uid:m.id}))];
-        return JSON.parse(JSON.stringify(state.messages[id]||[])).map(m=>({...m,mentions:[...(m.mentions||[]),...candidates.filter(c=>m.text?.includes(c.name)&&!m.mentions?.some(x=>x.name===c.name))],sender:m.sender?.kind==='project-agent'?{...m.sender,identityAppearance:root.EvaAIIdentity?.projectAgentAppearance(m.sender.projectId&&state.projects[m.sender.projectId]?projectInfo(m.sender.projectId):undefined)}:m.sender}));
+        return JSON.parse(JSON.stringify(state.messages[id]||[])).map(m=>projectAgentMessage(id,m)).map(m=>({...m,mentions:[...(m.mentions||[]),...candidates.filter(c=>m.text?.includes(c.name)&&!m.mentions?.some(x=>x.name===c.name))]}));
       },
       mentionCandidates(id){return api.groupMembers(state.threads[id]||id).filter(p=>p.kind==='human');},
       members(id){const s=scope(id);return [...s.humans.map(m=>({...person(m.id),...m,kind:'human'})),...s.cloneIds.map(cid=>({...clone(cid),kind:'clone'})),...employeeRows(s),...(agentIn(id)?[agentIn(id)]:[])];},
@@ -329,7 +355,7 @@
         for(const t of officialDemo.threads){saved.threads[t.id]=officialDemo.id;saved.threadDetails[t.id]={status:1,...t,created_at:root.__EVA_DEMO_TIME?.T1};}
         for(const [id,messages] of Object.entries(officialDemo.messages))saved.messages[id]=messages.map((m,index)=>{
           const {senderId,...message}=m;
-          const sender=senderId==='project-agent:official'?{id:senderId,uid:senderId,name:'Eva 项目管理专员',kind:'project-agent',ai:true,projectId:'official'}:saved.people.find(p=>p.id===senderId)||saved.clones.find(p=>p.id===senderId);
+          const sender=senderId==='project-agent:official'?{id:senderId,uid:senderId,name:root.EvaAIIdentity.projectAgentName(saved.projects.official),kind:'project-agent',ai:true,projectId:'official'}:saved.people.find(p=>p.id===senderId)||saved.clones.find(p=>p.id===senderId);
           return {...message,fixtureId:'official-community-v1:'+id+':'+index,sender:{...sender,uid:senderId,...(cloneIds.includes(senderId)?{ai:true}: {})}};
         });
       }

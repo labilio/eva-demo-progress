@@ -7,7 +7,7 @@
 .eva-contacts--redesigned *::before,
 .eva-contacts--redesigned *::after {box-sizing:border-box}
 .eva-contacts__main-head {
-  display:flex;align-items:center;justify-content:space-between;gap:var(--gds-space-4);
+  display:flex;align-items:center;justify-content:flex-start;gap:var(--gds-space-4);
   flex:none;min-height:64px;padding:var(--gds-space-3) var(--gds-space-6);
   border-bottom:var(--gds-border-standard) solid var(--gds-color-border-faint);
 }
@@ -15,7 +15,7 @@
 .eva-contacts__title strong {font-size:var(--gds-type-header-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-header-line-height)}
 .eva-contacts__result-count {font-size:var(--gds-type-caption-font-size);color:var(--gds-color-text-secondary-accessible)}
 .eva-contacts__search {
-  display:flex;align-items:center;gap:var(--gds-space-2);width:280px;min-width:0;
+  display:flex;align-items:center;gap:var(--gds-space-2);width:280px;min-width:0;flex:0 1 280px;
   padding-inline:var(--gds-space-3);border-radius:var(--gds-radius-control);
   background:var(--gds-color-surface-subtle);color:var(--gds-color-text-secondary-accessible);
 }

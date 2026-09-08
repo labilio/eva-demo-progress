@@ -85,7 +85,7 @@ function EvaArchivePreviewRenderer({file}) {
   return h('div',{className:'eva-archive-preview','aria-label':'压缩包内容'},
     h('div',{className:'eva-archive-preview__summary'},h('span',null,h('strong',null,archive.entries.length),h('small',null,'项目')),h('span',null,h('strong',null,archive.compressedSize||'—'),h('small',null,'压缩后')),h('span',null,h('strong',null,archive.originalSize||'—'),h('small',null,'原始大小'))),
     h('div',{className:'eva-archive-preview__head'},h('span',null,'名称'),h('span',null,'类型'),h('span',null,'大小')),
-    h('div',{className:'eva-archive-preview__list'},archive.entries.map((entry,index)=>h('div',{className:'eva-archive-preview__row',key:index},h('span',null,h('i',{'aria-hidden':'true'},entry.type==='folder'?'▸':'·'),entry.path),h('small',null,entry.type),h('small',null,entry.size))))
+    h('div',{className:'eva-archive-preview__list'},archive.entries.map((entry,index)=>h('div',{className:'eva-archive-preview__row',key:index},h('span',null,entry.path),h('small',null,entry.type),h('small',null,entry.size))))
   );
 }
 
@@ -618,6 +618,10 @@ function EvaAITeamPage() {
       '!ui&&Vs),evaInlineProjectId&&React.createElement(EvaInlineProjectPanel,{projectId:evaInlineProjectId})),ki,Ss)',
       '消息内容区内联项目面板');
 
+    // Normalize at the shared IM tokenizer: the @ prefix is part of the mention entity.
+    cut('function segmentText(rt,ct,ut){if(!ct.length&&!ut.length)',
+      'function segmentText(rt,ct,ut){ct=Array.from(new Map((ct||[]).filter(m=>typeof m?.name==="string"&&m.name.replace(/^@+/,"").trim()).map(m=>{const name="@"+m.name.replace(/^@+/,"");return[name,{...m,name}]})).values());ut=(ut||[]).filter(e=>typeof e?.key==="string"&&e.key.length>0);if(!ct.length&&!ut.length)',
+      '统一 IM 提及包含 @ 前缀并过滤空实体');
     cut('function getMentionRenderState(rt){return rt==="all"||rt==="channel"?{className:"mention-highlight",interactive:!1}', 'function getMentionRenderState(rt){return rt==="all"||rt==="channel"?{className:"mention-entity",interactive:!1}', '所有人提及沿用成员提及样式');
     // Restore the historical message search while retaining the shared member picker.
     cut('ii=ci=>{const Zi=SENDERS[ci];if(!Zi)return;Fa(""),ir("recent");const Fi=pt.find(ro=>ro.members===2&&ro.name===Zi.name);if(Fi){La(Fi.id);return}const Ki={id:`dm-${ci}`,name:Zi.name,color:Zi.color,unread:0,members:2,category:NO_CAT,lastAt:new Date().toISOString(),threads:[]};mt(ro=>[...ro,Ki]),La(Ki.id)}',

@@ -169,7 +169,9 @@
       return true;
     };
     const visibleRecord=(item,actorId)=>{
-      const value=clone(item);delete value.identity;
+      const value=clone(item),agent=membership.projectAgent?.(item.projectId||item.spaceId);
+      if(agent)for(const key of ['creator','editor','createdBy','updatedBy'])if(root.EvaAIIdentity.projectAgentLegacyNames({name:agent.name.replace(/ · 项目管家$/,'')}).includes(value[key]))value[key]=agent.name;
+      delete value.identity;
       if(actorId&&!sourceReadable(item,actorId)){
         const sourceType=item.source?.type;
         value.source={type:sourceType,label:sourceType==='ai-conversation-copy'?'从 AI 会话保存':sourceType==='chat-copy'?'从私聊保存':'从群聊保存'};
