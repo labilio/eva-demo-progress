@@ -36,6 +36,7 @@ test('群聊预设增量加载不重复、不覆盖成员与手动消息',()=>{
  assert.equal(s.messagesFor('supply-demo-rectification','u-wangyilin').filter(m=>m.fixtureId).length,6);
  assert.equal(s.messagesFor('supply-demo-evidence','u-wangyilin').filter(m=>m.fixtureId).length,4);
  const messages=s.messagesFor('all:prod','u-wangyilin');
- for(const [index,message] of messages.entries()){if(message.fixtureId?.startsWith('supply-chat-v2:')&&message.sender.uid==='project-agent:prod')assert.ok(messages[index-1].text.includes('@供应链运营协同 · 项目管家'));}
+ const projectAgentName=s.projectAgent('prod').name;
+ for(const [index,message] of messages.entries()){if(message.fixtureId?.startsWith('supply-chat-v2:')&&message.sender.uid==='project-agent:prod')assert.ok(messages[index-1].text.includes('@'+projectAgentName));}
  assert.equal(s.canRead('prod','u-hejing'),true);
 });

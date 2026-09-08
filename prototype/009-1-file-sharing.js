@@ -4,6 +4,7 @@
   const clone=value=>JSON.parse(JSON.stringify(value));
   const stamp=()=>new Date().toISOString();
   const ext=name=>String(name||'').includes('.')?String(name).split('.').pop().toLowerCase():'';
+  const projectAgentLegacyNames=project=>root.EvaAIIdentity?.projectAgentLegacyNames?.(project)||['Eva 项目管理专员','Eva 项目助手',...(project?.name?[String(project.name)+'项目管家']:[])];
   const fileTypeLabel=name=>{
     const value=ext(name);
     if(value==='pdf')return'PDF';
@@ -183,7 +184,7 @@
     };
     const visibleRecord=(item,actorId)=>{
       const value=clone(item),agent=membership.projectAgent?.(item.projectId||item.spaceId);
-      if(agent)for(const key of ['creator','editor','createdBy','updatedBy'])if(root.EvaAIIdentity.projectAgentLegacyNames({name:agent.name.replace(/ · 项目管家$/,'')}).includes(value[key]))value[key]=agent.name;
+      if(agent)for(const key of ['creator','editor','createdBy','updatedBy'])if(projectAgentLegacyNames({name:agent.name.replace(/ · 项目管家$/,'')}).includes(value[key]))value[key]=agent.name;
       delete value.identity;
       if(actorId&&!sourceReadable(item,actorId)){
         const sourceType=item.source?.type;
