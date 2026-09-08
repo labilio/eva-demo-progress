@@ -19,6 +19,7 @@
     '<path d="M2 14h2M20 14h2M9 13v2M15 13v2"></path>'
   ].join('');
   var cache = new Map();
+  var groupAppearanceResolver = () => null;
 
   function hash(value) {
     var result = 0;
@@ -47,14 +48,14 @@
     return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   }
 
-  function iconUri(kind, id, color) {
-    var main = normalizeColor(id, color);
-    var key = [kind, id, main].join(':');
+  function iconUri(kind, id, color, tone) {
+    var main = tone ? tone.accent : normalizeColor(id, color);
+    var key = [kind, id, main, tone?.surface, tone?.border].join(':');
     if (cache.has(key)) return cache.get(key);
     var paths = kind === 'automation' ? AUTOMATION_ICON : GROUP_ICON;
     var svg = [
       '<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72">',
-      '<circle cx="36" cy="36" r="34.5" fill="', mixWithWhite(main, 0.11), '" stroke="', mixWithWhite(main, 0.38), '" stroke-width="1.5"></circle>',
+      '<circle cx="36" cy="36" r="34.5" fill="', (tone?.surface || mixWithWhite(main, 0.11)), '" stroke="', (tone?.border || mixWithWhite(main, 0.38)), '" stroke-width="1.5"></circle>',
       '<g transform="translate(18 18) scale(1.5)" fill="none" stroke="', main, '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">',
       paths,
       '</g></svg>'
@@ -83,8 +84,11 @@
     return uri;
   }
 
-  function groupUri(id, color) {
-    return iconUri('group', String(id || 'unknown-group'), color);
+  function groupUri(id, color, theme) {
+    var appearance = groupAppearanceResolver(id);
+    if (appearance?.avatar) return appearance.avatar;
+    var tone = appearance?.project && root.EvaProjectAppearance.get(appearance.project, theme || (root.document && root.getComputedStyle(root.document.documentElement).colorScheme === 'dark' ? 'dark' : 'light'));
+    return iconUri('group', String(id || 'unknown-group'), color, tone);
   }
 
   function automationUri(id, color) {
@@ -93,12 +97,13 @@
 
   function uri(options) {
     var config = options || {};
-    if (config.kind === 'group') return groupUri(config.id, config.color);
+    if (config.kind === 'group') return groupUri(config.id, config.color, config.theme);
     if (config.kind === 'automation') return automationUri(config.id, config.color);
     return personUri(config.id);
   }
 
   root.EvaAvatar = Object.freeze({
+    setGroupAppearanceResolver: function (resolve) { groupAppearanceResolver = resolve; },
     uri: uri,
     personUri: personUri,
     groupUri: groupUri,

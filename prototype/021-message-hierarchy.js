@@ -27,15 +27,8 @@
   }
 
   function projectTheme(project) {
-    var accent = project && /^#[0-9a-f]{6}$/i.test(project.color || '') ? project.color : '#59636d';
-    var surface = project && /^#[0-9a-f]{6,8}$/i.test(project.colorBg || '') ? project.colorBg : accent + '18';
-    return {
-      accent: accent,
-      surface: surface,
-      border: accent + '2e',
-      noticeSurface: surface,
-      noticeText: accent
-    };
+    var tone = window.EvaProjectAppearance.css(project || {});
+    return {...tone, noticeSurface: tone.surface, noticeText: tone.accent};
   }
 
   function projectThemeCSS(theme) {
