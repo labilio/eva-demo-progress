@@ -24,6 +24,83 @@
     const agentIn=id=>{id=state.threads[id]||id;return agentFor(id.startsWith('all:')?id.slice(4):projectId(id));};
     const projectInfo=pid=>({...state.projects[pid],...resolveProjectInfo?.(pid)});
     const agentSender=pid=>{const agent=agentFor(pid);return {...agent,uid:agent.id,color:'#1563EB'};};
+    const messageFingerprint=value=>{
+      let hash=2166136261;
+      for(const char of String(value)){hash^=char.charCodeAt(0);hash=Math.imul(hash,16777619);}
+      return (hash>>>0).toString(36);
+    };
+    const defaultMessageDate=()=>{
+      const raw=root.__EVA_DEMO_TIME?.T1||new Date().toISOString();
+      const parsed=new Date(raw);
+      return Number.isNaN(parsed.getTime())?'2026-09-02':parsed.toISOString().slice(0,10);
+    };
+    const dividerDate=(text,fallback)=>{
+      const match=String(text||'').match(/(?:(\d{4})年)?(\d{1,2})月(\d{1,2})日/);
+      if(!match)return fallback;
+      const year=match[1]||fallback.slice(0,4);
+      return year+'-'+String(match[2]).padStart(2,'0')+'-'+String(match[3]).padStart(2,'0');
+    };
+    const messageText=message=>{
+      const forward=message.forward||message.mergedForward||message.children;
+      const nested=Array.isArray(forward)?forward.map(messageText).filter(Boolean).join('\n'):'';
+      return [message.text,message.note,message.ref?.title,message.ref?.desc,message.thread?.name,nested].filter(Boolean).join('\n');
+    };
+    const normalizeMessages=(id,messages=[])=>{
+      let day=defaultMessageDate();
+      const occurrences=new Map();
+      return messages.map((message,index)=>{
+        if(!message||typeof message!=='object')return message;
+        if(message.kind==='divider'){
+          day=dividerDate(message.text,day);
+          return {...message,id:message.id||'divider:'+id+':'+day+':'+index,sentAt:message.sentAt||day+'T00:00:00+08:00'};
+        }
+        const time=/^\d{1,2}:\d{2}$/.test(String(message.time||''))?String(message.time):'00:00';
+        const sentAt=message.sentAt||message.created_at||day+'T'+time+':00+08:00';
+        const seed=[id,message.kind,message.sender?.uid,message.time,messageText(message),message.file?.name,message.image?.url,message.video?.url].join('|');
+        const fingerprint=messageFingerprint(seed),occurrence=(occurrences.get(fingerprint)||0)+1;
+        occurrences.set(fingerprint,occurrence);
+        return {...message,id:message.id||message.fixtureId||'message:'+id+':'+fingerprint+':'+occurrence,sentAt};
+      });
+    };
+    const messageCategory=message=>{
+      if(message.kind==='file'||message.file)return'file';
+      if(message.kind==='image'||message.image)return'image';
+      if(message.kind==='video'||message.video)return'video';
+      return'message';
+    };
+    const fileName=message=>message.file?.name||message.attachment?.name||'';
+    const searchMessages=(id,uid,messages=[],criteria={})=>{
+      const managed=!!(state.threads[id]||state.groups[id]||id?.startsWith('all:'));
+      if(!id||(managed&&!api.canRead(id,uid)))return{items:[],nextCursor:null,hasMore:false,total:0};
+      const keyword=String(criteria.keyword||'').normalize('NFKC').trim().slice(0,64);
+      const normalizedKeyword=keyword.toLocaleLowerCase('zh-CN');
+      const tab=criteria.tab||'all',senderIds=new Set(criteria.senderIds||[]);
+      const from=criteria.sentFrom?new Date(criteria.sentFrom).getTime():null;
+      const to=criteria.sentTo?new Date(criteria.sentTo).getTime():null;
+      const mediaKeywordBlocked=tab==='media'&&!!keyword;
+      let rows=normalizeMessages(id,api.visibleMessages(id,uid,messages)).filter(message=>message&& !['divider','system'].includes(message.kind));
+      rows=rows.filter(message=>{
+        const category=messageCategory(message);
+        if(tab==='message'&&category!=='message')return false;
+        if(tab==='file'&&category!=='file')return false;
+        if(tab==='media'&&!['image','video'].includes(category))return false;
+        if(senderIds.size&&!senderIds.has(message.sender?.uid))return false;
+        const timestamp=new Date(message.sentAt).getTime();
+        if(from!==null&&(!Number.isFinite(timestamp)||timestamp<from))return false;
+        if(to!==null&&(!Number.isFinite(timestamp)||timestamp>to))return false;
+        if(!normalizedKeyword)return true;
+        if(tab==='media')return false;
+        const haystack=(category==='file'?fileName(message):messageText(message)).normalize('NFKC').toLocaleLowerCase('zh-CN');
+        return haystack.includes(normalizedKeyword);
+      });
+      rows.sort((a,b)=>{
+        const delta=new Date(a.sentAt).getTime()-new Date(b.sentAt).getTime();
+        return criteria.sort==='asc'?delta:-delta;
+      });
+      const total=rows.length,offset=Math.max(0,Number(criteria.cursor)||0),pageSize=Math.min(50,Math.max(1,Number(criteria.pageSize)||20));
+      const items=rows.slice(offset,offset+pageSize),next=offset+items.length;
+      return{items,nextCursor:next<total?String(next):null,hasMore:next<total,total,keyword,mediaKeywordBlocked};
+    };
     const agentWelcome=(pid,goal)=>{
       const list=state.messages['all:'+pid]||(state.messages['all:'+pid]=[]),fixtureId='project-agent-welcome:'+pid;
       if(list.some(m=>m.fixtureId===fixtureId))return;
@@ -87,7 +164,7 @@
       sendDirect(id,uid,text){
         requireHuman(uid);const c=state.directConversations?.[id];if(!c||!c.memberIds.includes(uid))fail('无私聊访问权限');
         if(!person(c.memberIds.find(p=>p!==uid)))fail('对方账号不可用');if(!text.trim())return false;
-        c.drafts||={};c.drafts[uid]='';c.lastAt=new Date().toISOString();c.messages.push({kind:'text',sender:{...person(uid),uid},time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text});notify();return true;
+        c.drafts||={};c.drafts[uid]='';const sentAt=new Date().toISOString();c.lastAt=sentAt;c.messages.push({id:'message:'+id+':'+(++state.sequence),kind:'text',sender:{...person(uid),uid},sentAt,time:new Date(sentAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text});notify();return true;
       },
       transaction(fn){const staged=create(state,undefined,resolveProjectInfo);fn(staged);state=staged.snapshot();notify();},
       renameProject(id,uid,name){requireHuman(uid);if(!state.projects[id]||!manager(id,uid))fail('仅项目负责人或管理员可修改');if(!name.trim()||name.length>50)fail('项目名称须为 1–50 个字符');state.projects[id].name=name.trim();notify();},
@@ -112,6 +189,8 @@
         state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],...patch};notify();
       },
       visibleMessages(id,uid,messages){return messages.slice(api.chatPreferences(id,uid).clearedCount||0);},
+      normalizeMessages,
+      searchMessages,
       setActor(uid){requireHuman(uid);state.actorId=uid;notify();},
       seedSupplyChatContent(){
         let changed=false;
@@ -160,7 +239,7 @@
       createGroup(id,name,pid,uid,ids){requireHuman(uid);if(state.groups[id]||state.projects[id])fail('群已存在');if(pid&&!member(pid,uid))fail('请先加入项目');const clones=selected(uid,ids,pid);state.groups[id]={id,name,projectId:pid||null,ownerId:uid,humans:[{id:uid,role:'member'}],cloneIds:clones};notify();return id;},
       createThread(id,gid,details={},uid){if(!state.groups[gid]&&!(gid.startsWith('all:')&&state.projects[gid.slice(4)]))fail('父群不存在');if(uid&&!api.canRead(gid,uid))fail('请先加入父群');state.threads[id]=gid;state.threadDetails[id]={...details,id};notify();},
       updateThread(id,patch,uid){if(!api.canRead(id,uid))fail('请先加入父群');state.threadDetails[id]={...state.threadDetails[id],...patch,id};notify();},
-      sendMessage(id,uid,text){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id);if(agent&&text.includes('@'+agent.name)){const project=projectInfo(agent.projectId),owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}notify();},
+      sendMessage(id,uid,text){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const p=person(uid),sentAt=new Date().toISOString();(state.messages[id]||(state.messages[id]=[])).push({id:'message:'+id+':'+(++state.sequence),kind:'text',sender:{...p,uid:p.id},sentAt,time:new Date(sentAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id);if(agent&&text.includes('@'+agent.name)){const project=projectInfo(agent.projectId),owner=person(state.projects[agent.projectId].ownerId),replyAt=new Date().toISOString();state.messages[id].push({id:'message:'+id+':'+(++state.sequence),kind:'text',sender:agentSender(agent.projectId),sentAt:replyAt,time:new Date(replyAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}notify();},
       messagesFor(id,uid){
         if(!api.canRead(id,uid))return [];
         const candidates=[{name:'@所有人',uid:'all'},{name:'@全体成员',uid:'all'},...api.groupMembers(id).map(m=>({name:'@'+m.name,uid:m.id}))];

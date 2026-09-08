@@ -1,0 +1,629 @@
+/* 群聊 / 项目群聊搜索：遵循 Eva GDS token，复刻线上 IM 的无蒙层右侧抽屉。 */
+.ch-right-panel--search.eva-channel-search {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  width: 480px;
+  min-width: 480px;
+  max-width: 480px;
+  height: 100%;
+  min-height: 0;
+  flex: 0 0 480px;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: var(--eva-border-standard-w) solid var(--eva-border-faint);
+  background: var(--eva-surface-primary);
+  color: var(--eva-text-primary);
+  font-family: var(--eva-font-sans);
+}
+
+.eva-channel-search button,
+.eva-channel-search input,
+.eva-channel-search select {
+  box-sizing: border-box;
+  font: inherit;
+}
+
+.eva-channel-search button {
+  color: inherit;
+}
+
+.eva-channel-search__header {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  height: 48px;
+  min-height: 48px;
+  align-items: center;
+  gap: var(--eva-space-2);
+  padding: var(--eva-space-2) var(--eva-space-3) var(--eva-space-2) var(--eva-space-4);
+  border-bottom: var(--eva-border-standard-w) solid var(--eva-border-faint);
+}
+
+.eva-channel-search__input-wrap {
+  box-sizing: border-box;
+  display: flex;
+  height: 32px;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: var(--eva-space-2);
+  padding: 0 var(--eva-space-3);
+  border: var(--eva-border-standard-w) solid transparent;
+  border-radius: var(--eva-radius-full);
+  background: var(--eva-surface-subtle);
+  color: var(--eva-text-muted);
+}
+
+.eva-channel-search__input-wrap:focus-within {
+  border-color: var(--eva-text-primary);
+  background: var(--eva-surface-primary);
+  box-shadow: none;
+}
+
+.eva-channel-search__input-wrap input {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--eva-text-primary);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.eva-channel-search__input-wrap input::placeholder {
+  color: var(--eva-text-muted);
+}
+
+.eva-channel-search__input-wrap input:focus-visible {
+  outline: none;
+}
+
+.eva-channel-search__clear,
+.eva-channel-search__close,
+.eva-channel-search__filter-trigger,
+.eva-channel-search__tab,
+.eva-channel-search__filter-head button,
+.eva-channel-search__date-presets button,
+.eva-channel-search__filter-actions button,
+.eva-channel-search__locate,
+.eva-channel-search__load-more,
+.eva-channel-search__state button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.eva-channel-search__clear,
+.eva-channel-search__close {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: var(--eva-radius-control);
+  color: var(--eva-text-secondary);
+}
+
+.eva-channel-search__clear {
+  width: 24px;
+  height: 24px;
+  flex-basis: 24px;
+  margin-right: calc(var(--eva-space-1) * -1);
+  border-radius: var(--eva-radius-full);
+}
+
+.eva-channel-search__clear:hover,
+.eva-channel-search__close:hover,
+.eva-channel-search__filter-trigger:hover,
+.eva-channel-search__date-presets button:hover {
+  background: var(--eva-overlay-hover);
+  color: var(--eva-text-primary);
+}
+
+.eva-channel-search__limit {
+  position: absolute;
+  top: 43px;
+  left: var(--eva-space-6);
+  z-index: 3;
+  color: var(--eva-text-muted);
+  font-size: 12px;
+}
+
+.eva-channel-search__toolbar {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  height: 40px;
+  min-height: 40px;
+  align-items: stretch;
+  border-bottom: var(--eva-border-standard-w) solid var(--eva-border-faint);
+}
+
+.eva-channel-search__tabs {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: stretch;
+}
+
+.eva-channel-search__tab {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+  padding: 0 var(--eva-space-1);
+  color: var(--eva-text-secondary);
+  font-size: 14px;
+  line-height: 40px;
+  white-space: nowrap;
+}
+
+.eva-channel-search__tab::after {
+  position: absolute;
+  right: var(--eva-space-3);
+  bottom: 0;
+  left: var(--eva-space-3);
+  height: 2px;
+  border-radius: var(--eva-radius-full);
+  background: transparent;
+  content: '';
+}
+
+.eva-channel-search__tab:hover {
+  color: var(--eva-text-primary);
+}
+
+.eva-channel-search__tab.is-active {
+  color: var(--eva-text-primary);
+  font-weight: var(--eva-fw-medium);
+}
+
+.eva-channel-search__tab.is-active::after {
+  background: var(--eva-text-primary);
+}
+
+.eva-channel-search__filter-trigger {
+  display: inline-flex;
+  min-width: 76px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--eva-space-1);
+  padding: 0 var(--eva-space-3);
+  color: var(--eva-text-secondary);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.eva-channel-search__filter-trigger.is-active {
+  color: var(--eva-action-selection);
+}
+
+.eva-channel-search__filter-count {
+  display: inline-flex;
+  min-width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--eva-space-1);
+  border-radius: var(--eva-radius-full);
+  background: var(--eva-surface-selection);
+  color: var(--eva-action-selection);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.eva-channel-search__filter-panel {
+  position: absolute;
+  z-index: 30;
+  top: 44px;
+  right: var(--eva-space-3);
+  box-sizing: border-box;
+  width: 336px;
+  max-height: calc(100vh - 132px);
+  overflow-y: auto;
+  padding: var(--eva-space-4);
+  border: var(--eva-border-standard-w) solid var(--eva-border-faint);
+  border-radius: var(--eva-radius-key);
+  background: var(--eva-surface-primary);
+  box-shadow: var(--eva-shadow-floating);
+}
+
+.eva-channel-search__filter-head,
+.eva-channel-search__filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.eva-channel-search__filter-head {
+  margin-bottom: var(--eva-space-4);
+  font-size: 15px;
+}
+
+.eva-channel-search__filter-head button {
+  padding: var(--eva-space-1) 0;
+  color: var(--eva-action-selection);
+  font-size: 13px;
+}
+
+.eva-channel-search__field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--eva-space-2);
+  margin: 0 0 var(--eva-space-4);
+  padding: 0;
+  border: 0;
+}
+
+.eva-channel-search__field > label,
+.eva-channel-search__field > legend {
+  padding: 0;
+  color: var(--eva-text-secondary);
+  font-size: 13px;
+  font-weight: var(--eva-fw-medium);
+}
+
+.eva-channel-search__field > input,
+.eva-channel-search__field > select,
+.eva-channel-search__date-custom input {
+  width: 100%;
+  height: 32px;
+  padding: 0 var(--eva-space-2);
+  border: var(--eva-border-standard-w) solid var(--eva-border-default);
+  border-radius: var(--eva-radius-small);
+  outline: 0;
+  background: var(--eva-surface-primary);
+  color: var(--eva-text-primary);
+  font-size: 13px;
+}
+
+.eva-channel-search__sender-list {
+  display: flex;
+  max-height: 116px;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.eva-channel-search__sender-list label {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: var(--eva-space-2);
+  padding: 0 var(--eva-space-1);
+  border-radius: var(--eva-radius-small);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.eva-channel-search__sender-list label:hover {
+  background: var(--eva-overlay-hover);
+}
+
+.eva-channel-search__sender-list input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--eva-action-selection);
+}
+
+.eva-channel-search__sender-list img {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--eva-radius-full);
+  object-fit: cover;
+}
+
+.eva-channel-search__date-presets,
+.eva-channel-search__date-custom,
+.eva-channel-search__filter-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--eva-space-2);
+}
+
+.eva-channel-search__date-presets button {
+  height: 28px;
+  padding: 0 var(--eva-space-2);
+  border-radius: var(--eva-radius-small);
+  color: var(--eva-text-secondary);
+  font-size: 12px;
+}
+
+.eva-channel-search__date-presets button.is-active {
+  background: var(--eva-surface-selection);
+  color: var(--eva-action-selection);
+}
+
+.eva-channel-search__date-custom input {
+  min-width: 0;
+  flex: 1;
+}
+
+.eva-channel-search__date-custom span {
+  color: var(--eva-text-muted);
+  font-size: 12px;
+}
+
+.eva-channel-search__field > input:focus-visible,
+.eva-channel-search__field > select:focus-visible,
+.eva-channel-search__date-custom input:focus-visible {
+  border-color: var(--eva-text-primary);
+  outline: none;
+}
+
+.eva-channel-search__filter-actions {
+  justify-content: flex-end;
+  padding-top: var(--eva-space-3);
+  border-top: var(--eva-border-standard-w) solid var(--eva-border-faint);
+}
+
+.eva-channel-search__filter-actions button,
+.eva-channel-search__state button {
+  min-width: 64px;
+  height: 32px;
+  padding: 0 var(--eva-space-3);
+  border: var(--eva-border-standard-w) solid var(--eva-border-default);
+  border-radius: var(--eva-radius-small);
+  background: var(--eva-surface-primary);
+  font-size: 13px;
+}
+
+.eva-channel-search__filter-actions .wk-button--primary {
+  border-color: var(--eva-action-dark);
+  background: var(--eva-action-dark);
+  color: var(--eva-text-inverse);
+}
+
+.eva-channel-search__results {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.eva-channel-search__result {
+  position: relative;
+  box-sizing: border-box;
+  padding: var(--eva-space-4);
+  border-bottom: var(--eva-border-standard-w) solid var(--eva-border-faint);
+  background: var(--eva-surface-primary);
+}
+
+.eva-channel-search__result:hover,
+.eva-channel-search__result.is-selected {
+  background: var(--eva-surface-selection);
+}
+
+.eva-channel-search__result-main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--eva-space-3);
+}
+
+.eva-channel-search__avatar,
+.eva-channel-search__media-thumb,
+.eva-channel-search__file-icon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--eva-radius-control);
+  object-fit: cover;
+}
+
+.eva-channel-search__avatar {
+  border-radius: var(--eva-radius-full);
+}
+
+.eva-channel-search__file-icon {
+  background: var(--eva-surface-subtle);
+  color: var(--eva-action-selection);
+}
+
+.eva-channel-search__result-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.eva-channel-search__result-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--eva-space-2);
+  color: var(--eva-text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.eva-channel-search__result-meta span {
+  overflow: hidden;
+  color: var(--eva-text-primary);
+  font-weight: var(--eva-fw-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-channel-search__result-meta time {
+  flex: none;
+  color: var(--eva-text-muted);
+  font-size: 12px;
+}
+
+.eva-channel-search__result-text {
+  display: -webkit-box;
+  margin-top: var(--eva-space-1);
+  overflow: hidden;
+  color: var(--eva-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.eva-channel-search__result-text mark {
+  padding: 0;
+  border-radius: var(--eva-radius-small);
+  background: var(--eva-surface-search-mark);
+  color: var(--eva-text-primary);
+}
+
+.eva-channel-search__file-meta {
+  margin-top: var(--eva-space-1);
+  color: var(--eva-text-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.eva-channel-search__locate {
+  min-height: 24px;
+  margin-top: var(--eva-space-1);
+  padding: 0;
+  color: var(--eva-action-selection) !important;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.eva-channel-search__locate:hover {
+  text-decoration: underline;
+}
+
+.eva-channel-search__state {
+  box-sizing: border-box;
+  display: flex;
+  min-height: 240px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--eva-space-3);
+  flex-direction: column;
+  padding: var(--eva-space-6);
+  color: var(--eva-text-muted);
+  font-size: 13px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.eva-channel-search__empty-visual {
+  display: inline-flex;
+  width: 88px;
+  height: 72px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--eva-radius-panel);
+  background: var(--eva-surface-subtle);
+  color: var(--eva-text-muted);
+}
+
+.eva-channel-search__spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--eva-border-faint);
+  border-top-color: var(--eva-action-selection);
+  border-radius: var(--eva-radius-full);
+  animation: eva-channel-search-spin 700ms linear infinite;
+}
+
+.eva-channel-search__load-more {
+  display: block;
+  min-width: 96px;
+  height: 32px;
+  margin: var(--eva-space-4) auto;
+  padding: 0 var(--eva-space-3);
+  border: var(--eva-border-standard-w) solid var(--eva-border-default);
+  border-radius: var(--eva-radius-small);
+  color: var(--eva-text-secondary) !important;
+  font-size: 13px;
+}
+
+.eva-channel-search__load-more:hover {
+  background: var(--eva-overlay-hover);
+}
+
+.ch-head .ops button.op {
+  display: inline-flex;
+  appearance: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.wk-msg-row.eva-message-search-located::before {
+  background: var(--eva-surface-search-mark);
+  opacity: 1;
+}
+
+.wk-msg-row.eva-message-search-located {
+  scroll-margin-block: var(--eva-space-12);
+}
+
+.eva-channel-search button:focus-visible,
+.ch-head .ops button.op:focus-visible,
+.wk-msg-row.eva-message-search-located:focus-visible {
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+  outline-offset: var(--eva-space-0-5);
+}
+
+@keyframes eva-channel-search-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1199px) {
+  .ch-right-panel--search.eva-channel-search {
+    width: 336px;
+    min-width: 336px;
+    max-width: 336px;
+    flex-basis: 336px;
+  }
+
+  .eva-channel-search__tab {
+    font-size: 12px;
+  }
+
+  .eva-channel-search__filter-trigger {
+    min-width: 60px;
+    padding-inline: var(--eva-space-2);
+    font-size: 12px;
+  }
+
+  .eva-channel-search__filter-panel {
+    right: var(--eva-space-2);
+    width: calc(100% - var(--eva-space-4));
+  }
+}
+
+@media (max-width: 839px) {
+  body.eva-message-hierarchy-ready .eva-msg .ch-main {
+    position: relative;
+  }
+
+  .ch-right-panel--search.eva-channel-search {
+    position: absolute;
+    z-index: 20;
+    inset: 0 0 0 auto;
+    width: min(100%, 336px);
+    min-width: min(100%, 336px);
+    max-width: 336px;
+    box-shadow: var(--eva-shadow-floating);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eva-channel-search__spinner {
+    animation: none;
+  }
+
+  .wk-msg-row.eva-message-search-located {
+    scroll-behavior: auto;
+  }
+}

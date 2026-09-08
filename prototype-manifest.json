@@ -197,7 +197,7 @@
       "tag": "script",
       "name": "membership-controller",
       "file": "prototype/009-2-membership.js",
-      "bytes": 33327,
+      "bytes": 38314,
       "role": "prototype"
     },
     {
@@ -301,7 +301,7 @@
       "tag": "script",
       "name": "runtime-patch-im",
       "file": "prototype/009-5-patch-im.js",
-      "bytes": 89000,
+      "bytes": 107622,
       "role": "build-input"
     },
     {
@@ -597,7 +597,7 @@
       "tag": "style",
       "name": "gds-tokens",
       "file": "prototype/047-gds-tokens.css",
-      "bytes": 8103,
+      "bytes": 8373,
       "role": "prototype"
     },
     {
@@ -694,6 +694,14 @@
       "name": "project-files-ui",
       "file": "prototype/009-1-project-files-ui.js",
       "bytes": 31731,
+      "role": "prototype"
+    },
+    {
+      "order": 87,
+      "tag": "style",
+      "name": "channel-search",
+      "file": "prototype/054-channel-search.css",
+      "bytes": 14355,
       "role": "prototype"
     }
   ]

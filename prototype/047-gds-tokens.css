@@ -24,6 +24,8 @@
   --eva-c-ink: #1e1e1e;
   --eva-c-black: #000000;
   --eva-c-brand-blue: #1563eb;
+  --eva-c-selection-purple: #7f3bf5;
+  --eva-c-search-mark: #fff1b8;
   --eva-c-icon-ink: #1b1d24;
   --eva-c-mac-red: #ff5d56;
   --eva-c-mac-yellow: #feb52e;
@@ -47,6 +49,9 @@
   --eva-action-primary-text: var(--eva-c-white);
   --eva-action-dark: var(--eva-c-ink);              /* operation-card CTA */
   --eva-action-disabled-fill: rgba(30, 30, 30, 0.09); /* never a faded brand blue */
+  --eva-action-selection: var(--eva-c-selection-purple); /* link and selected-only accent */
+  --eva-surface-selection: rgba(127, 59, 245, 0.08);
+  --eva-surface-search-mark: var(--eva-c-search-mark);
 
   --eva-border-default: var(--eva-c-neutral-400);   /* outlines meant to be seen */
   --eva-border-subtle: var(--eva-c-neutral-300);    /* structural separation */

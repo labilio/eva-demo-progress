@@ -95,6 +95,164 @@ function EvaAssistantEditor({request,host,onClose}) {
     ? ReactDOM.createPortal(h('div',{className:'eva-assistant-editor-inline'},editor),inlineTarget)
     : h(Modal,{visible:true,title:null,footer:null,closable:false,closeOnEsc:!busy,maskClosable:!busy,onCancel:()=>!busy&&onClose(),width:920,className:'eva-editor-dialog',getPopupContainer:()=>host.current},editor);
 }
+
+function EvaChannelSearchPanel({store,scopeId,actorId,messages,locatedMessageId,onLocate,onClose}) {
+  const h=React.createElement;
+  const inputRef=reactExports.useRef(null),filterRef=reactExports.useRef(null),tabRefs=reactExports.useRef([]);
+  const [keyword,setKeyword]=reactExports.useState(''),[query,setQuery]=reactExports.useState('');
+  const [tab,setTab]=reactExports.useState('all'),[filterOpen,setFilterOpen]=reactExports.useState(false);
+  const emptyFilters={senderIds:[],sort:'desc',datePreset:'',startDate:'',endDate:''};
+  const [filters,setFilters]=reactExports.useState(emptyFilters),[draftFilters,setDraftFilters]=reactExports.useState(emptyFilters);
+  const [senderQuery,setSenderQuery]=reactExports.useState(''),[status,setStatus]=reactExports.useState('idle');
+  const [result,setResult]=reactExports.useState({items:[],nextCursor:null,hasMore:false,total:0,mediaKeywordBlocked:false});
+  const [retryKey,setRetryKey]=reactExports.useState(0),[limitHit,setLimitHit]=reactExports.useState(false);
+  const tabs=[['all','全部'],['message','消息'],['media','图片/视频'],['file','文件']];
+  const senders=reactExports.useMemo(()=>{
+    const map=new Map;
+    for(const message of messages||[]){const sender=message?.sender;if(sender?.uid&&!map.has(sender.uid))map.set(sender.uid,sender);}
+    return [...map.values()];
+  },[messages]);
+  const activeFilterCount=(filters.senderIds.length?1:0)+(filters.sort==='asc'?1:0)+(filters.datePreset||filters.startDate||filters.endDate?1:0);
+  const criteria=reactExports.useMemo(()=>{
+    let sentFrom='',sentTo='';
+    if(filters.datePreset){
+      const end=new Date(),start=new Date(end);
+      start.setHours(0,0,0,0);end.setHours(23,59,59,999);
+      if(filters.datePreset==='7')start.setDate(start.getDate()-6);
+      if(filters.datePreset==='30')start.setDate(start.getDate()-29);
+      sentFrom=start.toISOString();sentTo=end.toISOString();
+    }else{
+      if(filters.startDate)sentFrom=filters.startDate+'T00:00:00+08:00';
+      if(filters.endDate)sentTo=filters.endDate+'T23:59:59+08:00';
+    }
+    return{keyword:query,tab,senderIds:filters.senderIds,sentFrom,sentTo,sort:filters.sort,pageSize:20};
+  },[query,tab,filters]);
+  const shouldSearch=!!query||activeFilterCount>0||tab==='file'||tab==='media';
+
+  reactExports.useEffect(()=>{inputRef.current?.focus();},[]);
+  reactExports.useEffect(()=>{
+    const timer=window.setTimeout(()=>setQuery(keyword.trim()),250);
+    return()=>window.clearTimeout(timer);
+  },[keyword]);
+  reactExports.useEffect(()=>{
+    if(!shouldSearch){setStatus('idle');setResult({items:[],nextCursor:null,hasMore:false,total:0,mediaKeywordBlocked:false});return;}
+    setStatus('loading');
+    const timer=window.setTimeout(()=>{
+      try{setResult(store.searchMessages(scopeId,actorId,messages,criteria));setStatus('ready');}
+      catch(error){console.error('[EvaChannelSearch] search failed',error);setStatus('error');}
+    },120);
+    return()=>window.clearTimeout(timer);
+  },[store,scopeId,actorId,messages,criteria,shouldSearch,retryKey]);
+  reactExports.useEffect(()=>{
+    const keydown=event=>{
+      if(event.key!=='Escape')return;
+      event.preventDefault();
+      if(filterOpen)setFilterOpen(false);else onClose();
+    };
+    const pointer=event=>{if(filterOpen&&filterRef.current&&!filterRef.current.contains(event.target))setFilterOpen(false);};
+    document.addEventListener('keydown',keydown,true);document.addEventListener('pointerdown',pointer,true);
+    return()=>{document.removeEventListener('keydown',keydown,true);document.removeEventListener('pointerdown',pointer,true);};
+  },[filterOpen,onClose]);
+
+  const updateKeyword=event=>{
+    const value=event.target.value;
+    if(value.length>64){setKeyword(value.slice(0,64));setLimitHit(true);Toast.info('搜索关键词最多输入 64 个字符');return;}
+    setKeyword(value);setLimitHit(false);
+  };
+  const clearKeyword=()=>{setKeyword('');setQuery('');setLimitHit(false);inputRef.current?.focus();};
+  const openFilters=()=>{setDraftFilters({...filters,senderIds:[...filters.senderIds]});setSenderQuery('');setFilterOpen(value=>!value);};
+  const toggleSender=uid=>setDraftFilters(value=>({...value,senderIds:value.senderIds.includes(uid)?value.senderIds.filter(id=>id!==uid):[...value.senderIds,uid]}));
+  const applyFilters=()=>{setFilters({...draftFilters,senderIds:[...draftFilters.senderIds]});setFilterOpen(false);};
+  const clearFilters=()=>{setDraftFilters(emptyFilters);setFilters(emptyFilters);setFilterOpen(false);};
+  const changeTab=(next,index)=>{setTab(next);requestAnimationFrame(()=>tabRefs.current[index]?.focus());};
+  const onTabKeyDown=(event,index)=>{
+    if(!['ArrowLeft','ArrowRight'].includes(event.key))return;
+    event.preventDefault();const delta=event.key==='ArrowRight'?1:-1,next=(index+delta+tabs.length)%tabs.length;
+    changeTab(tabs[next][0],next);
+  };
+  const loadMore=()=>{
+    if(!result.nextCursor||status==='loading')return;
+    try{const next=store.searchMessages(scopeId,actorId,messages,{...criteria,cursor:result.nextCursor});setResult(value=>({...next,items:[...value.items,...next.items]}));}
+    catch(error){console.error('[EvaChannelSearch] load more failed',error);setStatus('error');}
+  };
+  const formatTime=value=>{
+    const date=new Date(value);if(Number.isNaN(date.getTime()))return'';
+    return new Intl.DateTimeFormat('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(date).replace(/\//g,'/');
+  };
+  const formatSize=size=>{if(!Number(size))return'';if(size<1024)return size+'B';if(size<1048576)return(Math.round(size/102.4)/10)+'KB';return(Math.round(size/104857.6)/10)+'MB';};
+  const plainText=value=>String(value||'')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g,'$1')
+    .replace(/(^|\n)\s{0,3}#{1,6}\s+/g,'$1')
+    .replace(/(^|\n)\s*[-*+]\s+/g,'$1')
+    .replace(/(^|\n)\s*>\s?/g,'$1')
+    .replace(/\|(?:\s*:?-+:?\s*\|)+/g,'')
+    .replace(/[*_`~]/g,'')
+    .replace(/\s*\|\s*/g,' · ')
+    .replace(/(?:\s*·\s*){2,}/g,' · ')
+    .replace(/\s+/g,' ').trim();
+  const contentOf=message=>message.file?.name||plainText(message.text||message.note||message.ref?.title||message.thread?.name)||'消息';
+  const highlight=(text,value)=>{
+    const source=String(text||''),needle=String(value||'').trim();if(!needle)return source;
+    const escaped=needle.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),parts=source.split(new RegExp('('+escaped+')','ig'));
+    return parts.map((part,index)=>part.toLocaleLowerCase('zh-CN')===needle.toLocaleLowerCase('zh-CN')?h('mark',{key:index},part):h(React.Fragment,{key:index},part));
+  };
+  const renderResult=message=>{
+    const file=message.kind==='file'||message.file,media=['image','video'].includes(message.kind),content=contentOf(message);
+    return h('article',{key:message.id,className:'eva-channel-search__result'+(locatedMessageId===message.id?' is-selected':''),'data-search-message-id':message.id},
+      h('div',{className:'eva-channel-search__result-main'},
+        file?h('span',{className:'eva-channel-search__file-icon','aria-hidden':'true'},h(FileText,{size:24})):media&&message.image?.url?h('img',{className:'eva-channel-search__media-thumb',src:message.image.url,alt:''}):h('img',{className:'eva-channel-search__avatar',src:window.EvaAvatar.personUri(message.sender?.uid||message.sender?.name),alt:''}),
+        h('div',{className:'eva-channel-search__result-content'},
+          h('div',{className:'eva-channel-search__result-meta'},h('span',null,message.sender?.name||'系统消息'),h('time',{dateTime:message.sentAt},formatTime(message.sentAt))),
+          h('div',{className:'eva-channel-search__result-text',title:content},highlight(content,query)),
+          file&&h('div',{className:'eva-channel-search__file-meta'},[message.file?.extension?.toUpperCase(),formatSize(message.file?.size)].filter(Boolean).join(' · ')),
+          h('button',{type:'button',className:'eva-channel-search__locate',onClick:()=>onLocate(message.id),'aria-label':'定位到聊天位置：'+content},'点击定位到聊天'))));
+  };
+  const renderState=()=>{
+    if(status==='loading')return h('div',{className:'eva-channel-search__state',role:'status'},h('span',{className:'eva-channel-search__spinner','aria-hidden':'true'}),h('span',null,'搜索中...'));
+    if(status==='error')return h('div',{className:'eva-channel-search__state',role:'alert'},h(Search$1,{size:44,'aria-hidden':'true'}),h('span',null,'搜索失败，请稍后重试'),h('button',{type:'button',className:'wk-button wk-button--secondary',onClick:()=>setRetryKey(value=>value+1)},'重试'));
+    if(status==='idle')return h('div',{className:'eva-channel-search__state'},h('span',{className:'eva-channel-search__empty-visual','aria-hidden':'true'},h(Search$1,{size:48})),h('span',null,'输入关键字或使用筛选查找消息记录'));
+    if(result.mediaKeywordBlocked)return h('div',{className:'eva-channel-search__state'},h('span',{className:'eva-channel-search__empty-visual','aria-hidden':'true'},h(Search$1,{size:48})),h('span',null,'图片和视频暂不支持按关键词搜索，可按发送人或日期查找。'));
+    if(!result.items.length)return h('div',{className:'eva-channel-search__state'},h('span',{className:'eva-channel-search__empty-visual','aria-hidden':'true'},h(Search$1,{size:48})),h('span',null,'暂无匹配结果'));
+    return h(React.Fragment,null,result.items.map(renderResult),result.hasMore&&h('button',{type:'button',className:'eva-channel-search__load-more',onClick:loadMore},'加载更多'));
+  };
+
+  const header=h('header',{className:'eva-channel-search__header'},
+    h('div',{className:'eva-channel-search__input-wrap'},
+      h(Search$1,{size:16,'aria-hidden':'true'}),
+      h('input',{ref:inputRef,type:'text',value:keyword,onChange:updateKeyword,placeholder:'输入关键字搜索','aria-label':'输入关键字搜索','aria-describedby':limitHit?'eva-search-limit':undefined}),
+      keyword&&h('button',{type:'button',className:'eva-channel-search__clear','aria-label':'清空搜索关键词',onClick:clearKeyword},h(X,{size:16}))),
+    h('button',{type:'button',className:'eva-channel-search__close','aria-label':'关闭搜索',onClick:onClose},h(X,{size:20})),
+    limitHit&&h('span',{id:'eva-search-limit',className:'eva-channel-search__limit',role:'status'},'最多 64 字符'));
+  const filterPanel=filterOpen&&h('section',{id:'eva-channel-search-filter',ref:filterRef,className:'eva-channel-search__filter-panel','aria-label':'搜索筛选条件'},
+    h('div',{className:'eva-channel-search__filter-head'},h('strong',null,'筛选'),h('button',{type:'button',onClick:clearFilters},'清空')),
+    h('div',{className:'eva-channel-search__field'},
+      h('label',{htmlFor:'eva-search-sender'},'发送者'),
+      h('input',{id:'eva-search-sender',type:'search',value:senderQuery,onChange:event=>setSenderQuery(event.target.value),placeholder:'搜索成员'}),
+      h('div',{className:'eva-channel-search__sender-list'},senders.filter(sender=>sender.name?.includes(senderQuery)).map(sender=>h('label',{key:sender.uid},
+        h('input',{type:'checkbox',checked:draftFilters.senderIds.includes(sender.uid),onChange:()=>toggleSender(sender.uid)}),
+        h('img',{src:window.EvaAvatar.personUri(sender.uid),alt:''}),h('span',null,sender.name))))),
+    h('div',{className:'eva-channel-search__field'},
+      h('label',{htmlFor:'eva-search-sort'},'排序'),
+      h('select',{id:'eva-search-sort',value:draftFilters.sort,onChange:event=>setDraftFilters(value=>({...value,sort:event.target.value}))},
+        h('option',{value:'desc'},'时间倒序'),h('option',{value:'asc'},'时间正序'))),
+    h('fieldset',{className:'eva-channel-search__field eva-channel-search__date'},
+      h('legend',null,'发送时间'),
+      h('div',{className:'eva-channel-search__date-presets'},[['1','今天'],['7','最近7天'],['30','最近30天']].map(([value,label])=>h('button',{key:value,type:'button',className:draftFilters.datePreset===value?'is-active':'',onClick:()=>setDraftFilters(filters=>({...filters,datePreset:value,startDate:'',endDate:''}))},label))),
+      h('div',{className:'eva-channel-search__date-custom'},
+        h('input',{type:'date','aria-label':'开始日期',value:draftFilters.startDate,onChange:event=>setDraftFilters(filters=>({...filters,datePreset:'',startDate:event.target.value}))}),
+        h('span',null,'至'),
+        h('input',{type:'date','aria-label':'结束日期',value:draftFilters.endDate,onChange:event=>setDraftFilters(filters=>({...filters,datePreset:'',endDate:event.target.value}))}))),
+    h('footer',{className:'eva-channel-search__filter-actions'},
+      h('button',{type:'button',className:'wk-button wk-button--secondary',onClick:()=>setFilterOpen(false)},'取消'),
+      h('button',{type:'button',className:'wk-button wk-button--primary',onClick:applyFilters},'确定')));
+  const toolbar=h('div',{className:'eva-channel-search__toolbar'},
+    h('div',{className:'eva-channel-search__tabs',role:'tablist','aria-label':'搜索类型'},tabs.map(([key,label],index)=>h('button',{key,type:'button',ref:node=>tabRefs.current[index]=node,role:'tab','aria-selected':tab===key,tabIndex:tab===key?0:-1,className:'eva-channel-search__tab'+(tab===key?' is-active':''),onClick:()=>changeTab(key,index),onKeyDown:event=>onTabKeyDown(event,index)},label))),
+    h('button',{type:'button',className:'eva-channel-search__filter-trigger'+(activeFilterCount?' is-active':''),'aria-expanded':filterOpen,'aria-controls':'eva-channel-search-filter',onClick:openFilters},
+      h(Funnel,{size:16,'aria-hidden':'true'}),h('span',null,'筛选'),activeFilterCount?h('span',{className:'eva-channel-search__filter-count'},activeFilterCount):null),
+    filterPanel);
+  return h('aside',{className:'ch-right-panel ch-right-panel--search eva-channel-search','aria-label':'查找聊天内容','data-screen-label':'群聊消息搜索'},header,toolbar,
+    h('div',{className:'eva-channel-search__results',role:'tabpanel','aria-label':tabs.find(item=>item[0]===tab)?.[1]+'搜索结果'},renderState()));
+}
 // Mirrors Octo ChatComposer.buildPlaceholder and its zh-CN translation keys.
 function evaIMPlaceholder(name) {
   return name ? '发送给 ' + name : '发送消息';
@@ -583,6 +741,36 @@ function EvaAITeamPage() {
     cut('projectId:ci.id.slice(6)}}))}}):null,headerStyle:', 'projectId:ci.id.slice(6)}}))}}):React.createElement(Button,{theme:"borderless",type:"tertiary",size:"small",icon:React.createElement(EllipsisIcon,{size:16}),"aria-label":"编辑分组 "+ci.name,onClick:()=>setEvaCategoryEditor(ci)}),headerStyle:', '其他会话和自定义分类可编辑');
     cut('setEvaIdentityProfile(null);},[evaMembershipProjectId,evaActorId])', 'setEvaIdentityProfile(null);setEvaCategoryEditor(null);},[evaMembershipProjectId,evaActorId])', '分类表单身份重置');
     cut('React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",visible:sn,onVisibleChange:cn,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),setEvaGroupCreateOpen(true)}},"新建群聊"),React.createElement(Dropdown.Item,{onClick:()=>{cn(false);setEvaCategoryEditor({});}},"创建分组"))},React.createElement("button",{type:"button",className:"ch-cat-gear eva-message-invite",title:"新建","aria-label":"新建"},React.createElement(Plus$c,{size:15})))','evaMembershipProjectId?React.createElement("button",{type:"button",className:"ch-cat-gear eva-message-invite",title:"新建群聊","aria-label":"新建群聊",onClick:()=>setEvaGroupCreateOpen(true)},React.createElement(Plus$c,{size:15})):React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",visible:sn,onVisibleChange:cn,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),setEvaGroupCreateOpen(true)}},"新建群聊"),React.createElement(Dropdown.Item,{onClick:()=>{cn(false);setEvaCategoryEditor({});}},"创建分组"))},React.createElement("button",{type:"button",className:"ch-cat-gear eva-message-invite",title:"新建","aria-label":"新建"},React.createElement(Plus$c,{size:15})))',"项目群聊直接打开拉人建群模板");
-    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    // 群聊与项目群聊共用同一套搜索状态和右侧面板；私聊、AI 会话不展示入口。
+    cut('const [evaIdentityProfile,setEvaIdentityProfile]=reactExports.useState(null),[evaTaskContext,setEvaTaskContext]=reactExports.useState(null),evaMemberStore=',
+      'const [evaIdentityProfile,setEvaIdentityProfile]=reactExports.useState(null),[evaTaskContext,setEvaTaskContext]=reactExports.useState(null),[evaLocatedMessageId,setEvaLocatedMessageId]=reactExports.useState(null),evaSearchTriggerRef=reactExports.useRef(null),evaMemberStore=', '群聊搜索状态所有者');
+    cut('Sa={...evaSelectedChannel,...evaMemberStore.chatSettings(evaSelectedChannel.id)},evaTaskMembership=',
+      'Sa={...evaSelectedChannel,...evaMemberStore.chatSettings(evaSelectedChannel.id)},evaCanSearchCurrent=!Sa.id.startsWith("dm-")&&Sa.chatType!=="direct"&&ct?.sidebarVariant!=="ai-sessions",evaTaskMembership=', '群聊搜索入口权限');
+    cut('Ta=evaMemberStore.visibleMessages(va,evaActorId,evaAllMessages)',
+      'Ta=evaMemberStore.normalizeMessages(va,evaMemberStore.visibleMessages(va,evaActorId,evaAllMessages))', '消息流使用稳定搜索索引');
+    cut('rowProps=(rt,ct)=>({isSend:', 'rowProps=(rt,ct,evaLocatedMessageId)=>({isSend:', '消息行接收搜索定位状态');
+    cut('isOnline:rt.sender.online,isBot:rt.sender.ai})',
+      'isOnline:rt.sender.online,isBot:rt.sender.ai,messageId:rt.id,isLocated:rt.id===evaLocatedMessageId})', '消息行透传稳定消息标识');
+    for(const continuation of ['!1','ro'])cut('...rowProps(ci,'+continuation+'),onAvatarClick:',
+      '...rowProps(ci,'+continuation+',evaLocatedMessageId),onAvatarClick:', '搜索定位消息行 '+continuation);
+    cut('onSenderNameClick:cn}){const{t:Cn}=useI18n()',
+      'onSenderNameClick:cn,messageId:evaMessageId,isLocated:evaIsLocated}){const{t:Cn}=useI18n()', '消息行定位属性');
+    cut('ln&&"wk-msg-row--active"),onContextMenu:pr,onClick:sr}',
+      'ln&&"wk-msg-row--active",evaIsLocated&&"eva-message-search-located"),"data-message-id":evaMessageId,tabIndex:evaIsLocated?-1:void 0,onContextMenu:pr,onClick:sr}', '定位消息视觉和可聚焦语义');
+    cut('La=ci=>{setEvaInlineProjectId(null),',
+      'La=ci=>{setEvaLocatedMessageId(null);setEvaInlineProjectId(null),', '切换群聊清理搜索定位');
+    cut('Za=(ci,Zi)=>{ct?.onSelectThread?.(Zi);setEvaInlineProjectId(null),',
+      'Za=(ci,Zi)=>{ct?.onSelectThread?.(Zi);setEvaLocatedMessageId(null),setEvaInlineProjectId(null),', '切换子区清理搜索定位');
+    cut('evaMemberReset=reactExports.useEffect(()=>{',
+      'evaSearchModeEffect=reactExports.useEffect(()=>{if(Mt!=="search")setEvaLocatedMessageId(null)},[Mt]),evaMemberReset=reactExports.useEffect(()=>{', '关闭搜索清理定位');
+    cut('setEvaIdentityProfile(null);setEvaCategoryEditor(null);},[evaMembershipProjectId,evaActorId])',
+      'setEvaIdentityProfile(null);setEvaCategoryEditor(null);setEvaLocatedMessageId(null);},[evaMembershipProjectId,evaActorId])', '身份切换重置搜索定位');
+    cut('no=za(Sa),ls=',
+      'evaCloseSearch=()=>{Dt("none");setEvaLocatedMessageId(null);requestAnimationFrame(()=>evaSearchTriggerRef.current?.focus())},evaLocateMessage=evaMessageId=>{setEvaLocatedMessageId(evaMessageId);requestAnimationFrame(()=>{const evaRows=[...(da.current?.querySelectorAll("[data-message-id]")||[])],evaRow=evaRows.find(evaItem=>evaItem.dataset.messageId===evaMessageId);evaRow?.scrollIntoView({behavior:"smooth",block:"center"});evaRow?.focus({preventScroll:true})})},no=za(Sa),ls=', '搜索关闭与消息定位');
+    cut('Vs=Mt==="none"?null:Mt==="threads"?',
+      'Vs=Mt==="none"?null:Mt==="search"?React.createElement(EvaChannelSearchPanel,{key:va,store:evaMemberStore,scopeId:va,actorId:evaActorId,messages:evaAllMessages,locatedMessageId:evaLocatedMessageId,onLocate:evaLocateMessage,onClose:evaCloseSearch}):Mt==="threads"?', '搜索右侧面板');
+    cut('React.createElement("span",{className:"ops"},evaCanOpenProjectTasks&&',
+      'React.createElement("span",{className:"ops"},evaCanSearchCurrent&&React.createElement("button",{type:"button",ref:evaSearchTriggerRef,className:`op${Mt==="search"?" is-on":""}`,title:"查找聊天内容","aria-label":"查找聊天内容","aria-expanded":Mt==="search",onClick:()=>Mt==="search"?evaCloseSearch():(setEvaLocatedMessageId(null),Dt("search"))},React.createElement(Search$1,{size:20,color:"currentColor"})),evaCanOpenProjectTasks&&', '群聊搜索顶部入口');
+    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+EvaChannelSearchPanel.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);
