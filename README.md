@@ -11,11 +11,11 @@ Eva 桌面端交互原型的在线进度预览。
 - 构建兼容依赖：`vendor/`（仅作为构建输入，不作为产品实现参照）
 - 模块加载顺序：`prototype-manifest.json`
 - 客户设计规范：`docs/design-system/gds-for-ai2.0/README.md`（GDS for AI 2.0）
-- AI／Codex 云端批注：`docs/AI_COMMENTS.md`
+- AI／Codex 本地评审批注：`docs/AI_COMMENTS.md`（不进入 Vercel 部署产物）
 - 文件库角色、权限动作与任务产出设计：[`docs/file-library-permissions/index.html`](docs/file-library-permissions/index.html)
 - 团队文件与文件库需求及修改计划：[`docs/团队文件与文件库需求文档.md`](docs/团队文件与文件库需求文档.md)
 
-本地使用 `npm start` 后访问 `http://127.0.0.1:4173`。应用通过 HTTP 加载；线上由 GitHub `main` 自动发布到 Vercel。
+本地使用 `npm start` 后访问 `http://127.0.0.1:4173`。应用通过 HTTP 加载；本地构建保留批注工具，Vercel 使用 `npm run build:deploy` 自动生成不含批注入口、资源和迁移文件的部署产物。
 
 ## 演示项目
 
@@ -28,6 +28,8 @@ Eva 桌面端交互原型的在线进度预览。
 ## 发布流程
 
 GitHub `main` 是唯一生产发布入口：本地修改经明确授权 commit 并 push 后，由 Vercel 自动部署。日常更新不运行 `vercel deploy`；该命令只用于用户明确要求的临时预览或 CLI 排障。
+
+所有 Vercel Preview 与 Production 均固定使用 `npm run build:deploy`，不得部署 `review/`、仅供批注使用的 `supabase/`，也不得在部署版 `index.html` 中加载批注脚本或样式。
 
 发布前后必须分别确认状态，不能把它们混称为“已经上线”：
 

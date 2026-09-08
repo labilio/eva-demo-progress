@@ -55,7 +55,7 @@
 - `009-0` 维护时间，`009-1` 维护云盘数据，`009-2` 维护供应链数据，`009-3` 维护 IM 数据；`009-4` 是补丁注册器，`009-5` 是 IM 补丁，`009-6` 是通用补丁，`009-7` 是侧栏/路由补丁，`009-8` 是自动化补丁。`009-0` 至 `009-3` 在浏览器加载，`009-4` 至 `009-8` 只在 Node 构建阶段运行。
 - `009-5` 至 `009-8` 只能通过 `window.__evaPatch` 注册，由 `tools/build-runtime.mjs` 在构建时按固定顺序执行并生成 `dist/vendor/eva-runtime.module.js`。浏览器禁止读取、拼接、编译 `eva-legacy-runtime.js`。修改补丁链后必须运行 `node tools/patch-hash.mjs` 与 `node --check dist/vendor/eva-runtime.module.js`。
 - 项目仓库为 `https://github.com/labilio/eva-demo-progress`；线上评审入口为 `https://eva-demo-progress.vercel.app/`。本地在仓库根目录运行 `npm start`，默认访问 `http://127.0.0.1:4173/`。
-- GitHub、Vercel 和本地使用同一套模块化源码。功能分支用于并行开发和评审，GitHub `main` 是 Vercel 生产发布的唯一来源；未经明确授权不得把功能分支合并或推送到 `main`。
+- GitHub、Vercel 和本地使用同一套产品模块化源码；独立批注工具只进入本地 `npm run build`，Vercel 必须使用 `npm run build:deploy` 排除批注入口、`review/` 与仅供批注使用的 `supabase/`。功能分支用于并行开发和评审，GitHub `main` 是 Vercel 生产发布的唯一来源；未经明确授权不得把功能分支合并或推送到 `main`。
 - `vendor/eva-legacy-runtime.js` 是当前构建兼容依赖，不是 Eva 产品或设计参照。AionUI 与 Eva 没有产品关系；新增能力不得照搬或参照 AionUI。
 - 本地预览必须通过 `npm start` 使用 HTTP，不以 `file://` 作为运行合同。
 - 项目群聊的现行结构为“大群 → 可选子区”。数据模型、标题、筛选和管理入口都必须遵循这一层级。
@@ -117,6 +117,8 @@ dist/index.html
 React HashRouter → ProtectedLayout → Layout → Outlet
                                              └─ 当前路由对应的唯一 Page
 ```
+
+Vercel Preview 与 Production 统一运行 `npm run build:deploy`。该命令复用同一运行时构建链，但在写入 `dist/` 时删除批注资源区块，不复制 `review/` 和仅服务批注的 `supabase/`；不得绕过该命令直接部署本地评审产物。
 
 ```text
 EvaApp
@@ -245,6 +247,7 @@ git diff --check
 - 用户要求“批注／评审但不改代码”时，AI 只能写批注，不得修改产品源码。每条 AI 批注必须带页面路径以及 `selector`、稳定元素 ID 或引用文案之一；创建前先查询该页面，避免重复意见。
 - AI 创建的批注默认署名 `Codex`、状态为“待讨论”。AI 不得自行设置“已确认”；只有本轮得到人工明确确认后，才能使用 `--confirmed-by-user` 更新为 `approved`。
 - 原型批注是独立评审工具层，不是 Eva 产品 UI。源码位于 `review/`，数据库迁移位于 `supabase/migrations/`；不得把批注列表塞进 Eva 页面布局，也不得劫持 Eva 原有“反馈问题”入口。
+- 批注工具只供本地评审构建使用。所有 Vercel Preview 与 Production 必须运行 `npm run build:deploy`，部署产物不得包含批注入口、`review/`、批注 Supabase 迁移或对批注服务的前端请求。
 - 页面右上角的轻量“批注”入口只负责打开覆盖式侧栏；侧栏默认隐藏、不得挤压或改写 Eva 布局。批注按当前 hash 页面归类，但不是按访问者隔离。
 - 所有同事访问同一 Vercel 站点时，读写的是同一个 Supabase 项目 `eva-demo-comments`，因此能看到同一页面下的共享批注。姓名必填，姓名只用于评审署名，不等同于账号体系。
 - 前端只能使用 Supabase publishable key；禁止把 secret/service-role key 写入浏览器代码。公开表必须启用 RLS，匿名访问仅允许 `SELECT` 和受约束的 `INSERT`，不得给客户端更新或删除权限。

@@ -27,7 +27,7 @@ npm test
    git switch -c feature/<简短任务名>
    ```
 
-3. 开发并运行 `npm test`、`npm run build` 和相关专项检查。
+3. 开发并运行 `npm test`、`npm run build`、`npm run build:deploy` 和相关专项检查。`build` 保留本地批注工具，`build:deploy` 生成不含批注的 Vercel 产物。
 4. 使用中文提交信息，将当前功能分支 push 到 GitHub：
 
    ```powershell

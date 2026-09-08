@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node tools/build-runtime.mjs",
+    "build:deploy": "node tools/build-runtime.mjs --deployment",
     "prestart": "npm run build",
     "start": "node tools/serve.mjs dist",
     "check:manifest": "node tools/check-manifest.mjs prototype-manifest.json",
