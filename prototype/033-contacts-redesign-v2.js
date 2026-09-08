@@ -22,7 +22,7 @@ function create({React:R,Button,Input,SearchIcon,store,ui}){
     !personas.length&&h('span',{className:'eva-contacts__clone-empty'},'暂无分身'),
     h('div',{id:groupId,className:'eva-contacts__clone-list'},visible.map(p=>h('button',{type:'button',key:p.id,className:'eva-contacts__ai-row eva-contact-identity-button',onClick:()=>onProfile(p.id),'aria-label':'查看 '+p.name+' 的资料'},
      h(IdentityAppearance,{profile:p,size:28}),h('span',{className:'eva-contacts__ai-identity'},h('span',{className:'eva-contacts__ai-name',title:p.name},p.name),root.EvaAIIdentity.badge(h))))),
-    !filtered&&personas.length>6&&h(Button,{className:'eva-contacts__disclosure',theme:'borderless',type:'tertiary',size:'small','aria-expanded':expanded,'aria-controls':groupId,onClick:()=>setExpanded(v=>!v)},expanded?'收起分身':'展开其余 '+hiddenCount+' 个分身')),h('span',{className:'eva-contacts__owner-total'},'共 '+personas.length+' 个 AI 分身'));
+    !filtered&&personas.length>6&&h(Button,{className:'eva-contacts__disclosure',theme:'borderless',type:'tertiary',size:'small','aria-expanded':expanded,'aria-controls':groupId,onClick:()=>setExpanded(v=>!v)},expanded?'收起分身':'展开其余 '+hiddenCount+' 个分身')),h('span',{className:'eva-contacts__owner-total'},'共 '+personas.length+' 个'));
  }
  return function Contacts(){
   R.useSyncExternalStore(store.subscribe,store.getSnapshot);
