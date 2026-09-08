@@ -21,3 +21,11 @@ test('default group avatars resolve live project colors, preserve custom avatars
  assert.notEqual(v.groupUri('group'),original);assert.equal(v.groupUri('standalone'),independent);
  custom='data:image/png;base64,example';assert.equal(v.groupUri('group'),custom);
 });
+test('project agent identity uses project surface and unscoped identities retain their fallback',()=>{
+ const window=setup();vm.runInNewContext(fs.readFileSync('prototype/003-my-assistant-identity.js','utf8'),{window});
+ const scoped=window.EvaAIIdentity.avatar(window.EvaAIIdentity.projectAgentAppearance({id:'prod',colorKey:'blue'}));
+ assert.match(scoped,/--eva-identity-avatar-background:light-dark\(#EEF2FF/);
+ const plain=window.EvaAIIdentity.avatar(window.EvaAIIdentity.projectAgentAppearance());
+ assert.doesNotMatch(plain,/--eva-identity-avatar-background/);
+ assert.match(scoped,/project-agent-bot.svg/);assert.match(plain,/project-agent-bot.svg/);
+});

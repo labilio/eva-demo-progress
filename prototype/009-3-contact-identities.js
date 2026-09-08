@@ -29,7 +29,7 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
   if(id.startsWith('project-agent:')){
    const pid=id.slice('project-agent:'.length),agent=store.projectAgent(pid);
    if(!agent||!store.canRead(pid,actor))return null;
-   return {id,name:agent.name,kind:'project-agent',subtitle:'项目管理专员',description:'同步项目事项、提醒与进展汇总，可以主动通知项目成员。项目群中可 @ 协作。',appearance:root.EvaAIIdentity.projectAgentAppearance(),owner:null,project:store.snapshot().projects[pid],action:link('进入项目','/collab?evaProject='+encodeURIComponent(pid))};
+   return {id,name:agent.name,kind:'project-agent',subtitle:'项目管理专员',description:'同步项目事项、提醒与进展汇总，可以主动通知项目成员。项目群中可 @ 协作。',appearance:agent.identityAppearance||root.EvaAIIdentity.projectAgentAppearance(),owner:null,project:store.snapshot().projects[pid],action:link('进入项目','/collab?evaProject='+encodeURIComponent(pid))};
   }
   return null;
  }
