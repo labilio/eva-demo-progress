@@ -345,6 +345,16 @@ function EvaAITeamPage() {
     }
 
     function cut(needle,replacement,label){source=root.__evaCut(source,needle,replacement,'IM '+label);}
+    const evaThreadIconStart=source.indexOf('ThreadIcon=({size:');
+    const evaThreadIconEnd=source.indexOf(';function ConvCompactItem',evaThreadIconStart);
+    if(evaThreadIconStart<0||evaThreadIconEnd<evaThreadIconStart)throw new Error('IM 统一子区图标边界不匹配');
+    cut(source.slice(evaThreadIconStart,evaThreadIconEnd),
+      'ThreadIcon=createLucideIcon("message-circle-arrow-down-right",[["path",{d:"M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719",key:"thread-bubble"}],["path",{d:"M8.5 8.5V11a3 3 0 0 0 3 3h5",key:"thread-turn"}],["path",{d:"m14 11.5 2.5 2.5-2.5 2.5",key:"thread-arrow"}]])',
+      '统一子区图标');
+    cut('title:"创建子区",icon:React.createElement(MessageSquare,{size:18})',
+      'title:"创建子区",icon:React.createElement(ThreadIcon,{size:18})', '创建子区菜单共享图标');
+    cut('className:"wk-thread-created-link"},"🧵",ci.thread.name',
+      'className:"wk-thread-created-link"},React.createElement(ThreadIcon,{size:14,"aria-hidden":true}),ci.thread.name', '子区创建消息共享图标');
     cut(
       'externalBadge:Mt,avatarUrl:It}){return React.createElement("div",{className:classNames("wk-conv-compact-item"',
       'externalBadge:Mt,avatarUrl:It,threadsExpanded:evaThreadsExpanded}){return React.createElement("div",{className:classNames("wk-conv-compact-item"',
