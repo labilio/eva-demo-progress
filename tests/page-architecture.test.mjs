@@ -234,8 +234,9 @@ test('个人文件夹与对话使用统一 Hover、选中及公共 Lucide 图标
   const convergence = read('prototype/043-final-layout-convergence.css');
   assert.match(workspace, /icon\('folder',18/);
   assert.match(convergence, /eva-personal-thread:hover[^}]*var\(--eva-overlay-hover\)/s);
-  assert.match(convergence, /eva-personal-thread\.is-selected[^}]*var\(--eva-overlay-pressed\)/s);
+  assert.match(convergence, /eva-personal-thread\.is-selected[^}]*var\(--eva-overlay-hover\)/s);
   assert.match(workspace, /aria-current="page"/);
+  assert.doesNotMatch(convergence, /eva-personal-folder\.is-current/);
 });
 
 test('个人仅创建文件夹与对话，移除助理创建和编辑入口', () => {
