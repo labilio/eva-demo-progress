@@ -235,7 +235,7 @@
       snapshot(actorId){return clone(records.map(item=>visibleRecord(item,actorId)));},role,can,personalSpace,
       isPinned(actorId,id){return Boolean(pinRecord(actorId,id));},
       setPinned(actorId,id,nextPinned){
-        const item=record(id);if(item.type==='folder')fail('文件夹不支持置顶');if(item.deletedAt)fail('回收站中的文件不能置顶');requireAction('read',item.spaceId,actorId);
+        const item=record(id);if(item.deletedAt)fail('回收站中的文件或文件夹不能置顶');requireAction('read',item.spaceId,actorId);
         const index=pins.findIndex(pin=>pin.actorId===actorId&&pin.fileId===id),desired=Boolean(nextPinned);
         if(desired&&index>=0)return true;if(!desired&&index<0)return false;
         if(desired)pins.push({actorId,fileId:id,pinnedAt:stamp()});else pins.splice(index,1);
@@ -246,15 +246,15 @@
         const spaceId=options.spaceId||null;
         return pins.filter(pin=>pin.actorId===actorId).sort((left,right)=>right.pinnedAt.localeCompare(left.pinnedAt)||left.fileId.localeCompare(right.fileId)).map(pin=>{
           const item=records.find(candidate=>candidate.id===pin.fileId);
-          if(!item||item.type==='folder'||item.deletedAt||!role(item.spaceId,actorId)||(spaceId&&item.spaceId!==spaceId))return null;
+          if(!item||item.deletedAt||!role(item.spaceId,actorId)||(spaceId&&item.spaceId!==spaceId))return null;
           return visibleRecord(item,actorId);
         }).filter(Boolean).map(clone);
       },
       sortEntries(actorId,entries,options={}){
         const pinnedFirst=options.pinnedFirst!==false;
         return clone(entries).sort((left,right)=>{
-          const leftPin=pinnedFirst&&left.type!=='folder'&&!left.deletedAt?pinRecord(actorId,left.id):null;
-          const rightPin=pinnedFirst&&right.type!=='folder'&&!right.deletedAt?pinRecord(actorId,right.id):null;
+          const leftPin=pinnedFirst&&!left.deletedAt?pinRecord(actorId,left.id):null;
+          const rightPin=pinnedFirst&&!right.deletedAt?pinRecord(actorId,right.id):null;
           if(Boolean(leftPin)!==Boolean(rightPin))return leftPin?-1:1;
           if(leftPin&&rightPin){const pinOrder=rightPin.pinnedAt.localeCompare(leftPin.pinnedAt);if(pinOrder)return pinOrder;}
           if(left.type!==right.type){if(left.type==='folder')return-1;if(right.type==='folder')return 1;}

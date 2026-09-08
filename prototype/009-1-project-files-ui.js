@@ -278,7 +278,7 @@
           else if(canOpen)items.push(menuButton('预览',()=>openPreview(item)));
           if(canDownload)items.push(menuButton('下载',()=>download(item)));
           items.push(menuButton('查看文件信息',()=>openDetails(item)));
-          if(item.type!=='folder')items.push(menuButton(item.pinned?'取消置顶':'置顶',()=>togglePin(item)));
+          items.push(menuButton(item.pinned?'取消置顶':'置顶',()=>togglePin(item)));
           items.push(menuButton('复制内部链接',()=>copyLink(item)));
           if(context.files.can('rename',item.spaceId,actor))items.push(menuButton('重命名',()=>setDialog({type:'rename',id:item.id,value:item.name})));
           if(context.files.can('move',item.spaceId,actor))items.push(menuButton('移动',()=>setDialog({type:'move',id:item.id,parentId:item.parent_id||0})));
@@ -290,7 +290,7 @@
         const open=menuId===item.id;
         const pinLabel=(item.pinned?'取消置顶 ':'置顶 ')+item.name;
         return h('span',{className:'eva-drive__row-actions'},
-          !trashMode&&item.type!=='folder'?h('button',{className:'eva-drive__pin-button'+(item.pinned?' is-pinned':''),type:'button','aria-label':pinLabel,title:item.pinned?'取消置顶':'置顶','aria-pressed':item.pinned?'true':'false',onClick:event=>{event.stopPropagation();togglePin(item);}},icon('pin')):null,
+          !trashMode?h('button',{className:'eva-drive__pin-button'+(item.pinned?' is-pinned':''),type:'button','aria-label':pinLabel,title:item.pinned?'取消置顶':'置顶','aria-pressed':item.pinned?'true':'false',onClick:event=>{event.stopPropagation();togglePin(item);}},icon('pin')):null,
           h('button',{className:'eva-drive__row-more',type:'button','aria-label':'更多操作：'+item.name,'aria-haspopup':'menu','aria-expanded':open,onClick:event=>{
             event.stopPropagation();
             if(open){closeMenu();return;}
@@ -316,7 +316,7 @@
             canRestore?h('button',{type:'button',onClick:()=>restoreItem(selected)},'恢复'):null,
             canDeleteForever?h('button',{className:'is-danger',type:'button',onClick:()=>setDialog({type:'delete',id:selected.id})},'永久删除'):null
           ):!deleted?h('div',{className:'eva-drive__management-actions'},
-            selected.type!=='folder'?h('button',{type:'button',onClick:()=>togglePin(selected)},selected.pinned?'取消置顶':'置顶'):null,
+            h('button',{type:'button',onClick:()=>togglePin(selected)},selected.pinned?'取消置顶':'置顶'),
             h('button',{type:'button',onClick:()=>setDialog({type:'rename',id:selected.id,value:selected.name})},'重命名'),
             h('button',{type:'button',onClick:()=>setDialog({type:'move',id:selected.id,parentId:selected.parent_id||0})},'移动'),
             selected.type!=='shortcut'?h('button',{type:'button',onClick:()=>context.files.copy(actor,selected.id)},'创建副本'):null,

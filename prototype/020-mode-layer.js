@@ -347,7 +347,7 @@
   }
 
   function scopeCopy() {
-    if (state.driveScope === 'pinned') return { title: '置顶文件', section: '置顶文件', subtitle: '汇总你在各个可访问空间中置顶的文件' };
+    if (state.driveScope === 'pinned') return { title: '置顶文件', section: '置顶文件', subtitle: '汇总你在各个可访问空间中置顶的文件和文件夹' };
     if (state.driveScope === 'personal') return { title: '个人空间', section: '个人文件', subtitle: '仅你可访问，可用于上传和整理个人资料' };
     if (state.driveScope === 'projects') return { title: '项目空间', section: '我的项目空间', subtitle: '选择一个已加入的项目后浏览和整理团队文件' };
     if (state.driveScope === 'workspace') return { title: workspaceName(state.workspaceId), section: '团队文件', subtitle: '权限继承项目角色，任务产出与群文件副本归属项目空间' };
@@ -385,7 +385,7 @@
       '<div class="eva-file-detail__identity' + (!isTrash ? ' eva-file-detail__identity--with-action' : '') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-file-detail__identity-content"><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(resourceFileType(resource) + (resource.type === 'folder' ? (isTrash && resource.trashedItemCount ? ' · 包含 ' + resource.trashedItemCount + ' 项' : '') : ' · ' + formatDriveBytes(resource.size))) + '</small></span>' + (!isTrash ? '<button class="eva-file-detail__copy-link" type="button" data-drive-action="copy-link" aria-label="复制内部链接" title="复制内部链接">' + icon('link') + '</button>' : '') + '</div>',
       !isTrash && (state.driveScope === 'pinned' || resource.projectId || canDownload) ? '<div class="eva-drive__inspector-actions">' + (state.driveScope === 'pinned' ? '<button class="eva-drive__text-button" type="button" data-drive-action="open-location">' + icon('external') + '打开所在位置</button>' : resource.projectId ? '<button class="eva-drive__text-button" type="button" data-drive-action="open-project">' + icon('external') + '在项目中打开</button>' : '') + (canDownload ? '<button class="eva-drive__ghost-button" type="button" data-drive-action="download">下载</button>' : '') + '</div>' : '',
       isTrash && (canRestore || canDeleteForever) ? '<div class="eva-drive__management-actions">' + (canRestore ? '<button type="button" data-drive-action="restore">恢复</button>' : '') + (canDeleteForever ? '<button class="is-danger" type="button" data-drive-action="delete-forever">永久删除</button>' : '') + '</div>' : '',
-      !isTrash ? '<div class="eva-drive__management-actions">' + (resource.type !== 'folder' ? '<button type="button" data-drive-action="toggle-pin">' + (resource.pinned ? '取消置顶' : '置顶') + '</button>' : '') + (canEdit ? '<button type="button" data-drive-action="rename">重命名</button><button type="button" data-drive-action="move">移动</button>' + (resource.type !== 'shortcut' ? '<button type="button" data-drive-action="copy">创建副本</button>' : '') + (resource.type !== 'shortcut' && resource.type !== 'folder' ? '<button type="button" data-drive-action="create-shortcut">创建快捷方式</button>' : '') + (canTrash ? '<button class="is-danger" type="button" data-drive-action="trash">移至回收站</button>' : '') : '') + '</div>' : '',
+      !isTrash ? '<div class="eva-drive__management-actions"><button type="button" data-drive-action="toggle-pin">' + (resource.pinned ? '取消置顶' : '置顶') + '</button>' + (canEdit ? '<button type="button" data-drive-action="rename">重命名</button><button type="button" data-drive-action="move">移动</button>' + (resource.type !== 'shortcut' ? '<button type="button" data-drive-action="copy">创建副本</button>' : '') + (resource.type !== 'shortcut' && resource.type !== 'folder' ? '<button type="button" data-drive-action="create-shortcut">创建快捷方式</button>' : '') + (canTrash ? '<button class="is-danger" type="button" data-drive-action="trash">移至回收站</button>' : '') : '') + '</div>' : '',
       resource.type !== 'folder' ? '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>标签</h3>' + (canEditTags && !isTrash ? '<button type="button" data-drive-action="tags">编辑</button>' : '') + '</div><div class="eva-file-detail__classification">' + (tagsHTML(resource) || '<span class="eva-file-muted">暂无标签</span>') + '</div></section>' : '',
       resource.type !== 'folder' ? '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>系统关联</h3><span class="eva-file-readonly">只读</span></div>' + relationDetailsHTML(resource) + '</section>' : '',
       resource.type === 'shortcut' ? shortcutDetailsHTML(resource) : '',
@@ -551,7 +551,7 @@
       if (canDownload) items.push(rowMenuItemHTML('download', '下载'));
       if (state.driveScope === 'pinned') items.push(rowMenuItemHTML('open-location', '打开所在位置'));
       items.push(rowMenuItemHTML('select', '查看文件信息'));
-      if (resource.type !== 'folder') items.push(rowMenuItemHTML('toggle-pin', resource.pinned ? '取消置顶' : '置顶'));
+      items.push(rowMenuItemHTML('toggle-pin', resource.pinned ? '取消置顶' : '置顶'));
       items.push(rowMenuItemHTML('copy-link', '复制内部链接'));
       if (context.files.can('rename', resource.spaceId, actor)) items.push(rowMenuItemHTML('rename', '重命名'));
       if (context.files.can('move', resource.spaceId, actor)) items.push(rowMenuItemHTML('move', '移动'));
@@ -563,7 +563,7 @@
     var anchor = state.menuAnchor;
     var menuStyle = anchor ? 'left:' + anchor.left + 'px;' + (anchor.top == null ? 'bottom:' + anchor.bottom + 'px;' : 'top:' + anchor.top + 'px;') : '';
     var pinLabel = (resource.pinned ? '取消置顶：' : '置顶：') + resource.name;
-    var pinButton = !isTrash && resource.type !== 'folder' ? '<button class="eva-drive__pin-button' + (resource.pinned ? ' is-pinned' : '') + '" type="button" data-drive-action="toggle-pin" aria-label="' + escapeHTML(pinLabel) + '" title="' + (resource.pinned ? '取消置顶' : '置顶') + '" aria-pressed="' + (resource.pinned ? 'true' : 'false') + '">' + icon('pin') + '</button>' : '';
+    var pinButton = !isTrash ? '<button class="eva-drive__pin-button' + (resource.pinned ? ' is-pinned' : '') + '" type="button" data-drive-action="toggle-pin" aria-label="' + escapeHTML(pinLabel) + '" title="' + (resource.pinned ? '取消置顶' : '置顶') + '" aria-pressed="' + (resource.pinned ? 'true' : 'false') + '">' + icon('pin') + '</button>' : '';
     return '<span class="eva-drive__row-actions">' + pinButton + '<button class="eva-drive__row-more" type="button" data-drive-action="row-menu" data-drive-menu-size="' + items.length + '" aria-label="更多操作：' + escapeHTML(resource.name) + '" aria-haspopup="menu" aria-expanded="' + open + '">' + icon('more') + '</button>' + (open ? '<span class="eva-drive__row-menu is-' + (anchor ? anchor.direction : 'down') + '" role="menu" aria-label="' + escapeHTML(resource.name) + '的操作" style="' + menuStyle + '">' + items.join('') + '</span>' : '') + '</span>';
   }
 
@@ -571,7 +571,7 @@
     if (!list.length) {
       var emptyCopy = state.query.trim()
         ? '没有匹配的文件'
-        : state.driveScope === 'pinned' ? '还没有置顶文件，可在文件列表中点击图钉添加' : state.driveScope === 'workspace' ? '当前项目暂无文件' : state.driveScope === 'shared-space' ? '当前共享空间暂无文件' : '暂无文件';
+        : state.driveScope === 'pinned' ? '还没有置顶文件或文件夹，可在文件列表中点击图钉添加' : state.driveScope === 'workspace' ? '当前项目暂无文件' : state.driveScope === 'shared-space' ? '当前共享空间暂无文件' : '暂无文件';
       return '<div class="eva-drive__empty">' + emptyCopy + '</div>';
     }
     var pinnedView = state.driveScope === 'pinned';
@@ -1076,7 +1076,7 @@
     if (projectId) openWorkspace(projectId, 'files');
   }
 
-  function openResourceLocation(resource) {
+  function openResourceLocation(resource, enterFolder) {
     var snapshot = fileContext().files.snapshot(fileActor()), folders = [], parentId = resource.parent_id || 0, currentId = parentId;
     while (currentId) {
       var folder = snapshot.find(function (item) { return item.id === currentId; });
@@ -1084,13 +1084,17 @@
       folders.unshift({ id: folder.id, name: folder.name });
       currentId = folder.parent_id || 0;
     }
+    if (enterFolder && resource.type === 'folder') {
+      parentId = resource.id;
+      folders.push({ id: resource.id, name: resource.name });
+    }
     if (resource.area === 'personal') state.driveScope = 'personal';
     if (resource.area === 'project') { state.driveScope = 'workspace'; state.workspaceId = resource.projectId; }
     if (resource.area === 'shared') { state.driveScope = 'shared-space'; state.sharedSpaceId = resource.spaceId; }
     state.parentId = parentId;
     state.crumbs = folders;
     state.query = '';
-    state.selectedId = resource.id;
+    state.selectedId = enterFolder ? null : resource.id;
     closeRowMenu(false);
     renderDrive();
   }
@@ -1238,6 +1242,7 @@
     if (name === 'download') { downloadDriveFile(resource); return; }
     if (name === 'detail-close') { state.selectedId = null; renderDrive(); }
     if (name === 'open-folder') {
+      if (state.driveScope === 'pinned') { openResourceLocation(resource, true); return; }
       if (resource.area === 'personal') state.driveScope = 'personal';
       if (resource.area === 'project') { state.driveScope = 'workspace'; state.workspaceId = resource.projectId; }
       if (resource.area === 'shared') { state.driveScope = 'shared-space'; state.sharedSpaceId = resource.spaceId; }
