@@ -2,7 +2,7 @@
 'use strict';
 let Component;
 root.EvaDigitalEmployeesUI={render(props,deps){Component||=create(deps);return deps.React.createElement(Component,props);}};
-function create({React:R,Button,Input,TextArea,Select,Checkbox,Switch,Modal,Table,Tag,Toast,ChannelsView,icons,members,navigatePersonal}){
+function create({React:R,Button,Input,TextArea,Select,Checkbox,Switch,Modal,Table,Tag,Toast,ChannelsView,icons,members}){
 const h=R.createElement, data=root.__EVA_DIGITAL_EMPLOYEES_DATA,store=root.EvaDigitalEmployeesStore;
 const buckets=[['all','全部','集团在用的数字员工'],['mine','我创建的','我自己建的、或从 Dify 接进来的'],['builtin','平台内置','Eva 官方出品，全员开箱即用'],['pub','数字员工','各业务域建好、发布出来给全公司用的台账'],['staffpub','员工发布的','同事自己在 Dify / 高码平台上捏的，发布出来给大家用']];
 const tabs={basic:'基本信息',persona:'人设与提示词',skills:'技能',conn:'连接与 MCP',mem:'记忆',perm:'权限与可见性',pub:'发布去处',dify:'Dify 连接',domain:'网关接入'};
@@ -33,11 +33,7 @@ const input=(key,placeholder,more={})=>h(Input,{value:draft[key]||'',onChange:v=
 const textarea=(key,placeholder)=>h(TextArea,{value:draft[key]||'',onChange:v=>update(key,v),placeholder,autosize:{minRows:3,maxRows:12}});
 const checks=(key,items)=>h('div',{className:'eva-digital-center__filters'},items.map(value=>h(Checkbox,{key:value,checked:(draft[key]||[]).includes(value),onChange:e=>update(key,e.target.checked?[...(draft[key]||[]),value]:(draft[key]||[]).filter(x=>x!==value))},value)));
 function start(rt){setType(rt.key);setTab(rt.cfg[0]);setDraft({...defaults(),...store.draft(rt.key)});setPicker({});setError('');}
-// The personal entry opens the same creator form as its Start button.
-R.useEffect(()=>{
-  if(view==='create'&&initialType==='mine') start(data.runtimes.find(item=>item.key==='mine'));
-  else if(view==='create') setType(null);
-},[view,initialType]);
+R.useEffect(()=>{if(view==='create') setType(null);},[view,initialType]);
 function save(){run(()=>{
   if(!draft.name.trim())throw new Error('请填写名称');
   if(type==='dify'&&!draft.difyApp)throw new Error('请先识别 Dify 应用');
@@ -45,10 +41,6 @@ function save(){run(()=>{
   if(type==='team'&&!members.canRead(draft.target,actor))throw new Error('请选择已加入的项目');
   if(type==='persona'){
     store.submitPersonaRequest(actor,draft);setType(null);Toast.success('申请已提交，等待 IT 审核（原型模拟）');return;
-  }
-  if(type==='mine'){
-    const a=root.EvaAITeam.saveLocalAssistant({mode:'create',name:draft.name,configuration:{...draft,creationCenter:structuredClone(draft),identity:draft.prompt||draft.description,description:draft.one,skills:draft.skills,collaboration:draft.prohibitions}});
-    store.saveDraft(type,defaults());setType(null);navigatePersonal(a.id,navigate);Toast.success('已创建，已放入个人 Eva 同学');return;
   }
   const a=store.create(type,draft);
   if(type==='team'){try{members.addEmployee(draft.target,actor,a.id);}catch(e){store.discardCreated(a.id);throw e;}}
@@ -72,7 +64,7 @@ function configPane(){
     h('p',null,'审核通过并完成资源开通后可使用；业务决定与结果确认由本人负责。'));
 
   if(tab==='skills'||tab==='conn')return resourcePicker(tab);
-  if(tab==='basic')return h(R.Fragment,null,field('名字',input('name','例如：合规审查助理')),field('头像',h('div',{className:'eva-digital-center__actions'},root.EvaAIIdentity.avatar(store.appearance({name:draft.name,ownership:type==='mine'?'personal':'organization'}),40,h),h('span',null,'Eva 默认机器人头像'))),field('一句话定位',input('one','合同条款风险识别与合规意见'),'会显示在身份列表和 @ 列表里，写清楚它是干嘛的'),field('详细介绍',textarea('description','它能处理什么、不能处理什么、需要什么输入')),field('归属',select('owner',[{value:'self',label:'我本人'},...allProjects.map(p=>({value:p.id,label:projectName(p)}))])),field('业务域',input('domain','数智化')),field('类型',select('tier',Object.entries(data.tiers).map(([value,v])=>({value,label:v.n})))));
+  if(tab==='basic')return h(R.Fragment,null,field('名字',input('name','例如：合规审查助理')),field('头像',h('div',{className:'eva-digital-center__actions'},root.EvaAIIdentity.avatar(store.appearance({name:draft.name,ownership:'organization'}),40,h),h('span',null,'Eva 默认机器人头像'))),field('一句话定位',input('one','合同条款风险识别与合规意见'),'会显示在身份列表和 @ 列表里，写清楚它是干嘛的'),field('详细介绍',textarea('description','它能处理什么、不能处理什么、需要什么输入')),field('归属',select('owner',[{value:'self',label:'我本人'},...allProjects.map(p=>({value:p.id,label:projectName(p)}))])),field('业务域',input('domain','数智化')),field('类型',select('tier',Object.entries(data.tiers).map(([value,v])=>({value,label:v.n})))));
   if(tab==='persona')return h(R.Fragment,null,field('系统提示词',textarea('prompt','你是……\n工作方式：……\n输出要求：表格化、说中文、给出处'),'这段决定它的说话方式和判断标准'),field('输出格式偏好',checks('formats',['卡片化','表格优先','中文','给出处','先结论后过程'])),field('不许做的事',textarea('prohibitions','不许编造数据；拿不准要说不知道；不许把内部数据发到项目外')));
   if(tab==='mem')return h(R.Fragment,null,field('记忆范围',select('memory',['项目记忆','个人记忆','不留记忆'])),field('从我这儿切多少给它',checks('memoryParts',['我负责的项目进展','我发过的结论','我的日程','我的邮件','我的本机文件']),'没勾的它看不到'),field('遗忘策略',select('retention',['永久保留','90 天后归档','项目结束即清空'])));
   if(tab==='perm')return h(R.Fragment,null,field('谁能 @ 它',select('visibility',['只有我','项目成员','全公司'])),field('它能替我做什么',checks('permissions',['读取资料','起草内容','建任务派活','发消息到群','发邮件','调用外部系统写入']),'涉及对外发送的动作，默认需要本人确认'),field('审计',select('audit',['记录全部调用与产出（推荐）','只记录写操作'])));
@@ -96,7 +88,7 @@ function market(){
   }),!list.length&&h('div',{className:'eva-digital-center__empty'},query?'没搜到「'+query+'」':'这个筛选下还没有')));
 }
 function creator(){const rt=data.runtimes.find(r=>r.key===type);
-  if(!rt)return h('main',{className:'eva-digital-center__main eva-creator-catalog'},h('header',{className:'eva-digital-center__head'},h('div',null,h('h1',null,'Agent 创建中心'),h('p',null,'选择要创建或接入的身份，分别配置使用范围与能力。'))),store.personaRequests(actor).length>0&&h('section',{className:'eva-digital-center__section'},h('h3',null,'云端分身申请'),h('p',null,'当前为原型演示，申请保存在本机，未发送真实 IT 工单。'),...store.personaRequests(actor).map(request=>h('div',{key:request.id,className:'eva-persona-request'},h('strong',null,request.name),h('span',null,request.domain),h('span',{role:'status'},'等待 IT 审核')))),...['self','public'].map(tier=>h('section',{key:tier,className:'eva-digital-center__section'},h('h3',null,tier==='self'?'个人助理与云端分身':'项目与专业能力'),h('p',null,tier==='self'?'助理准备个人工作，分身承接授权范围内的沟通与交接。':'为项目补充协作能力，或接入已有的专业应用。'),h('div',{className:'eva-digital-center__cards eva-creator-grid eva-creator-grid--'+tier},data.runtimes.filter(r=>r.tier===tier).map(rt=>h('article',{key:rt.key,className:'eva-digital-center__card eva-creator-card'},h('div',{className:'eva-creator-card__heading'},h(icons[rt.key==='mine'?'Sparkles':['persona','team'].includes(rt.key)?'Users':rt.key==='dify'?'Grid':'Link'],{size:22}),h('h3',null,rt.name)),h('p',{className:'eva-creator-card__tag'},rt.tag),h('p',null,rt.d),h('ul',null,rt.can.map(v=>h('li',{key:v},v))),h('p',{className:'eva-creator-card__boundary'},rt.cant.join('；')),btn(rt.mode==='创建'?'开始创建':'开始接入',()=>start(rt),{theme:'solid'})))))));
+  if(!rt)return h('main',{className:'eva-digital-center__main eva-creator-catalog'},h('header',{className:'eva-digital-center__head'},h('div',null,h('h1',null,'Agent 创建中心'),h('p',null,'选择要创建或接入的身份，分别配置使用范围与能力。'))),store.personaRequests(actor).length>0&&h('section',{className:'eva-digital-center__section'},h('h3',null,'云端分身申请'),h('p',null,'当前为原型演示，申请保存在本机，未发送真实 IT 工单。'),...store.personaRequests(actor).map(request=>h('div',{key:request.id,className:'eva-persona-request'},h('strong',null,request.name),h('span',null,request.domain),h('span',{role:'status'},'等待 IT 审核')))),...['self','public'].map(tier=>h('section',{key:tier,className:'eva-digital-center__section'},h('h3',null,tier==='self'?'云端分身':'项目与专业能力'),h('p',null,tier==='self'?'分身承接授权范围内的沟通与交接。':'为项目补充协作能力，或接入已有的专业应用。'),h('div',{className:'eva-digital-center__cards eva-creator-grid eva-creator-grid--'+tier},data.runtimes.filter(r=>r.tier===tier).map(rt=>h('article',{key:rt.key,className:'eva-digital-center__card eva-creator-card'},h('div',{className:'eva-creator-card__heading'},h(icons[['persona','team'].includes(rt.key)?'Users':rt.key==='dify'?'Grid':'Link'],{size:22}),h('h3',null,rt.name)),h('p',{className:'eva-creator-card__tag'},rt.tag),h('p',null,rt.d),h('ul',null,rt.can.map(v=>h('li',{key:v},v))),h('p',{className:'eva-creator-card__boundary'},rt.cant.join('；')),btn(rt.mode==='创建'?'开始创建':'开始接入',()=>start(rt),{theme:'solid'})))))));
 
   return h(R.Fragment,null,h('aside',{className:'eva-digital-center__rail'},btn('Agent 创建中心',()=>setType(null),{icon:h(icons.ArrowLeft,{size:16}),theme:'borderless'}),h('h2',null,rt.name),rt.cfg.map(k=>btn(tabs[k],()=>setTab(k),{key:k,'aria-current':tab===k?'step':undefined,theme:tab===k?'light':'borderless',type:'tertiary'})),h('p',null,type==='persona'?'配置完成后提交 IT 审核':['persona','skills','conn','mem','perm'].filter(k=>!rt.cfg.includes(k)).map(k=>tabs[k]).join('、')),['dify','domain'].includes(type)&&h('p',null,'由'+(type==='dify'?'Dify':'建设方')+'维护，这里不配')),h('main',{className:'eva-digital-center__main'},h('header',{className:'eva-digital-center__head'},h('div',null,h('h1',null,rt.name),h('p',null,rt.tag)),h('div',{className:'eva-digital-center__actions'},btn('放弃',()=>{setType(null);setError('');},{}),btn('存草稿',()=>{store.saveDraft(type,draft);Toast.success('已存草稿');}),btn(type==='persona'?'提交 IT 审核':rt.mode==='创建'?'创建并启用':'接入并启用',save,{theme:'solid',}))),error&&h('p',{role:'alert'},error),h('div',{className:'eva-digital-center__form'},h('h3',null,tabs[tab]),configPane())));
 }

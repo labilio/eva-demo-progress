@@ -65,7 +65,7 @@
 
   /* ============================================================
      个人 Eva · 页面中间栏
-     助理与它名下的会话属于个人 Eva 页面，由 052 在 Router Outlet 内渲染；
+     个人文件夹与对话属于个人 Eva 页面，由 052 在 Router Outlet 内渲染；
      全局 260px 侧栏只保留一级导航。
      色值／间距／圆角一律取 047-gds-tokens.css，本块不留十六进制。
      原 041 的基础几何按 260 宽重算：折叠行 34、会话行 32、
@@ -81,205 +81,45 @@
     font-family: var(--eva-font-sans);
   }
 
-  /* 助理树与会话历史顺次排布，滚动统一交给 009-7 注入的外层滚动容器：
-     面板与两段内容都不抢 flex，自然高度往下排，整列一起滚。 */
-  .eva-personal-sider-panel__body,
-  .eva-personal-sider-panel__history {
-    display: flex;
-    min-height: 0;
-    flex: 0 0 auto;
-    flex-direction: column;
+  /* 个人对话文件夹：顶部操作固定，只有列表滚动。 */
+  .eva-personal-sider-panel { overflow: hidden; padding: 0; }
+  .eva-personal-sider-panel__body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--eva-space-2); }
+  .eva-personal-rail-top { flex: 0 0 auto; padding: var(--eva-space-3) var(--eva-space-2); border-bottom: 1px solid var(--eva-border-faint); }
+  .eva-personal-rail-new, .eva-personal-folder__main, .eva-personal-thread__main {
+    display: flex; align-items: center; gap: var(--eva-space-2); min-width: 0; border: 0; background: transparent;
+    color: var(--eva-text-primary); text-align: left; cursor: pointer; font: var(--eva-fw-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--eva-font-sans);
   }
-
-  /* ---- 我的助理树 ---- */
-  /* 不再自己开滚动容器：滚动由外层统一承担，否则 260 宽下会出现嵌套滚动条，
-     助理树被压到几十像素高。 */
-  .eva-personal-sider-panel .eva-assistant-tree {
-    box-sizing: border-box;
-    min-height: 0;
-    flex: 0 0 auto;
-    overflow: visible;
-    padding: 0 0 var(--eva-space-3);
-  }
-  /* 创建助理操作保持在内容流中，不与页面外壳的滚动容器抢定位。 */
-  .eva-personal-sider-panel .eva-personal-sidebar-actions {
-    position: static;
-    z-index: 2;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--eva-space-1);
-    margin: 0 0 var(--eva-space-2);
-    padding: 0 0 var(--eva-space-2);
-    border-bottom: var(--eva-border-standard-w) solid var(--eva-border-faint);
-    background: var(--eva-surface-primary);
-  }
-  .eva-personal-sider-panel .eva-assistant-tree__create {
-    display: inline-flex;
-    min-width: 0;
-    height: 30px;
-    align-items: center;
-    justify-content: center;
-    gap: var(--eva-space-1);
-    padding: 0 var(--eva-space-2);
-    border: 0;
-    border-radius: var(--eva-radius-key);
-    font: var(--eva-fw-medium) 13px/20px var(--eva-font-sans);
-    white-space: nowrap;
-    cursor: pointer;
-  }
-  .eva-personal-sider-panel .eva-assistant-tree__create svg {
-    width: var(--eva-icon-content);
-    height: var(--eva-icon-content);
-    flex: 0 0 var(--eva-icon-content);
-  }
-  .eva-personal-sider-panel .eva-assistant-tree__create {
-    background: var(--eva-overlay-hover);
-    color: var(--eva-text-primary);
-  }
-  .eva-personal-sider-panel .eva-assistant-tree__create:hover { background: var(--eva-overlay-pressed); }
-  .eva-personal-sider-panel .eva-assistant-folder {
-    box-sizing: border-box;
-    padding: 0 0 var(--eva-space-0-5);
-  }
-  .eva-personal-sider-panel .eva-assistant-folder + .eva-assistant-folder { margin-top: var(--eva-space-1-5); }
-  .eva-personal-sider-panel .eva-personal-assistant-folder__row {
-    position: relative;
-    display: flex;
-    align-items: center;
-    border-radius: var(--eva-radius-key);
-    transition: background-color 120ms ease;
-  }
-  .eva-personal-sider-panel .eva-personal-assistant-folder__row:hover { background: var(--eva-overlay-hover); }
-  .eva-personal-sider-panel .eva-assistant-folder__button {
-    box-sizing: border-box;
-    display: flex;
-    min-width: 0;
-    min-height: 34px;
-    flex: 1;
-    align-items: center;
-    gap: var(--eva-space-2);
-    padding: 0 var(--eva-space-2);
-    border: 0;
-    border-radius: var(--eva-radius-key);
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 140ms ease, color 140ms ease;
-  }
-  .eva-personal-sider-panel .eva-personal-assistant-folder__row:hover .eva-assistant-folder__button { background: transparent; }
-  .eva-personal-sider-panel .eva-assistant-folder__button:focus-visible {
-    outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
-    outline-offset: -2px;
-  }
-  .eva-personal-sider-panel .eva-assistant-folder__icon {
-    display: inline-flex;
-    width: var(--eva-icon-nav);
-    height: var(--eva-icon-nav);
-    flex: 0 0 var(--eva-icon-nav);
-    align-items: center;
-    justify-content: center;
-    color: var(--eva-text-secondary);
-  }
-  .eva-personal-sider-panel .eva-assistant-folder__name {
-    min-width: 0;
-    flex: 1;
-    overflow: hidden;
-    color: var(--eva-text-primary);
-    font: var(--eva-fw-medium) 13px/20px var(--eva-font-sans);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .eva-personal-sider-panel .eva-assistant-folder__chevron {
-    display: inline-flex;
-    width: var(--eva-icon-chevron);
-    height: var(--eva-icon-chevron);
-    flex: 0 0 var(--eva-icon-chevron);
-    align-items: center;
-    justify-content: center;
-    color: var(--eva-text-muted);
-    transform: rotate(90deg);
-    transition: transform 120ms ease;
-  }
-  .eva-personal-sider-panel .eva-assistant-folder.is-collapsed .eva-assistant-folder__chevron { transform: rotate(0deg); }
-  .eva-personal-sider-panel .eva-assistant-folder.is-collapsed .eva-assistant-folder__conversations { display: none; }
-  .eva-personal-sider-panel .eva-personal-assistant-folder__actions {
-    display: flex;
-    gap: var(--eva-space-0-5);
-    padding-right: var(--eva-space-1);
-    opacity: 0;
-    transition: opacity 120ms ease;
-  }
-  .eva-personal-sider-panel .eva-personal-assistant-folder__row:hover .eva-personal-assistant-folder__actions,
-  .eva-personal-sider-panel .eva-personal-assistant-folder__row:focus-within .eva-personal-assistant-folder__actions,
-  .eva-personal-sider-panel .eva-personal-assistant-folder.is-selected-assistant .eva-personal-assistant-folder__actions { opacity: 1; }
-  .eva-personal-sider-panel .eva-personal-assistant-folder__actions button {
-    display: grid;
-    width: 24px;
-    height: 24px;
-    place-items: center;
-    padding: 0;
-    border: 0;
-    border-radius: var(--eva-radius-key);
-    background: transparent;
-    color: var(--eva-text-muted);
-    font: inherit;
-    cursor: pointer;
-  }
-  .eva-personal-sider-panel .eva-personal-assistant-folder__actions button:hover {
-    background: var(--eva-overlay-pressed);
-    color: var(--eva-text-primary);
-  }
-  .eva-personal-sider-panel .eva-personal-assistant-folder.is-selected-assistant .eva-personal-assistant-folder__new-chat {
-    background: var(--eva-overlay-pressed);
-    color: var(--eva-text-primary);
-  }
-  .eva-personal-sider-panel .eva-assistant-folder__conversations {
-    display: flex;
-    flex-direction: column;
-    gap: var(--eva-space-0-5);
-    margin: var(--eva-space-0-5) 0 0 var(--eva-space-6);
-    padding: 0;
-  }
-  .eva-personal-sider-panel .eva-assistant-conversation {
-    box-sizing: border-box;
-    display: grid;
-    width: 100%;
-    min-height: 32px;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: var(--eva-space-1);
-    padding: 0 var(--eva-space-2);
-    border: 0;
-    border-radius: var(--eva-radius-key);
-    background: transparent;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 140ms ease, color 140ms ease;
-  }
-  .eva-personal-sider-panel .eva-assistant-conversation:hover { background: var(--eva-overlay-hover); }
-  .eva-personal-sider-panel .eva-assistant-conversation.is-selected { background: var(--eva-overlay-pressed); }
-  .eva-personal-sider-panel .eva-assistant-conversation:focus-visible {
-    outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
-    outline-offset: -2px;
-  }
-  .eva-personal-sider-panel .eva-assistant-conversation__title {
-    overflow: hidden;
-    color: var(--eva-text-secondary);
-    font: var(--eva-fw-regular) 13px/20px var(--eva-font-sans);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .eva-personal-sider-panel .eva-assistant-conversation__time {
-    color: var(--eva-text-muted);
-    font: var(--eva-fw-regular) 11px/20px var(--eva-font-sans);
-    white-space: nowrap;
-  }
-  .eva-personal-sider-panel .eva-assistant-conversation:hover .eva-assistant-conversation__title,
-  .eva-personal-sider-panel .eva-assistant-conversation.is-selected .eva-assistant-conversation__title { color: var(--eva-text-primary); }
-  .eva-personal-sider-panel .eva-assistant-conversation.is-selected .eva-assistant-conversation__title { font-weight: var(--eva-fw-medium); }
+  .eva-personal-rail-new { width: 100%; height: 36px; padding: 0 var(--eva-space-2); border-radius: var(--eva-radius-control); font-weight: var(--eva-fw-medium); }
+  .eva-personal-rail-new:hover, .eva-personal-folder__row:hover, .eva-personal-thread:hover { background: var(--eva-overlay-hover); }
+  .eva-personal-rail-section { display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: var(--eva-space-1) var(--eva-space-2); color: var(--eva-text-muted); font: var(--eva-fw-medium) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--eva-font-sans); }
+  .eva-personal-folder { margin-bottom: var(--eva-space-3); }
+  .eva-personal-folder__row { display: flex; align-items: center; border-radius: var(--eva-radius-control); }
+  .eva-personal-folder.is-current > .eva-personal-folder__row { background: var(--eva-overlay-hover); }
+  .eva-personal-folder__main { flex: 1; min-height: 36px; padding: 0 var(--eva-space-2); font-weight: var(--eva-fw-medium); }
+  .eva-personal-folder__main span, .eva-personal-thread__main span { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .eva-personal-folder__main svg { flex-shrink: 0; }
+  .eva-personal-folder__threads { padding-left: var(--eva-space-6); }
+  .eva-personal-rail-icon { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--eva-radius-key); background: transparent; color: var(--eva-text-secondary); cursor: pointer; }
+  .eva-personal-rail-icon:hover { background: var(--eva-overlay-pressed); }
+  .eva-personal-folder__new { margin-right: var(--eva-space-1); opacity: 0; }
+  .eva-personal-folder__row:hover .eva-personal-folder__new, .eva-personal-folder__row:focus-within .eva-personal-folder__new { opacity: 1; }
+  .eva-personal-thread { position: relative; display: flex; align-items: center; min-height: 32px; border-radius: var(--eva-radius-control); }
+  .eva-personal-thread.is-selected { background: var(--eva-overlay-pressed); }
+  .eva-personal-thread__main { flex: 1; min-height: 32px; padding: 0 var(--eva-space-2); }
+  .eva-personal-thread__time { margin-right: var(--eva-space-2); color: var(--eva-text-muted); font: var(--eva-fw-regular) 11px/20px var(--eva-font-sans); white-space: nowrap; }
+  .eva-personal-thread__more { position: absolute; right: 2px; opacity: 0; }
+  .eva-personal-thread:hover .eva-personal-thread__more, .eva-personal-thread:focus-within .eva-personal-thread__more { opacity: 1; background: var(--eva-conversation-rail-bg); }
+  .eva-personal-thread:hover .eva-personal-thread__time, .eva-personal-thread:focus-within .eva-personal-thread__time { visibility: hidden; }
+  .eva-personal-thread:hover .eva-personal-thread__main, .eva-personal-thread:focus-within .eva-personal-thread__main { padding-right: 30px; }
+  .eva-personal-rail-more { display: block; padding: var(--eva-space-2); border: 0; background: transparent; color: var(--eva-text-muted); font: inherit; cursor: pointer; }
+  .eva-personal-rail-empty { padding: var(--eva-space-2); color: var(--eva-text-muted); }
+  .eva-personal-rail-form { display: flex; flex-direction: column; gap: var(--eva-space-2); margin: var(--eva-space-1) 0 var(--eva-space-3); padding: var(--eva-space-3); background: var(--eva-surface-primary); border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-control); }
+  .eva-personal-rail-form input, .eva-personal-rail-form select { box-sizing: border-box; width: 100%; min-width: 0; height: 32px; border: 1px solid var(--eva-border-default); border-radius: var(--eva-radius-key); background: var(--eva-surface-primary); color: var(--eva-text-primary); padding: 0 var(--eva-space-2); font: inherit; }
+  .eva-personal-rail-form__actions { display: flex; justify-content: flex-end; gap: var(--eva-space-2); }
+  .eva-personal-rail-form__actions button { min-height: 32px; padding: 0 var(--eva-space-3); border: 0; border-radius: var(--eva-radius-key); background: var(--eva-overlay-hover); color: var(--eva-text-primary); font: inherit; cursor: pointer; }
+  .eva-personal-rail-form__actions button[type="submit"] { background: var(--eva-action-primary); color: var(--eva-text-inverse); }
+  .eva-personal-rail-form [role="alert"]:empty { display: none; }
+  .eva-personal-sider-panel button:focus-visible, .eva-personal-rail-form input:focus-visible, .eva-personal-rail-form select:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
   .eva-create-group-member .eva-identity-avatar.eva-create-group-member__avatar {
     width: 32px;
     height: 32px;

@@ -30,7 +30,8 @@ requireText('wk-category-header__identity-avatar', 'the shared category header c
 requireText("className:'eva-ai-team__session'", 'My AI is missing its conversation selection rows');
 requireText("roleGroup('assistant','个人助理',teamIdentities.filter(i=>i.role==='assistant'))", 'My AI does not expose its personal assistant group');
 requireText("className:'eva-ai-team__fixed-group-tree'", 'My AI does not expose its fixed team group');
-requireText('eva-my-ai-sidebar-actions', 'My AI is missing separate create-assistant and new-session actions');
+requireText('data-eva-new-folder-chat', 'Personal Eva is missing folder-scoped new conversation actions');
+forbidText('data-eva-new-assistant-chat', 'Personal Eva still organizes chats by multiple assistants');
 requireText('eva-my-ai-identity-toggle', 'My AI identity expand/collapse control is missing from the right side');
 requireText('function EvaAITeamPage()', 'My AI has no React role controller');
 requireText('!ct?.conversationOnly&&React.createElement', 'My AI mounts the legacy sidebar alongside its role sidebar');

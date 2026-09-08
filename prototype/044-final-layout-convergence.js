@@ -13,10 +13,6 @@
     });
   }
 
-  function openAssistantEditor(options) {
-    if (window.__evaOpenAssistantEditor) window.__evaOpenAssistantEditor(options || {});
-  }
-
   function tuneLegacyAutomation() {
     document.querySelectorAll('.eva-auto-tabs').forEach(function (tabs) {
       tabs.classList.add('eva-auto-segmented');
@@ -95,13 +91,6 @@
   });
 
   document.addEventListener('click', function (event) {
-    var editAssistant = event.target.closest('.eva-personal-sider-panel [data-eva-edit-assistant]');
-    if (editAssistant) {
-      event.preventDefault();
-      var folder = editAssistant.closest('[data-eva-assistant-id]');
-      openAssistantEditor({ mode: 'edit', id: folder.dataset.evaAssistantId, name: folder.dataset.evaAssistantName, presentation: 'personal-workspace' });
-      return;
-    }
     var legacyTab = event.target.closest('.eva-auto-tabs .eva-auto-tab');
     if (legacyTab) requestAnimationFrame(tuneLegacyAutomation);
   }, true);

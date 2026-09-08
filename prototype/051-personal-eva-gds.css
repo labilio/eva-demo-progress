@@ -470,3 +470,9 @@
   width: 100%;
   max-width: 100%;
 }
+
+/* The native select owns keyboard navigation; selecting a folder never replaces the textarea. */
+.eva-personal-folder-picker { position: relative; max-width: min(240px, 45%); cursor: pointer; }
+.eva-personal-folder-picker select { min-width: 0; max-width: 100%; appearance: none; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; outline: none; text-overflow: ellipsis; padding: 0 18px 0 0; }
+.eva-personal-folder-picker > .eva-i-chevron { position: absolute; right: 0; pointer-events: none; }
+.eva-personal-folder-picker:focus-within { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; border-radius: var(--eva-radius-key); }

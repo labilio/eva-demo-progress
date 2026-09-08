@@ -61,10 +61,9 @@
   });
   function seed(time, options = {}) {
     const ownerName=options.ownerName||window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName||'王宜林';
-    const defaultName=options.profile==='review'?'通用助理':ownerName+'的通用助理';
+    const defaultName='Eva 同学';
     const localAssistants = [
-      { id: 'assistant-general', name: defaultName, isDefault:true, version: 1, online: true, configuration: configuration({ identity: defaultName, skills: ['沟通', '文档整理'] }) },
-      { id: 'assistant-rd', name: 'Eva研发助理', version: 1, online: true, configuration: configuration({ identity: 'Eva研发助理', skills: ['研发资料整理'] }) }
+      { id: 'assistant-general', name: defaultName, isDefault:true, version: 1, online: true, configuration: configuration({ identity: defaultName, skills: ['沟通', '文档整理'] }) }
     ];
     const identities = [makeIdentity('ai-general', 'assistant', defaultName, localAssistants[0], time), makeIdentity('persona-initial', 'persona', '执剑人', localAssistants[0], time)];
     const sessions = identities.map((identity, i) => ({
@@ -74,7 +73,7 @@
         text: i ? '你好，我可以替你接收协作请求并跟进进展。' : '把需要整理的事项发给我，我们一起安排。' }]
     }));
     if(options.profile==='review') {
-      identities.push(makeIdentity('ai-rd','assistant',localAssistants[1].name,localAssistants[1],time),makeIdentity('persona-pilot','persona','飞行员E号',localAssistants[1],time));
+      identities.push(makeIdentity('persona-pilot','persona','飞行员E号',{id:null,online:true,version:1,configuration:{identity:'飞行员E号',skills:['研发资料整理']}},time));
     } else {localAssistants.splice(1);identities.splice(1);sessions.splice(1);}
     return { schemaVersion: 1, localAssistants, identities, sessions, drafts: {}, storageWarning: null };
   }
@@ -165,7 +164,7 @@
     if (options.profile === 'review' && !state.reviewStoriesVersion && window.__EVA_IM_DEMO?.aiTeamSessions) {
       const base = new Date(window.__EVA_DEMO_TIME.AI_REVIEW_START).getTime();
       window.__EVA_IM_DEMO.aiTeamSessions.forEach(story => {
-        const identity = state.identities.find(i => i.id === story.identityId);
+        const identity = state.identities.find(i => i.id === story.identityId) || (story.identityId === 'ai-rd' ? state.identities.find(i=>i.id==='ai-general') : null);
         if (!identity) return;
         const old = state.sessions.find(s => s.id === story.id);
         const placeholder = old && old.messages.length === 1 && ['team-seed-0','team-seed-1'].includes(old.messages[0].id);
@@ -245,22 +244,43 @@
       state.fileArtifactDemoV1=true;
       try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
     }
-    // Personal assistants automatically have an IM identity, separate from local chats.
-    if (options.profile === 'review') {
-      const general = state.localAssistants.find(item => item.id === 'assistant-general');
-      if (general?.name === '王宜林的通用助理') general.name = '通用助理';
-    }
-    state.localAssistants.forEach(local => {
-      let identity = state.identities.find(item => item.role === 'assistant' && item.sourceAssistantId === local.id);
-      if (!identity) {
-        identity = makeIdentity('ai-local:' + local.id, 'assistant', local.name, local, now());
-        state.identities.push(identity);
-      }
-      identity.name = local.name;
+    // Single Eva migration: preserve thread IDs, content, pinning and drafts.
+    // Removed source assistants do not overwrite independent persona configuration.
+    const local = state.localAssistants.find(l=>l.id==='assistant-general') || {...seed(now()).localAssistants[0]};
+    const assistantIds = new Set(state.identities.filter(i=>i.role==='assistant').map(i=>i.id));
+    const aliases = {'ai-general':'通用助理','ai-rd':'Eva研发助理',...state.assistantAliases};
+    state.identities.filter(i=>i.role==='assistant').forEach(i=>{if(!Object.hasOwn(aliases,i.id))aliases[i.id]=i.name;});
+    local.name='Eva 同学'; local.isDefault=true;
+    state.identities.filter(i=>i.role==='persona' && i.sourceAssistantId && i.sourceAssistantId!==local.id).forEach(i=>{
+      i.sourceAssistantId=null; i.syncStatus='synced'; i.lastSyncedAt='';
     });
+    let eva = state.identities.find(i=>i.id==='ai-general'&&i.role==='assistant') || makeIdentity('ai-general','assistant',local.name,local,now());
+    eva.name=local.name; eva.sourceAssistantId=local.id; eva.configVersion=local.version; eva.configuration=configuration(local.configuration);
+    state.sessions.forEach(session=>{
+      if(assistantIds.has(session.identityId))session.identityId=eva.id;
+      session.messages.forEach(message=>{
+        if(message.sender.ai && assistantIds.has(message.sender.uid)){message.sender.uid=eva.id;message.sender.name=eva.name;}
+      });
+    });
+    assistantIds.forEach(oldId=>{
+      if(oldId===eva.id)return;
+      const draftKey='draft:'+oldId, text=state.drafts[draftKey];
+      if(text){
+        let draftId='migrated-draft:'+oldId, suffix=2;
+        while(state.sessions.some(s=>s.id===draftId))draftId='migrated-draft:'+oldId+':'+suffix++;
+        state.sessions.push({id:draftId,identityId:eva.id,title:'未发送的对话',messages:[],updatedAt:now(),autoTitle:true});
+        state.drafts[draftId]=text;
+      }
+      delete state.drafts[draftKey];
+    });
+    state.localAssistants=[local];
+    state.identities=[eva,...state.identities.filter(i=>i.role!=='assistant')];
+    state.assistantAliases=aliases;
+    state.singleEvaV1=true;
     // Add the Octo parent/topic relationship without changing local IDs or user content.
     state.sessions = state.sessions.map(record => ['persona', 'assistant'].includes(state.identities.find(i => i.id === record.identityId)?.role)
       ? threadRecord(record.identityId, record) : record);
+    try { storage?.setItem(STORAGE_KEY,JSON.stringify(state)); } catch (_) { warning='本地存储不可用，刷新后数据可能丢失。'; }
     state.storageWarning = warning;
     let snapshot = freeze(copy(state));
     const listeners = new Set(), connections = new Map(), syncTokens = new Map();
@@ -344,13 +364,10 @@
     function saveLocalAssistant(input) {
       if (!input || !['edit', 'create'].includes(input.mode) || !input.name?.trim()) throw new Error('请填写助理名称');
       let local;
-      if (input.mode === 'create') {
-        local = { id: id('assistant-local'), name: input.name.trim(), version: 1, online: true, configuration: configuration(input.configuration || { identity: input.name.trim() }) };
-        state.localAssistants.push(local);
-        state.identities.push(makeIdentity('ai-local:' + local.id, 'assistant', local.name, local, now()));
-      } else {
+      if (input.mode === 'create') throw new Error('只有一个 Eva 同学，不支持创建其他助理');
+      {
         local = localById(input.id);
-        if(local.id==='assistant-general'&&input.name.trim()!==local.name)throw new Error('通用助理不可改名');
+        if(local.id==='assistant-general'&&input.name.trim()!==local.name)throw new Error('Eva 同学不可改名');
         local.name = input.name.trim(); local.version++;
         local.configuration = configuration({...local.configuration,...input.configuration});
         state.identities.filter(i => i.role === 'assistant' && i.sourceAssistantId === local.id).forEach(i => {
@@ -492,6 +509,17 @@
           });
           const member=ai[0];state.messages.unshift({id:id+':demo-start',kind:'text',sender:human,time:'08:55',text:'今天围绕供应链运营协同推进三件事：保供晨会、供应商整改、合同评审。各项材料放到对应子区。\n@'+member.name+' 请帮我整理协作安排。'},{id:id+':demo-plan',kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time:'08:56',text:'## 今日协作安排\n\n- **保供晨会**：风险排序和行动清单。\n- **供应商整改**：核对证据，保留待确认项。\n- **合同评审**：整理条款差异与人工决策事项。\n\n各子区已准备讨论材料和文件示例，业务结论由你确认。'});
           state.collaborationStoriesV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
+        }
+        const evaMember=unique.find(m=>m.id==='ai-general');
+        if(evaMember && !state.singleEvaV1){
+          const aliases=window.EvaAITeam?.getSnapshot().assistantAliases || {'ai-general':'通用助理','ai-rd':'Eva研发助理'};
+          [state,...state.threads].forEach(channel=>channel.messages.forEach(message=>{
+            if(message.sender?.ai && Object.hasOwn(aliases,message.sender.uid))message.sender={...message.sender,uid:evaMember.id,name:evaMember.name,identityAppearance:evaMember.identityAppearance};
+            if(message.mentions)message.mentions=message.mentions.map(mention=>Object.hasOwn(aliases,mention.uid)?{...mention,uid:evaMember.id,name:'@'+evaMember.name}:mention);
+            // Only the shipped fixed-group requests are normalized; authored text is retained.
+            if(message.id?.includes('____demo-') && /:[13]$/.test(message.id))Object.values(aliases).forEach(name=>{if(message.text?.startsWith('@'+name+' '))message.text='@'+evaMember.name+message.text.slice(name.length+1);});
+          }));
+          state.singleEvaV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
         }
         // Convert text mentions to the shared IM identity contract, including saved demo history.
         const mentionCandidates=[{uid:'all',name:'@所有人'},{uid:'all',name:'@全体成员'},...unique.map(member=>({uid:member.id,name:'@'+member.name}))];

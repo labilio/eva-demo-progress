@@ -58,8 +58,11 @@
   var editing = false;
   var root = null;
   var selectedConversation = '';
-  var selectedAssistantId = 'assistant-general';
-  var collapsedAssistants = new Set();
+  var selectedFolderId = '';
+  var railForm = null;
+  var expandedLists = new Set();
+  var activeConversationId = '';
+  var personalDrafts = Object.create(null);
 
   function icon(name, size, className) {
     return window.__evaLucide(name, { size: size || 16, className: className || '' });
@@ -71,6 +74,8 @@
     });
   }
 
+  function personalAssistantName() { return window.EvaAITeam?.getSnapshot().localAssistants[0]?.name || 'Eva 同学'; }
+
   function conversationCatalog() {
     return window.__EVA_PERSONAL_CONVERSATIONS || [];
   }
@@ -81,13 +86,6 @@
 
   function conversationForId(id) {
     return conversationCatalog().find(function (item) { return item.id === id; }) || null;
-  }
-
-  function selectedAssistant() {
-    var assistants = window.__EVA_PERSONAL_ASSISTANTS || [];
-    return assistants.find(function (assistant) { return assistant.id === selectedAssistantId; })
-      || assistants[0]
-      || { id: 'assistant-general', name: '通用助理' };
   }
 
   function isNewConversationState() {
@@ -123,29 +121,53 @@
     } else setState(activeSkill && activeSkill.operation ? 'operation' : draft || activeSkill ? 'input' : 'home');
   }
 
+  function personalSnapshot() {
+    return window.EvaPersonal ? window.EvaPersonal.getSnapshot() : {folders:[], conversations:conversationCatalog(), collapsed:[]};
+  }
+
+  function railFormHTML() {
+    if (!railForm) return '';
+    var moving = railForm.type === 'conversation';
+    var detail = moving && conversationForId(railForm.id);
+    return '<form class="eva-personal-rail-form" data-eva-rail-form>'
+      + '<label class="eva-t-caption" for="eva-rail-name">' + (moving ? '对话名称' : '新建文件夹') + '</label>'
+      + '<input id="eva-rail-name" name="name" autocomplete="off" maxlength="' + (moving ? '120' : '60') + '" placeholder="文件夹名称" value="' + escapeHTML(detail ? detail.title : '') + '" required>'
+      + (moving ? '<label class="eva-t-caption" for="eva-rail-folder">移至文件夹</label><select id="eva-rail-folder" name="folder"><option value="">默认</option>' + personalSnapshot().folders.map(function (f) { return '<option value="' + escapeHTML(f.id) + '"' + (detail.folderId === f.id ? ' selected' : '') + '>' + escapeHTML(f.name) + '</option>'; }).join('') + '</select>' : '')
+      + '<p class="eva-t-caption" role="alert" data-eva-rail-error></p><div class="eva-personal-rail-form__actions"><button type="button" data-eva-cancel-rail>取消</button><button type="submit">' + (moving ? '保存' : '创建') + '</button></div></form>';
+  }
+
+  function conversationRowsHTML(items, folderId) {
+    var visible = expandedLists.has(folderId) ? items : items.slice(0,6);
+    return visible.map(function (item) {
+      return '<div class="eva-personal-thread' + (activeConversationId === item.id ? ' is-selected' : '') + '">'
+        + '<button type="button" class="eva-personal-thread__main" title="' + escapeHTML(item.title) + '" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span>' + escapeHTML(item.title) + '</span></button>'
+        + '<time class="eva-personal-thread__time">' + escapeHTML(item.time || '') + '</time>'
+        + '<button type="button" class="eva-personal-rail-icon eva-personal-thread__more" data-eva-conversation-menu="' + escapeHTML(item.id) + '" aria-label="管理对话：' + escapeHTML(item.title) + '" title="重命名或移动">' + icon('ellipsis',16,'eva-i') + '</button></div>';
+    }).join('') + (items.length > 6 ? '<button type="button" class="eva-personal-rail-more" data-eva-expand-list="' + escapeHTML(folderId) + '">' + (expandedLists.has(folderId) ? '收起显示' : '展开显示') + '</button>' : '')
+      + (!items.length ? '<div class="eva-personal-rail-empty eva-t-caption">还没有对话</div>' : '');
+  }
+
   function assistantRailHTML() {
-    var assistants = window.__EVA_PERSONAL_ASSISTANTS || [];
-    var tasks = window.__EVA_PERSONAL_ASSISTANT_TASKS || {};
-    return '<aside class="eva-personal-sider-panel" aria-label="Eva 助理与对话">'
-      + '<div class="eva-personal-sider-panel__body"><div class="eva-assistant-tree">'
-      + '<div class="eva-my-ai-sidebar-actions eva-personal-sidebar-actions">'
-      + '<a href="#/eva-stub/Agent创建中心?evaCreate=mine" class="eva-assistant-tree__create eva-my-ai-sidebar-actions__create-assistant" aria-label="创建助理">'
-      + icon('plus', 16, 'eva-i') + '<span>创建助理</span></a></div>'
-      + assistants.map(function (assistant) {
-        var collapsed = collapsedAssistants.has(assistant.id);
-        var selected = selectedAssistantId === assistant.id;
-        return '<section class="eva-assistant-folder eva-personal-assistant-folder' + (collapsed ? ' is-collapsed' : '') + (selected ? ' is-selected-assistant' : '') + '" data-eva-assistant-id="' + escapeHTML(assistant.id) + '" data-eva-assistant-name="' + escapeHTML(assistant.name) + '">'
-          + '<div class="eva-personal-assistant-folder__row"><button type="button" class="eva-assistant-folder__button" aria-expanded="' + String(!collapsed) + '" data-eva-toggle-assistant>'
-          + '<span class="eva-assistant-folder__icon" aria-hidden="true">' + icon('brain', 18, 'eva-i') + '</span>'
-          + '<span class="eva-assistant-folder__name">' + escapeHTML(assistant.name) + '</span>'
-          + '<span class="eva-assistant-folder__chevron" aria-hidden="true">' + icon('chevron-right', 12, 'eva-i-chevron') + '</span></button>'
-          + '<span class="eva-personal-assistant-folder__actions"><button type="button" aria-label="查看' + escapeHTML(assistant.name) + '配置" title="查看配置" data-eva-edit-assistant>' + icon('link-2', 16, 'eva-i') + '</button>'
-          + '<button type="button" class="eva-personal-assistant-folder__new-chat" aria-label="新建会话" title="新建会话" data-eva-new-assistant-chat="' + escapeHTML(assistant.id) + '">' + icon('plus', 16, 'eva-i') + '</button></span></div>'
-          + '<div class="eva-assistant-folder__conversations">' + (tasks[assistant.id] || []).map(function (item) {
-            var detail = conversationForTitle(item[0]);
-            return '<button type="button" class="eva-assistant-conversation' + (selectedConversation === item[0] ? ' is-selected' : '') + '" data-eva-personal-conversation="' + escapeHTML(item[0]) + '"' + (detail ? ' data-eva-personal-conversation-id="' + escapeHTML(detail.id) + '"' : '') + '><span class="eva-assistant-conversation__title">' + escapeHTML(item[0]) + '</span><time class="eva-assistant-conversation__time">' + escapeHTML(item[1]) + '</time></button>';
-          }).join('') + '</div></section>';
-      }).join('') + '</div></div><div class="eva-conversation-rail-resizer" role="separator" aria-label="调整中间栏宽度" aria-orientation="vertical" tabindex="0" data-eva-conversation-rail-resizer></div></aside>';
+    var snapshot = personalSnapshot();
+    return '<aside class="eva-personal-sider-panel" aria-label="Eva 文件夹与对话">'
+      + '<div class="eva-personal-rail-top"><button type="button" class="eva-personal-rail-new" data-eva-new-folder-chat="">' + icon('pencil',18,'eva-i') + '<span>新对话</span></button></div>'
+      + '<div class="eva-personal-sider-panel__body"><div class="eva-personal-rail-section"><span>文件夹</span><button type="button" class="eva-personal-rail-icon" data-eva-create-folder aria-label="创建文件夹" title="创建文件夹">' + icon('plus',16,'eva-i') + '</button></div>'
+      + railFormHTML()
+      + [{id:'',name:'默认'}].concat(snapshot.folders).map(function (folder) {
+        var collapsed = snapshot.collapsed.includes(folder.id);
+        var items = snapshot.conversations.filter(function (c) { return c.folderId === folder.id; });
+        return '<section class="eva-personal-folder' + (selectedFolderId === folder.id ? ' is-current' : '') + '"><div class="eva-personal-folder__row">'
+          + '<button type="button" class="eva-personal-folder__main" data-eva-toggle-folder="' + escapeHTML(folder.id) + '" aria-expanded="' + !collapsed + '" title="' + escapeHTML(folder.name) + '">' + icon('folder',18,'eva-i') + '<span>' + escapeHTML(folder.name) + '</span>' + icon(collapsed ? 'chevron-right' : 'chevron-down',12,'eva-i') + '</button>'
+          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__new" data-eva-new-folder-chat="' + escapeHTML(folder.id) + '" aria-label="在' + escapeHTML(folder.name) + '中新建对话" title="新建对话">' + icon('plus',16,'eva-i') + '</button></div>'
+          + (!collapsed ? '<div class="eva-personal-folder__threads">' + conversationRowsHTML(items,folder.id) + '</div>' : '') + '</section>';
+      }).join('')
+      + '</div><div class="eva-conversation-rail-resizer" role="separator" aria-label="调整中间栏宽度" aria-orientation="vertical" tabindex="0" data-eva-conversation-rail-resizer></div></aside>';
+  }
+
+  // Rail actions update only the rail; composition, selection and scroll stay intact.
+  function renderRail() {
+    var rail = root && root.querySelector('.eva-personal-sider-panel');
+    if (rail) { var scroll = rail.querySelector('.eva-personal-sider-panel__body').scrollTop; rail.outerHTML = assistantRailHTML(); root.querySelector('.eva-personal-sider-panel__body').scrollTop = scroll; }
   }
 
   /* ---- hero ------------------------------------------------ */
@@ -182,13 +204,19 @@
       + icon('arrow-up', 16, 'eva-i') + '</button>';
   }
 
+  function folderPickerHTML() {
+    var folders = [{id:'',name:'默认'}].concat(personalSnapshot().folders);
+    return '<label class="eva-newchat-context eva-personal-folder-picker" title="选择文件夹">' + icon('folder',18,'eva-i')
+      + '<select aria-label="选择文件夹" data-eva-composer-folder>' + folders.map(function (folder) {
+        return '<option value="' + escapeHTML(folder.id) + '"' + (folder.id === selectedFolderId ? ' selected' : '') + '>' + escapeHTML(folder.name) + '</option>';
+      }).join('') + '</select>' + icon('chevron-down',12,'eva-i-chevron') + '</label>';
+  }
+
   function actionsHTML() {
     if (isNewConversationState()) {
-      var assistant = selectedAssistant();
       return '<div class="eva-composer-actions eva-newchat-actions">'
         + '<button class="eva-newchat-icon-action" type="button" disabled aria-label="添加附件">' + icon('plus', 20, 'eva-i') + '</button>'
-        + '<button class="eva-newchat-context" type="button" disabled>' + icon('folder', 18, 'eva-i') + '<span>Eva</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
-        + '<button class="eva-newchat-context" type="button" disabled data-eva-selected-assistant="' + escapeHTML(assistant.id) + '">' + icon('brain', 18, 'eva-i') + '<span>' + escapeHTML(assistant.name) + '</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
+        + folderPickerHTML()
         + '<span class="eva-newchat-actions__spacer"></span>'
         + '<button class="eva-newchat-model" type="button" disabled><span>Qwen3.8 Max</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
         + sendHTML()
@@ -315,17 +343,17 @@
   }
 
   function historyConversationHTML() {
-    var detail = conversationForTitle(selectedConversation) || conversationCatalog()[0];
+    var detail = conversationForId(activeConversationId) || conversationForTitle(selectedConversation) || conversationCatalog()[0];
     if (!detail) return '';
     return '<section class="eva-personal-workspace__conversation eva-personal-workspace__history">'
       + '<header class="eva-topbar eva-personal-workspace__topbar">'
       + '<span class="eva-personal-topbar__mark">' + icon('brain', 18, 'eva-i-nav') + '</span>'
       + '<span class="ttl eva-t-header">' + escapeHTML(detail.title) + '</span>'
-      + '<span class="eva-history-header__assistant eva-t-label">' + escapeHTML(detail.assistant) + '</span>'
+      + '<span class="eva-history-header__assistant eva-t-label">' + escapeHTML(personalAssistantName()) + '</span>'
       + '<span style="flex:1 1 auto"></span>'
       + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="更多操作">' + icon('ellipsis', 16, 'eva-i') + '</button></header>'
       + '<div class="eva-personal-workspace__stream"><div class="eva-flow eva-history-flow">'
-      + detail.messages.map(function (message) { return historyMessageHTML(message, detail.assistant); }).join('')
+      + detail.messages.map(function (message) { return historyMessageHTML(message, personalAssistantName()); }).join('')
       + '</div></div><div class="eva-personal-workspace__dock">' + composerPanelHTML() + '</div></section>';
   }
 
@@ -526,12 +554,20 @@
   function startGenerating() {
     if (!draft.trim()) return;
     submitted = {text:draft.trim(), skill:activeSkill};
+    if (window.EvaPersonal) {
+      if (!activeConversationId) activeConversationId = window.EvaPersonal.createConversation(selectedFolderId, submitted.text);
+      else window.EvaPersonal.appendMessage(activeConversationId, {role:'user', text:submitted.text});
+      personalDrafts[activeConversationId] = '';
+      personalDrafts['new:' + selectedFolderId] = '';
+    }
     draft = ''; activeSkill = null; feedback = ''; slideIndex = 0; zoom = 100;
     slideDrafts = Object.create(null); editing = false;
     activeDocument = isPresentation() ? 'presentation' : 'document';
     setState('generating');
+    if (window.EvaPersonal && activeConversationId) location.hash = '#/conversation/' + activeConversationId;
     generatingTimer = setTimeout(function () {
       generatingTimer = 0;
+      if (window.EvaPersonal && activeConversationId) window.EvaPersonal.appendMessage(activeConversationId, {role:'assistant', text:'已记录你的要求。当前为本地原型预览，尚未连接实际执行服务。'});
       setState('completed');
     }, 2400);
   }
@@ -629,37 +665,35 @@
 
     if (event.target.closest('[data-eva-personal-new]')) {
       event.preventDefault();
-      resetToHome();
+      activeConversationId = ''; selectedConversation = '';
+      resetToHome(); location.hash = '#/guid';
       return;
     }
 
-    var toggleAssistant = event.target.closest('[data-eva-toggle-assistant]');
-    if (toggleAssistant) {
-      event.preventDefault();
-      var assistantFolder = toggleAssistant.closest('[data-eva-assistant-id]');
-      selectedAssistantId = assistantFolder.dataset.evaAssistantId;
-      if (collapsedAssistants.has(assistantFolder.dataset.evaAssistantId)) collapsedAssistants.delete(assistantFolder.dataset.evaAssistantId);
-      else collapsedAssistants.add(assistantFolder.dataset.evaAssistantId);
-      render();
-      return;
+    if (event.target.closest('[data-eva-create-folder]')) {
+      railForm = {type:'folder'}; renderRail(); root.querySelector('#eva-rail-name').focus(); return;
     }
-
-    var assistantNewChat = event.target.closest('[data-eva-new-assistant-chat]');
-    if (assistantNewChat) {
-      event.preventDefault();
-      selectedAssistantId = assistantNewChat.dataset.evaNewAssistantChat;
-      selectedConversation = '';
-      resetToHome();
+    if (event.target.closest('[data-eva-cancel-rail]')) { railForm = null; renderRail(); return; }
+    var menu = event.target.closest('[data-eva-conversation-menu]');
+    if (menu) { railForm = {type:'conversation', id:menu.dataset.evaConversationMenu}; renderRail(); root.querySelector('#eva-rail-name').focus(); return; }
+    var toggle = event.target.closest('[data-eva-toggle-folder]');
+    if (toggle) { window.EvaPersonal.toggleFolder(toggle.dataset.evaToggleFolder); renderRail(); return; }
+    var expand = event.target.closest('[data-eva-expand-list]');
+    if (expand) { var key = expand.dataset.evaExpandList; if (expandedLists.has(key)) expandedLists.delete(key); else expandedLists.add(key); renderRail(); return; }
+    var newChat = event.target.closest('[data-eva-new-folder-chat]');
+    if (newChat) {
+      personalDrafts[activeConversationId || 'new:' + selectedFolderId] = draft;
+      selectedFolderId = newChat.dataset.evaNewFolderChat;
+      selectedConversation = ''; activeConversationId = ''; railForm = null;
+      resetToHome(); draft = personalDrafts['new:' + selectedFolderId] || ''; render();
       if (location.hash.indexOf('#/guid') !== 0) location.hash = '#/guid';
-      return;
+      root.querySelector('.eva-composer-prompt').focus(); return;
     }
-
-    var conversation = event.target.closest('[data-eva-personal-conversation]');
+    var conversation = event.target.closest('[data-eva-personal-conversation-id]');
     if (conversation) {
       event.preventDefault();
-      selectedConversation = conversation.dataset.evaPersonalConversation;
-      selectedAssistantId = conversation.closest('[data-eva-assistant-id]').dataset.evaAssistantId;
-      var detail = conversationForId(conversation.dataset.evaPersonalConversationId) || conversationForTitle(selectedConversation);
+      personalDrafts[activeConversationId || 'new:' + selectedFolderId] = draft;
+      var detail = conversationForId(conversation.dataset.evaPersonalConversationId);
       if (detail && location.hash !== '#/conversation/' + detail.id) location.hash = '#/conversation/' + detail.id;
       else setState('history');
       return;
@@ -780,9 +814,11 @@
     var match = hash.match(/^#\/conversation\/([^?]+)/);
     var detail = match && conversationForId(decodeURIComponent(match[1]));
     if (detail) {
+      if (activeConversationId === detail.id && (state === 'generating' || state === 'completed')) return;
       selectedConversation = detail.title;
-      selectedAssistantId = detail.assistantId;
-      draft = '';
+      activeConversationId = detail.id;
+      selectedFolderId = detail.folderId || '';
+      draft = personalDrafts[detail.id] || '';
       activeSkill = null;
       pickerQuery = '';
       state = 'history';
@@ -790,7 +826,9 @@
     }
     if (hash.indexOf('#/guid') === 0) {
       selectedConversation = '';
+      activeConversationId = '';
       if (state !== 'home') resetToHome();
+      draft = personalDrafts['new:' + selectedFolderId] || '';
     }
   }
 
@@ -799,8 +837,35 @@
     if (root && root.isConnected) render();
   });
 
-  document.addEventListener('eva:personal-assistants-change', function () {
-    if (root && root.isConnected) render();
+  document.addEventListener('change', function (event) {
+    if (!root || !root.contains(event.target) || !event.target.matches('[data-eva-composer-folder]')) return;
+    var next = event.target.value;
+    if (activeConversationId && window.EvaPersonal) window.EvaPersonal.moveConversation(activeConversationId, next);
+    selectedFolderId = next;
+    personalDrafts['new:' + next] = draft;
+    renderRail();
+  });
+
+  document.addEventListener('submit', function (event) {
+    if (!root || !root.contains(event.target) || !event.target.matches('[data-eva-rail-form]')) return;
+    event.preventDefault();
+    var name = event.target.querySelector('[name="name"]').value;
+    try {
+      if (railForm.type === 'folder') window.EvaPersonal.createFolder(name);
+      else {
+        window.EvaPersonal.renameConversation(railForm.id, name);
+        window.EvaPersonal.moveConversation(railForm.id, event.target.querySelector('[name="folder"]').value);
+        if (activeConversationId === railForm.id) {
+          var detail = conversationForId(activeConversationId); selectedFolderId = detail.folderId; selectedConversation = detail.title;
+          var title = root.querySelector('.eva-personal-workspace__topbar .ttl'); if (title) title.textContent = detail.title;
+        }
+      }
+      railForm = null; renderRail();
+      var picker = root.querySelector('.eva-personal-folder-picker'); if (picker) picker.outerHTML = folderPickerHTML();
+    } catch (error) { event.target.querySelector('[data-eva-rail-error]').textContent = error.message; }
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && root && root.contains(event.target) && railForm) { railForm = null; renderRail(); }
   });
 
   /* 评审用：直接跳任一态，或不带参数读当前态。 */
@@ -815,6 +880,8 @@
     syncRouteState();
     render();
     return function () {
+      personalDrafts[activeConversationId || 'new:' + selectedFolderId] = draft;
+      railForm = null;
       conversationPickerOpen = false;
       if (generatingTimer) { clearTimeout(generatingTimer); generatingTimer = 0; }
       if (root.parentElement === host) root.remove();
