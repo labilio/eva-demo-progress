@@ -8,7 +8,7 @@ const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&am
 const icon = name => window.__evaLucide(name, {size:16, strokeWidth:1.8});
 const menuIcons = {all:'layout-grid',personal:'sparkles',messages:'message-square',projects:'layout-grid',contacts:'book-user',drive:'hard-drive',workboard:'list-checks',employees:'bot',skills:'unplug',automation:'clock',sites:'globe','agent-create':'sparkles',other:'ellipsis'};
 const menuIcon = id => id === 'my-ai' ? '<img class="menu-icon" src="../prototype/assets/my-ai-collaboration.svg" alt="">' : icon(menuIcons[id]);
-for (const [selector,name] of [['.head-links a','arrow-left'],['#copy','copy'],['#claim-copy','check'],['#retry-copy','copy'],['#reply-form button','send']]) {
+for (const [selector,name] of [['.head-links a','arrow-left'],['#copy','copy'],['#claim-copy','check'],['#retry-copy','copy'],['#reset-filters','rotate-ccw'],['#reply-form button','send']]) {
   const button=$(selector); button.insertAdjacentHTML('afterbegin',icon(name === 'send' ? 'arrow-up' : name));
 }
 document.querySelectorAll('[data-close]').forEach(button=>button.insertAdjacentHTML('afterbegin',icon('x')));
@@ -42,6 +42,7 @@ function updateSelection() {
   $('#clear-selection').disabled = state.busy || !selected.length;
 }
 function render() {
+  document.querySelectorAll('[data-status]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.status===state.filters.status)));
   const scroll = $('.table-scroll'); const top = scroll.scrollTop; const left = scroll.scrollLeft;
   const menuButton = id => {
     const label=MENUS.find(menu=>menu[0]===id)[1];
@@ -86,9 +87,15 @@ async function refresh(background=false) {
 }
 $('#refresh').onclick=()=>{if(state.busy)return;if(state.pending){applyRows(state.pending);message('已加载更新，保留筛选和勾选');}else refresh();};
 $('#menus').onclick=event=>{const button=event.target.closest('[data-menu]');if(!button)return;state.filters.menu=button.dataset.menu;saveFilters();render();};
-for(const [id,key] of [['status','status'],['claim-filter','claim']]){
+for(const [id,key] of [['claim-filter','claim']]){
   $('#'+id).value=state.filters[key];$('#'+id).onchange=event=>{state.filters[key]=event.target.value;saveFilters();render();};
 }
+$('#status').onclick=event=>{const button=event.target.closest('[data-status]');if(!button)return;state.filters.status=button.dataset.status;saveFilters();render();};
+$('#reset-filters').onclick=()=>{
+  state.filters={menu:'all',status:'approved',claim:'unclaimed',search:''};
+  $('#claim-filter').value=state.filters.claim;$('#search').value='';$('#clear-search').hidden=true;
+  saveFilters();render();message('已恢复默认筛选，保留已勾选的批注');
+};
 $('#search').value=state.filters.search;
 function search(){state.filters.search=$('#search').value;$('#clear-search').hidden=!state.filters.search;saveFilters();render();}
 $('#search').oninput=event=>{if(!event.isComposing)search();};$('#search').oncompositionend=search;
