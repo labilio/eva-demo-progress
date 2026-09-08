@@ -8,6 +8,16 @@
   box-shadow: var(--wk-shadow-drawer);
 }
 
+.eva-msg .ch-right-panel--preview > .wk-file-preview-panel {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  border: 0;
+  box-shadow: none;
+}
+
 .eva-word-preview-renderer {
   position: relative;
   width: 100%;
@@ -77,14 +87,14 @@
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 1439px) {
   .eva-msg .ch-right-panel--preview {
-    flex-basis: 480px;
-    width: 480px;
+    flex-basis: 380px;
+    width: 380px;
   }
 }
 
-@media (max-width: 959px) {
+@media (max-width: 1099px) {
   .eva-msg .ch-right-panel--preview {
     position: absolute;
     z-index: 84;

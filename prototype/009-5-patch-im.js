@@ -10,11 +10,27 @@ function EvaAIIdentityAvatar({appearance,size=32}) {
   return window.EvaAIIdentity.avatar(appearance,size,React.createElement);
 }
 
+function evaPreviewFixture(file) {
+  return window.__EVA_FILE_PREVIEW_FIXTURES?.[file?.sourceFileName||file?.name]||{};
+}
+
 function EvaWordPreviewRenderer({file,onError}) {
   const h=React.createElement;
   const [loaded,setLoaded]=reactExports.useState(false);
   const [failed,setFailed]=reactExports.useState(false);
   const url=file.previewUrl||file.url;
+  const pages=evaPreviewFixture(file).pages;
+  reactExports.useEffect(()=>{setLoaded(false);setFailed(false);},[url]);
+  if(!file.previewUrl&&pages){
+  return h('div',{className:'eva-word-preview','aria-label':'Word 文档内容'},pages.map((page,index)=>h('article',{className:'eva-word-preview__page',key:index,'aria-label':'第 '+(index+1)+' 页'},
+    h('small',{className:'eva-word-preview__kicker'},page.kicker||'Word 文档'),
+    h('h2',null,page.title||file.name),
+    page.subtitle&&h('p',{className:'eva-word-preview__subtitle'},page.subtitle),
+    (page.paragraphs||[]).map((paragraph,paragraphIndex)=>h('p',{key:'p'+paragraphIndex},paragraph)),
+    (page.sections||[]).map((section,sectionIndex)=>h('section',{key:'s'+sectionIndex},h('h3',null,section.title),h('p',null,section.text))),
+    h('footer',null,(index+1)+' / '+pages.length)
+  )));
+  }
   if(failed)return h('div',{className:'eva-word-preview-renderer eva-word-preview-renderer--error',role:'alert'},
     h('strong',null,'Word 文档暂时无法打开'),
     h('span',null,'请检查网络后重试，或使用顶部下载按钮在本地打开。'),
@@ -42,6 +58,35 @@ function EvaHtmlPreviewDocument(content,fileUrl) {
     console.warn('[EvaHtmlPreviewDocument] 资源地址解析失败，将使用原始 HTML。',error);
     return content;
   }
+}
+
+function EvaPresentationPreviewRenderer({file}) {
+  const h=React.createElement;
+  const fixture=evaPreviewFixture(file);
+  const slides=fixture.slides;
+  const [active,setActive]=reactExports.useState(0);
+  reactExports.useEffect(()=>setActive(0),[file.name]);
+  if(!slides?.length)return h('p',{className:'eva-file-preview-sidebar__empty'},'此文件未提供在线预览内容。');
+  const slide=slides[Math.min(active,slides.length-1)];
+  return h('div',{className:'eva-presentation-preview','aria-label':'PPT 幻灯片内容'},
+    h('div',{className:'eva-presentation-preview__stage'},h('article',{className:'eva-presentation-preview__slide is-'+(slide.accent||'violet'),'aria-label':'第 '+(active+1)+' 张幻灯片'},
+      h('small',null,slide.eyebrow||'演示文稿'),h('h2',null,slide.title),h('p',null,slide.subtitle),
+      slide.metric&&h('strong',{className:'eva-presentation-preview__metric'},slide.metric),
+      slide.bullets&&h('ul',null,slide.bullets.map((item,index)=>h('li',{key:index},item))))),
+    h('div',{className:'eva-presentation-preview__thumbs','aria-label':'幻灯片缩略图'},slides.map((item,index)=>h('button',{type:'button',key:index,className:index===active?'is-active':'',onClick:()=>setActive(index),'aria-label':'查看第 '+(index+1)+' 张'},h('span',null,index+1),h('small',null,item.title)))),
+    h('div',{className:'eva-presentation-preview__controls'},h('button',{type:'button',disabled:active===0,onClick:()=>setActive(index=>Math.max(0,index-1))},'上一页'),h('span',null,(active+1)+' / '+slides.length),h('button',{type:'button',disabled:active===slides.length-1,onClick:()=>setActive(index=>Math.min(slides.length-1,index+1))},'下一页'))
+  );
+}
+
+function EvaArchivePreviewRenderer({file}) {
+  const h=React.createElement;
+  const archive=evaPreviewFixture(file).archive;
+  if(!archive)return h('p',{className:'eva-file-preview-sidebar__empty'},'此文件未提供在线预览内容。');
+  return h('div',{className:'eva-archive-preview','aria-label':'压缩包内容'},
+    h('div',{className:'eva-archive-preview__summary'},h('span',null,h('strong',null,archive.entries.length),h('small',null,'项目')),h('span',null,h('strong',null,archive.compressedSize||'—'),h('small',null,'压缩后')),h('span',null,h('strong',null,archive.originalSize||'—'),h('small',null,'原始大小'))),
+    h('div',{className:'eva-archive-preview__head'},h('span',null,'名称'),h('span',null,'类型'),h('span',null,'大小')),
+    h('div',{className:'eva-archive-preview__list'},archive.entries.map((entry,index)=>h('div',{className:'eva-archive-preview__row',key:index},h('span',null,h('i',{'aria-hidden':'true'},entry.type==='folder'?'▸':'·'),entry.path),h('small',null,entry.type),h('small',null,entry.size))))
+  );
 }
 
 function EvaInlineProjectPanel({projectId}) {
@@ -461,7 +506,7 @@ function EvaAITeamPage() {
     cut('$a=async ci=>{const Zi=await demoFileUrl(ci.name);Qt({url:Zi,name:ci.name,extension:ci.extension,size:ci.size}),Ht(null),Dt("file")}',
       '$a=async ci=>{const Zi=ci.previewUrl??await demoFileUrl(ci.name);Qt({...ci,url:Zi}),Ht(null),Dt("file")}', '文档预览保留文件格式元数据');
     cut('this.register({type:"text",extensions:["html","htm"],renderer:HtmlRenderer,needsFetch:!0})',
-      'this.register({type:"word",extensions:["doc","docx"],renderer:EvaWordPreviewRenderer,needsFetch:!1}),this.register({type:"text",extensions:["html","htm"],renderer:HtmlRenderer,needsFetch:!0})', 'Word 在线阅读渲染器');
+      'this.register({type:"word",extensions:["doc","docx"],renderer:EvaWordPreviewRenderer,needsFetch:!1}),this.register({type:"presentation",extensions:["ppt","pptx"],renderer:EvaPresentationPreviewRenderer,needsFetch:!1}),this.register({type:"archive",extensions:["zip","rar","7z","tar","gz"],renderer:EvaArchivePreviewRenderer,needsFetch:!1}),this.register({type:"text",extensions:["html","htm"],renderer:HtmlRenderer,needsFetch:!0})', 'Word 在线阅读渲染器');
     cut('reactExports.useMemo(()=>jt?injectCspMonitor(jt):"",[jt])',
       'reactExports.useMemo(()=>jt?injectCspMonitor(EvaHtmlPreviewDocument(jt,rt.url)):"",[jt,rt.url])', 'HTML 预览资源地址按源文件解析');
     cut('FilePreviewHost=({file:rt,onClose:ct})=>{const[ut,pt]=reactExports.useState("preview"),[mt,gt]=reactExports.useState(!1),[St,Ct]=reactExports.useState(!1),xt=getExtension',
@@ -707,6 +752,6 @@ function EvaAITeamPage() {
       'hi=(ci,Zi,Fi)=>{ci=evaRenderableMessage(ci);if(ci.kind==="divider")', '消息渲染兼容历史数据缺失字段');
     cut('avatarUri(zs,SENDERS[zs].color)',
       'avatarUri(zs,SENDERS[zs]?.color??"#8a8f99")', '子区消息兼容未知参与者');
-    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

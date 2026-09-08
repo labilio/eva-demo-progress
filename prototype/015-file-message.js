@@ -22,7 +22,7 @@
   }
 
   function savedRecord(file, context, record) {
-    return record || savedFiles.get(keyFor(file, context)) || null;
+    return record !== undefined ? record : savedFiles.get(keyFor(file, context)) || null;
   }
 
   function isSaved(file, context, record) {

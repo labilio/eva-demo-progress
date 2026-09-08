@@ -1248,43 +1248,6 @@ body.eva-message-hierarchy-ready .eva-drive__section-head .eva-drive__side-searc
   width: min(300px, 42%);
 }
 
-body.eva-message-hierarchy-ready .eva-drive__inspector {
-  position: absolute;
-  z-index: 82;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 320px;
-  display: block;
-  padding-top: 24px;
-  transform: translateX(102%);
-  visibility: hidden;
-  box-shadow: -12px 0 28px rgb(31 35 41 / 10%);
-  transition: transform 160ms ease, visibility 160ms ease;
-}
-
-body.eva-message-hierarchy-ready .eva-drive--inspector-open .eva-drive__inspector {
-  transform: translateX(0);
-  visibility: visible;
-}
-
-body.eva-message-hierarchy-ready .eva-drive__inspector-close {
-  height: 30px;
-  padding: 0 9px;
-  border: 0;
-  border-radius: 6px;
-  color: var(--semi-color-text-2, #737780);
-  background: transparent;
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-body.eva-message-hierarchy-ready .eva-drive__inspector-close:hover {
-  color: var(--semi-color-text-0, #1c1f23);
-  background: var(--semi-color-fill-0, #f2f3f5);
-}
-
 body.eva-message-hierarchy-ready .eva-native-nav-suppressed,
 body.eva-message-hierarchy-ready .eva-native-nav-suppressed:hover {
   background: transparent !important;
@@ -1956,7 +1919,6 @@ body.eva-message-hierarchy-ready .eva-msg .wk-message-file.eva-message-source-hi
 
 body.eva-message-hierarchy-ready .eva-drive-scopebar__tab:focus-visible,
 body.eva-message-hierarchy-ready .eva-drive-sourcebar__button:focus-visible,
-body.eva-message-hierarchy-ready .eva-drive__inspector-close:focus-visible,
 body.eva-message-hierarchy-ready .eva-space-tree__item:focus-visible {
   outline: 2px solid var(--semi-color-focus-border, #4c6ef5);
   outline-offset: 1px;
@@ -1972,15 +1934,6 @@ body.eva-message-hierarchy-ready .eva-space-tree__item:focus-visible {
     padding-inline: 18px;
   }
 
-  body.eva-message-hierarchy-ready .eva-drive__inspector {
-    width: min(360px, 88%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body.eva-message-hierarchy-ready .eva-drive__inspector {
-    transition: none;
-  }
 }
 
 /* Custom conversation categories reuse the message rail and shared modal. */

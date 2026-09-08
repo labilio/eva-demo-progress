@@ -135,3 +135,26 @@ test('文件详情支持定位文件和回到可访问的来源会话', () => {
   assert.match(projectFiles, /evaMessage/);
   assert.match(messageHierarchy, /__evaOpenDriveFile/);
 });
+
+test('会话副本保留原附件预览地址和原名，重名保存后仍可读取同一内容', () => {
+  const {files} = setup();
+  const artifact = {id:'document',name:'纪要.docx',previewUrl:'prototype/assets/file-samples/纪要.docx.html',version:1};
+  const source = {type:'ai-conversation',ownerId:'a',conversationId:'s',messageId:'m'};
+  files.upload('a','personal:a',{name:'纪要.docx'});
+  const id = files.saveConversationFile('a','personal:a',0,artifact,source);
+  const saved = files.list('personal:a','a').find(item=>item.id===id);
+  assert.equal(saved.name,'纪要 (2).docx');
+  assert.equal(saved.previewUrl,artifact.previewUrl);
+  assert.equal(saved.sourceFileName,'纪要.docx');
+});
+
+test('保存状态以当前版本和文件库实时记录为准，删除副本后可以重新保存', () => {
+  const {files,window} = setup();
+  vm.runInNewContext(fs.readFileSync(new URL('../prototype/015-file-message.js',import.meta.url),'utf8'),{window});
+  const file={id:'doc',name:'报告.pdf',version:1},source={type:'ai-conversation',ownerId:'a',conversationId:'s',messageId:'m'};
+  const id=files.saveConversationFile('a','personal:a',0,file,source);
+  window.EvaFileMessage.markSaved(file,source,files.findConversationFile('a',file,source));
+  assert.equal(files.findConversationFile('a',{...file,version:2},source),null);
+  files.trash('a',id);
+  assert.equal(window.EvaFileMessage.action(file,source,files.findConversationFile('a',file,source)).saved,false);
+});
