@@ -9,7 +9,7 @@ function createHarness() {
     async create(value) { calls.push(['create', value]); return { id: 'comment-1', ...value, status: 'open' }; },
     async list(page) { calls.push(['list', page]); return [{ id: 'comment-1', page_path: page }]; },
     async addReply(id, value) { calls.push(['reply', id, value]); return { id: 'reply-1', comment_id: id, ...value }; },
-    async updateStatus(id, status) { calls.push(['status', id, status]); return { id, status }; },
+    async updateStatus(id, status, author) { calls.push(['status', id, status, author]); return { id, status }; },
     async remove(id) { calls.push(['delete', id]); return { id }; },
   };
   const output = [];
@@ -60,7 +60,7 @@ test('AI 可以查询、回复和更新开发状态', async () => {
   assert.deepEqual(harness.calls, [
     ['list', '#/guid'],
     ['reply', 'comment-1', { author_name: 'Codex', body: '已补充复现信息' }],
-    ['status', 'comment-1', 'doing'],
+    ['status', 'comment-1', 'doing', 'Codex'],
   ]);
 });
 
@@ -86,7 +86,7 @@ test('AI 不能在没有人工确认标志时将批注改为已确认', async ()
   await runCommentsCommand([
     'status', '--id', 'comment-1', '--status', 'approved', '--confirmed-by-user',
   ], harness);
-  assert.deepEqual(harness.calls, [['status', 'comment-1', 'approved']]);
+  assert.deepEqual(harness.calls, [['status', 'comment-1', 'approved', 'Codex']]);
 });
 
 test('AI 只有得到人工确认后才能创建已基本定稿类型的批注', async () => {

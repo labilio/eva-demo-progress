@@ -30,7 +30,7 @@ test('comments can be completed and completed cards render below a divider', () 
   assert.match(source, /data-review-complete/);
   assert.match(source, /eva-review-completed-divider/);
   assert.match(source, /partitionCommentsByCompletion/);
-  assert.match(source, /store\.updateStatus\([^,]+,\s*'done'\)/);
+  assert.match(source, /store\.updateStatus\([^,]+,\s*'done',\s*getReviewAuthor\(\)\)/);
 });
 
 test('new comment body receives focus and Enter submits while Shift Enter adds a line', () => {

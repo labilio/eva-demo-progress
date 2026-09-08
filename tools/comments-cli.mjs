@@ -122,7 +122,7 @@ export async function runCommentsCommand(argv, dependencies = {}) {
     if (status === 'approved' && !flags['confirmed-by-user']) {
       throw new Error('设置已确认状态必须提供 --confirmed-by-user，表示已取得人工确认');
     }
-    const row = await store.updateStatus(required(flags, 'id'), status);
+    const row = await store.updateStatus(required(flags, 'id'), status, author);
     printJson(write, row);
     return row;
   }

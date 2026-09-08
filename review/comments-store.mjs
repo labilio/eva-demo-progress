@@ -83,13 +83,15 @@ export function createCommentsStore({ url, key, fetchImpl = fetch }) {
       });
       return rows[0];
     },
-    async updateStatus(id, status) {
+    async updateStatus(id, status, author) {
       if (!STATUSES.has(status)) throw new Error('不支持的批注状态');
-      const query = new URLSearchParams({ id: `eq.${id}` });
+      const name = String(author || '').trim();
+      if (!name || name === DEFAULT_AUTHOR || name.length > 40) throw new Error('请先填写 1–40 字的操作人姓名，修改状态将同时认领');
+      const query = new URLSearchParams({ id: `eq.${validId(id)}` });
       const rows = await request(`${endpoint}?${query}`, {
         method: 'PATCH',
         headers: { Prefer: 'return=representation' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, claimed_by: name, claimed_at: new Date().toISOString() }),
       });
       if (!rows[0]) throw new Error('批注不存在或没有更新权限');
       return rows[0];

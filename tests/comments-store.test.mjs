@@ -47,24 +47,22 @@ test('comments store can list the complete shared review feed without a page fil
   assert.doesNotMatch(calls[0].url, /page_path=/);
 });
 
-test('comments store updates only supported workflow statuses', async () => {
-  const calls = [];
-  const fetchImpl = async (url, options = {}) => {
-    calls.push({ url, options });
-    return new Response(JSON.stringify([{ id: 'c1', status: 'doing' }]), {
-      status: 200,
-      headers: { 'content-type': 'application/json' },
-    });
-  };
-  const store = createCommentsStore({ url: 'https://example.supabase.co', key: 'public-key', fetchImpl });
-  assert.deepEqual(await store.updateStatus('c1', 'doing'), { id: 'c1', status: 'doing' });
-  assert.match(calls[0].url, /id=eq\.c1/);
-  assert.equal(calls[0].options.method, 'PATCH');
-  assert.deepEqual(JSON.parse(calls[0].options.body), { status: 'doing' });
-  await assert.rejects(() => store.updateStatus('c1', 'ready'), /不支持的批注状态/);
-  await store.updateStatus('c1', 'done');
-  assert.deepEqual(JSON.parse(calls.at(-1).options.body), { status: 'done' });
-  await assert.rejects(() => store.updateStatus('c1', 'deleted'), /不支持的批注状态/);
+test('status and actor claim update atomically; missing actor never writes', async () => {
+  const calls=[];
+  const store=createCommentsStore({url:'https://example.supabase.co',key:'public-key',fetchImpl:async(url,options)=>{
+    calls.push({url,options});return new Response(JSON.stringify([{id:'c1',...JSON.parse(options.body)}]));
+  }});
+  const id='11111111-1111-4111-8111-111111111111';
+  for(const status of ['open','approved','doing','done']){
+    const row=await store.updateStatus(id,status,' Alice ');
+    assert.equal(row.status,status);assert.equal(row.claimed_by,'Alice');
+    assert.ok(Number.isFinite(Date.parse(row.claimed_at)));
+    assert.equal(calls.at(-1).options.method,'PATCH');
+  }
+  const count=calls.length;
+  for(const actor of ['', '匿名同事', 'x'.repeat(41)]) await assert.rejects(()=>store.updateStatus(id,'doing',actor),/操作人姓名/);
+  await assert.rejects(()=>store.updateStatus(id,'ready','Alice'),/不支持/);
+  assert.equal(calls.length,count);
 });
 
 test('comments store appends a named reply to its own table', async () => {

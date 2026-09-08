@@ -1,3 +1,4 @@
+import { getReviewAuthor, setReviewAuthor, subscribeReviewAuthor } from './review-identity.mjs';
 import { menuOf } from './developer-domain.mjs';
 import { createCommentsStore } from './comments-store.mjs';
 import { afterBrowserPaint, buildAnchorRecord, buildProjectViewContext, clampFloatingPosition, createPageChangeDetector, createPageRequestGate, hasDragMoved, inferProjectTab, isVisiblePin, normalizeStatus, pageLabel, partitionCommentsByCompletion, pointWithinRect } from './comments-domain.mjs';
@@ -161,6 +162,7 @@ function ensureUI() {
       <header class="eva-review-head" data-review-drag-handle><strong>批注</strong><div class="eva-review-head-actions"><a data-review-developer href="/review/developer.html" target="_blank" rel="noopener" title="勾选批注，复制修改提示词给 AI（新页面）">${window.__evaLucide('external-link',{size:13,strokeWidth:1.8})}开发工作台</a><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
       <div class="eva-review-toolbar"><button type="button" class="eva-review-primary" data-review-add>${icon('add')}添加批注</button><div class="eva-review-updates"><button type="button" data-review-load-updates>检查更新</button><span data-review-update-status role="status" aria-live="polite"></span></div></div>
       <div class="eva-review-filters"><label>状态<select class="eva-review-status-filter" data-review-status-filter aria-label="筛选批注状态"><option value="all">全部状态</option>${Object.entries(STATUSES).map(([value,label])=>`<option value="${value}"${state.statusFilter===value?' selected':''}>${label}</option>`).join('')}</select></label><label class="eva-review-marker-toggle"><input type="checkbox" role="switch" data-review-markers ${state.pinMode!=='off'?'checked':''}>页面标记</label></div>
+      <label class="eva-review-operator">操作人<input data-review-operator maxlength="40" autocomplete="off" placeholder="填写姓名，改状态即认领" value="${escapeHtml(getReviewAuthor())}"></label>
       <div class="eva-review-list"></div>
     </aside>
     <div class="eva-review-dialog" data-review-ui hidden role="dialog" aria-modal="true" aria-labelledby="eva-review-title">
@@ -174,6 +176,9 @@ function ensureUI() {
       </form>
     </div>`);
   renderIdentity();
+  document.querySelector('[data-review-operator]').oninput=event=>{if(!event.isComposing)setReviewAuthor(event.target.value);};
+  document.querySelector('[data-review-operator]').oncompositionend=event=>setReviewAuthor(event.target.value);
+  subscribeReviewAuthor(author=>{const input=document.querySelector('[data-review-operator]');if(document.activeElement!==input)input.value=author;renderIdentity();});
   document.querySelector('[data-review-launcher]').onclick = () => { if (Date.now() > state.draggedUntil) openPanel(); };
   document.querySelector('[data-review-close]').onclick = closePanel;
   document.querySelector('[data-review-load-updates]').onclick = loadUpdates;
@@ -186,7 +191,7 @@ function ensureUI() {
   document.querySelector('[data-review-add]').onclick = startPicking;
   document.querySelectorAll('[data-review-cancel]').forEach(button => button.onclick = closeDialog);
   document.querySelector('[data-review-markers]').onchange = event => setPinMode(event.target.checked ? 'all' : 'off');
-  document.querySelector('[data-review-change-author]').onclick = () => { localStorage.removeItem('eva-review-author'); renderIdentity({ focus:true }); };
+  document.querySelector('[data-review-change-author]').onclick = () => { setReviewAuthor(''); renderIdentity({ focus:true }); };
   const pickerShield = document.querySelector('.eva-review-picker-shield');
   pickerShield.onpointermove = event => updatePickerTarget(event.clientX, event.clientY);
   pickerShield.onclick = event => selectPickerTarget(event.clientX, event.clientY);
@@ -246,7 +251,7 @@ function syncReviewEntryVisibility() {
 }
 
 function renderIdentity({ focus = false } = {}) {
-  const author = localStorage.getItem('eva-review-author') || '';
+  const author = getReviewAuthor();
   const field = document.querySelector('[data-review-author-field]');
   const saved = document.querySelector('[data-review-author-saved]');
   const input = field?.querySelector('input');
@@ -387,7 +392,7 @@ function renderList() {
 
 function commentHtml(row) {
   const kind = KINDS[row.kind] || KINDS.issue;
-  const savedAuthor = localStorage.getItem('eva-review-author') || '';
+  const savedAuthor = getReviewAuthor();
   const replies = [...(row.replies || [])].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
   const options = Object.entries(STATUSES).map(([value,label]) => `<option value="${value}"${row.status === value ? ' selected' : ''}>${label}</option>`).join('');
   const replying = state.replyingId === row.id;
@@ -399,7 +404,7 @@ function commentHtml(row) {
     <div class="eva-review-body">${escapeHtml(row.body)}</div>
     ${replies.length ? `<div class="eva-review-replies">${replies.map(reply => `<div><header><strong>${escapeHtml(reply.author_name)}</strong><time>${escapeHtml(shortTime(reply.created_at))}</time></header><p>${escapeHtml(reply.body)}</p></div>`).join('')}</div>` : ''}
     ${replying ? `<form class="eva-review-reply${savedAuthor ? ' has-author' : ''}" data-review-reply="${escapeHtml(row.id)}" autocomplete="off">${savedAuthor ? '' : `<input name="author" autocomplete="off" value="${escapeHtml(draft.author)}" ${submitting ? 'readonly' : ''} maxlength="40" placeholder="你的名字（选填）" aria-label="回复人姓名">`}<input name="body" autocomplete="off" value="${escapeHtml(draft.body)}" ${submitting ? 'readonly' : ''} maxlength="2000" placeholder="回复这条批注" aria-label="回复内容" required><button type="submit" ${submitting ? 'disabled' : ''} aria-label="发送回复">${icon('send',15)}</button></form>` : ''}
-    <footer><label class="eva-review-status"><span class="eva-review-status-light is-${escapeHtml(row.status)}" aria-hidden="true"></span><select data-review-status="${escapeHtml(row.id)}" aria-label="批注状态">${options}</select></label><div class="eva-review-actions">${row.status === 'done' ? '' : `<button type="button" class="eva-review-icon-button is-complete" data-review-complete="${escapeHtml(row.id)}" aria-label="标记为原型已改完">${icon('check')}</button>`}<button type="button" class="eva-review-icon-button" data-review-reply-toggle="${escapeHtml(row.id)}" aria-expanded="${replying}" aria-label="${replying ? '收起回复' : '回复批注'}">${icon('reply')}</button><button type="button" class="eva-review-icon-button is-danger" data-review-delete="${escapeHtml(row.id)}" aria-label="删除批注">${icon('trash')}</button></div></footer>
+    <div class="eva-review-claimed">认领者：${escapeHtml(row.claimed_by || '-')}</div><footer><label class="eva-review-status"><span class="eva-review-status-light is-${escapeHtml(row.status)}" aria-hidden="true"></span><select data-review-status="${escapeHtml(row.id)}" title="修改状态会将操作人设为认领者" aria-label="批注状态">${options}</select></label><div class="eva-review-actions">${row.status === 'done' ? '' : `<button type="button" class="eva-review-icon-button is-complete" data-review-complete="${escapeHtml(row.id)}" aria-label="标记为原型已改完">${icon('check')}</button>`}<button type="button" class="eva-review-icon-button" data-review-reply-toggle="${escapeHtml(row.id)}" aria-expanded="${replying}" aria-label="${replying ? '收起回复' : '回复批注'}">${icon('reply')}</button><button type="button" class="eva-review-icon-button is-danger" data-review-delete="${escapeHtml(row.id)}" aria-label="删除批注">${icon('trash')}</button></div></footer>
   </article>`;
 }
 
@@ -426,12 +431,12 @@ function bindListEvents() {
   });
   document.querySelectorAll('[data-review-complete]').forEach(button => button.onclick = async () => {
     button.disabled = true;
-    try { upsertLocalComment(await store.updateStatus(button.dataset.reviewComplete, 'done')); toast('已标记为“原型已改完”'); }
+    try { upsertLocalComment(await store.updateStatus(button.dataset.reviewComplete, 'done', getReviewAuthor())); toast('已标记为“原型已改完”'); }
     catch (error) { toast(error.message); button.disabled = false; }
   });
   document.querySelectorAll('[data-review-status]').forEach(select => select.onchange = async () => {
     select.disabled = true;
-    try { upsertLocalComment(await store.updateStatus(select.dataset.reviewStatus, select.value)); toast(`已设为“${STATUSES[select.value]}”`); }
+    try { upsertLocalComment(await store.updateStatus(select.dataset.reviewStatus, select.value, getReviewAuthor())); toast(`已设为“${STATUSES[select.value]}”`); }
     catch (error) { toast(error.message); select.value = state.rows.find(row => row.id === select.dataset.reviewStatus)?.status || 'open'; }
     finally { select.disabled = false; }
   });
@@ -452,10 +457,10 @@ function bindListEvents() {
       state.submittingReplies.add(id);
       form.querySelectorAll('input').forEach(input => input.readOnly = true);
       try {
-        const authorName = localStorage.getItem('eva-review-author') || form.author?.value || '';
+        const authorName = getReviewAuthor() || form.author?.value || '';
         const reply = await store.addReply(id, { author_name: authorName, body: form.body.value });
         state.replyDrafts.delete(id);
-        localStorage.setItem('eva-review-author', reply.author_name);
+        setReviewAuthor(reply.author_name);
         if (state.replyingId === id) state.replyingId = null;
         renderIdentity();
         applyLocalChange(rows => rows.map(row => row.id === id ? { ...row, replies: [...row.replies.filter(item => item.id !== reply.id), reply] } : row));
@@ -517,9 +522,9 @@ async function submitComment(event) {
   const form = event.currentTarget; const error = form.querySelector('.eva-review-error'); error.textContent = '';
   const submit = form.querySelector('[type=submit]'); submit.disabled = true;
   try {
-    const authorName = localStorage.getItem('eva-review-author') || form.author.value;
+    const authorName = getReviewAuthor() || form.author.value;
     const row = await store.create({ page_path:currentPage(), anchor:state.target?.anchor || {}, author_name:authorName, body:form.body.value, kind:form.kind.value, status:'open' });
-    localStorage.setItem('eva-review-author', row.author_name); renderIdentity(); form.body.value = ''; state.activeId = row.id; closeDialog(); upsertLocalComment(row); toast(`批注 #${row.seq || ''} 已同步`);
+    setReviewAuthor(row.author_name); renderIdentity(); form.body.value = ''; state.activeId = row.id; closeDialog(); upsertLocalComment(row); toast(`批注 #${row.seq || ''} 已同步`);
   } catch (cause) { error.textContent = cause.message; }
   finally { submit.disabled = false; }
 }
