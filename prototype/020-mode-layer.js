@@ -372,10 +372,13 @@
     var canEditTags = resource.type !== 'folder' && context.files.can('edit-tags', resource.spaceId, actor);
     var canTrash = context.files.can('trash', resource.spaceId, actor);
     var isTrash = Boolean(resource.deletedAt);
+    var shortcutInfo = context.files.shortcutInfo(resource, actor);
+    var canOpen = !shortcutInfo || shortcutInfo.status === 'available';
+    var canDownload = resource.type !== 'folder' && !isTrash && canOpen && context.files.can('download', resource.spaceId, actor);
     return [
       '<div class="eva-drive__inspector-head"><h2>文件详情</h2><button class="eva-drive__inspector-close" type="button" data-eva-drive-inspector-close="true" aria-label="关闭文件详情">×</button></div>',
       '<div class="eva-file-detail__identity' + (!isTrash ? ' eva-file-detail__identity--with-action' : '') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-file-detail__identity-content"><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(resourceFileType(resource) + (resource.type === 'folder' ? '' : ' · ' + formatDriveBytes(resource.size))) + '</small></span>' + (!isTrash ? '<button class="eva-file-detail__copy-link" type="button" data-drive-action="copy-link" aria-label="复制内部链接" title="复制内部链接">' + icon('link') + '</button>' : '') + '</div>',
-      resource.projectId && !isTrash ? '<div class="eva-drive__inspector-actions"><button class="eva-drive__text-button" type="button" data-drive-action="open-project">' + icon('external') + '在项目中打开</button></div>' : '',
+      !isTrash && (resource.projectId || canDownload) ? '<div class="eva-drive__inspector-actions">' + (resource.projectId ? '<button class="eva-drive__text-button" type="button" data-drive-action="open-project">' + icon('external') + '在项目中打开</button>' : '') + (canDownload ? '<button class="eva-drive__ghost-button" type="button" data-drive-action="download">下载</button>' : '') + '</div>' : '',
       isTrash ? '<div class="eva-drive__management-actions"><button type="button" data-drive-action="restore">恢复</button><button class="is-danger" type="button" data-drive-action="delete-forever">永久删除</button></div>' : '',
       canEdit && !isTrash ? '<div class="eva-drive__management-actions"><button type="button" data-drive-action="rename">重命名</button><button type="button" data-drive-action="move">移动</button>' + (resource.type !== 'shortcut' ? '<button type="button" data-drive-action="copy">创建副本</button>' : '') + (resource.type !== 'shortcut' && resource.type !== 'folder' ? '<button type="button" data-drive-action="create-shortcut">创建快捷方式</button>' : '') + (canTrash ? '<button class="is-danger" type="button" data-drive-action="trash">移至回收站</button>' : '') + '</div>' : '',
       resource.type !== 'folder' ? '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>标签</h3>' + (canEditTags && !isTrash ? '<button type="button" data-drive-action="tags">编辑</button>' : '') + '</div><div class="eva-file-detail__classification">' + (tagsHTML(resource) || '<span class="eva-file-muted">暂无标签</span>') + '</div></section>' : '',
@@ -412,11 +415,37 @@
   }
 
   function relationIconName(type) {
-    return type === 'task' ? 'task' : type === 'group' || type === 'chat' ? 'users' : 'file';
+    return type === 'task' ? 'task' : type === 'ai-conversation' ? 'automation' : type === 'group' || type === 'chat' ? 'users' : 'file';
   }
 
   function relationTypeLabel(type) {
-    return type === 'task' ? '任务' : type === 'group' ? '群聊' : type === 'chat' ? '私聊' : '来源文件';
+    return type === 'task' ? '任务' : type === 'group' ? '群聊' : type === 'chat' ? '私聊' : type === 'ai-conversation' ? 'AI 团队会话' : '来源文件';
+  }
+
+  function openRelationSource(relation) {
+    if (!relation || relation.restricted || !relation.navigable) return false;
+    var target = relation.target || {}, params;
+    if (relation.type === 'ai-conversation' && target.identityId) {
+      params = new URLSearchParams({ evaIM: 'my-ai', evaIdentity: target.identityId });
+      if (target.sessionId) params.set('evaSession', target.sessionId);
+      if (target.messageId) params.set('evaMessage', target.messageId);
+      location.hash = '#/messages?' + params.toString();
+      return true;
+    }
+    if (relation.type === 'chat' && relation.id) {
+      params = new URLSearchParams({ evaDM: relation.id });
+      if (target.messageId) params.set('evaMessage', target.messageId);
+      location.hash = '#/messages?' + params.toString();
+      return true;
+    }
+    if (relation.type === 'group' && relation.id) {
+      location.hash = '#/messages';
+      setTimeout(function () {
+        window.dispatchEvent(new CustomEvent('eva-im:open', { detail: { conversationId: target.groupId || relation.id, threadId: target.threadId || null, messageId: target.messageId || null } }));
+      }, 80);
+      return true;
+    }
+    return false;
   }
 
   function tagsHTML(resource) {
@@ -436,8 +465,9 @@
   function relationDetailsHTML(resource) {
     var relations = relationsFor(resource);
     if (!relations.length) return '<p class="eva-file-detail__empty">当前文件没有系统关联</p>';
-    return '<div class="eva-file-relations">' + relations.map(function (relation) {
-      return '<div class="eva-file-relation"><span class="eva-file-relation__icon">' + icon(relationIconName(relation.type)) + '</span><span><small>' + relationTypeLabel(relation.type) + '</small><strong>' + escapeHTML(relation.label) + '</strong>' + (relation.meta ? '<em>' + escapeHTML(relation.meta) + '</em>' : '') + '</span></div>';
+    return '<div class="eva-file-relations">' + relations.map(function (relation, index) {
+      var action = relation.navigable && !relation.restricted && ['ai-conversation', 'chat', 'group'].includes(relation.type) ? '<button class="eva-file-relation__action" type="button" data-drive-action="open-relation" data-drive-relation-index="' + index + '">查看来源</button>' : '';
+      return '<div class="eva-file-relation"><span class="eva-file-relation__icon">' + icon(relationIconName(relation.type)) + '</span><span><small>' + relationTypeLabel(relation.type) + '</small><strong>' + escapeHTML(relation.label) + '</strong>' + (relation.meta ? '<em>' + escapeHTML(relation.meta) + '</em>' : '') + '</span>' + action + '</div>';
     }).join('') + '</div>';
   }
 
@@ -499,6 +529,7 @@
   function rowActionsHTML(resource) {
     var context = fileContext(), actor = fileActor(), isTrash = state.driveScope === 'trash';
     var shortcutInfo = context.files.shortcutInfo(resource, actor), canOpen = !shortcutInfo || shortcutInfo.status === 'available';
+    var canDownload = resource.type !== 'folder' && canOpen && context.files.can('download', resource.spaceId, actor);
     var open = state.menuId === String(resource.id), items = [];
     if (isTrash) {
       items.push(rowMenuItemHTML('select', '查看文件信息'));
@@ -507,6 +538,7 @@
     } else {
       if (resource.type === 'folder') items.push(rowMenuItemHTML('open-folder', '打开文件夹'));
       else if (canOpen) items.push(rowMenuItemHTML('preview', '预览'));
+      if (canDownload) items.push(rowMenuItemHTML('download', '下载'));
       items.push(rowMenuItemHTML('select', '查看文件信息'));
       items.push(rowMenuItemHTML('copy-link', '复制内部链接'));
       if (context.files.can('rename', resource.spaceId, actor)) items.push(rowMenuItemHTML('rename', '重命名'));
@@ -697,6 +729,33 @@
     return '<div class="eva-drive-dialog eva-drive-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-drive-preview-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="preview-close" aria-label="关闭预览"></button><section class="eva-drive-dialog__panel eva-drive-preview-dialog__panel"><header><h2 id="eva-drive-preview-title">' + escapeHTML(resource.name) + '</h2><button type="button" data-drive-action="preview-close" aria-label="关闭预览">×</button></header><div class="eva-drive-dialog__body">' + content + '</div></section></div>';
   }
 
+  function downloadDriveFile(resource) {
+    var context = fileContext(), actor = fileActor();
+    var liveResource = resource && context.files.list(resource.spaceId, actor).find(function (item) { return item.id === resource.id; });
+    var shortcutInfo = liveResource && context.files.shortcutInfo(liveResource, actor);
+    var canOpen = !shortcutInfo || shortcutInfo.status === 'available';
+    var canDownload = Boolean(liveResource && liveResource.type !== 'folder' && !liveResource.deletedAt && canOpen && context.files.can('download', liveResource.spaceId, actor));
+    if (!canDownload) {
+      showToast('当前文件无法下载');
+      return;
+    }
+    try {
+      var target = context.files.resolveFile(liveResource, actor);
+      if (target.type === 'folder' || target.deletedAt || !context.files.can('download', target.spaceId, actor)) throw new Error('当前文件无法下载');
+      var sampleURL = window.__EVA_FILE_SAMPLE_URLS && window.__EVA_FILE_SAMPLE_URLS[target.name];
+      var fallbackURL = window.__EVA_FILE_DOWNLOAD_FALLBACK_URL || 'prototype/assets/file-samples/file-placeholder.txt';
+      var anchor = document.createElement('a');
+      anchor.href = sampleURL || fallbackURL;
+      anchor.download = target.name;
+      anchor.rel = 'noopener';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    } catch (error) {
+      showToast(error.message || '当前文件无法下载');
+    }
+  }
+
   function projectSpacesHTML() {
     var context = fileContext(), actor = fileActor(), all = context.files.all(actor);
     var projects = WORKSPACES.map(function (workspace) {
@@ -811,6 +870,33 @@
       renderDrive();
       syncShellGeometry();
     }
+  }
+
+  function openDriveFile(recordOrId) {
+    var context = fileContext(), actor = fileActor();
+    if (!context) return false;
+    var id = typeof recordOrId === 'object' ? recordOrId && recordOrId.id : recordOrId;
+    var available = context.files.all(actor);
+    var resource = available.find(function (item) { return String(item.id) === String(id); });
+    if (!resource) return false;
+    var scope = resource.area === 'project' ? 'workspace' : resource.area === 'shared' ? 'shared-space' : 'personal';
+    var workspaceId = resource.projectId || (resource.area === 'project' ? resource.spaceId : null);
+    openDrive('global', workspaceId, scope);
+    if (scope === 'shared-space') state.sharedSpaceId = resource.spaceId;
+    if (scope === 'workspace') state.workspaceId = workspaceId;
+    var crumbs = [], currentId = resource.parent_id || 0, guard = 0;
+    while (currentId && guard++ < 30) {
+      var folder = available.find(function (item) { return item.id === currentId && item.spaceId === resource.spaceId; });
+      if (!folder) break;
+      crumbs.unshift({ id: folder.id, name: folder.name });
+      currentId = folder.parent_id || 0;
+    }
+    state.parentId = resource.parent_id || 0;
+    state.crumbs = crumbs;
+    state.selectedId = resource.id;
+    state.previewId = null;
+    if (document.getElementById('eva-drive-root')) renderDrive();
+    return true;
   }
 
   function closeDrive() {
@@ -980,6 +1066,10 @@
       renderDrive();
     }
     if (name === 'select') { state.selectedId = resource.id; renderDrive(); }
+    if (name === 'open-relation') {
+      var relation = relationsFor(resource)[Number(action.dataset.driveRelationIndex)];
+      openRelationSource(relation);
+    }
     if (name === 'preview') {
       try {
         fileContext().files.resolveFile(resource, fileActor());
@@ -993,6 +1083,7 @@
       }
     }
     if (name === 'preview-close') { state.previewId = null; renderDrive(); }
+    if (name === 'download') { downloadDriveFile(resource); return; }
     if (name === 'open-folder') {
       if (resource.area === 'personal') state.driveScope = 'personal';
       if (resource.area === 'project') { state.driveScope = 'workspace'; state.workspaceId = resource.projectId; }
@@ -1236,6 +1327,7 @@
     installSprite();
     installEvents();
     window.__evaOpenDrive = openDrive;
+    window.__evaOpenDriveFile = openDriveFile;
     window.__evaNativePages.register('drive', function (host) {
       var root = ensureDriveRoot(host);
       root.hidden = false;

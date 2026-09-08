@@ -202,7 +202,8 @@
     return directText(card && card.querySelector('.wk-message-file-name'));
   }
 
-  function openDrive() {
+  function openDrive(record) {
+    if (record && typeof window.__evaOpenDriveFile === 'function' && window.__evaOpenDriveFile(record)) return;
     if (typeof window.__evaOpenDrive === 'function') {
       window.__evaOpenDrive('global', null, 'personal');
       return;

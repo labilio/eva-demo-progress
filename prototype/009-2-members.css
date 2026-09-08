@@ -23,6 +23,13 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-project-file-preview{height:65vh;display:flex;flex-direction:column;min-height:360px}
 .eva-project-file-preview>.eva-members-notice{flex:none;margin-top:0}
 .eva-members-mention-list{display:flex;flex-direction:column;align-items:stretch;gap:6px;max-height:50vh;overflow:auto}
+.eva-file-save-modal__file{display:flex;min-width:0;flex-direction:column;gap:4px;margin-bottom:18px;padding:12px;border:1px solid var(--semi-color-border);border-radius:8px;background:var(--semi-color-fill-0)}
+.eva-file-save-modal__file strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;line-height:22px}
+.eva-file-save-modal__file span{color:var(--semi-color-text-2);font-size:12px;line-height:18px}
+.eva-file-save-modal .eva-members-field{margin-bottom:16px}
+.eva-file-save-modal .eva-members-notice{margin:4px 0 14px}
+.eva-file-save-modal .eva-members-notice strong{display:block;margin-bottom:4px;font-size:13px}
+.eva-file-save-modal .eva-members-notice p,.eva-file-save-modal>.semi-modal-content p.eva-members-muted{margin:0;line-height:20px}
 /* Shared preview host normally docks at the right of a workspace. Inside the
    project modal it must fill the modal's content instead. */
 .eva-project-file-preview>.wk-file-preview-panel{position:relative;inset:auto;width:100%;max-width:none;height:auto;flex:1;min-height:0;box-shadow:none;border:0}

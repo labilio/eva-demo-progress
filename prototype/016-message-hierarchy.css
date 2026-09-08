@@ -1940,6 +1940,20 @@ body.eva-message-hierarchy-ready .eva-msg .eva-file-drive-action:focus-visible {
   outline-offset: 1px;
 }
 
+body.eva-message-hierarchy-ready .eva-msg .wk-message-file.eva-message-source-highlight {
+  outline: 2px solid var(--semi-color-primary, #1456f0);
+  outline-offset: 3px;
+  animation: eva-message-source-pulse 1.1s ease-in-out 2;
+}
+
+@keyframes eva-message-source-pulse {
+  50% { box-shadow: 0 0 0 6px rgb(20 86 240 / 12%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.eva-message-hierarchy-ready .eva-msg .wk-message-file.eva-message-source-highlight { animation: none; }
+}
+
 body.eva-message-hierarchy-ready .eva-drive-scopebar__tab:focus-visible,
 body.eva-message-hierarchy-ready .eva-drive-sourcebar__button:focus-visible,
 body.eva-message-hierarchy-ready .eva-drive__inspector-close:focus-visible,
