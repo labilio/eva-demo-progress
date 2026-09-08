@@ -73,13 +73,16 @@
     });
     conversations.sort(function (a,b) { var ai = restoredOrder.indexOf(a.id), bi = restoredOrder.indexOf(b.id); return (ai < 0 ? restoredOrder.length : ai) - (bi < 0 ? restoredOrder.length : bi); });
   }
+  var deleted = saved && Array.isArray(saved.deleted) ? saved.deleted : [];
+  conversations = conversations.filter(function (c) { return !deleted.includes(c.id); });
   var collapsed = saved && Array.isArray(saved.collapsed) ? saved.collapsed : [];
+  var folderPins = saved && Array.isArray(saved.folderPins) ? saved.folderPins : [];
   var listeners = new Set();
-  function snapshot() { return JSON.parse(JSON.stringify({folders:folders, conversations:conversations, collapsed:collapsed})); }
+  function snapshot() { return JSON.parse(JSON.stringify({folders:folders, conversations:conversations, collapsed:collapsed, deleted:deleted, folderPins:folderPins})); }
   var committed = snapshot();
   function persist() {
     try { localStorage.setItem(storageKey, JSON.stringify(snapshot())); }
-    catch (_) { var old = JSON.parse(JSON.stringify(committed)); folders = old.folders; conversations = old.conversations; collapsed = old.collapsed; throw new Error('无法保存到当前浏览器，请检查存储空间后重试。'); }
+    catch (_) { var old = JSON.parse(JSON.stringify(committed)); folders = old.folders; conversations = old.conversations; collapsed = old.collapsed; deleted = old.deleted; folderPins = old.folderPins; throw new Error('无法保存到当前浏览器，请检查存储空间后重试。'); }
     committed = snapshot();
     listeners.forEach(function (fn) { fn(); });
   }
@@ -94,6 +97,22 @@
       if (name === '默认' || folders.some(function (f) { return f.name === name; })) throw new Error('已有同名文件夹');
       var f = {id:'folder-' + crypto.randomUUID(), name:name}; folders.push(f); persist(); return f.id;
     },
+    renameFolder: function (id, name) {
+      var f = folders.find(function (f) { return f.id === id; }); name = String(name || '').trim();
+      if (!f) throw new Error('默认文件夹不能重命名');
+      if (!name || name.length > 60) throw new Error('请输入 1–60 字的文件夹名称');
+      if (name === '默认' || folders.some(function (f) { return f.id !== id && f.name === name; })) throw new Error('已有同名文件夹');
+      f.name = name; persist();
+    },
+    deleteFolder: function (id) {
+      if (!id) throw new Error('默认文件夹不能删除');
+      folders = folders.filter(function (f) { return f.id !== id; });
+      conversations.forEach(function (c) { if (c.folderId === id) c.folderId = ''; });
+      collapsed = collapsed.filter(function (x) { return x !== id; }); persist();
+    },
+    toggleFolderPin: function (id) { if (!folderExists(id)) throw new Error('文件夹不存在'); folderPins = folderPins.includes(id) ? folderPins.filter(function (x) { return x !== id; }) : folderPins.concat(id); persist(); },
+    togglePin: function (id) { var c = conversation(id); c.pinned = !c.pinned; persist(); },
+    deleteConversation: function (id) { conversation(id); deleted.push(id); conversations = conversations.filter(function (c) { return c.id !== id; }); persist(); },
     toggleFolder: function (id) { collapsed = collapsed.includes(id) ? collapsed.filter(function (x) { return x !== id; }) : collapsed.concat(id); persist(); },
     moveConversation: function (id, folderId) { if (!folderExists(folderId)) throw new Error('文件夹不存在'); conversation(id).folderId = folderId; persist(); },
     renameConversation: function (id, title) { title = String(title || '').trim(); if (!title || title.length > 120) throw new Error('请输入 1–120 字的对话名称'); conversation(id).title = title; persist(); },

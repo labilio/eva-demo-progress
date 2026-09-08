@@ -60,6 +60,7 @@
   var selectedConversation = '';
   var selectedFolderId = '';
   var railForm = null;
+  var folderMenu = null;
   var expandedLists = new Set();
   var activeConversationId = '';
   var personalDrafts = Object.create(null);
@@ -128,23 +129,35 @@
   function railFormHTML() {
     if (!railForm) return '';
     var moving = railForm.type === 'conversation';
-    var detail = moving && conversationForId(railForm.id);
+    var detail = moving ? conversationForId(railForm.id) : personalSnapshot().folders.find(function (f) { return f.id === railForm.id; });
     return '<form class="eva-personal-rail-form" data-eva-rail-form>'
-      + '<label class="eva-t-caption" for="eva-rail-name">' + (moving ? '对话名称' : '新建文件夹') + '</label>'
-      + '<input id="eva-rail-name" name="name" autocomplete="off" maxlength="' + (moving ? '120' : '60') + '" placeholder="文件夹名称" value="' + escapeHTML(detail ? detail.title : '') + '" required>'
+      + '<label class="eva-t-caption" for="eva-rail-name">' + (moving ? '对话名称' : railForm.type === 'rename-folder' ? '重命名文件夹' : '新建文件夹') + '</label>'
+      + '<input id="eva-rail-name" name="name" autocomplete="off" maxlength="' + (moving ? '120' : '60') + '" placeholder="文件夹名称" value="' + escapeHTML(detail ? (moving ? detail.title : detail.name) : '') + '" required>'
       + (moving ? '<label class="eva-t-caption" for="eva-rail-folder">移至文件夹</label><select id="eva-rail-folder" name="folder"><option value="">默认</option>' + personalSnapshot().folders.map(function (f) { return '<option value="' + escapeHTML(f.id) + '"' + (detail.folderId === f.id ? ' selected' : '') + '>' + escapeHTML(f.name) + '</option>'; }).join('') + '</select>' : '')
-      + '<p class="eva-t-caption" role="alert" data-eva-rail-error></p><div class="eva-personal-rail-form__actions"><button type="button" data-eva-cancel-rail>取消</button><button type="submit">' + (moving ? '保存' : '创建') + '</button></div></form>';
+      + '<p class="eva-t-caption" role="alert" data-eva-rail-error></p><div class="eva-personal-rail-form__actions"><button type="button" data-eva-cancel-rail>取消</button><button type="submit">' + (railForm.type === 'folder' ? '创建' : '保存') + '</button></div></form>';
   }
 
   function conversationRowsHTML(items, folderId) {
+    items = items.slice().sort(function (a,b) { return Number(!!b.pinned) - Number(!!a.pinned); });
     var visible = expandedLists.has(folderId) ? items : items.slice(0,6);
     return visible.map(function (item) {
       return '<div class="eva-personal-thread' + (activeConversationId === item.id ? ' is-selected' : '') + '">'
         + '<button type="button" class="eva-personal-thread__main" title="' + escapeHTML(item.title) + '" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span>' + escapeHTML(item.title) + '</span></button>'
         + '<time class="eva-personal-thread__time">' + escapeHTML(item.time || '') + '</time>'
-        + '<button type="button" class="eva-personal-rail-icon eva-personal-thread__more" data-eva-conversation-menu="' + escapeHTML(item.id) + '" aria-label="管理对话：' + escapeHTML(item.title) + '" title="重命名或移动">' + icon('ellipsis',16,'eva-i') + '</button></div>';
+        + '<span class="eva-personal-thread__actions"><button type="button" class="eva-personal-rail-icon" data-eva-pin-conversation="' + escapeHTML(item.id) + '" aria-pressed="' + !!item.pinned + '" aria-label="' + (item.pinned ? '取消置顶' : '置顶') + '：' + escapeHTML(item.title) + '" title="' + (item.pinned ? '取消置顶' : '置顶') + '">' + icon('pin',16,'eva-i') + '</button>'
+        + '<button type="button" class="eva-personal-rail-icon" data-eva-delete-conversation="' + escapeHTML(item.id) + '" aria-label="删除对话：' + escapeHTML(item.title) + '" title="删除">' + icon('trash-2',16,'eva-i') + '</button></span>'
+        + '</div>' ;
     }).join('') + (items.length > 6 ? '<button type="button" class="eva-personal-rail-more" data-eva-expand-list="' + escapeHTML(folderId) + '">' + (expandedLists.has(folderId) ? '收起显示' : '展开显示') + '</button>' : '')
       + (!items.length ? '<div class="eva-personal-rail-empty eva-t-caption">还没有对话</div>' : '');
+  }
+
+  function folderMenuHTML(folder) {
+    var pinned = (personalSnapshot().folderPins || []).includes(folder.id);
+    var locked = folder.id ? '' : ' disabled title="默认文件夹固定保留"';
+    return '<div class="eva-personal-folder-menu" role="menu" aria-label="文件夹设置">'
+      + '<button type="button" role="menuitem" data-eva-rename-folder="' + escapeHTML(folder.id) + '"' + locked + '>' + icon('pencil',16,'eva-i') + '重命名</button>'
+      + '<button type="button" role="menuitem" data-eva-delete-folder="' + escapeHTML(folder.id) + '"' + locked + '>' + icon('trash-2',16,'eva-i') + '删除</button>'
+      + '<button type="button" role="menuitem" data-eva-pin-folder="' + escapeHTML(folder.id) + '" class="' + (pinned ? 'is-pinned' : '') + '">' + icon('pin',16,'eva-i') + (pinned ? '取消置顶' : '置顶') + '</button></div>';
   }
 
   function assistantRailHTML() {
@@ -153,12 +166,14 @@
       + '<div class="eva-personal-rail-top"><button type="button" class="eva-personal-rail-new" data-eva-new-folder-chat="">' + icon('pencil',18,'eva-i') + '<span>新对话</span></button></div>'
       + '<div class="eva-personal-sider-panel__body"><div class="eva-personal-rail-section"><span>文件夹</span><button type="button" class="eva-personal-rail-icon" data-eva-create-folder aria-label="创建文件夹" title="创建文件夹">' + icon('plus',16,'eva-i') + '</button></div>'
       + railFormHTML()
-      + [{id:'',name:'默认'}].concat(snapshot.folders).map(function (folder) {
+      + [{id:'',name:'默认'}].concat(snapshot.folders).sort(function (a,b) { var pins = snapshot.folderPins || []; return Number(pins.includes(b.id)) - Number(pins.includes(a.id)); }).map(function (folder) {
         var collapsed = snapshot.collapsed.includes(folder.id);
         var items = snapshot.conversations.filter(function (c) { return c.folderId === folder.id; });
-        return '<section class="eva-personal-folder' + (selectedFolderId === folder.id ? ' is-current' : '') + '"><div class="eva-personal-folder__row">'
-          + '<button type="button" class="eva-personal-folder__main" data-eva-toggle-folder="' + escapeHTML(folder.id) + '" aria-expanded="' + !collapsed + '" title="' + escapeHTML(folder.name) + '">' + icon('folder',18,'eva-i') + '<span>' + escapeHTML(folder.name) + '</span>' + icon(collapsed ? 'chevron-right' : 'chevron-down',12,'eva-i') + '</button>'
+        return '<section class="eva-personal-folder"><div class="eva-personal-folder__row">'
+          + '<button type="button" class="eva-personal-folder__main" data-eva-toggle-folder="' + escapeHTML(folder.id) + '" aria-expanded="' + !collapsed + '" title="' + escapeHTML(folder.name) + '">' + icon('folder',18,'eva-i') + '<span>' + escapeHTML(folder.name) + '</span>' + '</button>'
+          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__more" data-eva-folder-menu="' + escapeHTML(folder.id) + '" aria-label="设置文件夹：' + escapeHTML(folder.name) + '" aria-haspopup="menu" aria-expanded="' + (folderMenu === folder.id) + '" title="文件夹设置">' + icon('ellipsis',16,'eva-i') + '</button>'
           + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__new" data-eva-new-folder-chat="' + escapeHTML(folder.id) + '" aria-label="在' + escapeHTML(folder.name) + '中新建对话" title="新建对话">' + icon('plus',16,'eva-i') + '</button></div>'
+          + (folderMenu === folder.id ? folderMenuHTML(folder) : '')
           + (!collapsed ? '<div class="eva-personal-folder__threads">' + conversationRowsHTML(items,folder.id) + '</div>' : '') + '</section>';
       }).join('')
       + '</div><div class="eva-conversation-rail-resizer" role="separator" aria-label="调整中间栏宽度" aria-orientation="vertical" tabindex="0" data-eva-conversation-rail-resizer></div></aside>';
@@ -206,7 +221,9 @@
 
   function folderPickerHTML() {
     var folders = [{id:'',name:'默认'}].concat(personalSnapshot().folders);
-    return '<label class="eva-newchat-context eva-personal-folder-picker" title="选择文件夹">' + icon('folder',18,'eva-i')
+    var selected = folders.find(function (folder) { return folder.id === selectedFolderId; }) || folders[0];
+    return '<label class="eva-newchat-context eva-personal-folder-picker" title="' + escapeHTML(selected.name) + '">' + icon('folder',18,'eva-i')
+      + '<span class="eva-personal-folder-picker__label" aria-hidden="true">' + escapeHTML(selected.name) + '</span>'
       + '<select aria-label="选择文件夹" data-eva-composer-folder>' + folders.map(function (folder) {
         return '<option value="' + escapeHTML(folder.id) + '"' + (folder.id === selectedFolderId ? ' selected' : '') + '>' + escapeHTML(folder.name) + '</option>';
       }).join('') + '</select>' + icon('chevron-down',12,'eva-i-chevron') + '</label>';
@@ -674,8 +691,31 @@
       railForm = {type:'folder'}; renderRail(); root.querySelector('#eva-rail-name').focus(); return;
     }
     if (event.target.closest('[data-eva-cancel-rail]')) { railForm = null; renderRail(); return; }
-    var menu = event.target.closest('[data-eva-conversation-menu]');
-    if (menu) { railForm = {type:'conversation', id:menu.dataset.evaConversationMenu}; renderRail(); root.querySelector('#eva-rail-name').focus(); return; }
+    var folderSettings = event.target.closest('[data-eva-folder-menu]');
+    if (folderSettings) { folderMenu = folderMenu === folderSettings.dataset.evaFolderMenu ? null : folderSettings.dataset.evaFolderMenu; renderRail(); return; }
+    var pinFolder = event.target.closest('[data-eva-pin-folder]');
+    if (pinFolder) { window.EvaPersonal.toggleFolderPin(pinFolder.dataset.evaPinFolder); folderMenu = null; renderRail(); return; }
+    var renameFolder = event.target.closest('[data-eva-rename-folder]');
+    if (renameFolder) { railForm = {type:'rename-folder', id:renameFolder.dataset.evaRenameFolder}; folderMenu = null; renderRail(); root.querySelector('#eva-rail-name').focus(); return; }
+    var deleteFolder = event.target.closest('[data-eva-delete-folder]');
+    if (deleteFolder) {
+      if (!window.confirm('删除这个文件夹？其中的对话会移回“默认”。')) return;
+      window.EvaPersonal.deleteFolder(deleteFolder.dataset.evaDeleteFolder);
+      if (selectedFolderId === deleteFolder.dataset.evaDeleteFolder) selectedFolderId = '';
+      folderMenu = null; renderRail();
+      var folderPicker = root.querySelector('.eva-personal-folder-picker'); if (folderPicker) folderPicker.outerHTML = folderPickerHTML(); return;
+    }
+    var pin = event.target.closest('[data-eva-pin-conversation]');
+    if (pin) { window.EvaPersonal.togglePin(pin.dataset.evaPinConversation); renderRail(); return; }
+    var deletion = event.target.closest('[data-eva-delete-conversation]');
+    if (deletion) {
+      if (!window.confirm('删除“' + conversationForId(deletion.dataset.evaDeleteConversation).title + '”？删除后无法恢复。')) return;
+      var deletedId = deletion.dataset.evaDeleteConversation;
+      window.EvaPersonal.deleteConversation(deletedId); delete personalDrafts[deletedId];
+      if (activeConversationId === deletedId) { activeConversationId = ''; selectedConversation = ''; resetToHome(); location.hash = '#/guid'; }
+      renderRail(); return;
+    }
+    if (folderMenu !== null) { folderMenu = null; renderRail(); }
     var toggle = event.target.closest('[data-eva-toggle-folder]');
     if (toggle) { window.EvaPersonal.toggleFolder(toggle.dataset.evaToggleFolder); renderRail(); return; }
     var expand = event.target.closest('[data-eva-expand-list]');
@@ -842,8 +882,22 @@
     var next = event.target.value;
     if (activeConversationId && window.EvaPersonal) window.EvaPersonal.moveConversation(activeConversationId, next);
     selectedFolderId = next;
+    var picker = event.target.closest('.eva-personal-folder-picker');
+    var selected = [{id:'',name:'默认'}].concat(personalSnapshot().folders).find(function (folder) { return folder.id === next; });
+    picker.querySelector('.eva-personal-folder-picker__label').textContent = selected.name;
+    picker.title = selected.name;
     personalDrafts['new:' + next] = draft;
     renderRail();
+  });
+
+  document.addEventListener('contextmenu', function (event) {
+    if (!root || !root.contains(event.target)) return;
+    var row = event.target.closest('[data-eva-personal-conversation-id]');
+    if (!row) return;
+    event.preventDefault(); railForm = {type:'conversation', id:row.dataset.evaPersonalConversationId}; renderRail(); root.querySelector('#eva-rail-name').focus();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && folderMenu !== null) { folderMenu = null; renderRail(); }
   });
 
   document.addEventListener('submit', function (event) {
@@ -852,6 +906,7 @@
     var name = event.target.querySelector('[name="name"]').value;
     try {
       if (railForm.type === 'folder') window.EvaPersonal.createFolder(name);
+      else if (railForm.type === 'rename-folder') window.EvaPersonal.renameFolder(railForm.id, name);
       else {
         window.EvaPersonal.renameConversation(railForm.id, name);
         window.EvaPersonal.moveConversation(railForm.id, event.target.querySelector('[name="folder"]').value);
