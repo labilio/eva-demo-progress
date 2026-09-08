@@ -635,6 +635,6 @@ window.navigation?.addEventListener('currententrychange', detectPageChange);
 
 ensureUI();
 new MutationObserver(schedulePins).observe(document.getElementById('root') || document.body, { childList:true, subtree:true });
-setInterval(() => { if (!document.hidden && !document.querySelector('.eva-review-panel')?.hidden) refresh({ quiet:true }); }, 15000);
+setInterval(() => { if (!document.hidden && !document.querySelector('.eva-review-panel')?.hidden) refresh({ quiet:true }); }, 10 * 60 * 1000);
 setInterval(detectPageChange, 250);
 refresh({ quiet:true });
