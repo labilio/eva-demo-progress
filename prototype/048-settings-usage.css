@@ -1,6 +1,6 @@
 .eva-settings-portal{position:fixed;inset:var(--topbar-height) 0 0;z-index:1000;pointer-events:none}
 .eva-settings-portal .semi-modal-mask,.eva-settings-portal .semi-modal-wrap{position:absolute;inset:0;height:100%;pointer-events:auto}
-.eva-settings-dialog .semi-modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;height:min(640px, calc(100vh - var(--topbar-height) - 64px));max-height:100%;max-width:100%;padding:0}
+.eva-settings-dialog .semi-modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;height:min(720px, calc(100vh - var(--topbar-height) - 48px));max-height:100%;max-width:100%;padding:0}
 .eva-settings-dialog .semi-modal-content{box-sizing:border-box;height:100%;max-height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:0;border-radius:20px;box-shadow:var(--eva-shadow-floating)}
 .eva-settings-dialog .semi-modal-header{flex-shrink:0;margin:0;padding:16px 24px;border-bottom:1px solid var(--semi-color-border)}
 .eva-settings-portal .eva-settings-dialog{overflow:hidden;padding:0;box-sizing:border-box}

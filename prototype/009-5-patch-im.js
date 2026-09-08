@@ -472,6 +472,10 @@ function EvaAITeamPage() {
       '!ui&&Vs),evaInlineProjectId&&React.createElement(EvaInlineProjectPanel,{projectId:evaInlineProjectId})),ki,Ss)',
       '消息内容区内联项目面板');
 
+    // Normalize at the shared IM tokenizer: the @ prefix is part of the mention entity.
+    cut('function segmentText(rt,ct,ut){if(!ct.length&&!ut.length)',
+      'function segmentText(rt,ct,ut){ct=Array.from(new Map((ct||[]).filter(m=>typeof m?.name==="string"&&m.name.replace(/^@+/,"").trim()).map(m=>{const name="@"+m.name.replace(/^@+/,"");return[name,{...m,name}]})).values());ut=(ut||[]).filter(e=>typeof e?.key==="string"&&e.key.length>0);if(!ct.length&&!ut.length)',
+      '统一 IM 提及包含 @ 前缀并过滤空实体');
     cut('function getMentionRenderState(rt){return rt==="all"||rt==="channel"?{className:"mention-highlight",interactive:!1}', 'function getMentionRenderState(rt){return rt==="all"||rt==="channel"?{className:"mention-entity",interactive:!1}', '所有人提及沿用成员提及样式');
     // Restore the historical message search while retaining the shared member picker.
     cut('ii=ci=>{const Zi=SENDERS[ci];if(!Zi)return;Fa(""),ir("recent");const Fi=pt.find(ro=>ro.members===2&&ro.name===Zi.name);if(Fi){La(Fi.id);return}const Ki={id:`dm-${ci}`,name:Zi.name,color:Zi.color,unread:0,members:2,category:NO_CAT,lastAt:new Date().toISOString(),threads:[]};mt(ro=>[...ro,Ki]),La(Ki.id)}',

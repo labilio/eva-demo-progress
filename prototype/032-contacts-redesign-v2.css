@@ -54,11 +54,15 @@
   .eva-contacts__search {
     display: flex;
     align-items: center;
-    height: 34px;
-    margin: 14px 14px 10px;
+    height: 32px;
+    width: 280px;
+    min-width: 0;
+    flex: 0 1 280px;
+    margin: 0;
     padding: 0 10px;
     gap: 7px;
-    border-radius: var(--gds-radius-chip);
+    border-radius: var(--gds-radius-control);
+    border: var(--gds-border-standard) solid var(--gds-color-border-subtle);
     color: var(--gds-color-text-secondary-accessible);
     background: var(--gds-color-surface-subtle);
   }
@@ -96,7 +100,8 @@
   }
 
   .eva-contacts__main-head {
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: var(--eva-space-4);
     padding: 0 20px;
   }
   .eva-contacts__toolbar {
@@ -107,64 +112,6 @@
     padding: 10px 20px 8px;
     gap: 8px;
   }
-
-  .eva-contacts__search-action {
-    position: relative;
-    width: 32px;
-    height: 32px;
-    flex: none;
-  }
-
-  .eva-contacts__search-popover {
-    position: absolute;
-    z-index: 2;
-    top: 50%;
-    right: 0;
-    display: flex;
-    align-items: center;
-    width: min(280px, 42vw);
-    height: 32px;
-    padding: 0 10px;
-    gap: 7px;
-    border-radius: 16px;
-    border: var(--gds-border-standard) solid var(--gds-color-border-subtle);
-    color: var(--gds-color-text-secondary-accessible);
-    background: var(--gds-color-surface-primary);
-    box-shadow: var(--gds-shadow-floating), var(--gds-shadow-hairline);
-    transform: translateY(-50%);
-  }
-
-  .eva-contacts__search-popover[hidden] { display: none; }
-  .eva-contacts__search-popover svg { flex: none; width: 15px; height: 15px; }
-  .eva-contacts__search-popover input {
-    min-width: 0;
-    width: 100%;
-    border: 0;
-    outline: 0;
-    color: var(--gds-color-text-primary);
-    background: transparent;
-    font: inherit;
-    font-size: var(--gds-type-label-font-size);
-    line-height: var(--gds-type-label-line-height);
-  }
-
-  .eva-contacts__search-toggle {
-    display: inline-grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    margin-left: 2px;
-    padding: 0;
-    border: 0;
-    border-radius: var(--eva-radius-control);
-    color: var(--gds-color-text-secondary-accessible);
-    background: transparent;
-    cursor: pointer;
-  }
-
-  .eva-contacts__search-toggle:hover { color: var(--gds-color-text-primary); background: var(--gds-color-surface-subtle); }
-  .eva-contacts__search-toggle:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-border-focus); outline-offset: var(--gds-space-0-5); }
-  .eva-contacts__search-toggle svg { width: 16px; height: 16px; }
 
   .eva-contacts__list {
     min-height: 0;
@@ -328,7 +275,7 @@
 .eva-contact-identity-button{border:0;background:transparent;color:inherit;font:inherit;text-align:left;padding:var(--gds-space-1);border-radius:var(--gds-radius-control);cursor:pointer}
 .eva-contact-identity-button:hover{background:var(--gds-color-surface-subtle)}
 .eva-contact-identity-button:focus-visible{outline:var(--gds-border-focus) solid var(--gds-color-border-focus);outline-offset:var(--gds-space-0-5)}
-.eva-contacts__search-popover .semi-input-wrapper{border:0;background:transparent;min-width:0;flex:1}
+.eva-contacts__search .semi-input-wrapper{border:0;background:transparent;min-width:0;flex:1}
 
 /* L2 department stays beside the human name; AI columns remain unchanged. */
 .eva-contacts__department {
@@ -351,7 +298,7 @@
   background: var(--eva-surface-subtle);
 }
 .eva-contacts__more { min-width: 32px; min-height: 32px; }
-.eva-contacts__search-popover:focus-within {
+.eva-contacts__search:focus-within {
   border-color: var(--eva-border-focus);
   outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
   outline-offset: var(--eva-space-0-5);

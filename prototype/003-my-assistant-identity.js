@@ -28,6 +28,8 @@ window.EvaAIIdentity = (() => {
       render('img',{className:'eva-identity-avatar__logo',src,alt:''}));
   }
   function badge(render=html,className='') {return render('span',{className:'ai-badge ai-badge-small'+(className?' '+className:'')},'AI');}
-  function projectAgentAppearance(project){return {project:project?{id:project.id,colorKey:window.EvaProjectAppearance.keyFor(project)}:undefined,name:'Eva 项目管理专员',sourceName:'Eva',avatar:'prototype/assets/project-agent-bot.svg',logo:window.__EVA_COLLEAGUE_PORTRAIT,markerKind:'bot'};}
-  return Object.freeze({avatar,badge,projectAgentAppearance});
+  function projectAgentName(project){return project?.name?String(project.name)+' · 项目管家':'项目管家';}
+  function projectAgentLegacyNames(project){return ['Eva 项目管理专员','Eva 项目助手',...(project?.name?[String(project.name)+'项目管家']:[])];}
+  function projectAgentAppearance(project){return {project:project?{id:project.id,colorKey:window.EvaProjectAppearance.keyFor(project)}:undefined,name:projectAgentName(project),sourceName:'Eva',avatar:'prototype/assets/project-agent-bot.svg',logo:window.__EVA_COLLEAGUE_PORTRAIT,markerKind:'bot'};}
+  return Object.freeze({avatar,badge,projectAgentName,projectAgentLegacyNames,projectAgentAppearance});
 })();

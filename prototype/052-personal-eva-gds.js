@@ -153,8 +153,8 @@
     return '<div class="eva-personal-workspace__hero">'
       + '<div class="eva-personal-workspace__hero-grid" aria-hidden="true"></div>'
       + '<h1 class="eva-personal-workspace__welcome">'
-      + '<span>你好，我是Eva同学</span>'
-      + '</h1><span class="eva-personal-workspace__hi" aria-hidden="true">hi</span><img class="eva-personal-workspace__mascot" src="prototype/assets/eva-wave.png" alt="">'
+      + '<span>AI随行</span><span class="eva-personal-workspace__welcome-avatar" aria-hidden="true"><img src="prototype/assets/eva-wave.png" alt=""></span><span>工作随心</span>'
+      + '</h1>'
       + '</div>';
   }
 
@@ -183,6 +183,17 @@
   }
 
   function actionsHTML() {
+    if (isNewConversationState()) {
+      var assistant = selectedAssistant();
+      return '<div class="eva-composer-actions eva-newchat-actions">'
+        + '<button class="eva-newchat-icon-action" type="button" disabled aria-label="添加附件">' + icon('plus', 20, 'eva-i') + '</button>'
+        + '<button class="eva-newchat-context" type="button" disabled>' + icon('folder', 18, 'eva-i') + '<span>Eva</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
+        + '<button class="eva-newchat-context" type="button" disabled data-eva-selected-assistant="' + escapeHTML(assistant.id) + '">' + icon('brain', 18, 'eva-i') + '<span>' + escapeHTML(assistant.name) + '</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
+        + '<span class="eva-newchat-actions__spacer"></span>'
+        + '<button class="eva-newchat-model" type="button" disabled><span>Qwen3.8 Max</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
+        + sendHTML()
+        + '</div>';
+    }
     return '<div class="eva-composer-actions">'
       + '<button class="eva-round eva-round-ghost" type="button" disabled title="原型暂未实现此操作" aria-label="添加附件">' + icon('plus', 16, 'eva-i') + '</button>'
       + '<span style="flex:1 1 auto"></span>'
@@ -199,7 +210,7 @@
     return '<div class="eva-composer' + (extraClass ? ' ' + extraClass : '') + '" data-eva-personal-composer>'
       + (conversationPickerOpen ? pickerHTML() : '')
       + '<div class="eva-composer-input-area">' + (skillPickerOpen() ? '<span aria-hidden="true">@</span>' : '') + mention
-      + '<textarea class="eva-composer-prompt" aria-label="向 Eva 同学提问"' + (skillPickerOpen() ? ' role="combobox" aria-expanded="true" aria-controls="eva-skill-list" aria-activedescendant="eva-skill-option-' + pickerIndex + '"' : '') + ' placeholder="' + (skillPickerOpen() ? '输入技能名称' : '要我帮你做些什么？ @ 调用技能与指令') + '"'
+      + '<textarea class="eva-composer-prompt" aria-label="向 Eva 同学提问"' + (skillPickerOpen() ? ' role="combobox" aria-expanded="true" aria-controls="eva-skill-list" aria-activedescendant="eva-skill-option-' + pickerIndex + '"' : '') + ' placeholder="' + (skillPickerOpen() ? '输入技能名称' : isNewConversationState() ? '分配一个任务或提问任何问题' : '要我帮你做些什么？ @ 调用技能与指令') + '"'
       + (state === 'generating' ? ' disabled' : '') + '>' + escapeHTML(value) + '</textarea></div>'
       + actionsHTML() + '</div>';
   }
@@ -435,11 +446,10 @@
     var content;
     if (isNewConversationState()) {
       content = '<div class="eva-personal-workspace__scroll"><div class="eva-personal-workspace__column">'
-        + heroHTML() + railHTML() + '<div class="eva-personal-workspace__composer">'
+        + heroHTML() + '<div class="eva-personal-workspace__composer">'
         + (skillPickerOpen() ? pickerHTML() : '')
-        + '<div class="eva-composer-wrap">' + composerPanelHTML()
-        + '<div class="eva-personal-quickskills"><button type="button" data-eva-open-skills>' + icon('sparkles', 16, 'eva-i') + '调用技能' + icon('chevron-down', 12, 'eva-i-chevron')
-        + '</button><span data-eva-selected-assistant="' + escapeHTML(selectedAssistant().id) + '">' + icon('brain', 16, 'eva-i') + escapeHTML(selectedAssistant().name) + '</span></div></div></div></div></div>';
+        + '<div class="eva-composer-wrap eva-composer-wrap--newchat">' + composerPanelHTML()
+        + '</div></div>' + railHTML() + '</div></div>';
     } else if (state === 'generating') content = generatingHTML();
     else if (state === 'history') content = historyConversationHTML();
     else content = '<div class="eva-personal-workspace__completed">' + completedConversationHTML() + completedEditorHTML() + '</div>';

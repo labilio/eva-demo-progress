@@ -118,8 +118,16 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-members-notice { border-radius:12px;padding:12px 16px;line-height:22px; }
 @media(max-width:900px) { .eva-project-settings-info__facts { grid-template-columns:1fr; } }
 
-.eva-project-role-form{display:flex;flex-direction:column;gap:16px}
-.eva-project-role-form label{display:flex;flex-direction:column;gap:8px}
+.eva-project-role-form{display:flex;flex-direction:column;gap:var(--eva-space-5)}
+.eva-role-field{display:flex;flex-direction:column;gap:var(--eva-space-2)}
+.eva-role-field-label{display:flex;align-items:center;gap:var(--eva-space-2);color:var(--gds-color-text-primary);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height);font-weight:var(--gds-font-weight-medium)}
+.eva-role-field-hint{font-size:var(--gds-type-caption-font-size);color:var(--gds-color-text-secondary-accessible);font-weight:var(--gds-font-weight-regular)}
+.eva-project-role-form .eva-role-help{margin:0;font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-caption-line-height)}
+.eva-role-menu-footer{border-top:var(--gds-border-standard) solid var(--gds-color-border-subtle);padding:var(--eva-space-2)}
+.eva-role-menu-footer .eva-role-menu-new{width:100%;justify-content:flex-start;min-height:32px}
+.eva-role-menu-create{display:flex;flex-direction:column;gap:var(--eva-space-2);padding:var(--eva-space-2)}
+.eva-role-menu-actions{display:flex;justify-content:flex-end;gap:var(--eva-space-2)}
+.eva-role-menu-create .eva-members-error{margin:0}
 
 .eva-chat-task-list{display:flex;flex-direction:column;height:100%;min-height:0;color:var(--semi-color-text-0)}
 .eva-chat-task-list .wk-thread-panel-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}

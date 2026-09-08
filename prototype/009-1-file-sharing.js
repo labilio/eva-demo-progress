@@ -123,7 +123,9 @@
       return role(source.spaceId,actorId)?'available':'forbidden';
     };
     const visibleRecord=(item,actorId)=>{
-      const value=clone(item);if(item.type!=='shortcut'||!actorId)return value;
+      const value=clone(item),agent=membership.projectAgent?.(item.projectId||item.spaceId);
+      if(agent)for(const key of ['creator','editor','createdBy','updatedBy'])if(root.EvaAIIdentity.projectAgentLegacyNames({name:agent.name.replace(/ · 项目管家$/,'')}).includes(value[key]))value[key]=agent.name;
+      if(item.type!=='shortcut'||!actorId)return value;
       const status=shortcutStatus(item,actorId),source=shortcutSource(item);value.shortcutStatus=status;
       if(status==='available'){
         value.name=item.customName?item.name:source.name;value.extension=source.extension||ext(source.name);value.size=source.size||0;value.sourceAvailable=true;
