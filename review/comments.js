@@ -1,3 +1,4 @@
+import { menuOf } from './developer-domain.mjs';
 import { createCommentsStore } from './comments-store.mjs';
 import { afterBrowserPaint, buildAnchorRecord, buildProjectViewContext, clampFloatingPosition, createPageChangeDetector, createPageRequestGate, hasDragMoved, inferProjectTab, isVisiblePin, normalizeStatus, pageLabel, partitionCommentsByCompletion, pointWithinRect } from './comments-domain.mjs';
 import { COMMENTS_CONFIG } from './comments-config.mjs';
@@ -157,7 +158,7 @@ function ensureUI() {
     <button type="button" class="eva-review-launcher" data-review-ui data-review-launcher aria-expanded="false" aria-controls="eva-review-panel">${icon('comment',15)}<span>批注</span></button>
     <button type="button" class="eva-review-restore" data-review-ui data-review-restore hidden aria-label="显示批注">${icon('eye',15)}</button>
     <aside id="eva-review-panel" class="eva-review-panel" data-review-ui hidden aria-label="原型批注">
-      <header class="eva-review-head" data-review-drag-handle><div><strong>批注</strong><span>所有同事共享</span></div><div class="eva-review-head-actions"><div class="eva-review-updates"><button type="button" data-review-load-updates>检查更新</button><span data-review-update-status role="status" aria-live="polite"></span></div><select class="eva-review-status-filter" data-review-status-filter aria-label="筛选批注状态"><option value="all">全部状态</option>${Object.entries(STATUSES).map(([value, label]) => `<option value="${value}"${state.statusFilter === value ? ' selected' : ''}>${label}</option>`).join('')}</select><button type="button" class="eva-review-icon-button" data-review-hide aria-label="隐藏批注入口">${icon('eyeOff')}</button><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
+      <header class="eva-review-head" data-review-drag-handle><div><strong>批注</strong><a data-review-developer href="/review/developer.html" target="_blank" rel="noopener" title="所有同事共享批注">开发工作台</a></div><div class="eva-review-head-actions"><div class="eva-review-updates"><button type="button" data-review-load-updates>检查更新</button><span data-review-update-status role="status" aria-live="polite"></span></div><select class="eva-review-status-filter" data-review-status-filter aria-label="筛选批注状态"><option value="all">全部状态</option>${Object.entries(STATUSES).map(([value, label]) => `<option value="${value}"${state.statusFilter === value ? ' selected' : ''}>${label}</option>`).join('')}</select><button type="button" class="eva-review-icon-button" data-review-hide aria-label="隐藏批注入口">${icon('eyeOff')}</button><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
       <div class="eva-review-toolbar">
         <button type="button" class="eva-review-primary" data-review-add>${icon('add')}添加批注</button>
       </div>
@@ -284,7 +285,7 @@ function syncUpdateNotice() {
   const button = document.querySelector('[data-review-load-updates]');
   if (!button) return;
   const pending = state.pendingRows !== null;
-  button.textContent = pending ? '有更新，点击加载' : '检查更新';
+  button.textContent = pending ? '加载更新' : '检查更新';
   button.classList.toggle('has-updates', pending);
   const status = document.querySelector('[data-review-update-status]');
   const message = pending ? '有新的批注变更' : '';
@@ -335,6 +336,7 @@ async function loadUpdates() {
 
 async function refresh({ quiet = false, background = false } = {}) {
   ensureUI();
+  document.querySelector('[data-review-developer]').href = '/review/developer.html?menu=' + encodeURIComponent(menuOf(currentPage()));
   if (background && state.checking) return;
   const request = requestGate.start();
   state.checking = true;
@@ -735,4 +737,9 @@ ensureUI();
 new MutationObserver(schedulePins).observe(document.getElementById('root') || document.body, { childList:true, subtree:true });
 setInterval(() => { if (!document.hidden && !document.querySelector('.eva-review-panel')?.hidden) refresh({ quiet:true, background:true }); }, 15000);
 setInterval(detectPageChange, 250);
-refresh({ quiet:true, background:true });
+refresh({ quiet:true, background:true }).then(async () => {
+  const id = new URLSearchParams(location.search).get('reviewComment');
+  if (!id) return;
+  const row = state.rows.find(row => row.id === id);
+  if (row) { openPanel(); await locateComment(row.id); }
+});

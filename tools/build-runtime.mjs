@@ -41,6 +41,13 @@ export function buildSite(root = process.cwd()) {
   fs.copyFileSync(path.join(projectRoot, 'index.html'), path.join(outputRoot, 'index.html'));
 
   const result = createPatchedRuntime(projectRoot);
+  const git = (...args) => { try { return execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return ''; } };
+  fs.writeFileSync(path.join(outputRoot, 'review/build-context.json'), JSON.stringify({
+    commit: process.env.VERCEL_GIT_COMMIT_SHA || git('rev-parse', 'HEAD'),
+    branch: process.env.VERCEL_GIT_COMMIT_REF || git('branch', '--show-current') || 'detached',
+    version: result.release.version,
+    dirty: !process.env.VERCEL && !!git('status', '--porcelain', '--untracked-files=no'),
+  }, null, 2));
   fs.writeFileSync(
     path.join(outputRoot, 'vendor/eva-runtime.module.js'),
     `${result.source}\n//# sourceURL=eva-demo-${result.release.version.replace(/[^0-9a-z]+/gi, '-').toLowerCase()}.module.js\n`,

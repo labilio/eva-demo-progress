@@ -9,6 +9,9 @@ const HELP = `Eva 云端批注命令
 用法：
   npm run comments -- add --page <hash> --selector <css> --kind <type> --body <text>
   npm run comments -- list --page <hash>
+  npm run comments -- list --ids <UUID,UUID>
+  npm run comments -- claim --ids <UUID,UUID> --author <认领者>
+  npm run comments -- unclaim --ids <UUID,UUID> --author <认领者>
   npm run comments -- reply --id <comment-id> --body <text>
   npm run comments -- status --id <comment-id> --status <open|approved|doing|done>
   npm run comments -- delete --id <comment-id>
@@ -94,7 +97,13 @@ export async function runCommentsCommand(argv, dependencies = {}) {
   }
 
   if (command === 'list') {
-    const rows = await store.list(flags.page ? String(flags.page).trim() : undefined);
+    const rows = await store.list(flags.page ? String(flags.page).trim() : undefined, flags.ids ? String(flags.ids).split(',').map(id => id.trim()) : undefined);
+    printJson(write, rows);
+    return rows;
+  }
+
+  if (command === 'claim' || command === 'unclaim') {
+    const rows = await store.claim(required(flags, 'ids').split(',').map(id => id.trim()), author, command === 'unclaim');
     printJson(write, rows);
     return rows;
   }

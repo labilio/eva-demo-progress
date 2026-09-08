@@ -85,3 +85,19 @@ npm run comments -- add `
 4. `approved` 状态和 `ready` 类型必须来自本轮人工确认；AI 推断、旧对话授权和“看起来合理”都不算确认。
 5. 本命令使用前端相同的 publishable key 和现有 RLS，不需要也禁止使用 Supabase secret/service-role key。
 6. 删除属于共享操作；只能删除用户明确指定或本轮联调产生的批注，不得批量清理未知批注。
+
+## 开发工作台与认领
+
+批注侧栏顶部“开发工作台”在新标签页打开 `/review/developer.html`，按一级功能菜单展示共享批注大表。复用原批注、讨论、四种状态，仅增加 `claimed_by` / `claimed_at` 共享署名。姓名不构成身份认证或访问权限。
+
+默认筛选已确认、未认领。勾选可跨筛选保留；普通复制不更改状态，认领并复制在数据库事务中检查全部所选项，冲突时全部不认领。认领成功状态为修改中。释放认领保留原状态；评审者可在原批注侧栏重新确认后安排开发。
+
+```sh
+npm run comments -- list --ids <UUID,UUID>
+npm run comments -- claim --ids <UUID,UUID> --author "开发者姓名"
+npm run comments -- unclaim --ids <UUID,UUID> --author "原认领者姓名"
+```
+
+提示词包含仓库、实际前端构建 commit/分支/版本、页面 URL、批注 UUID、原文、完整讨论、定位数据及源码检索起点。源码参照不能代替读取当前职责清单。构建元信息由构建过程生成，不维护第二套正式版本号。AI 接手先刷新批注；复制文本本身不代表执行或发布授权。
+
+开发结果复用 `reply`，回填修改说明、commit/PR、预览地址和验证结果后，用原有 `status` 命令更新实际进度。不得将“原型已改完”表述为人工验收通过。
