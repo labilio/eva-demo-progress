@@ -28,8 +28,14 @@ window.EvaAIIdentity = (() => {
       render('img',{className:'eva-identity-avatar__logo',src,alt:''}));
   }
   function badge(render=html,className='') {return render('span',{className:'ai-badge ai-badge-small'+(className?' '+className:'')},'AI');}
+  // Display-only ownership: resolve profiles by stable ID before calling; never rename identities.
+  function ownerLabel(profile, render=html, placement='inline') {
+    if(profile?.kind!=='clone'||!profile.owner?.name)return null;
+    const text=(placement==='detail'?'主人：':'@')+profile.owner.name;
+    return render('span',{className:'eva-identity-owner eva-identity-owner--'+placement,title:'主人：'+profile.owner.name},render===html?escape(text):text);
+  }
   function projectAgentName(project){return project?.name?String(project.name)+' · 项目管家':'项目管家';}
   function projectAgentLegacyNames(project){return ['Eva 项目管理专员','Eva 项目助手',...(project?.name?[String(project.name)+'项目管家']:[])];}
   function projectAgentAppearance(project){return {project:project?{id:project.id,colorKey:window.EvaProjectAppearance.keyFor(project)}:undefined,name:projectAgentName(project),sourceName:'Eva',avatar:'prototype/assets/project-agent-bot.svg',logo:window.__EVA_COLLEAGUE_PORTRAIT,markerKind:'bot'};}
-  return Object.freeze({avatar,badge,projectAgentName,projectAgentLegacyNames,projectAgentAppearance});
+  return Object.freeze({avatar,badge,ownerLabel,projectAgentName,projectAgentLegacyNames,projectAgentAppearance});
 })();

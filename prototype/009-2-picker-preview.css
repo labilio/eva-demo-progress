@@ -20,7 +20,8 @@
 .eva-picker-avatar{position:relative;width:36px;height:36px;flex:none}
 .eva-picker-avatar>img{width:36px;height:36px;border-radius:50%;object-fit:cover}
 .eva-picker-person{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
-.eva-picker-name{display:flex;align-items:center;gap:8px;font-weight:500;font-size:14px;line-height:22px;color:var(--semi-color-text-0);overflow-wrap:anywhere}
+.eva-picker-name{display:flex;align-items:center;gap:8px;font-weight:500;font-size:14px;line-height:22px;color:var(--semi-color-text-0);min-width:0;white-space:nowrap}
+.eva-picker-name-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .eva-picker-name .ai-badge{flex:none}
 .eva-picker-detail{font-size:12px;line-height:18px;color:var(--semi-color-text-2)}
 .eva-picker-selection-hint{flex:none;max-width:42%;font-size:12px;line-height:18px;color:var(--semi-color-text-2);text-align:right}

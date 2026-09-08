@@ -138,3 +138,7 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-chat-task-card strong{font-size:14px;line-height:22px;font-weight:500;overflow-wrap:anywhere}
 .eva-chat-task-meta{display:flex;align-items:center;gap:8px;font-size:12px;line-height:18px;color:var(--semi-color-text-2)}
 .eva-chat-task-meta>span:last-child{margin-left:auto}
+
+/* Candidate ownership uses a second line; reserve height and keep avatars aligned. */
+.eva-members-mention-list > .semi-button{height:auto;min-height:44px;padding:6px 12px;justify-content:flex-start}
+.eva-members-mention-list .semi-button-content{min-width:0;max-width:100%}
