@@ -70,11 +70,13 @@ test('存储失败不留下未保存的文件夹，刷新顺序保留最新对�
  assert.ok(!a.store.getSnapshot().folders.some(f=>f.name==='失败文件夹'));
 });
 
-test('Agent 创建中心不再提供第二个个人助理的创建路径',()=>{
+test('个人 Eva 不暴露助理创建，但我的 AI 可复用个人助理创建流程',()=>{
  const data=fs.readFileSync('prototype/009-3-digital-employees-data.js','utf8');
  const center=fs.readFileSync('prototype/047-digital-employees.js','utf8');
- assert.doesNotMatch(data.slice(data.indexOf('"runtimes"')), /"key": "mine"/);
- assert.doesNotMatch(center,/saveLocalAssistant|navigatePersonal/);
+ assert.doesNotMatch(pageSource,/evaCreate=mine|data-eva-edit-assistant/);
+ assert.match(data.slice(data.indexOf('"runtimes"')), /"key": "mine"/);
+ assert.match(center,/initialType==='mine'.+saveLocalAssistant/s);
+ assert.match(center,/returnTo\?navigate\(returnTo\):navigatePersonal/);
  assert.match(center,/submitPersonaRequest/);
 });
 

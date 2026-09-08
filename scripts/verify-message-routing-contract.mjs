@@ -37,7 +37,9 @@ requireText("groupStore.createGroup(record)", 'My AI does not create AI teams th
 requireText("sectionTitle('teams','AI 团队'", 'My AI does not separate AI teams in its conversation rail');
 requireText("sectionTitle('assistants','AI 助理'", 'My AI does not separate AI assistants in its conversation rail');
 requireText('setSectionCollapsed', 'My AI top-level team and assistant sections cannot collapse independently');
-requireText('eva-my-ai-sidebar-actions', 'My AI is missing separate create-assistant and new-session actions');
+requireText("'新建 AI 团队'", 'My AI is missing its create-team action');
+requireText("'新建个人助理'", 'My AI is missing its create-assistant action');
+requireText("className:'eva-ai-team__identity-action eva-ai-team__new-session'", 'My AI is missing its identity new-session action');
 requireText('eva-my-ai-identity-toggle', 'My AI identity expand/collapse control is missing from the right side');
 requireText('function EvaAITeamPage()', 'My AI has no React role controller');
 requireText('!ct?.conversationOnly&&React.createElement', 'My AI mounts the legacy sidebar alongside its role sidebar');

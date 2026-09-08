@@ -77,6 +77,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(imPatch, /presentation:'ai-team-workspace'/);
   assert.match(imPatch, /function assistantConfigAction\(i\)\{\s*if\(i\.role!=='assistant'\)return null/);
   assert.match(imPatch, /content:'编辑配置'.+role:'assistant',id:i\.sourceAssistantId,returnFocus:event\.currentTarget/s);
+  assert.match(imPatch, /const open=options=>setRequest\(options\?\{\.\.\.options,key:Date\.now\(\)\}:null\)/);
   assert.match(imPatch, /className:'eva-ai-team__identity-action eva-ai-team__edit-config'/);
   assert.match(imPatch, /target\.isConnected&&target\.focus\(\)/);
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);

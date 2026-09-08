@@ -115,7 +115,7 @@ function EvaAssistantSourceCards({sources,value,disabled,onChange}) {
 
 function EvaAssistantEditorHost({children}) {
   const [request,setRequest]=reactExports.useState(null), host=reactExports.useRef(null);
-  reactExports.useEffect(()=>{const open=options=>setRequest(options?.role==='persona'?{...options,key:Date.now()}:null);window.__evaOpenAssistantEditor=open;return()=>{if(window.__evaOpenAssistantEditor===open)delete window.__evaOpenAssistantEditor;};},[]);
+  reactExports.useEffect(()=>{const open=options=>setRequest(options?{...options,key:Date.now()}:null);window.__evaOpenAssistantEditor=open;return()=>{if(window.__evaOpenAssistantEditor===open)delete window.__evaOpenAssistantEditor;};},[]);
   reactExports.useEffect(()=>{const close=()=>setRequest(null);window.addEventListener('hashchange',close);return()=>window.removeEventListener('hashchange',close);},[]);
   const close=()=>{const target=request?.returnFocus;setRequest(null);if(target?.focus)requestAnimationFrame(()=>target.isConnected&&target.focus());};
   return React.createElement(React.Fragment,null,children,React.createElement('div',{className:'eva-editor-host',ref:host}),request&&React.createElement(EvaAssistantEditor,{key:request.key,request,host,onClose:close}));
