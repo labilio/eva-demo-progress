@@ -10,6 +10,51 @@ function EvaAIIdentityAvatar({appearance,size=32}) {
   return window.EvaAIIdentity.avatar(appearance,size,React.createElement);
 }
 
+function evaPreviewFixture(file) {
+  return window.__EVA_FILE_PREVIEW_FIXTURES?.[file?.name]||{};
+}
+
+function EvaWordPreviewRenderer({file}) {
+  const h=React.createElement;
+  const fixture=evaPreviewFixture(file);
+  const pages=fixture.pages||[{kicker:'Word 文档',title:String(file.name||'文档').replace(/\.[^.]+$/,''),subtitle:'只读预览 · 第 1 页',paragraphs:['这是文档的演示预览内容。正文会保持纸张版式，并按页面纵向排列。'],sections:[{title:'内容摘要',text:'当前文件已成功加载到右侧预览栏，可通过顶部操作下载原文件。'}]}];
+  return h('div',{className:'eva-word-preview','aria-label':'Word 文档内容'},pages.map((page,index)=>h('article',{className:'eva-word-preview__page',key:index,'aria-label':'第 '+(index+1)+' 页'},
+    h('small',{className:'eva-word-preview__kicker'},page.kicker||'Word 文档'),
+    h('h2',null,page.title||file.name),
+    page.subtitle&&h('p',{className:'eva-word-preview__subtitle'},page.subtitle),
+    (page.paragraphs||[]).map((paragraph,paragraphIndex)=>h('p',{key:'p'+paragraphIndex},paragraph)),
+    (page.sections||[]).map((section,sectionIndex)=>h('section',{key:'s'+sectionIndex},h('h3',null,section.title),h('p',null,section.text))),
+    h('footer',null,(index+1)+' / '+pages.length)
+  )));
+}
+
+function EvaPresentationPreviewRenderer({file}) {
+  const h=React.createElement;
+  const fixture=evaPreviewFixture(file);
+  const slides=fixture.slides||[{eyebrow:'演示文稿',title:String(file.name||'演示').replace(/\.[^.]+$/,''),subtitle:'右侧栏幻灯片预览',accent:'violet'},{eyebrow:'内容概览',title:'核心信息',subtitle:'演示文件已加载，可使用下方按钮逐页浏览。',bullets:['结论先行','结构清晰','支持翻页'],accent:'blue'}];
+  const [active,setActive]=reactExports.useState(0);
+  reactExports.useEffect(()=>setActive(0),[file.name]);
+  const slide=slides[Math.min(active,slides.length-1)];
+  return h('div',{className:'eva-presentation-preview','aria-label':'PPT 幻灯片内容'},
+    h('div',{className:'eva-presentation-preview__stage'},h('article',{className:'eva-presentation-preview__slide is-'+(slide.accent||'violet'),'aria-label':'第 '+(active+1)+' 张幻灯片'},
+      h('small',null,slide.eyebrow||'演示文稿'),h('h2',null,slide.title),h('p',null,slide.subtitle),
+      slide.metric&&h('strong',{className:'eva-presentation-preview__metric'},slide.metric),
+      slide.bullets&&h('ul',null,slide.bullets.map((item,index)=>h('li',{key:index},item))))),
+    h('div',{className:'eva-presentation-preview__thumbs','aria-label':'幻灯片缩略图'},slides.map((item,index)=>h('button',{type:'button',key:index,className:index===active?'is-active':'',onClick:()=>setActive(index),'aria-label':'查看第 '+(index+1)+' 张'},h('span',null,index+1),h('small',null,item.title)))),
+    h('div',{className:'eva-presentation-preview__controls'},h('button',{type:'button',disabled:active===0,onClick:()=>setActive(index=>Math.max(0,index-1))},'上一页'),h('span',null,(active+1)+' / '+slides.length),h('button',{type:'button',disabled:active===slides.length-1,onClick:()=>setActive(index=>Math.min(slides.length-1,index+1))},'下一页'))
+  );
+}
+
+function EvaArchivePreviewRenderer({file}) {
+  const h=React.createElement;
+  const archive=evaPreviewFixture(file).archive||{originalSize:'—',compressedSize:file.size?Math.round(file.size/1024/1024*10)/10+' MB':'—',entries:[{path:'文档/',type:'folder',size:'—'},{path:'文档/说明文件.txt',type:'TXT',size:'6 KB'},{path:'素材/预览图.png',type:'PNG',size:'1.2 MB'}]};
+  return h('div',{className:'eva-archive-preview','aria-label':'压缩包内容'},
+    h('div',{className:'eva-archive-preview__summary'},h('span',null,h('strong',null,archive.entries.length),h('small',null,'项目')),h('span',null,h('strong',null,archive.compressedSize||'—'),h('small',null,'压缩后')),h('span',null,h('strong',null,archive.originalSize||'—'),h('small',null,'原始大小'))),
+    h('div',{className:'eva-archive-preview__head'},h('span',null,'名称'),h('span',null,'类型'),h('span',null,'大小')),
+    h('div',{className:'eva-archive-preview__list'},archive.entries.map((entry,index)=>h('div',{className:'eva-archive-preview__row',key:index},h('span',null,h('i',{'aria-hidden':'true'},entry.type==='folder'?'▸':'·'),entry.path),h('small',null,entry.type),h('small',null,entry.size))))
+  );
+}
+
 function EvaInlineProjectPanel({projectId}) {
   const h=React.createElement;
   const [spaces,setSpaces]=reactExports.useState(()=>loadSpaces());
@@ -366,6 +411,10 @@ function EvaAITeamPage() {
       "!fa&&ct?.sidebarVariant!==\"ai-sessions\"&&Zi.push({separator:!0},{title:\"创建子区\"", "team-only subzone menu");
     cut('React.createElement("div",{className:"ch-main__stream"},React.createElement("div",{className:"ch-stream",ref:da},Ta.map((ci,Zi)=>hi(ci,Zi,Ta)))',
       'React.createElement("div",{className:"ch-main__stream",onClick:ci=>{(Mt==="threads"||Mt==="info")&&!ci.target.closest(".wk-messageinput-box, .wk-contextmenus")&&Dt("none")}},React.createElement("div",{className:"ch-stream",ref:da},Ta.map((ci,Zi)=>hi(ci,Zi,Ta)))', "点击群聊内容时关闭子区或聊天信息面板");
+    cut('this.register({type:"text",extensions:["html","htm"],renderer:HtmlRenderer,needsFetch:!0})',
+      'this.register({type:"word",extensions:["doc","docx"],renderer:EvaWordPreviewRenderer,needsFetch:!1}),this.register({type:"presentation",extensions:["ppt","pptx"],renderer:EvaPresentationPreviewRenderer,needsFetch:!1}),this.register({type:"archive",extensions:["zip","rar","7z","tar","gz"],renderer:EvaArchivePreviewRenderer,needsFetch:!1}),this.register({type:"text",extensions:["html","htm"],renderer:HtmlRenderer,needsFetch:!0})', 'Office 与压缩包格式预览器');
+    cut('FilePreviewHost=({file:rt,onClose:ct})=>{const[ut,pt]=reactExports.useState("preview"),[mt,gt]=reactExports.useState(!1),[St,Ct]=reactExports.useState(!1),xt=getExtension',
+      'FilePreviewHost=({file:rt,onClose:ct})=>{const[ut,pt]=reactExports.useState("preview"),[mt,gt]=reactExports.useState(!1),[St,Ct]=reactExports.useState(!1),evaEscEffect=reactExports.useEffect(()=>{const evaOnKeyDown=evaEvent=>{evaEvent.key==="Escape"&&ct?.()};document.addEventListener("keydown",evaOnKeyDown);return()=>document.removeEventListener("keydown",evaOnKeyDown)},[ct]),xt=getExtension', '文档预览 Escape 关闭');
     cut("La=ci=>{xt(ci),Nt(null),Da(null),Dt(\"none\"),Qt(null),Ht(null)}",
       "La=ci=>{setEvaInlineProjectId(null),xt(ci),Nt(null),Da(null),Dt(\"none\"),Qt(null),Ht(null)}", "切换群聊时关闭消息内联项目");
     cut("Za=(ci,Zi)=>{xt(ci),Nt(Zi),Dt(\"none\"),Da(null)},za=ci=>",
@@ -584,6 +633,6 @@ function EvaAITeamPage() {
     cut('projectId:ci.id.slice(6)}}))}}):null,headerStyle:', 'projectId:ci.id.slice(6)}}))}}):React.createElement(Button,{theme:"borderless",type:"tertiary",size:"small",icon:React.createElement(EllipsisIcon,{size:16}),"aria-label":"编辑分组 "+ci.name,onClick:()=>setEvaCategoryEditor(ci)}),headerStyle:', '其他会话和自定义分类可编辑');
     cut('setEvaIdentityProfile(null);},[evaMembershipProjectId,evaActorId])', 'setEvaIdentityProfile(null);setEvaCategoryEditor(null);},[evaMembershipProjectId,evaActorId])', '分类表单身份重置');
     cut('React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",visible:sn,onVisibleChange:cn,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),setEvaGroupCreateOpen(true)}},"新建群聊"),React.createElement(Dropdown.Item,{onClick:()=>{cn(false);setEvaCategoryEditor({});}},"创建分组"))},React.createElement("button",{type:"button",className:"ch-cat-gear eva-message-invite",title:"新建","aria-label":"新建"},React.createElement(Plus$c,{size:15})))','evaMembershipProjectId?React.createElement("button",{type:"button",className:"ch-cat-gear eva-message-invite",title:"新建群聊","aria-label":"新建群聊",onClick:()=>setEvaGroupCreateOpen(true)},React.createElement(Plus$c,{size:15})):React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",visible:sn,onVisibleChange:cn,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{onClick:()=>{cn(!1),setEvaGroupCreateOpen(true)}},"新建群聊"),React.createElement(Dropdown.Item,{onClick:()=>{cn(false);setEvaCategoryEditor({});}},"创建分组"))},React.createElement("button",{type:"button",className:"ch-cat-gear eva-message-invite",title:"新建","aria-label":"新建"},React.createElement(Plus$c,{size:15})))',"项目群聊直接打开拉人建群模板");
-    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

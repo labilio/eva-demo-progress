@@ -41,6 +41,9 @@
     file('lab-script','lab','客户XX公司销售话术.docx',131072,'销售话术专家','销售话术专家','2026-09-06T09:26:00+08:00',{type:'task',label:'任务 · 客户销售准备'},'专家任务产出，文件归属项目空间','lab-folder-delivery'),
     {id:'personal-brand',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'品牌视觉素材.zip',type:'blob',size:25794969,extension:'zip',creator:'王宜林',editor:'未编辑过',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-06T18:05:00+08:00',source:{type:'upload',label:'本地上传'},description:'个人空间中的品牌素材'},
     {id:'personal-notes',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'项目复盘备忘.md',type:'blob',size:18640,extension:'md',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-06T16:40:00+08:00',source:{type:'upload',label:'本地上传'},description:'个人空间文件'},
+    {id:'personal-word-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'A-2409临时放行评审纪要.docx',type:'blob',size:28416,extension:'docx',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T17:35:00+08:00',source:{type:'upload',label:'本地上传'},description:'供应商异常临时放行评审纪要'},
+    {id:'personal-sheet-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'EVA-分享权限验收矩阵.xlsx',type:'blob',size:48640,extension:'xlsx',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T16:20:00+08:00',source:{type:'upload',label:'本地上传'},description:'不同角色与分享范围的验收矩阵'},
+    {id:'personal-slides-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'UI设计师发展前景.pptx',type:'blob',size:2516582,extension:'pptx',creator:'王宜林',editor:'未编辑过',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T15:45:00+08:00',source:{type:'task',label:'Eva 任务产出'},description:'管理层同步使用的六页演示文稿'},
     sharedFolder('shared-brand-guides','shared:brand','品牌规范','王宜林','2026-09-06T16:20:00+08:00'),
     sharedFile('shared-brand-pdf','shared:brand','品牌使用说明.pdf',806912,'何静','何静','2026-09-06T18:05:00+08:00',{type:'library-copy',label:'从私聊保存 · 何静'},'保存到共享空间后的独立副本','shared-brand-guides'),
     sharedFile('shared-brand-assets','shared:brand','秋季发布会素材清单.xlsx',184320,'王宜林','王宜林','2026-09-07T09:15:00+08:00',{type:'upload',label:'王宜林本地上传'},'市场素材制作与发布进度'),
@@ -62,6 +65,9 @@
     'lab-script':{tags:['销售','客户'],systemRelations:[relation('task','LAB-12','客户销售准备','已完成 · 负责人：苏航')]},
     'personal-brand':{tags:['品牌','素材']},
     'personal-notes':{tags:['复盘']},
+    'personal-word-demo':{tags:['评审','纪要']},
+    'personal-sheet-demo':{tags:['权限','验收']},
+    'personal-slides-demo':{tags:['汇报','设计']},
     'shared-brand-pdf':{tags:['品牌','规范'],systemRelations:[relation('chat','dm:u-hejing','私聊 · 何静','来源文件')]},
     'shared-brand-assets':{tags:['市场','发布会']},
     'shared-partner-plan':{tags:['合作伙伴','方案'],systemRelations:[relation('group','partner-chat','合作伙伴沟通群','群聊 · 来源文件')]},
@@ -272,8 +278,11 @@
   }
 
   function bootstrap(membership){
-    const key='eva:file-store:v5';let saved,spaces;
-    try{const value=JSON.parse(root.localStorage.getItem(key));if(value?.schema===5&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;}}catch{}
+    const key='eva:file-store:v6';let saved,spaces;
+    try{const value=JSON.parse(root.localStorage.getItem(key));if(value?.schema===6&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;}}catch{}
+    if(!saved){
+      try{const value=JSON.parse(root.localStorage.getItem('eva:file-store:v5'));if(value?.schema===5&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;}}catch{}
+    }
     if(!saved){
       saved=clone(DEFAULT_RECORDS);spaces=clone(DEFAULT_SHARED_SPACES);
       try{
@@ -293,7 +302,10 @@
       }catch{}
       try{const legacy=JSON.parse(root.localStorage.getItem('eva:shared-files:v1'));if(Array.isArray(legacy))saved.push(...legacy.map(item=>({...item,spaceId:item.projectId,area:'project'})));}catch{}
     }
-    return create(membership,saved,(records,sharedSpaces)=>{try{root.localStorage.setItem(key,JSON.stringify({schema:5,records,sharedSpaces}));}catch{}},DEFAULT_RECORDS,spaces||DEFAULT_SHARED_SPACES);
+    const previewDemoIds=new Set(['personal-word-demo','personal-sheet-demo','personal-slides-demo']);
+    const existingIds=new Set(saved.map(item=>item.id));
+    DEFAULT_RECORDS.filter(item=>previewDemoIds.has(item.id)&&!existingIds.has(item.id)).forEach(item=>saved.push(clone(item)));
+    return create(membership,saved,(records,sharedSpaces)=>{try{root.localStorage.setItem(key,JSON.stringify({schema:6,records,sharedSpaces}));}catch{}},DEFAULT_RECORDS,spaces||DEFAULT_SHARED_SPACES);
   }
 
   root.EvaFileSharing=Object.freeze({create,bootstrap,DEFAULT_RECORDS:clone(DEFAULT_RECORDS),DEFAULT_SHARED_SPACES:clone(DEFAULT_SHARED_SPACES)});

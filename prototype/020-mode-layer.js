@@ -28,6 +28,9 @@
     crumbs: [],
     dialog: null,
     previewId: null,
+    previewPage: 0,
+    previewSheet: 0,
+    previewMode: 'rendered',
     menuId: null,
     menuAnchor: null,
     tableScroll: null,
@@ -363,17 +366,14 @@
     return root;
   }
 
-  function inspectorHTML(resource) {
-    if (!resource) {
-      return '<div class="eva-drive__inspector-head"><h2>文件详情</h2></div><div class="eva-drive__empty">选择文件后，在这里查看来源和操作</div>';
-    }
+  function detailContentHTML(resource) {
+    if (!resource) return '';
     var context = fileContext(), actor = fileActor();
     var canEdit = context.files.can('rename', resource.spaceId, actor);
     var canEditTags = resource.type !== 'folder' && context.files.can('edit-tags', resource.spaceId, actor);
     var canTrash = context.files.can('trash', resource.spaceId, actor);
     var isTrash = Boolean(resource.deletedAt);
     return [
-      '<div class="eva-drive__inspector-head"><h2>文件详情</h2><button class="eva-drive__inspector-close" type="button" data-eva-drive-inspector-close="true" aria-label="关闭文件详情">×</button></div>',
       '<div class="eva-file-detail__identity' + (!isTrash ? ' eva-file-detail__identity--with-action' : '') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-file-detail__identity-content"><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(resourceFileType(resource) + (resource.type === 'folder' ? '' : ' · ' + formatDriveBytes(resource.size))) + '</small></span>' + (!isTrash ? '<button class="eva-file-detail__copy-link" type="button" data-drive-action="copy-link" aria-label="复制内部链接" title="复制内部链接">' + icon('link') + '</button>' : '') + '</div>',
       resource.projectId && !isTrash ? '<div class="eva-drive__inspector-actions"><button class="eva-drive__text-button" type="button" data-drive-action="open-project">' + icon('external') + '在项目中打开</button></div>' : '',
       isTrash ? '<div class="eva-drive__management-actions"><button type="button" data-drive-action="restore">恢复</button><button class="is-danger" type="button" data-drive-action="delete-forever">永久删除</button></div>' : '',
@@ -390,6 +390,11 @@
       '<div><dt>大小</dt><dd>' + escapeHTML(resource.type === 'folder' ? '—' : formatDriveBytes(resource.size)) + '</dd></div>',
       '</dl></section>'
     ].join('');
+  }
+
+  function detailHTML(resource) {
+    if (!resource) return '';
+    return '<div class="eva-drive-dialog eva-file-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-file-detail-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="detail-close" aria-label="关闭文件详情"></button><section class="eva-drive-dialog__panel eva-file-detail-dialog__panel"><header><h2 id="eva-file-detail-title">文件详情</h2><button type="button" data-drive-action="detail-close" aria-label="关闭文件详情">×</button></header><div class="eva-drive-dialog__body"><div class="eva-file-detail-dialog__content">' + detailContentHTML(resource) + '</div></div></section></div>';
   }
 
   function resourceSourceLabel(resource) {
@@ -534,7 +539,7 @@
       list.map(function (resource) {
         return [
           '<div class="eva-drive__row" role="row" data-resource-id="' + resource.id + '" aria-selected="' + (resource.id === state.selectedId ? 'true' : 'false') + '">',
-          '<button class="eva-drive__name-cell" type="button" data-drive-action="' + (resource.type === 'folder' && state.driveScope !== 'trash' ? 'open-folder' : state.driveScope === 'trash' ? 'select' : 'preview') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-drive__name-copy"><strong>' + escapeHTML(resource.name) + '</strong>' + tagsHTML(resource) + '</span></button>',
+          '<button class="eva-drive__name-cell" type="button" data-drive-action="' + (resource.type === 'folder' ? (state.driveScope === 'trash' ? 'noop' : 'open-folder') : 'preview') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-drive__name-copy"><strong>' + escapeHTML(resource.name) + '</strong>' + tagsHTML(resource) + '</span></button>',
           '<span><span class="eva-file-type">' + escapeHTML(resourceFileType(resource)) + '</span></span>',
           state.driveScope === 'trash' ? '<span class="eva-file-location-cell">' + escapeHTML(originalLocationLabel(resource)) + '</span>' : relationCellHTML(resource),
           '<span>' + escapeHTML(resource.type === 'folder' ? '—' : formatDriveBytes(resource.size)) + '</span>',
@@ -680,6 +685,45 @@
     return '<div class="eva-drive-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-drive-dialog-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="dialog-close" aria-label="关闭"></button><section class="eva-drive-dialog__panel"><header><h2 id="eva-drive-dialog-title">' + title + '</h2><button type="button" data-drive-action="dialog-close" aria-label="关闭">×</button></header><div class="eva-drive-dialog__body">' + content + '</div><footer><button type="button" data-drive-action="dialog-close">' + (confirm ? '取消' : '关闭') + '</button>' + confirm + '</footer></section></div>';
   }
 
+  function filePreviewFixture(resource) {
+    return (window.__EVA_FILE_PREVIEW_FIXTURES && window.__EVA_FILE_PREVIEW_FIXTURES[resource.name]) || {};
+  }
+
+  function wordPreviewHTML(resource) {
+    var fixture = filePreviewFixture(resource);
+    var pages = fixture.pages || [{ kicker: 'Word 文档', title: resource.name.replace(/\.[^.]+$/, ''), subtitle: '只读预览 · 第 1 页', paragraphs: ['这是文档的演示预览内容。正文会保持纸张版式，并按页面纵向排列。'], sections: [{ title: '内容摘要', text: '当前文件已成功加载到右侧预览栏，可通过文件操作下载原文件。' }] }];
+    return '<div class="eva-word-preview" aria-label="Word 文档内容">' + pages.map(function (page, index) {
+      return '<article class="eva-word-preview__page" aria-label="第 ' + (index + 1) + ' 页"><small class="eva-word-preview__kicker">' + escapeHTML(page.kicker || 'Word 文档') + '</small><h2>' + escapeHTML(page.title || resource.name) + '</h2>' + (page.subtitle ? '<p class="eva-word-preview__subtitle">' + escapeHTML(page.subtitle) + '</p>' : '') + (page.paragraphs || []).map(function (paragraph) { return '<p>' + escapeHTML(paragraph) + '</p>'; }).join('') + (page.sections || []).map(function (section) { return '<section><h3>' + escapeHTML(section.title) + '</h3><p>' + escapeHTML(section.text) + '</p></section>'; }).join('') + '<footer>' + (index + 1) + ' / ' + pages.length + '</footer></article>';
+    }).join('') + '</div>';
+  }
+
+  function sheetPreviewHTML(resource) {
+    var fixture = filePreviewFixture(resource);
+    var sheets = fixture.sheets || [{ name: '数据概览', columns: ['项目', '负责人', '状态', '更新时间'], rows: [['需求汇总', '王宜林', '已完成', '09-07'], ['权限校验', '何静', '已完成', '09-07'], ['内容复核', '林晓', '进行中', '09-08'], ['交付确认', '周远', '待确认', '09-09']] }];
+    var sheetIndex = Math.min(state.previewSheet || 0, sheets.length - 1), sheet = sheets[sheetIndex];
+    return '<div class="eva-sheet-preview" aria-label="Excel 表格内容"><div class="eva-sheet-preview__formula"><strong>fx</strong><span>' + escapeHTML(resource.name.replace(/\.[^.]+$/, '')) + '</span></div><div class="eva-sheet-preview__viewport"><table><thead><tr><th class="is-corner"></th>' + sheet.columns.map(function (column) { return '<th>' + escapeHTML(column) + '</th>'; }).join('') + '</tr></thead><tbody>' + sheet.rows.map(function (row, rowIndex) { return '<tr><th>' + (rowIndex + 1) + '</th>' + row.map(function (cell) { return '<td>' + escapeHTML(cell) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div><div class="eva-sheet-preview__tabs">' + sheets.map(function (item, index) { return '<button type="button" class="' + (index === sheetIndex ? 'is-active' : '') + '" data-drive-action="preview-sheet" data-preview-sheet-index="' + index + '">' + escapeHTML(item.name) + '</button>'; }).join('') + '<span>' + sheet.rows.length + ' 行</span></div></div>';
+  }
+
+  function presentationPreviewHTML(resource) {
+    var fixture = filePreviewFixture(resource);
+    var slides = fixture.slides || [{ eyebrow: '演示文稿', title: resource.name.replace(/\.[^.]+$/, ''), subtitle: '右侧栏幻灯片预览', accent: 'violet' }, { eyebrow: '内容概览', title: '核心信息', subtitle: '演示文件已加载，可使用下方按钮逐页浏览。', bullets: ['结论先行', '结构清晰', '支持翻页'], accent: 'blue' }];
+    var index = Math.min(state.previewPage || 0, slides.length - 1), slide = slides[index];
+    return '<div class="eva-presentation-preview" aria-label="PPT 幻灯片内容"><div class="eva-presentation-preview__stage"><article class="eva-presentation-preview__slide is-' + escapeHTML(slide.accent || 'violet') + '" aria-label="第 ' + (index + 1) + ' 张幻灯片"><small>' + escapeHTML(slide.eyebrow || '演示文稿') + '</small><h2>' + escapeHTML(slide.title) + '</h2><p>' + escapeHTML(slide.subtitle || '') + '</p>' + (slide.metric ? '<strong class="eva-presentation-preview__metric">' + escapeHTML(slide.metric) + '</strong>' : '') + (slide.bullets ? '<ul>' + slide.bullets.map(function (item) { return '<li>' + escapeHTML(item) + '</li>'; }).join('') + '</ul>' : '') + '</article></div><div class="eva-presentation-preview__thumbs" aria-label="幻灯片缩略图">' + slides.map(function (item, itemIndex) { return '<button type="button" class="' + (itemIndex === index ? 'is-active' : '') + '" data-drive-action="preview-slide" data-preview-slide-index="' + itemIndex + '" aria-label="查看第 ' + (itemIndex + 1) + ' 张"><span>' + (itemIndex + 1) + '</span><small>' + escapeHTML(item.title) + '</small></button>'; }).join('') + '</div><div class="eva-presentation-preview__controls"><button type="button" data-drive-action="preview-prev"' + (index === 0 ? ' disabled' : '') + '>上一页</button><span>' + (index + 1) + ' / ' + slides.length + '</span><button type="button" data-drive-action="preview-next"' + (index === slides.length - 1 ? ' disabled' : '') + '>下一页</button></div></div>';
+  }
+
+  function markdownPreviewHTML(resource) {
+    var fixture = filePreviewFixture(resource).markdown || { title: resource.name.replace(/\.[^.]+$/, ''), summary: 'Markdown 文件已加载到右侧栏，可在阅读视图与源码之间切换。', sections: [{ title: '内容摘要', paragraph: '这是一份结构化文本内容，支持标题、列表、表格和代码块。', items: ['阅读视图突出内容层级', '源码视图保留原始标记'] }] };
+    var source = '# ' + fixture.title + '\n\n' + fixture.summary + '\n\n' + fixture.sections.map(function (section) { return '## ' + section.title + '\n\n' + section.paragraph + '\n\n' + (section.items || []).map(function (item) { return '- ' + item; }).join('\n'); }).join('\n\n');
+    var toolbar = '<div class="eva-markdown-preview__toolbar"><button type="button" class="' + (state.previewMode === 'rendered' ? 'is-active' : '') + '" data-drive-action="preview-mode" data-preview-mode="rendered">阅读</button><button type="button" class="' + (state.previewMode === 'source' ? 'is-active' : '') + '" data-drive-action="preview-mode" data-preview-mode="source">源码</button></div>';
+    if (state.previewMode === 'source') return '<div class="eva-markdown-preview">' + toolbar + '<pre class="eva-markdown-preview__source"><code>' + escapeHTML(source) + '</code></pre></div>';
+    return '<div class="eva-markdown-preview">' + toolbar + '<article><h1>' + escapeHTML(fixture.title) + '</h1><p class="eva-markdown-preview__summary">' + escapeHTML(fixture.summary) + '</p>' + fixture.sections.map(function (section) { return '<section><h2>' + escapeHTML(section.title) + '</h2><p>' + escapeHTML(section.paragraph) + '</p>' + (section.items && section.items.length ? '<ul>' + section.items.map(function (item) { return '<li>' + escapeHTML(item) + '</li>'; }).join('') + '</ul>' : '') + '</section>'; }).join('') + '</article></div>';
+  }
+
+  function archivePreviewHTML(resource) {
+    var archive = filePreviewFixture(resource).archive || { originalSize: '—', compressedSize: formatDriveBytes(resource.size), entries: [{ path: '文档/', type: 'folder', size: '—' }, { path: '文档/说明文件.txt', type: 'TXT', size: '6 KB' }, { path: '素材/预览图.png', type: 'PNG', size: '1.2 MB' }] };
+    return '<div class="eva-archive-preview" aria-label="压缩包内容"><div class="eva-archive-preview__summary"><span><strong>' + archive.entries.length + '</strong><small>项目</small></span><span><strong>' + escapeHTML(archive.compressedSize || '—') + '</strong><small>压缩后</small></span><span><strong>' + escapeHTML(archive.originalSize || '—') + '</strong><small>原始大小</small></span></div><div class="eva-archive-preview__head"><span>名称</span><span>类型</span><span>大小</span></div><div class="eva-archive-preview__list">' + archive.entries.map(function (entry) { return '<div class="eva-archive-preview__row"><span><i aria-hidden="true">' + (entry.type === 'folder' ? '▸' : '·') + '</i>' + escapeHTML(entry.path) + '</span><small>' + escapeHTML(entry.type) + '</small><small>' + escapeHTML(entry.size) + '</small></div>'; }).join('') + '</div></div>';
+  }
+
   function previewHTML() {
     if (!state.previewId) return '';
     var context = fileContext(), actor = fileActor();
@@ -689,12 +733,16 @@
     try { target = context.files.resolveFile(resource, actor); } catch (error) { return ''; }
     var sampleURL = window.__EVA_FILE_SAMPLE_URLS && window.__EVA_FILE_SAMPLE_URLS[target.name];
     var extension = String(target.extension || target.name.split('.').pop() || '').toLowerCase();
-    var content = sampleURL && extension === 'pdf'
-      ? '<iframe class="eva-drive-preview-dialog__frame" src="' + escapeHTML(sampleURL) + '" title="' + escapeHTML(target.name + '预览') + '"></iframe>'
-      : sampleURL && ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)
-        ? '<img class="eva-drive-preview-dialog__image" src="' + escapeHTML(sampleURL) + '" alt="' + escapeHTML(target.name) + '">'
-        : '<div class="eva-drive-preview-dialog__empty"><span class="eva-drive__file-mark ' + fileMarkClass(target) + '">' + icon(fileIconName(target)) + '</span><strong>' + escapeHTML(target.name) + '</strong><span>' + escapeHTML(context.files.fileTypeFor(target, actor) + ' · ' + formatDriveBytes(target.size)) + '</span><p>此演示文件暂无可展示的示例内容。</p></div>';
-    return '<div class="eva-drive-dialog eva-drive-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-drive-preview-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="preview-close" aria-label="关闭预览"></button><section class="eva-drive-dialog__panel eva-drive-preview-dialog__panel"><header><h2 id="eva-drive-preview-title">' + escapeHTML(resource.name) + '</h2><button type="button" data-drive-action="preview-close" aria-label="关闭预览">×</button></header><div class="eva-drive-dialog__body">' + content + '</div></section></div>';
+    var content;
+    if (['doc', 'docx'].includes(extension)) content = wordPreviewHTML(target);
+    else if (['xlsx', 'xls', 'xlsb', 'xlsm', 'csv'].includes(extension)) content = sheetPreviewHTML(target);
+    else if (['ppt', 'pptx'].includes(extension)) content = presentationPreviewHTML(target);
+    else if (['md', 'markdown'].includes(extension)) content = markdownPreviewHTML(target);
+    else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) content = archivePreviewHTML(target);
+    else if (sampleURL && extension === 'pdf') content = '<iframe class="eva-file-preview-sidebar__frame" src="' + escapeHTML(sampleURL) + '" title="' + escapeHTML(target.name + '预览') + '"></iframe>';
+    else if (sampleURL && ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) content = '<img class="eva-file-preview-sidebar__image" src="' + escapeHTML(sampleURL) + '" alt="' + escapeHTML(target.name) + '">';
+    else content = '<div class="eva-file-preview-sidebar__empty"><span class="eva-drive__file-mark ' + fileMarkClass(target) + '">' + icon(fileIconName(target)) + '</span><strong>' + escapeHTML(target.name) + '</strong><span>' + escapeHTML(context.files.fileTypeFor(target, actor) + ' · ' + formatDriveBytes(target.size)) + '</span><p>当前格式暂不支持在线阅读，可下载后打开。</p></div>';
+    return '<aside class="eva-file-preview-sidebar eva-drive-preview-sidebar" aria-label="文件预览"><header class="eva-file-preview-sidebar__head"><h2>' + escapeHTML(resource.name) + '</h2><button type="button" data-drive-action="preview-close" aria-label="关闭预览">×</button></header><div class="eva-file-preview-sidebar__body">' + content + '</div></aside>';
   }
 
   function projectSpacesHTML() {
@@ -764,8 +812,8 @@
       '</div>',
       '<input id="eva-file-upload" type="file" multiple hidden>',
       '</main>',
-      '<aside class="eva-drive__inspector" aria-label="文件详情">' + inspectorHTML(selected) + '</aside>',
       '<div class="eva-drive__toast" role="status" aria-live="polite" hidden></div>',
+      detailHTML(selected),
       dialogHTML(),
       previewHTML()
     ].join('');
@@ -789,7 +837,6 @@
     root.dataset.evaDriveScope = state.driveScope;
     root.dataset.evaWorkspaceId = state.workspaceId;
     root.dataset.evaSharedSpaceId = state.sharedSpaceId;
-    root.classList.toggle('eva-drive--inspector-open', Boolean(selected));
     root.hidden = false;
     syncDriveLeft();
   }
@@ -816,6 +863,12 @@
   function closeDrive() {
     var root = document.getElementById('eva-drive-root');
     state.previewId = null;
+    state.previewPage = 0;
+    state.previewSheet = 0;
+    state.previewMode = 'rendered';
+    state.selectedId = null;
+    state.dialog = null;
+    closeRowMenu(false);
     if (root) root.hidden = true;
   }
 
@@ -919,6 +972,8 @@
   }
 
   function handleDriveClick(event) {
+    var previewOutside = Boolean(state.previewId && !event.target.closest('.eva-file-preview-sidebar'));
+    if (previewOutside) state.previewId = null;
     var row = event.target.closest('[data-resource-id]');
     var resource = row ? fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === row.dataset.resourceId; }) : selectedResource();
 
@@ -939,15 +994,59 @@
 
     var action = event.target.closest('[data-drive-action]');
     if (!action && row) {
-      state.selectedId = row.dataset.resourceId;
       closeRowMenu();
+      if (resource.type === 'folder') {
+        if (state.driveScope !== 'trash') {
+          state.parentId = resource.id;
+          state.crumbs = [{ id: resource.id, name: resource.name }];
+          state.query = '';
+        }
+      } else {
+        try {
+          fileContext().files.resolveFile(resource, fileActor());
+          state.previewId = resource.id;
+          state.previewPage = 0;
+          state.previewSheet = 0;
+          state.previewMode = 'rendered';
+        } catch (error) {
+          state.previewId = null;
+          showToast(error.message || '当前文件无法预览');
+        }
+      }
       renderDrive();
       return;
     }
-    if (!action) return;
+    if (!action) {
+      if (previewOutside) renderDrive();
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
     var name = action.dataset.driveAction;
+    if (previewOutside) renderDrive();
+    if (name === 'noop') return;
+    if (name === 'preview-slide') {
+      state.previewPage = Number(action.dataset.previewSlideIndex || 0);
+      renderDrive();
+      return;
+    }
+    if (name === 'preview-prev' || name === 'preview-next') {
+      var previewResource = fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === state.previewId; });
+      var slideCount = previewResource ? ((filePreviewFixture(previewResource).slides || []).length || 2) : 2;
+      state.previewPage = Math.max(0, Math.min(slideCount - 1, state.previewPage + (name === 'preview-next' ? 1 : -1)));
+      renderDrive();
+      return;
+    }
+    if (name === 'preview-sheet') {
+      state.previewSheet = Number(action.dataset.previewSheetIndex || 0);
+      renderDrive();
+      return;
+    }
+    if (name === 'preview-mode') {
+      state.previewMode = action.dataset.previewMode === 'source' ? 'source' : 'rendered';
+      renderDrive();
+      return;
+    }
     if (name === 'tag-dropdown-toggle') {
       state.dialog.tagDropdownOpen = state.dialog.tagDropdownOpen === false;
       renderDrive();
@@ -984,15 +1083,19 @@
       try {
         fileContext().files.resolveFile(resource, fileActor());
         state.previewId = resource.id;
+        state.previewPage = 0;
+        state.previewSheet = 0;
+        state.previewMode = 'rendered';
         state.selectedId = null;
         renderDrive();
       } catch (error) {
-        state.selectedId = resource.id;
+        state.previewId = null;
         renderDrive();
         showToast(error.message || '当前文件无法预览');
       }
     }
     if (name === 'preview-close') { state.previewId = null; renderDrive(); }
+    if (name === 'detail-close') { state.selectedId = null; renderDrive(); }
     if (name === 'open-folder') {
       if (resource.area === 'personal') state.driveScope = 'personal';
       if (resource.area === 'project') { state.driveScope = 'workspace'; state.workspaceId = resource.projectId; }
@@ -1191,9 +1294,11 @@
 
     document.addEventListener('click', function (event) {
       if (event.target.closest('#eva-drive-root')) handleDriveClick(event);
-      else if (state.menuId && document.getElementById('eva-drive-root')) {
-        closeRowMenu();
-        renderDrive();
+      else if ((state.menuId || state.previewId) && document.getElementById('eva-drive-root')) {
+        var root = document.getElementById('eva-drive-root');
+        closeRowMenu(false);
+        state.previewId = null;
+        if (root && !root.hidden) renderDrive();
       }
     });
     document.addEventListener('input', function (event) {
@@ -1224,11 +1329,16 @@
         if (menu) menu.hidden = true;
         if (state.menuId) { closeRowMenu(); renderDrive(); }
         if (state.dialog) closeDialog();
+        else if (state.selectedId) { state.selectedId = null; renderDrive(); }
+        else if (state.previewId) { state.previewId = null; renderDrive(); }
       }
     });
     window.addEventListener('resize', function () {
       if (state.menuId) { closeRowMenu(); renderDrive(); }
       syncDriveLeft();
+    });
+    window.addEventListener('hashchange', function () {
+      if (String(location.hash || '').indexOf('#/drive') !== 0) closeDrive();
     });
   }
 
