@@ -742,6 +742,19 @@
       }
       return;
     }
+    // The skill lives outside the native textarea, so an empty-input Backspace
+    // must clear its state explicitly without rebuilding the conversation.
+    if (event.key === 'Backspace' && !event.target.value && activeSkill && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      activeSkill = null;
+      event.target.parentElement.querySelector('.eva-mention')?.remove();
+      if (isNewConversationState()) {
+        state = 'home';
+        root.dataset.evaState = state;
+        root.querySelector('.eva-personal-workspace__opcard')?.remove();
+      }
+      return;
+    }
     if (event.key === '@') {
       event.preventDefault(); openSkillPicker();
     } else if (event.key === 'Enter' && !event.shiftKey) {
