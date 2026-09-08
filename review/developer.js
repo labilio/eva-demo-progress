@@ -57,7 +57,7 @@ function render() {
     <td><input type="checkbox" data-select="${escape(row.id)}" aria-label="选择批注 ${escape(row.seq)}" ${state.selected.has(row.id)?'checked':''}></td>
     <td>#${escape(row.seq)}</td><td>${escape(MENUS.find(([id])=>id===menuOf(row.page_path))[1])}</td>
     <td><p class="body-text">${escape(row.body)}</p><span class="anchor-text" title="${escape(row.anchor?.quote || row.page_path)}">${escape(row.anchor?.quote || row.page_path)}</span></td>
-    <td>${escape(KIND_LABELS[row.kind]||row.kind)}</td><td><span class="status-label ${escape(row.status)}">${escape(STATUS_LABELS[row.status]||row.status)}</span></td>
+    <td>${escape(KIND_LABELS[row.kind]||row.kind)}</td><td><select class="status-label ${escape(row.status)}" data-row-status="${escape(row.id)}" aria-label="批注 ${escape(row.seq)} 状态" ${state.busy?'disabled':''}>${Object.entries(STATUS_LABELS).map(([value,label])=>`<option value="${value}"${row.status===value?' selected':''}>${label}</option>`).join('')}</select></td>
     <td>${escape(row.author_name)}</td><td>${escape(row.claimed_by||'未认领')}</td><td>${date(row.updated_at||row.created_at)}</td>
     <td><div class="cell-actions"><button type="button" data-detail="${escape(row.id)}">${icon('file-text')}详情${row.replies?.length?' · '+row.replies.length:''}</button><a href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener">${icon('external-link')}查看原型</a></div></td></tr>`).join('');
   $('#empty').hidden = !!visible.length;
@@ -101,7 +101,24 @@ function search(){state.filters.search=$('#search').value;$('#clear-search').hid
 $('#search').oninput=event=>{if(!event.isComposing)search();};$('#search').oncompositionend=search;
 $('#clear-search').hidden=!state.filters.search;
 $('#clear-search').onclick=()=>{$('#search').value='';search();$('#search').focus();};
-$('#rows').onchange=event=>{const id=event.target.dataset.select;if(!id)return;event.target.checked?state.selected.add(id):state.selected.delete(id);event.target.closest('tr').classList.toggle('is-selected',event.target.checked);updateSelection();};
+$('#rows').onchange=async event=>{
+  const select=event.target, statusId=select.dataset.rowStatus;
+  if(statusId){
+    const row=state.rows.find(r=>r.id===statusId);if(!row)return;
+    if(state.busy){select.value=row.status;return;}
+    const status=select.value;
+    state.busy=true;state.revision++;select.disabled=true;updateSelection();
+    try{
+      const updated=await store.updateStatus(statusId,status);
+      state.rows=state.rows.map(r=>r.id===statusId?{...r,...updated,replies:r.replies}:r);
+      state.pending=null;updateNotice();message(`批注 #${row.seq} 已设为“${STATUS_LABELS[status]}”`);
+    }catch(error){select.value=row.status;message(`状态修改失败：${error.message}`,true);}
+    finally{state.busy=false;render();}
+    return;
+  }
+  const id=select.dataset.select;if(!id)return;
+  select.checked?state.selected.add(id):state.selected.delete(id);select.closest('tr').classList.toggle('is-selected',select.checked);updateSelection();
+};
 $('#select-all').onchange=event=>{filterRows(state.rows,state.filters).forEach(r=>event.target.checked?state.selected.add(r.id):state.selected.delete(r.id));render();};
 $('#clear-selection').onclick=()=>{state.selected.clear();render();};
 $('#assignee').value=localStorage.getItem('eva-review-author')||'';
