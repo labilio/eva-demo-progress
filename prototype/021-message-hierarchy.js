@@ -3,47 +3,11 @@
   'use strict';
 
   var DEFAULT_SPACE_NAMES = (window.__EVA_PROJECTS || []).map(function (project) { return project.name; });
-  var SPACE_TONES = {
-    'EVA Official Space': 'official',
-    '供应链运营协同': 'product',
-    '客户联合交付': 'delivery',
-    '团队文件功能设计': 'drive'
-  };
   var SPACE_IDS = (window.__EVA_PROJECTS || []).reduce(function (ids, project) {
     ids[project.name] = project.id;
     return ids;
   }, {});
 
-  function projectRegistry() {
-    var defaults = window.__EVA_PROJECTS || [];
-    try {
-      var stored = JSON.parse(localStorage.getItem('eva-collab-spaces') || '[]');
-      if (Array.isArray(stored) && stored.length) {
-        var storedIds = new Set(stored.map(function (project) { return project.id; }));
-        return stored.concat(defaults.filter(function (project) { return !storedIds.has(project.id); }));
-      }
-    } catch (error) {}
-    return defaults;
-  }
-
-  function projectTheme(project) {
-    var tone = window.EvaProjectAppearance.css(project || {});
-    return {...tone, noticeSurface: tone.surface, noticeText: tone.accent};
-  }
-
-  function projectThemeCSS(theme) {
-    return '--eva-space-card-surface:' + theme.surface + ';--eva-space-card-accent:' + theme.accent + ';--eva-space-card-border:' + theme.border + ';--eva-space-card-notice-surface:' + theme.noticeSurface + ';--eva-space-card-notice-text:' + theme.noticeText + ';';
-  }
-
-  function applyProjectTheme(element, project) {
-    if (!element) return;
-    var theme = projectTheme(project);
-    element.style.setProperty('--eva-space-card-surface', theme.surface);
-    element.style.setProperty('--eva-space-card-accent', theme.accent);
-    element.style.setProperty('--eva-space-card-border', theme.border);
-    element.style.setProperty('--eva-space-card-notice-surface', theme.noticeSurface);
-    element.style.setProperty('--eva-space-card-notice-text', theme.noticeText);
-  }
   var spaceTreeExpanded = true;
 
   var MESSAGE_ACTION_ICONS = {
@@ -261,14 +225,6 @@
     buildSpaceTree();
     syncSpaceTreeSelection();
     tuneDriveView();
-
-    var spaceFrame = document.querySelector('.collab-frame');
-    if (spaceFrame) {
-      var currentSpaceName = directText(spaceFrame.querySelector('.collab-sp-chip .nm'));
-      spaceFrame.classList.add('eva-space-card-foundation');
-      spaceFrame.dataset.evaSpaceTone = SPACE_TONES[currentSpaceName] || 'neutral';
-      applyProjectTheme(spaceFrame, projectRegistry().find(function (project) { return project.name === currentSpaceName; }));
-    }
 
     document.querySelectorAll('.eva-msg .wk-sidebar-tabbar').forEach(function (tabbar) {
       if (tabbar.dataset.evaProjectRecentSwitcher === 'true') return;
