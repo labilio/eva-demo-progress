@@ -3,7 +3,7 @@ import { afterBrowserPaint, buildAnchorRecord, buildProjectViewContext, clampFlo
 import { COMMENTS_CONFIG } from './comments-config.mjs';
 
 const store = createCommentsStore(COMMENTS_CONFIG);
-const state = { rows: [], target: null, picking: false, pinMode: localStorage.getItem('eva-review-pin-mode') || 'all', activeId: null, replyingId: null, replyDrafts: new Map(), submittingReplies: new Set(), listRenderPending: false, locateRevision: 0, draggedUntil: 0 };
+const state = { rows: [], loaded: false, pendingRows: null, checking: false, statusFilter: 'all', target: null, picking: false, pinMode: localStorage.getItem('eva-review-pin-mode') || 'all', activeId: null, replyingId: null, replyDrafts: new Map(), submittingReplies: new Set(), listRenderPending: false, locateRevision: 0, draggedUntil: 0 };
 
 const KINDS = {
   copy: { label: '改文案', className: 'copy' },
@@ -22,6 +22,8 @@ const STATUSES = {
   doing: '原型修改中',
   done: '原型已改完',
 };
+const savedStatusFilter = localStorage.getItem('eva-review-status-filter');
+state.statusFilter = Object.hasOwn(STATUSES, savedStatusFilter) ? savedStatusFilter : 'all';
 
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
 const cssEscape = value => window.CSS?.escape ? CSS.escape(String(value)) : String(value).replace(/[^a-zA-Z0-9_-]/g, '\\$&');
@@ -155,7 +157,7 @@ function ensureUI() {
     <button type="button" class="eva-review-launcher" data-review-ui data-review-launcher aria-expanded="false" aria-controls="eva-review-panel">${icon('comment',15)}<span>批注</span></button>
     <button type="button" class="eva-review-restore" data-review-ui data-review-restore hidden aria-label="显示批注">${icon('eye',15)}</button>
     <aside id="eva-review-panel" class="eva-review-panel" data-review-ui hidden aria-label="原型批注">
-      <header class="eva-review-head" data-review-drag-handle><div><strong>批注</strong><span>所有同事共享</span></div><div class="eva-review-head-actions"><button type="button" class="eva-review-icon-button" data-review-hide aria-label="隐藏批注入口">${icon('eyeOff')}</button><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
+      <header class="eva-review-head" data-review-drag-handle><div><strong>批注</strong><span>所有同事共享</span></div><div class="eva-review-head-actions"><select class="eva-review-status-filter" data-review-status-filter aria-label="筛选批注状态"><option value="all">全部状态</option>${Object.entries(STATUSES).map(([value, label]) => `<option value="${value}"${state.statusFilter === value ? ' selected' : ''}>${label}</option>`).join('')}</select><button type="button" class="eva-review-icon-button" data-review-hide aria-label="隐藏批注入口">${icon('eyeOff')}</button><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
       <div class="eva-review-toolbar">
         <button type="button" class="eva-review-primary" data-review-add>${icon('add')}添加批注</button>
       </div>
@@ -164,6 +166,7 @@ function ensureUI() {
         <button type="button" data-review-pin-mode="approved" aria-pressed="${state.pinMode === 'approved'}">仅已确认</button>
         <button type="button" data-review-pin-mode="off" aria-pressed="${state.pinMode === 'off'}">关闭批注</button>
       </div>
+      <div class="eva-review-updates"><button type="button" data-review-load-updates>检查更新</button><span data-review-update-status role="status" aria-live="polite"></span></div>
       <div class="eva-review-list"></div>
     </aside>
     <div class="eva-review-dialog" data-review-ui hidden role="dialog" aria-modal="true" aria-labelledby="eva-review-title">
@@ -179,6 +182,13 @@ function ensureUI() {
   renderIdentity();
   document.querySelector('[data-review-launcher]').onclick = () => { if (Date.now() > state.draggedUntil) openPanel(); };
   document.querySelector('[data-review-close]').onclick = closePanel;
+  document.querySelector('[data-review-load-updates]').onclick = loadUpdates;
+  document.querySelector('[data-review-status-filter]').onchange = event => {
+    state.statusFilter = Object.hasOwn(STATUSES, event.target.value) ? event.target.value : 'all';
+    localStorage.setItem('eva-review-status-filter', state.statusFilter);
+    document.querySelector('.eva-review-list').scrollTop = 0;
+    renderList();
+  };
   document.querySelector('[data-review-hide]').onclick = hideReviewEntry;
   document.querySelector('[data-review-restore]').onclick = restoreReviewEntry;
   document.querySelector('[data-review-add]').onclick = startPicking;
@@ -264,22 +274,91 @@ function renderIdentity({ focus = false } = {}) {
   if (focus && !author) input.focus();
 }
 
-async function refresh({ quiet = false } = {}) {
+// Compare content rather than response ordering, including replies and deletions.
+function commentsSignature(value) {
+  if (Array.isArray(value)) return '[' + value.map(commentsSignature).sort().join(',') + ']';
+  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(key => JSON.stringify(key) + ':' + commentsSignature(value[key])).join(',') + '}';
+  return JSON.stringify(value);
+}
+
+function syncUpdateNotice() {
+  const button = document.querySelector('[data-review-load-updates]');
+  if (!button) return;
+  const pending = state.pendingRows !== null;
+  button.textContent = pending ? '有更新，点击加载' : '检查更新';
+  button.classList.toggle('has-updates', pending);
+  const status = document.querySelector('[data-review-update-status]');
+  const message = pending ? '有新的批注变更' : '';
+  if (status.textContent !== message) status.textContent = message;
+}
+
+function applyRows(rows) {
+  const changed = !state.loaded || commentsSignature(rows) !== commentsSignature(state.rows);
+  state.rows = rows;
+  state.loaded = true;
+  state.pendingRows = null;
+  syncUpdateNotice();
+  if (changed) { renderList(); schedulePins(); }
+}
+
+// Local submissions update their own rows without accepting unrelated remote changes.
+function applyLocalChange(update) {
+  requestGate.start();
+  state.checking = false;
+  const pending = state.pendingRows === null ? null : update(state.pendingRows);
+  applyRows(update(state.rows));
+  state.pendingRows = pending !== null && commentsSignature(pending) !== commentsSignature(state.rows) ? pending : null;
+  syncUpdateNotice();
+}
+
+function upsertLocalComment(row) {
+  applyLocalChange(rows => {
+    const existing = rows.find(item => item.id === row.id);
+    const next = { ...existing, ...row, replies: row.replies || existing?.replies || [] };
+    return existing ? rows.map(item => item.id === row.id ? next : item) : [...rows, next];
+  });
+}
+
+async function loadUpdates() {
+  const button = document.querySelector('[data-review-load-updates]');
+  button.disabled = true;
+  try {
+    if (state.pendingRows !== null) {
+      // Ignore any older in-flight read after explicitly accepting this snapshot.
+      requestGate.start();
+      state.checking = false;
+      applyRows(state.pendingRows);
+    } else {
+      await refresh();
+    }
+  } finally { button.disabled = false; }
+}
+
+async function refresh({ quiet = false, background = false } = {}) {
   ensureUI();
+  if (background && state.checking) return;
   const request = requestGate.start();
+  state.checking = true;
   const list = document.querySelector('.eva-review-list');
   if (!quiet && !list.querySelector('[data-review-item]') && !document.querySelector('.eva-review-panel').hidden) list.innerHTML = '<div class="eva-review-empty">正在读取批注…</div>';
   try {
     const rows = await store.list();
     if (!requestGate.isCurrent(request)) return;
-    state.rows = rows.map(row => ({ ...row, status: normalizeStatus(row.status), replies: row.replies || [] }));
-    renderList(); schedulePins();
+    const nextRows = rows.map(row => ({ ...row, status: normalizeStatus(row.status), replies: row.replies || [] }));
+    if (background && state.loaded) {
+      state.pendingRows = commentsSignature(nextRows) === commentsSignature(state.rows) ? null : nextRows;
+      syncUpdateNotice();
+    } else {
+      applyRows(nextRows);
+    }
   } catch (error) {
     if (!requestGate.isCurrent(request)) return;
     // A failed background read must not destroy an existing reply editor.
-    if (list.querySelector('[data-review-item]')) { if (!quiet) toast(error.message); return; }
+    if (state.loaded) { if (!quiet) toast(error.message); return; }
     if (!document.querySelector('.eva-review-panel').hidden) list.innerHTML = `<div class="eva-review-empty"><strong>批注读取失败</strong><span>${escapeHtml(error.message)}</span><button type="button" data-review-retry>重新读取</button></div>`;
     list.querySelector('[data-review-retry]')?.addEventListener('click', () => refresh());
+  } finally {
+    if (requestGate.isCurrent(request)) state.checking = false;
   }
 }
 
@@ -293,12 +372,20 @@ function renderList() {
     return;
   }
   state.listRenderPending = false;
+  const scrollTop = list.scrollTop;
+  const listTop = list.getBoundingClientRect().top;
+  const anchors = [...list.querySelectorAll('[data-review-item]')]
+    .filter(item => item.getBoundingClientRect().bottom > listTop)
+    .map(item => ({ id: item.dataset.reviewItem, offset: item.getBoundingClientRect().top - listTop }));
   const rows = state.rows
     .filter(row => state.pinMode === 'all' || (state.pinMode === 'approved' && row.status === 'approved'))
+    .filter(row => state.statusFilter === 'all' || row.status === state.statusFilter)
     .sort((a,b) => Number(b.seq || 0) - Number(a.seq || 0));
   if (!rows.length) {
     list.innerHTML = state.pinMode === 'off'
       ? '<div class="eva-review-empty"><strong>批注已关闭</strong><span>切换到“全部查看”或“仅已确认”即可恢复。</span></div>'
+      : state.statusFilter !== 'all'
+        ? '<div class="eva-review-empty"><strong>当前范围内没有此状态的批注</strong><span>可切换状态或选择“全部查看”。</span></div>'
       : '<div class="eva-review-empty"><strong>这里还没有批注</strong><span>点击“添加批注”，再选择页面中的具体位置。</span></div>';
     return;
   }
@@ -306,7 +393,16 @@ function renderList() {
   list.innerHTML = pending.map(commentHtml).join('')
     + (completed.length ? `<div class="eva-review-completed-divider"><span>原型已改完</span></div>${completed.map(commentHtml).join('')}` : '');
   bindListEvents();
-  if (state.activeId) list.querySelector(`[data-review-item="${cssEscape(state.activeId)}"]`)?.scrollIntoView({ block:'nearest' });
+  list.scrollTop = scrollTop;
+  if (scrollTop > 0) {
+    // Keep the same card at the same reading offset even when rows above it change.
+    for (const anchor of anchors) {
+      const item = list.querySelector(`[data-review-item="${cssEscape(anchor.id)}"]`);
+      if (!item) continue;
+      list.scrollTop += item.getBoundingClientRect().top - list.getBoundingClientRect().top - anchor.offset;
+      break;
+    }
+  }
 }
 
 function commentHtml(row) {
@@ -344,19 +440,19 @@ function bindListEvents() {
       state.replyDrafts.delete(id);
       if (state.activeId === id) state.activeId = null;
       if (state.replyingId === id) state.replyingId = null;
-      await refresh({ quiet:true });
+      applyLocalChange(rows => rows.filter(item => item.id !== id));
       toast('批注已删除');
     } catch (error) { toast(error.message); button.disabled = false; }
   });
   document.querySelectorAll('[data-review-complete]').forEach(button => button.onclick = async () => {
     button.disabled = true;
-    try { await store.updateStatus(button.dataset.reviewComplete, 'done'); await refresh({ quiet:true }); toast('已标记为“原型已改完”'); }
-    catch (error) { toast(error.message); await refresh({ quiet:true }); }
+    try { upsertLocalComment(await store.updateStatus(button.dataset.reviewComplete, 'done')); toast('已标记为“原型已改完”'); }
+    catch (error) { toast(error.message); button.disabled = false; }
   });
   document.querySelectorAll('[data-review-status]').forEach(select => select.onchange = async () => {
     select.disabled = true;
-    try { await store.updateStatus(select.dataset.reviewStatus, select.value); await refresh({ quiet:true }); toast(`已设为“${STATUSES[select.value]}”`); }
-    catch (error) { toast(error.message); await refresh({ quiet:true }); }
+    try { upsertLocalComment(await store.updateStatus(select.dataset.reviewStatus, select.value)); toast(`已设为“${STATUSES[select.value]}”`); }
+    catch (error) { toast(error.message); select.value = state.rows.find(row => row.id === select.dataset.reviewStatus)?.status || 'open'; }
     finally { select.disabled = false; }
   });
   document.querySelectorAll('[data-review-reply]').forEach(form => {
@@ -381,7 +477,9 @@ function bindListEvents() {
         state.replyDrafts.delete(id);
         localStorage.setItem('eva-review-author', reply.author_name);
         if (state.replyingId === id) state.replyingId = null;
-        renderIdentity(); renderList(); await refresh({ quiet:true }); toast('回复已同步');
+        renderIdentity();
+        applyLocalChange(rows => rows.map(row => row.id === id ? { ...row, replies: [...row.replies.filter(item => item.id !== reply.id), reply] } : row));
+        toast('回复已同步');
       } catch (error) { toast(error.message); }
       finally {
         state.submittingReplies.delete(id);
@@ -399,7 +497,7 @@ function openPanel() {
   ensureUI();
   document.querySelector('.eva-review-panel').hidden = false;
   const launcher = document.querySelector('[data-review-launcher]'); launcher.hidden = true; launcher.setAttribute('aria-expanded', 'true');
-  refresh();
+  refresh({ quiet:state.loaded, background:true });
 }
 
 function closePanel() {
@@ -441,7 +539,7 @@ async function submitComment(event) {
   try {
     const authorName = localStorage.getItem('eva-review-author') || form.author.value;
     const row = await store.create({ page_path:currentPage(), anchor:state.target?.anchor || {}, author_name:authorName, body:form.body.value, kind:form.kind.value, status:'open' });
-    localStorage.setItem('eva-review-author', row.author_name); renderIdentity(); form.body.value = ''; state.activeId = row.id; closeDialog(); await refresh(); toast(`批注 #${row.seq || ''} 已同步`);
+    localStorage.setItem('eva-review-author', row.author_name); renderIdentity(); form.body.value = ''; state.activeId = row.id; closeDialog(); upsertLocalComment(row); toast(`批注 #${row.seq || ''} 已同步`);
   } catch (cause) { error.textContent = cause.message; }
   finally { submit.disabled = false; }
 }
@@ -463,6 +561,7 @@ async function locateComment(id) {
   state.activeId = id; target.scrollIntoView({ behavior:'smooth', block:'center' });
   target.classList.add('eva-review-target'); setTimeout(() => target.classList.remove('eva-review-target'), 1800);
   renderList();
+  document.querySelector(`[data-review-item="${cssEscape(id)}"]`)?.scrollIntoView({ block:'nearest' });
 }
 
 const ROUTE_SURFACES = {
@@ -635,6 +734,6 @@ window.navigation?.addEventListener('currententrychange', detectPageChange);
 
 ensureUI();
 new MutationObserver(schedulePins).observe(document.getElementById('root') || document.body, { childList:true, subtree:true });
-setInterval(() => { if (!document.hidden && !document.querySelector('.eva-review-panel')?.hidden) refresh({ quiet:true }); }, 10 * 60 * 1000);
+setInterval(() => { if (!document.hidden && !document.querySelector('.eva-review-panel')?.hidden) refresh({ quiet:true, background:true }); }, 15000);
 setInterval(detectPageChange, 250);
-refresh({ quiet:true });
+refresh({ quiet:true, background:true });
