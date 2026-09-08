@@ -41,3 +41,8 @@ body.eva-review-picking,body.eva-review-picking *{cursor:crosshair!important}.ev
 .eva-review-updates button:focus-visible{outline:2px solid var(--eva-review-primary);outline-offset:2px}
 .eva-review-updates button:disabled{cursor:wait;opacity:.6}
 [data-review-update-status]{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+.eva-review-head>div:first-child{min-width:0}
+.eva-review-head>div:first-child span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eva-review-status-filter{max-width:112px;height:26px;padding:2px 4px;border:1px solid var(--eva-review-border);border-radius:6px;background:var(--eva-review-bg);color:var(--eva-review-text);font:12px/18px inherit;cursor:pointer}
+.eva-review-status-filter:focus-visible{outline:2px solid var(--eva-review-primary);outline-offset:2px}

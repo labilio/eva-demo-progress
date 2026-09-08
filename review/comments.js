@@ -3,7 +3,7 @@ import { afterBrowserPaint, buildAnchorRecord, buildProjectViewContext, clampFlo
 import { COMMENTS_CONFIG } from './comments-config.mjs';
 
 const store = createCommentsStore(COMMENTS_CONFIG);
-const state = { rows: [], loaded: false, pendingRows: null, checking: false, target: null, picking: false, pinMode: localStorage.getItem('eva-review-pin-mode') || 'all', activeId: null, replyingId: null, replyDrafts: new Map(), submittingReplies: new Set(), listRenderPending: false, locateRevision: 0, draggedUntil: 0 };
+const state = { rows: [], loaded: false, pendingRows: null, checking: false, statusFilter: 'all', target: null, picking: false, pinMode: localStorage.getItem('eva-review-pin-mode') || 'all', activeId: null, replyingId: null, replyDrafts: new Map(), submittingReplies: new Set(), listRenderPending: false, locateRevision: 0, draggedUntil: 0 };
 
 const KINDS = {
   copy: { label: '改文案', className: 'copy' },
@@ -22,6 +22,8 @@ const STATUSES = {
   doing: '原型修改中',
   done: '原型已改完',
 };
+const savedStatusFilter = localStorage.getItem('eva-review-status-filter');
+state.statusFilter = Object.hasOwn(STATUSES, savedStatusFilter) ? savedStatusFilter : 'all';
 
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
 const cssEscape = value => window.CSS?.escape ? CSS.escape(String(value)) : String(value).replace(/[^a-zA-Z0-9_-]/g, '\\$&');
@@ -155,7 +157,7 @@ function ensureUI() {
     <button type="button" class="eva-review-launcher" data-review-ui data-review-launcher aria-expanded="false" aria-controls="eva-review-panel">${icon('comment',15)}<span>批注</span></button>
     <button type="button" class="eva-review-restore" data-review-ui data-review-restore hidden aria-label="显示批注">${icon('eye',15)}</button>
     <aside id="eva-review-panel" class="eva-review-panel" data-review-ui hidden aria-label="原型批注">
-      <header class="eva-review-head" data-review-drag-handle><div><strong>批注</strong><span>所有同事共享</span></div><div class="eva-review-head-actions"><button type="button" class="eva-review-icon-button" data-review-hide aria-label="隐藏批注入口">${icon('eyeOff')}</button><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
+      <header class="eva-review-head" data-review-drag-handle><div><strong>批注</strong><span>所有同事共享</span></div><div class="eva-review-head-actions"><select class="eva-review-status-filter" data-review-status-filter aria-label="筛选批注状态"><option value="all">全部状态</option>${Object.entries(STATUSES).map(([value, label]) => `<option value="${value}"${state.statusFilter === value ? ' selected' : ''}>${label}</option>`).join('')}</select><button type="button" class="eva-review-icon-button" data-review-hide aria-label="隐藏批注入口">${icon('eyeOff')}</button><button type="button" class="eva-review-icon-button" data-review-close aria-label="收起批注">${icon('close')}</button></div></header>
       <div class="eva-review-toolbar">
         <button type="button" class="eva-review-primary" data-review-add>${icon('add')}添加批注</button>
       </div>
@@ -181,6 +183,12 @@ function ensureUI() {
   document.querySelector('[data-review-launcher]').onclick = () => { if (Date.now() > state.draggedUntil) openPanel(); };
   document.querySelector('[data-review-close]').onclick = closePanel;
   document.querySelector('[data-review-load-updates]').onclick = loadUpdates;
+  document.querySelector('[data-review-status-filter]').onchange = event => {
+    state.statusFilter = Object.hasOwn(STATUSES, event.target.value) ? event.target.value : 'all';
+    localStorage.setItem('eva-review-status-filter', state.statusFilter);
+    document.querySelector('.eva-review-list').scrollTop = 0;
+    renderList();
+  };
   document.querySelector('[data-review-hide]').onclick = hideReviewEntry;
   document.querySelector('[data-review-restore]').onclick = restoreReviewEntry;
   document.querySelector('[data-review-add]').onclick = startPicking;
@@ -371,10 +379,13 @@ function renderList() {
     .map(item => ({ id: item.dataset.reviewItem, offset: item.getBoundingClientRect().top - listTop }));
   const rows = state.rows
     .filter(row => state.pinMode === 'all' || (state.pinMode === 'approved' && row.status === 'approved'))
+    .filter(row => state.statusFilter === 'all' || row.status === state.statusFilter)
     .sort((a,b) => Number(b.seq || 0) - Number(a.seq || 0));
   if (!rows.length) {
     list.innerHTML = state.pinMode === 'off'
       ? '<div class="eva-review-empty"><strong>批注已关闭</strong><span>切换到“全部查看”或“仅已确认”即可恢复。</span></div>'
+      : state.statusFilter !== 'all'
+        ? '<div class="eva-review-empty"><strong>当前范围内没有此状态的批注</strong><span>可切换状态或选择“全部查看”。</span></div>'
       : '<div class="eva-review-empty"><strong>这里还没有批注</strong><span>点击“添加批注”，再选择页面中的具体位置。</span></div>';
     return;
   }
