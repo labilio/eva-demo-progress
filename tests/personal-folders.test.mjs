@@ -27,8 +27,8 @@ test('默认也是可折叠分类，历史会话稳定 ID 全部保留，个人�
  assert.equal(a.q('[data-eva-toggle-folder=""]').textContent,'默认');
  assert.equal(a.q('[data-eva-selected-assistant]'),null);assert.doesNotMatch(a.document.body.textContent,/通用助理|研发助理|创建助理|未归类/);
  a.q('[data-eva-toggle-folder=""]').click();assert.equal(a.q('[data-eva-personal-conversation-id="personal-ui-designer-ppt"]'),null);
- const b=setup(a.saved);assert.equal(b.q('[data-eva-toggle-folder=""]').getAttribute('aria-expanded'),'false');
- b.q('[data-eva-toggle-folder=""]').click();b.route('personal-ui-designer-ppt');assert.match(b.q('.eva-history-flow').textContent,/设计团队/);
+ const b=setup(a.saved);assert.equal(b.q('[data-eva-toggle-folder=""]').getAttribute('aria-expanded'),'true');
+ b.route('personal-ui-designer-ppt');assert.match(b.q('.eva-history-flow').textContent,/设计团队/);
 });
 
 test('创建、移动、重命名在刷新后保留，重名和空名被拒绝',()=>{
@@ -40,9 +40,11 @@ test('创建、移动、重命名在刷新后保留，重名和空名被拒绝',
  b.store.moveConversation(c.id,'');assert.equal(b.store.getSnapshot().conversations.find(x=>x.id===c.id).folderId,'');
 });
 
-test('中栏创建表单和折叠不重建输入框，保存结果有实际数据',()=>{
+test('浏览本地目录和折叠不重建输入框，目录名保存为文件夹',async()=>{
  const a=setup();a.input('草稿不丢');const input=a.q('.eva-composer-prompt');
- a.q('[data-eva-create-folder]').click();a.q('#eva-rail-name').value='供应链材料';a.submit();
+ a.window.showDirectoryPicker=async()=>({name:'供应链材料'});
+ const picker=a.q('[data-eva-composer-folder]');Object.defineProperty(picker,'value',{configurable:true,writable:true,value:'__browse_local__'});picker.dispatchEvent(new a.window.Event('change',{bubbles:true}));await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(a.q('[data-eva-create-folder]'),null);
  assert.equal(a.q('.eva-composer-prompt'),input);assert.equal(input.value,'草稿不丢');assert.ok(a.store.getSnapshot().folders.some(f=>f.name==='供应链材料'));
  a.q('[data-eva-toggle-folder=""]').click();assert.equal(a.q('.eva-composer-prompt'),input);
 });
@@ -77,9 +79,10 @@ test('Agent 创建中心不再提供第二个个人助理的创建路径',()=>{
 });
 
 
-test('输入框下拉可选择默认或新建文件夹，不丢失草稿，发送归属选择的文件夹',()=>{
+test('输入框下拉可选择默认或本地目录，不丢失草稿，发送归属选择的文件夹',async()=>{
  const a=setup();a.input('保留这段中文输入');const textarea=a.q('.eva-composer-prompt');
- a.q('[data-eva-create-folder]').click();a.q('#eva-rail-name').value='下拉新文件夹';a.submit();
+ a.window.showDirectoryPicker=async()=>({name:'下拉新文件夹'});
+ const browse=a.q('[data-eva-composer-folder]');assert.equal(browse.lastElementChild.textContent,'浏览本地目录...');Object.defineProperty(browse,'value',{configurable:true,writable:true,value:'__browse_local__'});browse.dispatchEvent(new a.window.Event('change',{bubbles:true}));await new Promise(resolve=>setImmediate(resolve));
  const folder=a.store.getSnapshot().folders.find(f=>f.name==='下拉新文件夹');
  const picker=a.q('[data-eva-composer-folder]');assert.ok([...picker.querySelectorAll('option')].some(o=>o.textContent==='下拉新文件夹'));
  Object.defineProperty(picker,'value',{configurable:true,value:folder.id});picker.dispatchEvent(new a.window.Event('change',{bubbles:true}));

@@ -75,7 +75,7 @@
   }
   var deleted = saved && Array.isArray(saved.deleted) ? saved.deleted : [];
   conversations = conversations.filter(function (c) { return !deleted.includes(c.id); });
-  var collapsed = saved && Array.isArray(saved.collapsed) ? saved.collapsed : [];
+  var collapsed = []; // 每次打开个人 Eva 默认展开全部文件夹，当前页面仍可手动收起。
   var folderPins = saved && Array.isArray(saved.folderPins) ? saved.folderPins : [];
   var listeners = new Set();
   function snapshot() { return JSON.parse(JSON.stringify({folders:folders, conversations:conversations, collapsed:collapsed, deleted:deleted, folderPins:folderPins})); }
