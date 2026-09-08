@@ -22,7 +22,7 @@ function create({React:R,Button,Input,SearchIcon,store,ui}){
     !personas.length&&h('span',{className:'eva-contacts__clone-empty'},'暂无分身'),
     h('div',{id:groupId,className:'eva-contacts__clone-list'},visible.map(p=>h('button',{type:'button',key:p.id,className:'eva-contacts__ai-row eva-contact-identity-button',onClick:()=>onProfile(p.id),'aria-label':'查看 '+p.name+' 的资料'},
      h(IdentityAppearance,{profile:p,size:28}),h('span',{className:'eva-contacts__ai-identity'},h('span',{className:'eva-contacts__ai-name',title:p.name},p.name),root.EvaAIIdentity.badge(h))))),
-    !filtered&&personas.length>6&&h(Button,{className:'eva-contacts__disclosure',theme:'borderless',type:'tertiary',size:'small','aria-expanded':expanded,'aria-controls':groupId,onClick:()=>setExpanded(v=>!v)},expanded?'收起分身':'展开其余 '+hiddenCount+' 个分身')));
+    !filtered&&personas.length>6&&h(Button,{className:'eva-contacts__disclosure',theme:'borderless',type:'tertiary',size:'small','aria-expanded':expanded,'aria-controls':groupId,onClick:()=>setExpanded(v=>!v)},expanded?'收起分身':'展开其余 '+hiddenCount+' 个分身')),h('span',{className:'eva-contacts__owner-total'},'共 '+personas.length+' 个 AI 分身'));
  }
  return function Contacts(){
   R.useSyncExternalStore(store.subscribe,store.getSnapshot);
@@ -33,7 +33,7 @@ function create({React:R,Button,Input,SearchIcon,store,ui}){
   return h('section',{id:'eva-contacts-root',className:'eva-contacts eva-contacts--redesigned','aria-label':'通讯录'},
    h('header',{className:'eva-contacts__main-head'},h('div',{className:'eva-contacts__title'},h('strong',null,'通讯录'),h('span',{className:'eva-contacts__result-count'},rows.length+' 位联系人')),
     h('div',{className:'eva-contacts__search'},h(SearchIcon,{size:16}),h(Input,{value:query,onChange:setQuery,placeholder:'搜索联系人、部门或分身','aria-label':'搜索通讯录',showClear:true,onKeyDown:e=>{if(e.key==='Escape')setQuery('');}}))),
-   h('div',{className:'eva-contacts__list','aria-label':'联系人列表'},rows.length?h('ul',{className:'eva-contacts__groups'},rows.map(row=>h(ContactGroup,{...row,key:actor+':'+row.person.id,query,onProfile:setProfile}))):h('div',{className:'eva-contacts__empty-state',role:'status'},'没有找到匹配的联系人')),
+   h('div',{className:'eva-contacts__list','aria-label':'联系人列表'},h('div',{className:'eva-contacts__columns','aria-hidden':true},h('span',null,'联系人'),h('span',null,'AI 分身')),rows.length?h('ul',{className:'eva-contacts__groups'},rows.map(row=>h(ContactGroup,{...row,key:actor+':'+row.person.id,query,onProfile:setProfile}))):h('div',{className:'eva-contacts__empty-state',role:'status'},'没有找到匹配的联系人')),
    h(IdentityCard,{identity:profile,onClose:()=>setProfile(null)}));
  };
 }
