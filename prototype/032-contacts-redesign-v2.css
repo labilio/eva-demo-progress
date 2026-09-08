@@ -177,10 +177,10 @@
     z-index: 1;
     top: 0;
     display: grid;
-    grid-template-columns: minmax(180px, .8fr) minmax(240px, 1.2fr);
+    grid-template-columns: 220px minmax(0, 1fr);
     min-height: 36px;
     align-items: center;
-    column-gap: var(--eva-space-8);
+    column-gap: var(--eva-space-4);
     border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
     color: var(--gds-color-text-secondary-accessible);
     background: var(--gds-color-surface-primary);
@@ -204,10 +204,10 @@
 
   .eva-contacts__person .semi-list-item-body {
     display: grid;
-    grid-template-columns: minmax(180px, .8fr) minmax(240px, 1.2fr);
+    grid-template-columns: 220px minmax(0, 1fr);
     min-width: 0;
     align-items: center;
-    column-gap: var(--eva-space-8);
+    column-gap: var(--eva-space-4);
   }
 
   .eva-contacts__cell {
@@ -220,7 +220,7 @@
   .eva-contacts__cell--ai-list {
     align-items: center;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 40px;
+    grid-template-columns: repeat(2, minmax(0, 200px)) 40px;
     gap: 8px 20px;
     padding: 0;
   }
@@ -330,7 +330,7 @@
 .eva-contact-identity-button:focus-visible{outline:var(--gds-border-focus) solid var(--gds-color-border-focus);outline-offset:var(--gds-space-0-5)}
 .eva-contacts__search-popover .semi-input-wrapper{border:0;background:transparent;min-width:0;flex:1}
 
-/* L2 department stays beside the human name; AI columns remain unchanged. */
+/* Department remains beside the human; personal clones form one adjacent group. */
 .eva-contacts__department {
   min-width: 0;
   overflow: hidden;
@@ -360,3 +360,9 @@
 .eva-contacts__cell--ai-list { column-gap: var(--eva-space-4); }
 .eva-contacts__main-head { padding-inline: var(--eva-space-6); }
 .eva-contacts__list { padding: var(--eva-space-3) var(--eva-space-6) var(--eva-space-6); }
+
+/* Each contact owns one compact clone group; the divider separates identity types. */
+.eva-contacts__clone-group { min-width: 0; padding-inline-start: var(--eva-space-4); border-inline-start: var(--gds-border-standard) solid var(--gds-color-border-subtle); }
+.eva-contacts__clone-count { margin-bottom: var(--eva-space-1); color: var(--gds-color-text-secondary-accessible); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); }
+.eva-contacts__columns > :last-child { padding-inline-start: var(--eva-space-4); }
+.eva-contacts__person.semi-list-item { min-height: 80px; }
