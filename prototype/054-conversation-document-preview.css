@@ -1,0 +1,99 @@
+/* Team conversation document preview: a real sibling drawer, never a modal scrim. */
+.eva-msg .ch-right-panel--preview {
+  flex: 0 0 664px;
+  width: 664px;
+  min-width: 0;
+  background: var(--wk-bg-surface);
+  border-left: 1px solid var(--wk-border-subtle);
+  box-shadow: var(--wk-shadow-drawer);
+}
+
+.eva-word-preview-renderer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--wk-bg-base);
+}
+
+.eva-word-preview-renderer__frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--wk-bg-base);
+}
+
+.eva-word-preview-renderer__loading {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--wk-text-secondary);
+  font-size: 13px;
+  background: var(--wk-bg-base);
+}
+
+.eva-word-preview-renderer__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--wk-border-strong);
+  border-top-color: var(--wk-color-accent);
+  border-radius: 50%;
+  animation: eva-word-preview-spin 0.8s linear infinite;
+}
+
+.eva-word-preview-renderer--error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px;
+  color: var(--wk-text-secondary);
+  text-align: center;
+}
+
+.eva-word-preview-renderer--error strong {
+  color: var(--wk-text-primary);
+  font-size: 16px;
+}
+
+.eva-word-preview-renderer--error button {
+  min-height: 32px;
+  padding: 0 14px;
+  color: var(--wk-text-inverse);
+  background: var(--wk-color-accent);
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@keyframes eva-word-preview-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1199px) {
+  .eva-msg .ch-right-panel--preview {
+    flex-basis: 480px;
+    width: 480px;
+  }
+}
+
+@media (max-width: 959px) {
+  .eva-msg .ch-right-panel--preview {
+    position: absolute;
+    z-index: 84;
+    inset: 0 0 0 auto;
+    width: min(480px, 100%);
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eva-word-preview-renderer__spinner { animation: none; }
+}

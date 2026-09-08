@@ -234,7 +234,62 @@ window.__EVA_SUPPLY_CHAT_CONTENT = [
     "u-wangyilin",
     "10:54",
     "按这个推进。细节留在对应群，有结论再同步这里。"
-  ]
+  ],
+  {
+    fixtureId: 'supply-chat-v3:all:prod:field-checklist-context',
+    kind: 'text', senderId: 'u-linxiao', time: '11:02',
+    text: '我把现场复核需要逐项确认的批次、量具、抽样和签字要求整理成清单。先发 Markdown 版，大家可以直接在线读，补充项继续在整改证据子区维护。'
+  },
+  {
+    fixtureId: 'supply-chat-v3:all:prod:field-checklist-file',
+    kind: 'file', senderId: 'u-linxiao', time: '11:03',
+    file: {name: 'A-2409现场复核清单.md', size: 4860, extension: 'md', version: 3, taskId: 'SC-103'}
+  },
+  {
+    fixtureId: 'supply-chat-v3:all:prod:schedule-impact-context',
+    kind: 'text', senderId: 'u-zhouyuan', time: '11:07',
+    text: '排产影响我拆成“维持原顺序”和“提前换型”两个场景，时间轴和受影响工序放在 HTML 里。这个版本只用于内部比较，还不是最终排产指令。'
+  },
+  {
+    fixtureId: 'supply-chat-v3:all:prod:schedule-impact-file',
+    kind: 'file', senderId: 'u-zhouyuan', time: '11:08',
+    file: {name: 'A-2409排产影响测算.html', size: 12840, extension: 'html', version: 2, taskId: 'SC-105'}
+  },
+  {
+    fixtureId: 'supply-chat-v3:all:prod:review-minutes-context',
+    kind: 'text', senderId: 'u-hejing', time: '11:12',
+    text: '临时放行评审纪要已整理。文档把“已核实事实”“待补证据”和“需要负责人拍板”分开写了，Word 版方便后续归档和会签。'
+  },
+  {
+    fixtureId: 'supply-chat-v3:all:prod:review-minutes-file',
+    kind: 'file', senderId: 'u-hejing', time: '11:13',
+    file: {name: 'A-2409临时放行评审纪要.docx', size: 28416, extension: 'docx', version: 1, taskId: 'SC-103', previewUrl: 'prototype/assets/file-samples/A-2409临时放行评审纪要.docx.html'}
+  },
+  {
+    fixtureId: 'supply-chat-v3:all:prod:analysis-report-context',
+    kind: 'text', senderId: 'u-linxiao', time: '11:16',
+    text: '分析报告 PDF 也补到这里，便于和前三份资料对照。报告记录的是当前分析结果，不代表质量放行已经完成。'
+  },
+  {
+    fixtureId: 'supply-chat-v3:all:prod:analysis-report-file',
+    kind: 'file', senderId: 'u-linxiao', time: '11:17',
+    file: {name: 'A-2409来料异常分析报告.pdf', size: 42000, extension: 'pdf', version: 1, taskId: 'SC-103'}
+  },
+  {
+    fixtureId: 'supply-chat-v3:all:prod:summary-request',
+    kind: 'text', senderId: 'u-wangyilin', time: '11:20',
+    text: '@Eva 项目管理专员 请按“文件用途、当前结论、还要谁确认”把这四份资料串起来，给大家一个阅读顺序。'
+  },
+  {
+    fixtureId: 'supply-chat-v3:all:prod:summary-response',
+    kind: 'text', senderId: 'project-agent:prod', time: '11:21',
+    text: '**建议按决策顺序阅读**\n\n1. `A-2409现场复核清单.md`：先确认现场复核项是否完整；由林晓维护。\n2. `A-2409来料异常分析报告.pdf`：核对异常范围与分析依据；当前仍不能据此视为放行。\n3. `A-2409排产影响测算.html`：比较两种排产场景；由周远确认产能影响。\n4. `A-2409临时放行评审纪要.docx`：汇总事实、待补证据和会签意见。\n\n> 最终仍需王宜林根据质量复核与排产影响，人工确认是否临时放行、是否调整排产。'
+  },
+  {
+    fixtureId: 'supply-chat-v3:all:prod:human-decision-gate',
+    kind: 'text', senderId: 'u-wangyilin', time: '11:22',
+    text: '收到。大家先按这个顺序看，质量复核和排产影响没有同时确认前，不对外承诺恢复时间，也不下发新的排产指令。'
+  }
 ]},
   {scopeId:'supply-demo-rectification',notice:'跟进 A-2409 来料异常与供应商整改。证据放入“A-2409整改证据”子区；对外承诺和放行由人类负责人确认。',messages:[
     ['u-linxiao','10:06','补充现场情况：本批抽检 200 件，发现 12 件尺寸偏差。仓库已按批次隔离，同型号其他批次正在复核。'],

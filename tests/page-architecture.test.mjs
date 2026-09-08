@@ -159,10 +159,10 @@ test('消息内嵌项目隐藏群聊标签并在会话选择时返回群聊', ()
   assert.match(imPatch, /Za=\(ci,Zi\)=>\{setEvaInlineProjectId\(null\),xt\(ci\),Nt\(Zi\)/);
 });
 
-test('点击群聊内容区会关闭已打开的子区或聊天信息面板', () => {
+test('点击群聊内容区会关闭已打开的子区、聊天信息或文件预览面板', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
 
-  assert.match(imPatch, /ch-main__stream",onClick:ci=>\{\(Mt===\"threads\"\|\|Mt===\"info\"\)&&!ci\.target\.closest\(\"\.wk-messageinput-box, \.wk-contextmenus\"\)&&Dt\(\"none\"\)\}/);
+  assert.match(imPatch, /ch-main__stream",onClick:ci=>\{\(Mt===\"threads\"\|\|Mt===\"info\"\|\|Mt===\"file\"\)&&!ci\.target\.closest\?\.\(\"\.wk-messageinput-box, \.wk-contextmenus, \.wk-message-file\"\)/);
 });
 
 test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', () => {

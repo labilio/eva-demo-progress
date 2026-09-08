@@ -695,6 +695,22 @@
       "file": "prototype/009-1-project-files-ui.js",
       "bytes": 31731,
       "role": "prototype"
+    },
+    {
+      "order": 87,
+      "tag": "style",
+      "name": "conversation-document-preview-tokens",
+      "file": "prototype/document-preview/tokens.css",
+      "bytes": 903,
+      "role": "prototype"
+    },
+    {
+      "order": 88,
+      "tag": "style",
+      "name": "conversation-document-preview",
+      "file": "prototype/054-conversation-document-preview.css",
+      "bytes": 2091,
+      "role": "prototype"
     }
   ]
 }

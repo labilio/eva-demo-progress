@@ -1,0 +1,20 @@
+:root {
+  --wk-bg-base: var(--semi-color-bg-1);
+  --wk-bg-surface: var(--semi-color-bg-0);
+  --wk-bg-subtle: var(--semi-color-fill-0);
+  --wk-bg-selected-accent: var(--semi-color-primary-light-default);
+  --wk-text-primary: var(--semi-color-text-0);
+  --wk-text-secondary: var(--semi-color-text-1);
+  --wk-text-tertiary: var(--semi-color-text-2);
+  --wk-text-inverse: var(--semi-color-white);
+  --wk-color-accent: var(--semi-color-primary);
+  --wk-color-warning: var(--semi-color-warning);
+  --wk-warning-alpha-12: var(--semi-color-warning-light-default);
+  --wk-border-subtle: var(--semi-color-border);
+  --wk-border-default: var(--semi-color-border);
+  --wk-border-strong: var(--semi-color-border);
+  --wk-border-focus: var(--semi-color-primary);
+  --wk-shadow-card: var(--semi-shadow-elevated);
+  --wk-shadow-overlay: var(--semi-shadow-elevated);
+  --wk-shadow-drawer: var(--semi-shadow-elevated);
+}
