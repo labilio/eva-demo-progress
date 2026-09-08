@@ -10,7 +10,7 @@
     current = current.map(function (space) {
       if (space.id === 'official') {
         changed = true;
-        return Object.assign({}, space, { color: '#7771D6', colorBg: '#F1F0FF', official: true, lockedGroups: true });
+        return Object.assign({}, space, { color: '#7771D6', colorBg: '#F1F0FF', official: true });
       }
       if (space.id === 'prod') {
         changed = true;

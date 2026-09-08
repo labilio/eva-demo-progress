@@ -53,7 +53,7 @@
       description: description,
       instructions: description + '。按“供应链运营协同”项目口径执行，结论、证据和待处理项挂回对应任务。',
       status: 'idle', model: 'qwen3.8-max', visibility: 'shared', max_concurrent_tasks: 2,
-      created_at: T0, updated_at: T1, runtime_name: '组织共享 Runtime', owner_name: '王宜林',
+      created_at: T0, updated_at: T1, runtime_name: '组织共享 Runtime', owner_id: 'u-wangyilin', owner_name: '王宜林',
       skill_ids: skillIds,
       skills: supplySkills.filter(function (skill) { return skillIds.indexOf(skill.id) >= 0; })
     };
@@ -268,3 +268,180 @@ window.__EVA_SUPPLY_CHAT_CONTENT = [
 
 // All-hands demo is maintained only in __EVA_SUPPLY_CHAT_CONTENT.
 window.__EVA_PROJECT_AGENT_DEMO = [];
+
+// Explicit user-requested Official community task fixtures.
+window.__EVA_OFFICIAL_TASKS = [
+  {
+    "id": "official-101",
+    "workspace_id": "official",
+    "number": 101,
+    "identifier": "EVA-101",
+    "title": "修复上传失败后的重试反馈",
+    "status": "in_progress",
+    "priority": "medium",
+    "assignee_type": "member",
+    "assignee_id": "u-linxiao",
+    "assignee_name": "林晓",
+    "creator_id": "u-wangyilin",
+    "creator_name": "王宜林",
+    "project_id": null,
+    "project_name": "EVA Official Space",
+    "description": "来自 Official 用户反馈：断网后保留失败记录，重试不生成重复文件，补充客户端重启场景。",
+    "position": 101,
+    "created_at": "2026-09-08T09:00:00+08:00",
+    "updated_at": "2026-09-08T11:00:00+08:00"
+  },
+  {
+    "id": "official-102",
+    "workspace_id": "official",
+    "number": 102,
+    "identifier": "EVA-102",
+    "title": "验证分享链接与来源群权限隔离",
+    "status": "in_review",
+    "priority": "medium",
+    "assignee_type": "member",
+    "assignee_id": "u-wangyilin",
+    "assignee_name": "王宜林",
+    "creator_id": "u-wangyilin",
+    "creator_name": "王宜林",
+    "project_id": null,
+    "project_name": "EVA Official Space",
+    "description": "使用群内 AI 提供的权限矩阵核对分享范围；未通过的项保持待验证，不提前承诺上线。",
+    "position": 102,
+    "created_at": "2026-09-08T09:00:00+08:00",
+    "updated_at": "2026-09-08T11:00:00+08:00"
+  },
+  {
+    "id": "official-103",
+    "workspace_id": "official",
+    "number": 103,
+    "identifier": "EVA-103",
+    "title": "补充会议行动项上手示例",
+    "status": "todo",
+    "priority": "medium",
+    "assignee_type": "member",
+    "assignee_id": "u-wangyilin",
+    "assignee_name": "王宜林",
+    "creator_id": "u-wangyilin",
+    "creator_name": "王宜林",
+    "project_id": null,
+    "project_name": "EVA Official Space",
+    "description": "将会议行动项模板整理到上手说明，明确负责人和时间需人工确认，任务分派不自动启动 AI。",
+    "position": 103,
+    "created_at": "2026-09-08T09:00:00+08:00",
+    "updated_at": "2026-09-08T11:00:00+08:00"
+  }
+];
+
+// User-requested coverage of every seeded project and task lifecycle stage.
+window.__EVA_CLIENT_TASKS = [
+  {
+    "id": "client-101",
+    "workspace_id": "lab",
+    "identifier": "CLIENT-101",
+    "number": 101,
+    "title": "确认客户试点范围与成功标准",
+    "description": "演示记录：已整理试点场景、负责人及验收标准，并形成双方确认纪要。",
+    "status": "done",
+    "priority": "medium",
+    "assignee_type": "member",
+    "assignee_id": "u-wangyilin",
+    "assignee_name": "王宜林",
+    "creator_id": "u-wangyilin",
+    "creator_name": "王宜林",
+    "project_id": null,
+    "project_name": "客户联合交付",
+    "position": 101,
+    "created_at": "2026-09-01T09:00:00+08:00",
+    "updated_at": "2026-09-08T10:00:00+08:00"
+  },
+  {
+    "id": "client-102",
+    "workspace_id": "lab",
+    "identifier": "CLIENT-102",
+    "number": 102,
+    "title": "评审首批交付方案与权限清单",
+    "description": "方案已整理，等待客户确认交付范围、可见文件与项目成员边界。",
+    "status": "in_review",
+    "priority": "medium",
+    "assignee_type": "member",
+    "assignee_id": "u-hejing",
+    "assignee_name": "何静",
+    "creator_id": "u-wangyilin",
+    "creator_name": "王宜林",
+    "project_id": null,
+    "project_name": "客户联合交付",
+    "position": 102,
+    "created_at": "2026-09-01T09:00:00+08:00",
+    "updated_at": "2026-09-08T10:00:00+08:00"
+  },
+  {
+    "id": "client-103",
+    "workspace_id": "lab",
+    "identifier": "CLIENT-103",
+    "number": 103,
+    "title": "联调客户演示环境与核心流程",
+    "description": "按登录、项目访问、任务流转及文件读取路径逐项联调，记录阻塞和复现步骤。",
+    "status": "in_progress",
+    "priority": "medium",
+    "assignee_type": "member",
+    "assignee_id": "u-suhang",
+    "assignee_name": "苏航",
+    "creator_id": "u-wangyilin",
+    "creator_name": "王宜林",
+    "project_id": null,
+    "project_name": "客户联合交付",
+    "position": 103,
+    "created_at": "2026-09-01T09:00:00+08:00",
+    "updated_at": "2026-09-08T10:00:00+08:00"
+  },
+  {
+    "id": "client-104",
+    "workspace_id": "lab",
+    "identifier": "CLIENT-104",
+    "number": 104,
+    "title": "准备客户培训与操作手册",
+    "description": "基于已确认的功能准备操作步骤、常见问题和培训演示材料。",
+    "status": "todo",
+    "priority": "medium",
+    "assignee_type": "member",
+    "assignee_id": "u-wangyilin",
+    "assignee_name": "王宜林",
+    "creator_id": "u-wangyilin",
+    "creator_name": "王宜林",
+    "project_id": null,
+    "project_name": "客户联合交付",
+    "position": 104,
+    "created_at": "2026-09-01T09:00:00+08:00",
+    "updated_at": "2026-09-08T10:00:00+08:00"
+  },
+  {
+    "id": "client-105",
+    "workspace_id": "lab",
+    "identifier": "CLIENT-105",
+    "number": 105,
+    "title": "收集第二批客户场景需求",
+    "description": "先归集反馈和业务价值，范围未确认前不承诺排期。",
+    "status": "backlog",
+    "priority": "medium",
+    "assignee_type": "member",
+    "assignee_id": "u-hejing",
+    "assignee_name": "何静",
+    "creator_id": "u-wangyilin",
+    "creator_name": "王宜林",
+    "project_id": null,
+    "project_name": "客户联合交付",
+    "position": 105,
+    "created_at": "2026-09-01T09:00:00+08:00",
+    "updated_at": "2026-09-08T10:00:00+08:00"
+  }
+];
+
+window.__EVA_OFFICIAL_TASKS.push(
+  {...window.__EVA_OFFICIAL_TASKS[0],id:'official-104',number:104,identifier:'EVA-104',position:104,title:'发布用户反馈信息收集模板',status:'done',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'演示记录：已整理版本号、复现步骤、期望结果及脱敏要求，供用户反馈时参考。'},
+  {...window.__EVA_OFFICIAL_TASKS[0],id:'official-105',number:105,identifier:'EVA-105',position:105,title:'整理社区高频问题候选清单',status:'backlog',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集用户交流中的重复问题，评估哪些内容进入下一版说明，暂未确认排期。'}
+);
+window.__EVA_SUPPLY_CHAIN_DEMO.issues.push({
+  ...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'backlog',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'
+});
+window.__EVA_SUPPLY_CHAIN_DEMO.projects.forEach(p=>{p.issue_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id).length;p.done_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id&&t.status==='done').length;});

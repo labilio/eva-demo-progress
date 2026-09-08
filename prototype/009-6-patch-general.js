@@ -25,6 +25,25 @@
           .replaceAll('AI 产品共创', '供应链运营协同')
           .replaceAll('让产品、研发和业务共同推进 AI 能力', '协同推进采购、质量与合规工作');
         var replacements = [
+          ['React.createElement(Avatar$2,{size:"extra-extra-small",color:"light-blue",src:xt.creator_avatar??void 0},[...xt.creator_name??"?"][0])', 'React.createElement(EvaLoopIdentityAvatar,{person:{id:xt.creator_id,name:xt.creator_name,type:"member",avatar:xt.creator_avatar}})'],
+          ['React.createElement(Avatar$2,{size:"extra-extra-small",color:"light-blue",src:ki.author_avatar??void 0},[...ki.author_name??"?"][0])', 'React.createElement(EvaLoopIdentityAvatar,{person:{id:ki.author_id,name:ki.author_name,type:ki.author_type||"member",avatar:ki.author_avatar}})'],
+          ['React.createElement(Avatar$2,{size:"extra-extra-small",color:"light-blue"},gt.name.slice(0,1).toUpperCase())', 'React.createElement(EvaLoopIdentityAvatar,{person:{...gt,type:"agent"}})'],
+          ['React.createElement(Avatar$2,{size:"extra-extra-small",color:"light-blue"},gt.name.slice(0,1).toUpperCase())', 'React.createElement(EvaLoopIdentityAvatar,{person:{...gt,type:"agent"}})'],
+
+          ['official:[{id:"c-official-announcements",name:"产品公告",color:"#6f3eb8",unread:1,members:2,lastAt:"2026-09-02T17:30:00+08:00",threads:[]},{id:"c-official-feedback",name:"意见反馈",color:"#5b7fc4",unread:0,members:2,lastAt:"2026-09-02T16:40:00+08:00",threads:[]},{id:"c-official-community",name:"使用交流",color:"#2f9e76",unread:0,members:2,lastAt:"2026-09-02T15:20:00+08:00",threads:[]}]', 'official:[]'],
+
+          ['React.createElement(Avatar$2,{size:"extra-small",shape:"square",color:avatarColor(Qr.name)},Qr.name.slice(0,1).toUpperCase())', 'React.createElement(EvaLoopIdentityAvatar,{person:{...Qr,type:"agent"},size:24})'],
+          ['React.createElement(Avatar$2,{size:"extra-extra-small",color:"grey"},Qr.owner_name.slice(0,1).toUpperCase())', 'React.createElement(EvaLoopIdentityAvatar,{person:{id:Qr.owner_id,name:Qr.owner_name,type:"member"}})'],
+          ['React.createElement(Avatar$2,{size:"small",shape:"square",color:avatarColor(ha.name)},ha.name.slice(0,1).toUpperCase())', 'React.createElement(EvaLoopIdentityAvatar,{person:{...ha,type:"squad"},size:32})'],
+          ['React.createElement(Avatar$2,{size:"extra-extra-small",color:"light-blue",src:ha.leader_avatar??void 0},(ha.leader_name??"?").slice(0,1))', 'React.createElement(EvaLoopIdentityAvatar,{person:{id:ha.leader_id,name:ha.leader_name,type:"agent",avatar:ha.leader_avatar}})'],
+          ['React.createElement(Avatar$2,{key:`${wa.member_type}:${wa.member_id}`,size:"extra-extra-small",color:wa.member_type==="agent"?"violet":"light-blue",src:wa.member_avatar??void 0},(wa.member_name??"?").slice(0,1))', 'React.createElement(EvaLoopIdentityAvatar,{key:`${wa.member_type}:${wa.member_id}`,person:{id:wa.member_id,name:wa.member_name,type:wa.member_type,avatar:wa.member_avatar}})'],
+          ['React.createElement(Avatar$2,{size:"extra-extra-small",color:"light-blue",src:mt.leader_avatar??void 0},(mt.leader_name??"?").slice(0,1))', 'React.createElement(EvaLoopIdentityAvatar,{person:{id:mt.leader_id,name:mt.leader_name,type:"agent",avatar:mt.leader_avatar}})'],
+          ['React.createElement(Avatar$2,{size:"small",color:"light-blue",src:pa.member_avatar??void 0},(pa.member_name??"?").slice(0,1))', 'React.createElement(EvaLoopIdentityAvatar,{person:{id:pa.member_id,name:pa.member_name,type:pa.member_type,avatar:pa.member_avatar},size:24})'],
+
+          ['function AssigneePicker(', 'function EvaLoopIdentityAvatar({person,size=20}){const h=React.createElement;if(!person?.id)return h(User,{size:20});const store=evaMembers().store,id=person.id,human=store.person(id);if(human||person.type==="member")return h("img",{src:human?.avatar||window.EvaAvatar.personUri(id),width:size,height:size,alt:"",style:{borderRadius:"50%",flexShrink:0}});if(person.type==="squad")return h("img",{src:window.EvaAvatar.squadUri(id),width:size,height:size,alt:"",style:{borderRadius:"50%",flexShrink:0}});const clone=store.clone(id),employee=store.employee(id),agent=id.startsWith("project-agent:")?store.projectAgent(id.slice(14)):null,identity=agent||employee||clone||scoped(BY_SPACE.agents).find(p=>p.id===id)||person,appearance=identity.identityAppearance||{name:identity.name||person.name,avatar:identity.avatar||window.__EVA_COLLEAGUE_PORTRAIT,sourceName:"Eva"};return window.EvaAIIdentity.avatar(appearance,size,h);}\nfunction AssigneePicker('],
+          ['jt.type==="member"&&jt.octo_uid?React.createElement(Avatar$2,{size:"extra-extra-small",color:"light-blue",src:WKApp$1.shared.avatarUser(jt.octo_uid)},jt.name.slice(0,1)):typeIcon(jt.type)', 'React.createElement(EvaLoopIdentityAvatar,{person:jt})'],
+          ['React.createElement(Avatar$2,{size:"extra-extra-small",color:ASSIGNEE_TYPE_COLOR[Nt?.type??"member"],src:Nt?.octo_uid?WKApp$1.shared.avatarUser(Nt.octo_uid):void 0},(Nt?.name??ct??"?").slice(0,1))', 'React.createElement(EvaLoopIdentityAvatar,{person:Nt||{id:rt,name:ct}})'],
+
           ['projectTint=rt=>/^#[0-9a-f]{6}$/i.test(rt??"")?`${rt}18`:"#f2f3f5"', "projectTint=rt=>window.EvaProjectAppearance.get({color:rt}).surface"],
           ['const SPACE_PALETTE=[{color:"#4F6BED",colorBg:"#EEF2FF"},{color:"#12A38F",colorBg:"#E9F8F5"},{color:"#D98B18",colorBg:"#FFF6E5"},{color:"#E16B5A",colorBg:"#FFF0ED"},{color:"#8066C9",colorBg:"#F2EEFF"},{color:"#2F86C7",colorBg:"#EAF6FC"},{color:"#C6537A",colorBg:"#FCEEF3"},{color:"#718C42",colorBg:"#F2F6E9"}],', "const "],
           ['JSON.stringify(rt))}catch{}}function seedSpaces()', 'JSON.stringify(rt.map(window.EvaProjectAppearance.normalize)))}catch{}}function seedSpaces()'],
@@ -48,7 +67,7 @@
           ],
           [
             'ISSUES_BY_SPACE={[SPACE_DATA_KEY]:MOCK_ISSUES}',
-            'ISSUES_BY_SPACE={prod:window.__EVA_SUPPLY_CHAIN_DEMO.issues,"drive-design":window.__EVA_DRIVE_DEMO.issues}'
+            'ISSUES_BY_SPACE={prod:window.__EVA_SUPPLY_CHAIN_DEMO.issues,"drive-design":window.__EVA_DRIVE_DEMO.issues,official:window.__EVA_OFFICIAL_TASKS,lab:window.__EVA_CLIENT_TASKS}'
           ],
           [
             'CANDIDATES=[...AGENTS.map(rt=>({id:rt.id,type:"agent",name:rt.name})),...SQUADS.map(rt=>({id:rt.id,type:"squad",name:rt.name})),...MEMBERS.map(rt=>({id:rt.user_id,type:"member",name:rt.name??rt.user_id,octo_uid:rt.octo_uid}))]',

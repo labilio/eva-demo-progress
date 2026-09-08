@@ -35,7 +35,7 @@
       description: description,
       instructions: description + '。按“团队文件功能设计”项目口径执行，结论和交付物挂回对应任务。',
       status: 'idle', model: model, visibility: 'shared', max_concurrent_tasks: 2,
-      created_at: T0, updated_at: T1, runtime_name: '组织共享 Runtime', owner_name: '王宜林',
+      created_at: T0, updated_at: T1, runtime_name: '组织共享 Runtime', owner_id: 'u-wangyilin', owner_name: '王宜林',
       skill_ids: skillIds,
       skills: skills.filter(function (skill) { return skillIds.indexOf(skill.id) >= 0; })
     };
@@ -154,3 +154,5 @@
 window.__EVA_FILE_SAMPLE_URLS = {
   'A-2409来料异常分析报告.pdf': 'prototype/assets/file-samples/a-2409-demo.pdf'
 };
+
+Object.assign(window.__EVA_FILE_SAMPLE_URLS, {"EVA-上传恢复排查清单.md": "prototype/assets/file-samples/EVA-上传恢复排查清单.md", "EVA-分享权限验收矩阵.csv": "prototype/assets/file-samples/EVA-分享权限验收矩阵.csv", "EVA-会议行动项模板.md": "prototype/assets/file-samples/EVA-会议行动项模板.md"});

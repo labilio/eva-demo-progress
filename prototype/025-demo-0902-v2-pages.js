@@ -103,8 +103,6 @@
   }
 
   function tuneProjectTerminology() {
-    var activeProjectName = document.querySelector('.collab-sp-chip .nm');
-    document.body.classList.toggle('eva-official-project-open', Boolean(activeProjectName && activeProjectName.textContent.trim() === 'EVA Official Space'));
 
     if (isTeamMode()) {
       var list = document.querySelector('.collab-list-page');

@@ -50,6 +50,7 @@ root.EvaChatSettings={create(ui,store){
    h(IdentityCard,{identity:profile,onClose:()=>setProfile(null)}),
    h(Modal,{className:'eva-members-modal',title:'确认操作',visible:!!confirm,onCancel:()=>setConfirm(null),okText:'确认',cancelText:'取消',onOk:()=>{if(run(()=>{if(confirm==='clear')onClear();else if(confirm==='leave'){store.remove(id,actor,actor);onClose();}else if(confirm==='dissolve'){store.dissolveGroup(id,actor);onClose();}else if(confirm?.remove){const p=confirm.remove;p.kind==='employee'?store.removeEmployee(id,actor,p.id):p.kind==='clone'?store.removeClone(id,actor,p.id):store.remove(id,actor,p.id);}}))setConfirm(null);}},h('p',null,confirm==='clear'?'清空你在此设备的聊天记录，其他成员的记录不受影响。':confirm==='leave'?'退出后，你的分身也将离开本群。':confirm==='dissolve'?'解散后，群聊及子区将不再可访问。':confirm?.remove?'确认移除 '+confirm.remove.name+'？':''),confirm?.remove&&identity(confirm.remove),error&&h('p',{role:'alert',className:'eva-members-error'},error)));
  }
+ ChatSettings.Row=Row;
  return ChatSettings;
 }};
 })(window);

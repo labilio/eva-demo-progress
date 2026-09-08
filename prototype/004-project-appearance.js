@@ -28,7 +28,7 @@
       border: dark ? mix(base, 24, .55) : mix(base, 255, .38)};
   }
   function normalize(project) {
-    const {color, colorBg, ...data} = project;
+    const {color, colorBg, lockedGroups, ...data} = project;
     return {...data, colorKey: keyFor(project)};
   }
   function view(project) {

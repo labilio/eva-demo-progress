@@ -39,3 +39,8 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-tile-caption>span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 
 .eva-chat-settings-note { color:var(--wk-text-secondary,#767a80); font-size:12px; line-height:1.6; }
+
+/* Concrete subzone settings use Octo's surface + grouped base cards. */
+.eva-thread-settings .eva-chat-settings-body { background:var(--wk-bg-surface,#f5f6f7); padding:8px 16px 16px; }
+.eva-thread-settings .eva-chat-setting-section { background:var(--wk-bg-base,#fff); margin-bottom:8px; }
+.eva-thread-setting-label i { display:block; margin-top:8px; color:var(--wk-text-tertiary,#8a8f99); font-size:12px; line-height:1.5; font-style:normal; }

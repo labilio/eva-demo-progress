@@ -200,3 +200,254 @@ window.__EVA_DRIVE_CHAT_DEMO = [
       {kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time:'14:00',text:'DRIVE-8 检查批量操作反馈，DRIVE-9 检查搜索和空状态。请记录操作步骤、实际结果和截图，暂不把待验证项标成通过。'},
       {kind:'text',sender:{uid:'u-hejing',name:'何静'},time:'14:12',text:'收到。权限仍按 DRIVE-4 的矩阵检查，重点复核项目文件与来源群历史的隔离。'}]}}
 ];
+
+window.__EVA_OFFICIAL_COMMUNITY_DEMO = {
+  "id": "official-community",
+  "name": "用户使用反馈与开发交流",
+  "humans": [
+    "u-wangyilin",
+    "u-linxiao",
+    "u-hejing",
+    "u-zhouyuan"
+  ],
+  "cloneIds": [
+    "b-wangyilin"
+  ],
+  "threads": [
+    {
+      "id": "official-upload-help",
+      "name": "大文件上传失败反馈"
+    },
+    {
+      "id": "official-sharing-help",
+      "name": "分享链接权限答疑"
+    },
+    {
+      "id": "official-meeting-help",
+      "name": "用 AI 整理会议行动项"
+    }
+  ],
+  "messages": {
+    "official-community": [
+      {
+        "kind": "text",
+        "senderId": "u-wangyilin",
+        "time": "09:00",
+        "text": "欢迎大家在这里反馈 Eva 的使用问题。请描述操作过程和期望结果，我们会结合 AI 分析、文件清单和任务跟进处理。"
+      },
+      {
+        "kind": "text",
+        "senderId": "u-hejing",
+        "time": "09:05",
+        "text": "我上传一个大文件时切换了网络，进度停住了。我开一个子区详细说一下。"
+      },
+      {
+        "kind": "text",
+        "senderId": "u-zhouyuan",
+        "time": "09:08",
+        "text": "我想确认分享文件会不会同时开放群历史，已在权限答疑子区补充场景。"
+      },
+      {
+        "kind": "text",
+        "senderId": "u-wangyilin",
+        "time": "11:00",
+        "text": "@Eva 项目管理专员 汇总今天这三条反馈的处理状态，区分已经给出的帮助和仍在开发的功能。"
+      },
+      {
+        "kind": "text",
+        "senderId": "project-agent:official",
+        "time": "11:01",
+        "text": "### 今天的反馈进展\n\n| 反馈 | 已提供 | 后续任务 |\n| --- | --- | --- |\n| 上传失败 | 排查清单和验收步骤 | EVA-101 进行中 |\n| 分享权限 | 规则说明与测试矩阵 | EVA-102 审核中 |\n| 会议行动项 | 可下载模板 | EVA-103 待办 |\n\n**这些是演示任务状态，不表示修复已上线。** 用户可先使用排查清单与模板，开发结果由团队复核后同步。"
+      }
+    ],
+    "official-upload-help": [
+      {
+        "kind": "text",
+        "senderId": "u-hejing",
+        "time": "09:10",
+        "text": "文件大约 800 MB，上传到一半从 Wi-Fi 切到有线后一直不动。重新点上传会不会多一份？"
+      },
+      {
+        "kind": "text",
+        "senderId": "u-wangyilin",
+        "time": "09:12",
+        "text": "@执剑人 根据这个现象整理排查步骤和验收清单，缺少的信息先列出来，不要猜错误原因。"
+      },
+      {
+        "kind": "text",
+        "senderId": "b-wangyilin",
+        "time": "09:13",
+        "text": "### 先确认失败状态，再重试\n\n目前只能确认**切换网络后进度停止**，还不能判断上传是否完成。\n\n1. 查看文件列表中是否已出现目标文件。\n2. 记录客户端版本、发生时间和错误提示。\n3. 请开发侧确认重试是否复用原上传记录。\n\n> 暂时不要反复新建上传，避免产生重复项。\n\n我整理了排查与验收清单，见附件。"
+      },
+      {
+        "kind": "file",
+        "senderId": "b-wangyilin",
+        "time": "09:14",
+        "file": {
+          "name": "EVA-上传恢复排查清单.md",
+          "size": 552,
+          "extension": "md"
+        }
+      },
+      {
+        "kind": "text",
+        "senderId": "u-linxiao",
+        "time": "09:18",
+        "text": "这个提示确实不够清楚。我来跟进失败原因和重试反馈，验收会覆盖网络切换与客户端重启。"
+      },
+      {
+        "kind": "text",
+        "senderId": "u-wangyilin",
+        "time": "09:20",
+        "text": "@Eva 项目管理专员 把已确认范围登记为上传恢复任务，负责人林晓，先标进行中；没有复核前不要标完成。"
+      },
+      {
+        "kind": "text",
+        "senderId": "project-agent:official",
+        "time": "09:21",
+        "text": "已登记 EVA-101，关联上述排查清单。验收重点是失败记录保留、重试去重和重启后的恢复入口。"
+      },
+      {
+        "kind": "refcard",
+        "senderId": "project-agent:official",
+        "time": "09:21",
+        "ref": {
+          "target": "issue",
+          "title": "EVA-101 · 修复上传失败后的重试反馈",
+          "spaceName": "EVA Official Space",
+          "desc": "负责人：林晓 · 进行中",
+          "allowed": true,
+          "issueId": "official-101"
+        }
+      },
+      {
+        "kind": "text",
+        "senderId": "u-hejing",
+        "time": "09:25",
+        "text": "明白，我先检查文件列表，补充版本和时间，后续在这条任务下面跟进。"
+      }
+    ],
+    "official-sharing-help": [
+      {
+        "kind": "text",
+        "senderId": "u-zhouyuan",
+        "time": "10:00",
+        "text": "我把项目文件分享给不在原群里的同事，他会看到原群聊天记录吗？"
+      },
+      {
+        "kind": "text",
+        "senderId": "u-wangyilin",
+        "time": "10:02",
+        "text": "@执剑人 解释文件权限与群权限的区别，给一份开发可以直接复核的权限矩阵。"
+      },
+      {
+        "kind": "text",
+        "senderId": "b-wangyilin",
+        "time": "10:03",
+        "text": "### 分享文件不等于加入来源群\n\n- **文件访问**取决于项目权限或分享链接授权。\n- **群历史**仍取决于是否加入该群。\n- 撤销链接后，该链接应失效；接收者原有的项目权限不因此被撤销。\n\n我把关键场景整理为 CSV，所有检查项先标记为“待验证”，由开发团队逐项复核。"
+      },
+      {
+        "kind": "file",
+        "senderId": "b-wangyilin",
+        "time": "10:04",
+        "file": {
+          "name": "EVA-分享权限验收矩阵.csv",
+          "size": 321,
+          "extension": "csv"
+        }
+      },
+      {
+        "kind": "text",
+        "senderId": "u-wangyilin",
+        "time": "10:07",
+        "text": "@Eva 项目管理专员 登记权限隔离复核任务，由我负责，按附件矩阵验收。"
+      },
+      {
+        "kind": "text",
+        "senderId": "project-agent:official",
+        "time": "10:08",
+        "text": "已登记 EVA-102，当前审核中。完成条件：分享访问、撤销链接、来源群历史及跨项目访问均有复核记录。"
+      },
+      {
+        "kind": "refcard",
+        "senderId": "project-agent:official",
+        "time": "10:08",
+        "ref": {
+          "target": "issue",
+          "title": "EVA-102 · 验证分享链接与来源群权限隔离",
+          "spaceName": "EVA Official Space",
+          "desc": "负责人：王宜林 · 审核中",
+          "allowed": true,
+          "issueId": "official-102"
+        }
+      },
+      {
+        "kind": "text",
+        "senderId": "u-zhouyuan",
+        "time": "10:10",
+        "text": "这样清楚了，我需要的是只共享文件，不把讨论内容一起开放。"
+      }
+    ],
+    "official-meeting-help": [
+      {
+        "kind": "text",
+        "senderId": "u-hejing",
+        "time": "10:30",
+        "text": "会议纪要很长，能不能让 AI 帮我整理下一步，但不要自动替大家安排时间？"
+      },
+      {
+        "kind": "text",
+        "senderId": "u-wangyilin",
+        "time": "10:32",
+        "text": "@执剑人 给一个会议行动项模板，负责人和截止时间不明确的地方留待确认，并解释怎么转成任务。"
+      },
+      {
+        "kind": "text",
+        "senderId": "b-wangyilin",
+        "time": "10:33",
+        "text": "### 先整理，再确认\n\n| 字段 | 处理方式 |\n| --- | --- |\n| 行动项 | 从明确结论提取 |\n| 负责人 | 未点名则留“待指定” |\n| 截止时间 | 未约定则留“待确认” |\n| 完成标准 | 写可检查的结果 |\n\n人工确认后，再通过项目里的**新建任务**登记。分派给 AI 不等于立即执行。\n\n下面是可复用的 Markdown 模板。"
+      },
+      {
+        "kind": "file",
+        "senderId": "b-wangyilin",
+        "time": "10:34",
+        "file": {
+          "name": "EVA-会议行动项模板.md",
+          "size": 441,
+          "extension": "md"
+        }
+      },
+      {
+        "kind": "text",
+        "senderId": "u-hejing",
+        "time": "10:36",
+        "text": "这个流程合适，我会先让参会人确认，不让 AI 替大家承诺。"
+      },
+      {
+        "kind": "text",
+        "senderId": "u-wangyilin",
+        "time": "10:38",
+        "text": "@Eva 项目管理专员 登记一个文档改进任务，把这套上手示例加进说明，负责人是我。"
+      },
+      {
+        "kind": "text",
+        "senderId": "project-agent:official",
+        "time": "10:39",
+        "text": "已登记 EVA-103，待办。交付内容包括行动项模板、人工确认步骤和创建任务示例。"
+      },
+      {
+        "kind": "refcard",
+        "senderId": "project-agent:official",
+        "time": "10:39",
+        "ref": {
+          "target": "issue",
+          "title": "EVA-103 · 补充会议行动项上手示例",
+          "spaceName": "EVA Official Space",
+          "desc": "负责人：王宜林 · 待办",
+          "allowed": true,
+          "issueId": "official-103"
+        }
+      }
+    ]
+  }
+};

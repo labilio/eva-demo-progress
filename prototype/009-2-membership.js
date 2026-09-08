@@ -265,11 +265,36 @@
         if(saved.groups[g.id])continue;
         const humans=driveProject.humans.map(p=>({id:p.id,role:'member'}));
         saved.groups[g.id]={id:g.id,name:g.name,projectId:'drive-design',ownerId:driveProject.ownerId,humans,cloneIds:[],employeeIds:[]};
-        for(const t of g.threads||[]){saved.threads[t.id]=g.id;saved.threadDetails[t.id]={...t,created_at:root.__EVA_DEMO_TIME?.T1};}
+        for(const t of g.threads||[]){saved.threads[t.id]=g.id;saved.threadDetails[t.id]={status:1,...t,created_at:root.__EVA_DEMO_TIME?.T1};}
         for(const [id,messages] of Object.entries(g.messages))saved.messages[id]=messages.filter(m=>humans.some(p=>p.id===m.sender.uid)).map(m=>({...m,sender:{...saved.people.find(p=>p.id===m.sender.uid),...m.sender}}));
       }
       saved.seededDriveDiscussionV1=true;
     }
+    if(!saved.officialGroupConsolidationV1){
+      const retired=new Set(['c-official-announcements','c-official-feedback','c-official-community']);
+      for(const [id,parent] of Object.entries(saved.threads||{})){if(retired.has(parent)){delete saved.threads[id];delete saved.threadDetails?.[id];delete saved.messages?.[id];}}
+      for(const id of retired){delete saved.groups[id];delete saved.messages?.[id];delete saved.chatSettings?.[id];}
+      if(saved.groups['official-community']?.name==='用户反馈与开发交流')saved.groups['official-community'].name='用户使用反馈与开发交流';
+      saved.officialGroupConsolidationV1=true;
+    }
+    const officialDemo=root.__EVA_OFFICIAL_COMMUNITY_DEMO,officialProject=saved.projects.official;
+    if(officialDemo&&officialProject&&!saved.seededOfficialCommunityV1){
+      for(const id of officialDemo.humans){if(saved.people.some(p=>p.id===id&&p.active!==false)&&!officialProject.humans.some(p=>p.id===id))officialProject.humans.push({id,role:'member'});}
+      const cloneIds=officialDemo.cloneIds.filter(id=>saved.clones.some(c=>c.id===id&&c.active!==false&&officialProject.humans.some(p=>p.id===c.ownerId)));
+      officialProject.cloneIds=[...new Set([...officialProject.cloneIds,...cloneIds])];
+      if(!saved.groups[officialDemo.id]){
+        saved.groups[officialDemo.id]={id:officialDemo.id,name:officialDemo.name,projectId:'official',ownerId:officialProject.ownerId,humans:officialProject.humans.map(p=>({id:p.id,role:'member'})),cloneIds};
+        saved.messages||={};saved.threadDetails||={};
+        for(const t of officialDemo.threads){saved.threads[t.id]=officialDemo.id;saved.threadDetails[t.id]={status:1,...t,created_at:root.__EVA_DEMO_TIME?.T1};}
+        for(const [id,messages] of Object.entries(officialDemo.messages))saved.messages[id]=messages.map((m,index)=>{
+          const {senderId,...message}=m;
+          const sender=senderId==='project-agent:official'?{id:senderId,uid:senderId,name:'Eva 项目管理专员',kind:'project-agent',ai:true,projectId:'official'}:saved.people.find(p=>p.id===senderId)||saved.clones.find(p=>p.id===senderId);
+          return {...message,fixtureId:'official-community-v1:'+id+':'+index,sender:{...sender,uid:senderId,...(cloneIds.includes(senderId)?{ai:true}: {})}};
+        });
+      }
+      saved.seededOfficialCommunityV1=true;
+    }
+    for(const t of officialDemo?.threads||[]){const existing=saved.threadDetails?.[t.id];if(existing&&existing.status==null&&!existing.deleted)existing.status=1;}
     // Reconcile only retired demo defaults; preserve user-edited names and active flags.
     for(const [id,oldName] of [['b-wangyilin','王宜林的分身'],['clone-linxiao','林晓的分身'],['clone-hejing','何静的分身']]){
       const c=saved.clones?.find(c=>c.id===id),seed=root.__EVA_MEMBERSHIP_CLONES?.find(c=>c.id===id);
@@ -278,13 +303,13 @@
     // Import the former project-directory preference once. Future pin changes
     // are owned by the member store and shared with the follow list.
     if(!saved.pinnedProjects){
-      let ids=['prod','drive-design'];
+      let ids=['prod','drive-design','official','lab'];
       try{
         const raw=root.localStorage.getItem('eva:pinned-project-ids:v3');
         const legacy=raw===null?root.localStorage.getItem('eva:pinned-project-ids:v2'):null;
-        const value=JSON.parse(raw??legacy??'["prod","drive-design"]');
+        const value=JSON.parse(raw??legacy??'["prod","drive-design","official","lab"]');
         ids=Array.isArray(value)?value.slice(0,6):ids;
-        if(raw===null&&ids.length===1&&ids[0]==='drive-design')ids=['prod','drive-design'];
+        if(raw===null&&ids.length===1&&ids[0]==='drive-design')ids=['prod','drive-design','official','lab'];
       }catch{}
       saved.pinnedProjects={'u-wangyilin':ids};
     }

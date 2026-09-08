@@ -10,7 +10,6 @@
     min-height: 32px;
     margin-bottom: 2px;
     padding: 0 10px;
-    gap: 7px;
     border-radius: 7px;
     background: var(--semi-color-fill-0, #f7f8fa);
     color: var(--semi-color-text-0, #1c1f23);
@@ -22,6 +21,14 @@
 
   body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab-sp-chip.eva-project-switcher:hover {
     background: var(--semi-color-fill-1, #f2f3f5);
+  }
+
+  .collab-sp-chip.eva-project-switcher .semi-button-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .collab-sp-chip.eva-project-switcher .nm {
