@@ -108,6 +108,7 @@
       priority: priority, assignee_type: assigneeType, assignee_id: assigneeId,
       assignee_name: assigneeName, creator_id: 'u-wangyilin', creator_name: '王宜林',
       creator_avatar: window.__EVA_CURRENT_USER_PORTRAIT,
+      issuer_role_id: 'supply-role-product', issuer_role_name: '产品',
       project_id: 'p-supply', project_name: '供应链运营协同', position: number,
       created_at: T0, updated_at: T1
     };
@@ -445,3 +446,50 @@ window.__EVA_SUPPLY_CHAIN_DEMO.issues.push({
   ...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'backlog',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'
 });
 window.__EVA_SUPPLY_CHAIN_DEMO.projects.forEach(p=>{p.issue_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id).length;p.done_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id&&t.status==='done').length;});
+
+window.__EVA_PROJECT_ROLE_DEMO={projectId:'prod',roles:[
+  {id:'supply-role-product',name:'产品',description:'梳理协作需求与验收标准'},
+  {id:'supply-role-front',name:'前端',description:'实现页面与交互'},
+  {id:'supply-role-back',name:'后端',description:'数据与接口开发'},
+  {id:'supply-role-hr',name:'HR',description:'人员协同与支持'}
+],assignments:{'u-wangyilin':['supply-role-product'],'u-linxiao':['supply-role-front'],'u-hejing':['supply-role-hr'],'u-zhouyuan':['supply-role-back']}};
+
+// Project automation fixtures are illustrative; no scheduler or external system is invoked.
+(function(root){
+  const time=root.__EVA_DEMO_TIME;
+  const scenarios={
+    prod:[
+      ['daily-supply','每日保供风险检查','工作日 09:00','汇总缺料、延期交付与排产变化，形成待人工确认的风险清单。','supply-5','发现 2 项齐套风险：关键件交付晚于排产需求，已关联排产风险任务。','昨日物料清单附件缺失，检查未完成；请补齐清单后重试。'],
+      ['quality','供应商整改证据跟进','工作日 15:00','核对 A-2409 整改证据和验证结论，整理仍需供应商补充的材料。','supply-3','已整理隔离措施、8D 报告与验证照片，仍待质量负责人确认长期措施。','已完成证据目录比对，标出 3 处待补材料。'],
+      ['contracts','采购合同到期提醒','每周一 10:00','检查未来 30 天到期合同，整理续签节点及需要人类确认的商务事项。','supply-7','本轮 4 份合同进入续签窗口，已关联续签检查任务，未向供应商发送承诺。','已核对到期日期与负责人员，未发现新增逾期。']
+    ],
+    'drive-design':[
+      ['delivery','每日文件功能交付汇总','工作日 17:30','汇总预览、上传重试和共享权限的开发进度，整理次日联调事项。',null,'需求与交互已对齐，上传重试待联调；整理 3 项次日确认事项。','已整理本周文件预览与共享权限变更。'],
+      ['access','共享文件权限巡检','每周一 10:00','按现有权限矩阵整理 Owner、Manager、Editor 和群外成员的验收项。',null,'已整理 12 项权限检查结果：2 项需要人工复核，未改变任何成员权限。','验收样本链接失效，巡检中断；请补充有效测试文件。'],
+      ['preview','文件预览问题归集','工作日 11:00','归集 PDF、图片和文档预览反馈，按复现条件去重并关联修复任务。',null,'合并 5 条同类预览反馈，补齐文件类型、大小与失败步骤。','已归集 3 条反馈，缺少复现文件的条目标记待补充。']
+    ],
+    official:[
+      ['feedback','社区反馈每日归集','工作日 10:00','整理用户使用反馈，按上传、分享和会话问题分类并关联已有任务。','official-101','归集 8 条反馈，合并 3 条重复问题，上传重试反馈已关联 EVA-101。','已整理反馈摘要；涉及个人内容仅保留脱敏复现信息。'],
+      ['faq','每周高频问题整理','每周五 16:00','汇总已确认答复和重复提问，形成待人工审核的 FAQ 草稿。','official-105','生成 6 条 FAQ 候选，其中分享范围说明需产品复核，未对外发布。','部分反馈引用已失效，草稿不完整；等待补充上下文。'],
+      ['template','反馈信息完整性检查','工作日 14:00','检查反馈是否包含版本号、复现步骤与预期结果，整理需补充的信息。','official-104','发现 3 条反馈缺少版本号，已整理补充清单，未自动联系用户。','已核对 7 条反馈，5 条具备完整复现条件。']
+    ],
+    lab:[
+      ['milestone','客户交付里程碑跟进','工作日 09:30','核对交付节点、负责人和验收材料，汇总偏差供内部交付团队确认。',null,'识别 1 项接口联调延期风险，建议调整内部验证顺序，未承诺新交付日期。','已核对本周 3 个里程碑，整理对应验收材料。'],
+      ['risks','客户项目风险周报','每周五 17:00','汇总范围变更、接口依赖和验收风险，形成内部周报草稿。',null,'整理 2 项接口依赖和 1 项范围变更，等待交付负责人确认后对外沟通。','依赖清单缺少最新版本，周报生成失败；请更新材料。'],
+      ['acceptance','交付验收材料检查','工作日 16:00','对照验收清单核对说明文档、测试记录和签收材料的完整性。',null,'已核对 9 项材料，缺少 2 份签收附件，生成待补材料清单。','已整理材料索引与版本差异，未代客户作出验收结论。']
+    ]
+  };
+  const issues={prod:root.__EVA_SUPPLY_CHAIN_DEMO.issues,'drive-design':root.__EVA_DRIVE_DEMO.issues,official:root.__EVA_OFFICIAL_TASKS,lab:root.__EVA_CLIENT_TASKS};
+  root.__EVA_PROJECT_AUTOMATIONS=Object.fromEntries(Object.entries(scenarios).map(([pid,rows])=>[pid,rows.map(([key,title,schedule,description,target,summary,previous],index)=>{
+    const task=issues[pid].find(i=>i.id===target)||issues[pid][index],id='ap-'+pid+'-'+key;
+    const clock=schedule.match(/\d{2}:\d{2}/)[0],weekly=schedule.startsWith('每周'),weekday=schedule.includes('周五')?5:1;
+    const scheduled=(base,direction)=>{const d=new Date(base);d.setUTCHours(0,0,0,0);if(weekly){while(d.getUTCDay()!==weekday)d.setUTCDate(d.getUTCDate()+direction);}return d.toISOString().slice(0,10)+'T'+clock+':00+08:00';};
+    const recent=scheduled(time.AUTOMATION_PREVIOUS,-1),previousDate=new Date(recent);previousDate.setUTCDate(previousDate.getUTCDate()-(weekly?7:3));
+    const previousAt=previousDate.toISOString().slice(0,10)+'T'+clock+':00+08:00',nextAt=scheduled(time.AUTOMATION_NEXT,1);
+    const runs=[{id:id+':recent',at:recent,status:'succeeded',summary,taskId:task?.id},{id:id+':previous',at:previousAt,status:previous.includes('失败')||previous.includes('中断')||previous.includes('未完成')||previous.includes('不完整')?'failed':'succeeded',summary:previous,taskId:task?.id}];
+    return {id,workspace_id:pid,title,description,schedule_label:schedule,assignee_type:'agent',assignee_id:'project-agent:'+pid,assignee_name:'Eva 项目管理专员',status:'active',execution_mode:'create_issue',issue_title_template:'{{date}}-'+title,created_by_type:'member',created_by_id:'u-wangyilin',trigger_kinds:['schedule'],last_run_at:runs[0].at,last_run_status:runs[0].status,next_run_at:nextAt,created_at:time.T0,updated_at:time.AUTOMATION_RECENT,demo:true,runs};
+  })]));
+  root.__EVA_SUPPLY_CHAIN_DEMO.autopilots=root.__EVA_PROJECT_AUTOMATIONS.prod;
+  // Keep the two existing file-project automations alongside the new scenarios.
+  root.__EVA_DRIVE_DEMO.autopilots.push(...root.__EVA_PROJECT_AUTOMATIONS['drive-design']);
+})(window);

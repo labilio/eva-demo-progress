@@ -117,3 +117,16 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-members-modal .eva-members-field + .eva-members-field { margin-top:24px; }
 .eva-members-notice { border-radius:12px;padding:12px 16px;line-height:22px; }
 @media(max-width:900px) { .eva-project-settings-info__facts { grid-template-columns:1fr; } }
+
+.eva-project-role-form{display:flex;flex-direction:column;gap:16px}
+.eva-project-role-form label{display:flex;flex-direction:column;gap:8px}
+
+.eva-chat-task-list{display:flex;flex-direction:column;height:100%;min-height:0;color:var(--semi-color-text-0)}
+.eva-chat-task-list .wk-thread-panel-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.eva-chat-task-list-body{display:flex;flex-direction:column;gap:12px;padding:16px;overflow:auto;min-height:0}
+.eva-chat-task-card{display:flex;flex-direction:column;gap:10px;padding:14px;width:100%;border:1px solid var(--semi-color-border);border-radius:8px;background:var(--semi-color-bg-0);text-align:left;color:inherit;cursor:pointer;font:inherit}
+.eva-chat-task-card:hover{background:var(--semi-color-fill-0)}
+.eva-chat-task-card:focus-visible{outline:2px solid var(--semi-color-primary);outline-offset:2px}
+.eva-chat-task-card strong{font-size:14px;line-height:22px;font-weight:500;overflow-wrap:anywhere}
+.eva-chat-task-meta{display:flex;align-items:center;gap:8px;font-size:12px;line-height:18px;color:var(--semi-color-text-2)}
+.eva-chat-task-meta>span:last-child{margin-left:auto}

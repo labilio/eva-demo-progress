@@ -17,7 +17,7 @@
         setForm(empty());setTagQuery('');setTagMenuOpen(false);setFiles([]);setError('');setBusy(false);lock.current=false;created.current=null;uploaded.current.clear();attached.current.clear();setLabels([]);
         if(visible)Promise.resolve().then(()=>listLabels()).then(rows=>{if(generation.current===token)setLabels(Array.isArray(rows)?rows:rows?.items||[]);}).catch(()=>{if(generation.current===token)setError('标签暂时无法加载，其他内容仍可填写。');});
         return()=>{generation.current++;};
-      },[visible,project?.id,parentIssueId]);
+      },[visible,project?.id,parentIssueId,snapshot.actorId]);
       const humans=(scope?.humans||[]).map(row=>snapshot.people.find(p=>p.id===row.id)).filter(Boolean);
       const clones=(scope?.cloneIds||[]).map(id=>snapshot.clones.find(c=>c.id===id)).filter(Boolean);
       const employees=(scope?.employeeIds||[]).map(id=>members.employee(id)).filter(Boolean);

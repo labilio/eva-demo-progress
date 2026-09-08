@@ -72,3 +72,23 @@
   .semi-modal:has(.eva-auto-settings) .arco-btn { min-height: 32px; padding: 0 12px; border-radius: var(--eva-radius-control); font: 14px/22px var(--eva-font-sans); }
   .semi-modal:has(.eva-auto-settings) .arco-btn-primary { background: var(--eva-action-primary); border-color: var(--eva-action-primary); }
   .semi-modal:has(.eva-auto-settings) .arco-btn-primary[disabled] { background: var(--eva-action-disabled-fill); border-color: transparent; color: var(--eva-text-muted); }
+
+/* Run details have their own compact content layout, separate from settings forms. */
+.eva-auto-run-modal .semi-modal-body{max-height:calc(100dvh - 220px);overflow-y:auto}
+.eva-auto-run-detail{color:var(--semi-color-text-0);padding:4px 0 0}
+.eva-auto-run-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.eva-auto-run-heading h3{margin:0;font-size:18px;line-height:26px;font-weight:600;overflow-wrap:anywhere}
+.eva-auto-run-status{flex:none;padding:2px 9px;border-radius:var(--gds-radius-control);font-size:12px;line-height:20px;color:var(--semi-color-success);background:var(--semi-color-success-light-default)}
+.eva-auto-run-status.is-failed{color:var(--semi-color-danger);background:var(--semi-color-danger-light-default)}
+.eva-auto-run-time{margin:8px 0 24px;font-size:12px;line-height:20px;color:var(--semi-color-text-2)}
+.eva-auto-run-detail h4{margin:0 0 8px;font-size:12px;line-height:20px;font-weight:500;color:var(--semi-color-text-2)}
+.eva-auto-run-result{padding:16px;background:var(--semi-color-fill-0);border-radius:var(--gds-radius-control)}
+.eva-auto-run-result p{margin:0;font-size:14px;line-height:24px;white-space:pre-wrap;overflow-wrap:anywhere}
+.eva-auto-run-related{margin-top:20px}
+.eva-auto-run-related button{display:flex;align-items:center;gap:10px;width:100%;padding:12px;border:1px solid var(--semi-color-border);border-radius:var(--gds-radius-control);background:var(--semi-color-bg-0);color:var(--semi-color-text-0);text-align:left;cursor:pointer;font:inherit}
+.eva-auto-run-related button:hover{background:var(--semi-color-fill-0)}
+.eva-auto-run-related button:focus-visible{outline:2px solid var(--semi-color-primary);outline-offset:2px}
+.eva-auto-run-task-id{flex:none;font-size:12px;color:var(--semi-color-text-2)}
+.eva-auto-run-task-name{flex:1;font-size:14px;line-height:22px;overflow-wrap:anywhere}
+.eva-auto-run-related svg{flex:none;color:var(--semi-color-text-2)}
+.eva-auto-run-demo{display:inline-block;margin-top:16px;font-size:12px;line-height:20px;color:var(--semi-color-text-2);cursor:help}

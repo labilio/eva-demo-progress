@@ -11,7 +11,7 @@ function setup() {
   const projects = [{id:'prod',name:'供应链',issue_prefix:'SC'},{id:'q',name:'其他项目',issue_prefix:'QA'}];
   const lists = {prod:[{id:'old',identifier:'SC-101',run_id:'old-run',description:'old description'}],q:[{id:'q-old',identifier:'QA-9'}]};
   const scope = {humans:[{id:'owner'},{id:'member'}],cloneIds:['clone'],employeeIds:['employee']};
-  const store = {snapshot:()=>({actorId:'member',projects:{prod:scope,q:scope}}),canRead:()=>true,person:id=>['owner','member'].includes(id)?({id,name:'当前成员'}):null,clone:id=>id==='clone'?({id,name:'成员分身'}):null,employee:id=>id==='employee'?({id,name:'数字员工'}):null,projectAgent:pid=>({id:'project-agent:'+pid,name:'项目专员'})};
+  const store = {taskIssuer:()=>({issuer_role_id:null,issuer_role_name:null}),snapshot:()=>({actorId:'member',projects:{prod:scope,q:scope}}),canRead:()=>true,person:id=>['owner','member'].includes(id)?({id,name:'当前成员'}):null,clone:id=>id==='clone'?({id,name:'成员分身'}):null,employee:id=>id==='employee'?({id,name:'数字员工'}):null,projectAgent:pid=>({id:'project-agent:'+pid,name:'项目专员'})};
   const ctx = {ISSUES_BY_SPACE:lists,loadSpaces:()=>projects,currentSpaceId:()=>current,evaMembers:()=>({store}),evaProjectIssuePrefix:p=>p.issue_prefix,evaLoopTaskAttachments:new Map(),window:{},MOCK_ISSUES:[{run_id:'should-not-copy',labels:['old']}],issuesOf:()=>lists[current]};
   vm.runInNewContext(runtime.slice(start,end),ctx);
   const ga=runtime.indexOf('getIssue=rt=>{'),gb=runtime.indexOf('},',ga)+1;

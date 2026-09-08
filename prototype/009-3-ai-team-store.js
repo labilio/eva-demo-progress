@@ -449,7 +449,7 @@
         const channelId = id + '____' + shortId;
         if (state.threads.some(item => item.id === channelId)) throw new Error('子区已存在');
         state.threads.push({...record, id:channelId, short_id:shortId, group_no:id, channel_id:channelId,
-          channel_type:5, name, status:1, messages:[], draft:''});
+          channel_type:5, name, status:1, created_at:new Date().toISOString(), updated_at:new Date().toISOString(), messages:[], draft:''});
         publish(); return channelId;
       },
       updateThread(channelId, patch) {
@@ -465,11 +465,24 @@
       },
       source(members, selectedThreadId) {
         const unique = [...new Map(members.map(member => [member.id, member])).values()];
+        if(!state.collaborationStoriesV1&&unique.some(m=>m.kind!=='human')&&window.__EVA_MY_AI_GROUP_STORIES){
+          const ai=unique.filter(m=>m.kind!=='human'),human={uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT};
+          window.__EVA_MY_AI_GROUP_STORIES.forEach((story,index)=>{
+            const member=ai[index%ai.length],sender={uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},channelId=id+'____demo-'+story.id;
+            const messages=[{id:channelId+':1',kind:'text',sender:human,time:'09:00',text:'@'+member.name+' '+story.request},{id:channelId+':2',kind:'text',sender,time:'09:01',text:story.reply},{id:channelId+':3',kind:'text',sender:human,time:'09:03',text:'@'+member.name+' '+story.follow},{id:channelId+':4',kind:'text',sender,time:'09:04',text:'已整理为 **'+story.file+'**，请下载补充并确认。'},{id:channelId+':5',kind:'file',sender,time:'09:04',file:{name:story.file,size:new TextEncoder().encode(story.content).length,extension:story.file.split('.').pop()}}];
+            if(!state.threads.some(t=>t.id===channelId))state.threads.push({id:channelId,short_id:'demo-'+story.id,group_no:id,channel_id:channelId,channel_type:5,name:story.name,status:1,created_at:window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:window.__EVA_DEMO_TIME.AI_REVIEW_START,messages,draft:''});
+          });
+          const member=ai[0];state.messages.unshift({id:id+':demo-start',kind:'text',sender:human,time:'08:55',text:'今天围绕供应链运营协同推进三件事：保供晨会、供应商整改、合同评审。各项材料放到对应子区。\n@'+member.name+' 请帮我整理协作安排。'},{id:id+':demo-plan',kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time:'08:56',text:'## 今日协作安排\n\n- **保供晨会**：风险排序和行动清单。\n- **供应商整改**：核对证据，保留待确认项。\n- **合同评审**：整理条款差异与人工决策事项。\n\n各子区已准备讨论材料和文件示例，业务结论由你确认。'});
+          state.collaborationStoriesV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
+        }
+        // Convert text mentions to the shared IM identity contract, including saved demo history.
+        const mentionCandidates=[{uid:'all',name:'@所有人'},{uid:'all',name:'@全体成员'},...unique.map(member=>({uid:member.id,name:'@'+member.name}))];
+        const renderMessages=messages=>copy(messages).map(message=>({...message,mentions:[...(message.mentions||[]),...mentionCandidates.filter(candidate=>message.text?.includes(candidate.name)&&!message.mentions?.some(item=>item.uid===candidate.uid&&item.name===candidate.name))]}));
         const channel = {id, name: '我的AI团队', chatType: 'group', channel_type: 2,
           ownerId: 'u-wangyilin', memberIds: unique.map(member => member.id), members: unique.length,
-          fixedMembers: unique, threads: state.threads.filter(item=>!item.deleted).map(({messages,draft,...thread})=>({...thread,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name})), unread: 0, replyPolicy: 'mention-only'};
+          fixedMembers: unique, threads: state.threads.filter(item=>!item.deleted).map(({messages,draft,...thread})=>({...thread,created_at:thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:thread.updated_at||thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name})), unread: 0, replyPolicy: 'mention-only'};
         return {conversationOnly: true, sidebarVariant: 'ai-team-group', selectedThreadId, channels: [channel],
-          cats: [], messages: {[id]: copy(state.messages)}, threadMessages: Object.fromEntries(state.threads.filter(item=>!item.deleted).map(item=>[item.id,copy(item.messages)])), scopeNameOf: {},
+          cats: [], messages: {[id]: renderMessages(state.messages)}, threadMessages: Object.fromEntries(state.threads.filter(item=>!item.deleted).map(item=>[item.id,renderMessages(item.messages)])), scopeNameOf: {},
           initialDraft: target(selectedThreadId).draft,
           getDraft: channelId => target(channelId).draft,
           onDraftChange(text, channelId) { const current=target(channelId || selectedThreadId); if (current.draft !== text) {current.draft = text; publish();} },

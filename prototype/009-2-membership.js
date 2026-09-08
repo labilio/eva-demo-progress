@@ -16,7 +16,7 @@
     const selected=(uid,ids,pid)=>{if(!Array.isArray(ids))fail('分身选择格式无效');return [...new Set(ids)].map(id=>{const c=clone(id);if(!c||c.ownerId!==uid)fail('只能带入自己的可用分身');if(pid&&!state.projects[pid].cloneIds.includes(id))fail('请先将分身加入项目');return id;});};
     const notify=()=>{revision++;if(persist)persist(JSON.parse(JSON.stringify(state)));listeners.forEach(fn=>fn());};
     const writable=id=>{if(id.startsWith('all:'))fail('请在项目成员管理中操作');if(state.threads[id])fail('子区继承父群成员，不单独管理');return scope(id);};
-    const drop=(id,uid)=>{const s=scope(id);s.humans=s.humans.filter(m=>m.id!==uid);s.cloneIds=s.cloneIds.filter(cid=>clone(cid)?.ownerId!==uid);};
+    const drop=(id,uid)=>{const s=scope(id);if(state.projects[id]&&s.memberRoleIds){delete s.memberRoleIds[uid];s.cloneIds.filter(cid=>clone(cid)?.ownerId===uid).forEach(cid=>delete s.memberRoleIds[cid]);}s.humans=s.humans.filter(m=>m.id!==uid);s.cloneIds=s.cloneIds.filter(cid=>clone(cid)?.ownerId!==uid);};
     const dissolve=id=>{delete state.groups[id];Object.keys(state.threads).filter(t=>state.threads[t]===id).forEach(t=>delete state.threads[t]);};
     const employee=id=>{const a=root.EvaDigitalEmployeesStore?.get(id);return a?{...a,kind:'employee',ai:true,identityAppearance:root.EvaDigitalEmployeesStore.appearance(a)}:null;};
     const employeeRows=s=>(s.employeeIds||[]).map(employee).filter(Boolean);
@@ -34,6 +34,33 @@
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
       snapshot:()=>JSON.parse(JSON.stringify(state)),person,clone,employee,manager,projectAgent:agentFor,
+      projectRoles(pid){return JSON.parse(JSON.stringify(state.projects[pid]?.projectRoles||[]));},
+      memberRoles(pid,id){const p=state.projects[pid];if(!p||!api.canRead(pid,id))return [];const ids=p.memberRoleIds?.[id]||[];return api.projectRoles(pid).filter(r=>ids.includes(r.id));},
+      saveProjectRole(pid,uid,{id,name,description=''}){
+        requireHuman(uid);const p=state.projects[pid];if(!p||!manager(pid,uid))fail('仅项目负责人或管理员可管理角色');
+        name=String(name||'').trim();description=String(description).trim();
+        if(!name||name.length>20)fail('角色名称须为 1–20 个字符');if(description.length>200)fail('职责说明最多 200 个字符');
+        const roles=p.projectRoles||[];if(id&&!roles.some(r=>r.id===id))fail('角色不存在');
+        if(roles.some(r=>r.id!==id&&r.name.toLowerCase()===name.toLowerCase()))fail('角色名称已存在');
+        const role={id:id||'project-role:'+pid+':'+(++state.sequence),name,description};
+        p.projectRoles=id?roles.map(r=>r.id===id?role:r):[...roles,role];notify();return {...role};
+      },
+      setMemberRoles(pid,uid,id,ids){
+        requireHuman(uid);const p=state.projects[pid];if(!p||!manager(pid,uid))fail('仅项目负责人或管理员可分配角色');
+        if(!api.canRead(pid,id))fail('成员已不在本项目');if(!Array.isArray(ids)||ids.some(rid=>!(p.projectRoles||[]).some(r=>r.id===rid)))fail('角色不属于当前项目');
+        p.memberRoleIds||={};p.memberRoleIds[id]=[...new Set(ids)];notify();
+      },
+      deleteProjectRole(pid,uid,id){
+        requireHuman(uid);const p=state.projects[pid];if(!p||!manager(pid,uid))fail('仅项目负责人或管理员可管理角色');
+        if(!(p.projectRoles||[]).some(r=>r.id===id))fail('角色不存在');p.projectRoles=p.projectRoles.filter(r=>r.id!==id);
+        for(const key of Object.keys(p.memberRoleIds||{}))p.memberRoleIds[key]=p.memberRoleIds[key].filter(rid=>rid!==id);notify();
+      },
+      taskIssuer(pid,uid,roleId){
+        const actor=requireHuman(uid);if(!state.projects[pid]||!member(pid,uid))fail('请先加入项目');
+        const roles=api.memberRoles(pid,uid),role=roleId?roles.find(r=>r.id===roleId):roles[0];
+        if(roleId&&!role)fail('下达角色已不属于当前成员，请重新选择');
+        return {issuer_role_id:role?.id||null,issuer_role_name:role?.name||null,creator_id:uid,creator_name:actor.name};
+      },
       pinnedProjects(uid){return [...(state.pinnedProjects?.[uid]||[])].filter(id=>!state.projects[id]||api.canRead(id,uid));},
       setPinnedProjects(uid,ids){
         requireHuman(uid);const next=[...new Set(ids)].slice(0,6);
@@ -72,7 +99,7 @@
       },
 
       addEmployee(id,uid,eid){requireHuman(uid);const sid=id.startsWith("all:")?id.slice(4):id,s=state.projects[sid]||fail("数字员工只能放进项目，不能拉进群聊"),a=employee(eid)||fail("数字员工不存在");if(!member(sid,uid))fail("请先加入项目");if((a.ownership==="personal"||a.scope==="self")&&a.by!==uid)fail("只有创建者能邀请自己的数字员工");if(a.ownership==="project"&&a.projectId!==projectId(sid))fail("项目助手只能在所属项目中使用");s.employeeIds=[...new Set([...(s.employeeIds||[]),eid])];notify();},
-      removeEmployee(id,uid,eid){const s=writable(id),a=employee(eid)||fail("数字员工不存在");if(!member(id,uid)||(!manager(id,uid)&&a.by!==uid))fail("无移除权限");s.employeeIds=(s.employeeIds||[]).filter(x=>x!==eid);if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.employeeIds=(g.employeeIds||[]).filter(x=>x!==eid);});notify();},
+      removeEmployee(id,uid,eid){const s=writable(id),a=employee(eid)||fail("数字员工不存在");if(!member(id,uid)||(!manager(id,uid)&&a.by!==uid))fail("无移除权限");s.employeeIds=(s.employeeIds||[]).filter(x=>x!==eid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[eid];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.employeeIds=(g.employeeIds||[]).filter(x=>x!==eid);});notify();},
       openDirect(uid,target){
         requireHuman(uid);const p=requireHuman(target);if(uid===target)fail('不能给自己发消息');
         state.directConversations||={};
@@ -194,7 +221,7 @@
         notify();return target;
       },
       addClone(id,uid,cid){const s=writable(id);requireHuman(uid);if(!member(id,uid))fail('主人必须先加入');selected(uid,[cid],s.projectId);if(!s.cloneIds.includes(cid))s.cloneIds.push(cid);notify();},
-      removeClone(id,uid,cid){if(cid?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);const c=clone(cid)||fail('分身不存在');if(!member(id,uid)||(c.ownerId!==uid&&!manager(id,uid)))fail('无移除权限');s.cloneIds=s.cloneIds.filter(x=>x!==cid);if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.cloneIds=g.cloneIds.filter(x=>x!==cid);});notify();},
+      removeClone(id,uid,cid){if(cid?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);const c=clone(cid)||fail('分身不存在');if(!member(id,uid)||(c.ownerId!==uid&&!manager(id,uid)))fail('无移除权限');s.cloneIds=s.cloneIds.filter(x=>x!==cid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[cid];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.cloneIds=g.cloneIds.filter(x=>x!==cid);});notify();},
       transfer(id,uid,target){const s=writable(id);if(s.ownerId!==uid||!member(id,target)||target===uid)fail('只能转让给范围内的另一位人类成员');s.ownerId=target;s.humans.forEach(m=>{if(state.projects[id]){if(m.id===uid)m.role='member';if(m.id===target)m.role='owner';}});notify();},
       setAdmin(id,uid,target,enabled){const s=state.projects[id]||fail('仅项目可设置管理员');if(s.ownerId!==uid||target===uid||!member(id,target))fail('无设置权限');s.humans.find(m=>m.id===target).role=enabled?'admin':'member';notify();},
       remove(id,uid,target,successors={}){if(target?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);if(!member(id,uid)||(uid!==target&&!manager(id,uid)))fail('无移除权限');if(!member(id,target))fail('成员已离开');if(s.ownerId===target)fail('请先转让负责人或群主');const groups=state.projects[id]?Object.values(state.groups).filter(g=>g.projectId===id&&member(g.id,target)):[];const owned=groups.filter(g=>g.ownerId===target);for(const g of owned){if(g.humans.length>1&&(!successors[g.id]||successors[g.id]===target||!member(g.id,successors[g.id])))fail('请为 '+g.name+' 指定群内的人类接任者');}for(const g of owned){if(g.humans.length===1)dissolve(g.id);else g.ownerId=successors[g.id];}drop(id,target);groups.filter(g=>state.groups[g.id]).forEach(g=>drop(g.id,target));notify();},
@@ -315,6 +342,12 @@
         if(raw===null&&ids.length===1&&ids[0]==='drive-design')ids=['prod','drive-design','official','lab'];
       }catch{}
       saved.pinnedProjects={'u-wangyilin':ids};
+    }
+    const roleDemo=root.__EVA_PROJECT_ROLE_DEMO;
+    if(roleDemo&&saved.projects[roleDemo.projectId]&&!saved.seededProjectRolesV1){
+      const p=saved.projects[roleDemo.projectId];p.projectRoles=JSON.parse(JSON.stringify(roleDemo.roles));p.memberRoleIds={};
+      for(const [id,ids] of Object.entries(roleDemo.assignments))if(p.humans.some(m=>m.id===id)||p.cloneIds.includes(id))p.memberRoleIds[id]=[...ids];
+      saved.seededProjectRolesV1=true;
     }
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
     root.EvaAvatar?.setGroupAppearanceResolver(id=>{
