@@ -1,3 +1,4 @@
+import {loadIdentityEnvironment} from './helpers/identity-environment.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -8,7 +9,7 @@ function setup() {
     get: id => ({ id, name: '数字员工', ownership: 'organization' }),
     appearance: () => ({})
   }};
-  vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js', import.meta.url), 'utf8'), { window });
+  loadIdentityEnvironment(window);vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js', import.meta.url), 'utf8'), { window });
   const store = window.EvaMembership.create({ people: [{ id: 'owner', name: '负责人' }, { id: 'member', name: '成员' }] });
   store.createProject('p', '项目', 'owner', []);
   store.addMember('p', 'owner', 'member');

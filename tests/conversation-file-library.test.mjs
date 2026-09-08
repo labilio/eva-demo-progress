@@ -1,3 +1,4 @@
+import {loadIdentityEnvironment} from './helpers/identity-environment.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -5,6 +6,7 @@ import vm from 'node:vm';
 
 function setup() {
   const window = {};
+  loadIdentityEnvironment(window);
   for (const file of ['009-2-membership.js', '009-1-file-sharing.js']) {
     vm.runInNewContext(fs.readFileSync(new URL('../prototype/' + file, import.meta.url), 'utf8'), {window});
   }

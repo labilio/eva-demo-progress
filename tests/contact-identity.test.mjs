@@ -1,10 +1,11 @@
+import {loadIdentityEnvironment} from './helpers/identity-environment.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync,existsSync} from 'node:fs';
 function setup(saved){
  const window={EvaAIIdentity:{projectAgentAppearance:()=>({markerKind:'bot'})},EvaAvatar:{personUri:id=>'avatar:'+id},__EVA_CURRENT_USER_PORTRAIT:'me',__EVA_COLLEAGUE_PORTRAIT:'eva'};
- vm.runInNewContext(readFileSync('prototype/009-2-membership.js','utf8'),{window});
+ loadIdentityEnvironment(window);vm.runInNewContext(readFileSync('prototype/009-2-membership.js','utf8'),{window});
  const store=window.EvaMembership.create(saved||{actorId:'me',people:[{id:'me',name:'本人'},{id:'a',name:'同名'},{id:'b',name:'同名'},{id:'gone',name:'已停用',active:false}],clones:[{id:'clone-a',ownerId:'a',name:'分身'}],projects:{p:{id:'p',name:'可见项目',humans:[{id:'me'}],cloneIds:[]},secret:{id:'secret',name:'不可见项目',humans:[],cloneIds:[]}}});
  const file='prototype/009-3-contact-identities.js';if(existsSync(file))vm.runInNewContext(readFileSync(file,'utf8'),{window});
  const team={getSnapshot:()=>({identities:[{id:'mine',role:'persona',name:'我的分身',configuration:{description:'简介'}}]})},digital={get:id=>id==='staff'?{id,kind:'staff',name:'数字员工',ownership:'organization',scope:'org',desc:'岗位职责'}:null,hasInTeam:id=>id==='staff',appearance:()=>({ownerName:'组织'})};

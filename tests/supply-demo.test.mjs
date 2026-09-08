@@ -1,9 +1,11 @@
+import {loadIdentityEnvironment} from './helpers/identity-environment.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 function setup(){
  const window={};
+ loadIdentityEnvironment(window);
  for(const file of ['009-0-demo-time.js','009-1-data-drive.js','009-2-data-supply.js','009-2-membership.js','009-1-file-sharing.js'])vm.runInNewContext(fs.readFileSync(new URL('../prototype/'+file,import.meta.url),'utf8'),{window});
  const people=['wangyilin','linxiao','zhouyuan','hejing'].map(id=>({id:'u-'+id,name:id}));
  const s=window.EvaMembership.create({people,clones:window.__EVA_MEMBERSHIP_CLONES});
@@ -34,6 +36,6 @@ test('群聊预设增量加载不重复、不覆盖成员与手动消息',()=>{
  assert.equal(s.messagesFor('supply-demo-rectification','u-wangyilin').filter(m=>m.fixtureId).length,6);
  assert.equal(s.messagesFor('supply-demo-evidence','u-wangyilin').filter(m=>m.fixtureId).length,4);
  const messages=s.messagesFor('all:prod','u-wangyilin');
- for(const [index,message] of messages.entries()){if(message.fixtureId?.startsWith('supply-chat-v2:')&&message.sender.uid==='project-agent:prod')assert.ok(messages[index-1].text.includes('@Eva 项目管理专员'));}
+ for(const [index,message] of messages.entries()){if(message.fixtureId?.startsWith('supply-chat-v2:')&&message.sender.uid==='project-agent:prod')assert.ok(messages[index-1].text.includes('@供应链运营协同 · 项目管家'));}
  assert.equal(s.canRead('prod','u-hejing'),true);
 });

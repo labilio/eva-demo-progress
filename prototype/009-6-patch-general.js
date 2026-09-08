@@ -1,6 +1,8 @@
 (function (root) {
   'use strict';
   root.__evaPatch('general', function (source) {
+    // Semi imperative Modal/Toast roots use the same React 19 client entry as Eva.
+    source = root.__evaCut(source, 'if(typeof fullClone.createRoot=="function")return fullClone.createRoot}', 'if(typeof fullClone.createRoot=="function")return fullClone.createRoot;return clientExports.createRoot}', 'Semi React 19 root adapter');
     // A queued textarea resize may run after a configuration pane unmounts.
     source = root.__evaCut(source, 'getSizingData=rt=>{const ct=window.getComputedStyle(rt);', 'getSizingData=rt=>{if(!rt||!rt.isConnected)return null;const ct=window.getComputedStyle(rt);', 'ignore detached textarea resize');
         var evaRelease = root.__EVA_RELEASE;

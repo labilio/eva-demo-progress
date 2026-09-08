@@ -363,22 +363,22 @@ test('个人 Eva GDS 设计采用规范首页、原生输入和单一生命周�
   const workspace = read('prototype/052-personal-eva-gds.js');
   const workspaceCss = read('prototype/051-personal-eva-gds.css');
   const componentCss = read('prototype/048-gds-components.css');
-  for (const text of ['你好，我是Eva同学', '调用技能与指令', '星睿智能体', '邮件操作', '数据分析', '技能开发', '知识助手']) {
+  for (const text of ['AI随行', '工作随心', '调用技能与指令', '星睿智能体', '邮件操作', '数据分析', '技能开发', '知识助手']) {
     assert.ok(workspace.includes(text), `GDS 首页缺少：${text}`);
   }
   assert.doesNotMatch(workspace, /百万亿Token激励计划|eva-personal-workspace__campaign/);
   assert.match(workspace, /<textarea class="eva-composer-prompt"/);
   assert.match(workspace, /event\.isComposing/);
   assert.match(workspace, /data-eva-selected-assistant/);
-  assert.match(workspace, /heroHTML\(\) \+ railHTML\(\)/);
+  assert.match(workspace, /heroHTML\(\) \+.*eva-personal-workspace__composer/);
   assert.match(workspace, /state === 'completed' \? '' : assistantRailHTML\(\)/);
   assert.match(workspace, /aria-activedescendant/);
   assert.match(workspace, /if \(hash\.indexOf\('#\/guid'\) === 0\) \{\s*selectedConversation = '';/);
   assert.match(workspaceCss, /width: min\(100%, var\(--eva-main-col-w\)\)/);
   assert.match(componentCss, /\.eva-composer-wrap\s*\{[^}]*width:\s*var\(--eva-main-col-w\);[^}]*height:\s*166px;/s);
   assert.match(componentCss, /\.eva-composer\s*\{[^}]*width:\s*768px;[^}]*height:\s*118px;/s);
-  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*height:\s*62px;/s);
-  assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*margin-top:\s*var\(--eva-space-4\)/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*height:\s*48px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*margin-top:\s*var\(--eva-space-1\)/s);
 });
 
 test('侧栏展开默认宽度为 180、折叠宽度为 80 且不渲染广告栏', () => {

@@ -1,3 +1,4 @@
+import {loadIdentityEnvironment} from './helpers/identity-environment.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -5,7 +6,7 @@ import vm from 'node:vm';
 test('upstream demo consolidation preserves local group messages, subzones and settings',()=>{
  let saved;
  const window={__EVA_MEMBERSHIP_CLONES:[],localStorage:{getItem:key=>key==='eva:project-members:v1'&&saved?JSON.stringify(saved):null,setItem:()=>{}}};
- vm.runInNewContext(fs.readFileSync('prototype/009-2-membership.js','utf8'),{window});
+ loadIdentityEnvironment(window);vm.runInNewContext(fs.readFileSync('prototype/009-2-membership.js','utf8'),{window});
  const seed=window.EvaMembership.create({schema:2,actorId:'u-wangyilin',people:[{id:'u-wangyilin',name:'王宜林',active:true}]});
  seed.createProject('official','EVA Official Space','u-wangyilin',[]);
  for(const id of ['c-official-announcements','c-official-feedback','c-official-community'])seed.createGroup(id,id,'official','u-wangyilin',[]);
