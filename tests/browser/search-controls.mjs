@@ -118,6 +118,10 @@ test('文件库搜索框右侧与文件表格右侧对齐', async () => {
   const field = await open('/drive', '.eva-drive__section-head .eva-drive__side-search');
   const table = page.locator('.eva-drive__table');
   const title = page.locator('.eva-drive__section-head h1');
+  await page.waitForFunction(() => {
+    const heading = document.querySelector('.eva-drive__section-head h1');
+    return heading && getComputedStyle(heading).fontSize === '20px';
+  });
   const [searchRight, tableRight] = await Promise.all([
     field.evaluate(element => element.getBoundingClientRect().right),
     table.evaluate(element => element.getBoundingClientRect().right),
