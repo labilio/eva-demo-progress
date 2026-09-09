@@ -53,7 +53,7 @@ test('non-execution status changes preserve ownership; missing actor never write
     calls.push({url,options});return new Response(JSON.stringify([{id:'c1',...JSON.parse(options.body)}]));
   }});
   const id='11111111-1111-4111-8111-111111111111';
-  for(const status of ['open','approved','done']){
+  for(const status of ['open','approved']){
     const row=await store.updateStatus(id,status,' Alice ');
     assert.equal(row.status,status);assert.equal(row.claimed_by,undefined);
     assert.deepEqual(JSON.parse(calls.at(-1).options.body),{status});
@@ -113,10 +113,19 @@ test('comments store deletes a shared comment and returns the removed row', asyn
   assert.equal(calls[0].options.headers.Prefer, 'return=representation');
 });
 
-test('entering doing claims unclaimed rows and rejects another owner',async()=>{
- const id='11111111-1111-4111-8111-111111111111';let owner=null;const calls=[];
- const store=createCommentsStore({url:'https://example.com',key:'public',fetchImpl:async(url,options)=>{calls.push({url,options});return new Response(JSON.stringify([{id,status:'doing',claimed_by:owner}]));}});
- await store.updateStatus(id,'doing','Alice');assert.match(calls.at(-1).url,/rpc\/eva_claim_comments$/);
- owner='Bob';await assert.rejects(store.updateStatus(id,'doing','Alice'),/其他人/);assert.equal(calls.at(-1).options.method,'GET');
- owner='Alice';await store.updateStatus(id,'doing','Alice');assert.equal(calls.at(-1).options.method,'PATCH');assert.match(calls.at(-1).url,/claimed_by=eq.Alice/);
+test('execution states atomically claim unclaimed rows and preserve existing owners',async()=>{
+ const id='11111111-1111-4111-8111-111111111111';
+ for (const status of ['doing','done']) {
+  let owner=null, conflict=false;const calls=[];
+  const store=createCommentsStore({url:'https://example.com',key:'public',fetchImpl:async(url,options)=>{
+   calls.push({url,options});
+   return new Response(JSON.stringify(options.method==='GET'?[{id,claimed_by:owner}]:conflict?[]:[{id,...JSON.parse(options.body)}]));
+  }});
+  const row=await store.updateStatus(id,status,'Alice');
+  assert.equal(row.status,status);assert.equal(row.claimed_by,'Alice');assert.ok(Number.isFinite(Date.parse(row.claimed_at)));
+  assert.equal(calls.at(-1).options.method,'PATCH');assert.match(calls.at(-1).url,/claimed_by=is.null/);
+  owner='Bob';await assert.rejects(store.updateStatus(id,status,'Alice'),/其他人/);assert.equal(calls.at(-1).options.method,'GET');
+  owner='Alice';await store.updateStatus(id,status,'Alice');assert.deepEqual(JSON.parse(calls.at(-1).options.body),{status});assert.match(calls.at(-1).url,/claimed_by=eq.Alice/);
+  owner=null;conflict=true;await assert.rejects(store.updateStatus(id,status,'Alice'),/检查更新/);
+ }
 });

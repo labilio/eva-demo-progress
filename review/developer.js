@@ -58,7 +58,7 @@ function updateSelection() {
   $('#selection-count').textContent = `已选 ${selected.length} 条${selected.some(r => !visible.includes(r)) ? '（含其他筛选下的批注）' : ''}`;
   $('#copy').disabled = state.busy || !selected.length;
   $('#claim-copy').disabled = state.busy || !selected.length || selected.some(r => r.claimed_by);
-  $('#claim-copy').title = selected.some(r => r.claimed_by) ? '只能认领尚未认领的批注；已有认领请先核对负责人' : '';
+  $('#claim-copy').title = selected.some(r => r.claimed_by) ? '只能认领尚未认领的批注；已有认领请先核对负责人' : '认领所选批注并设为修改中，复制后粘贴给 AI';
   const checkbox = $('#select-all');
   checkbox.checked = visible.length > 0 && visible.every(r => state.selected.has(r.id));
   checkbox.indeterminate = !checkbox.checked && visible.some(r => state.selected.has(r.id));
@@ -82,7 +82,7 @@ function render() {
     <td><input type="checkbox" data-select="${escape(row.id)}" aria-label="选择批注 ${escape(row.seq)}" ${state.selected.has(row.id)?'checked':''}></td>
     <td>#${escape(row.seq)}</td><td>${escape(MENUS.find(([id])=>id===menuOf(row.page_path))[1])}</td>
     <td><p class="body-text">${escape(row.body)}</p><a class="anchor-card" href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener" title="${escape(row.anchor?.quote || row.page_path)}">${icon('crosshair')}<span class="anchor-text">${escape(row.anchor?.quote || row.page_path)}</span></a></td>
-    <td>${escape(KIND_LABELS[row.kind]||row.kind)}</td><td><select class="status-label ${escape(row.status)}" data-row-status="${escape(row.id)}" title="进入修改中时认领；其他状态保留原认领者" aria-label="批注 ${escape(row.seq)} 状态" ${state.busy?'disabled':''}>${Object.entries(STATUS_LABELS).map(([value,label])=>`<option value="${value}"${row.status===value?' selected':''}>${label}</option>`).join('')}</select></td>
+    <td>${escape(KIND_LABELS[row.kind]||row.kind)}</td><td><select class="status-label ${escape(row.status)}" data-row-status="${escape(row.id)}" title="进入修改中或已改完时认领；其他状态保留原认领者" aria-label="批注 ${escape(row.seq)} 状态" ${state.busy?'disabled':''}>${Object.entries(STATUS_LABELS).map(([value,label])=>`<option value="${value}"${row.status===value?' selected':''}>${label}</option>`).join('')}</select></td>
     <td>${escape(row.author_name)}</td><td>${escape(row.claimed_by||'-')}</td><td>${date(row.updated_at||row.created_at)}</td>
     <td><div class="cell-actions"><button type="button" data-detail="${escape(row.id)}">${icon('file-text')}详情${row.replies?.length?' · '+row.replies.length:''}</button><a href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener">${icon('external-link')}查看原型</a></div></td></tr>`).join('');
   $('#empty').hidden = !!visible.length;
