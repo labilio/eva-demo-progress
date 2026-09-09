@@ -24,7 +24,7 @@ function setup(saved=new Map(),hash='#/guid') {
 
 test('默认也是可折叠分类，历史会话稳定 ID 全部保留，个人页不再出现助理选择',()=>{
  const a=setup();assert.equal(a.store.getSnapshot().conversations.length,5);
- assert.equal(a.q('[data-eva-toggle-folder=""]').textContent,'默认');
+ assert.equal(a.q('[data-eva-toggle-folder=""]').textContent,'最近');
  assert.equal(a.q('[data-eva-selected-assistant]'),null);assert.doesNotMatch(a.document.body.textContent,/通用助理|研发助理|创建助理|未归类/);
  a.q('[data-eva-toggle-folder=""]').click();assert.equal(a.q('[data-eva-personal-conversation-id="personal-ui-designer-ppt"]'),null);
  const b=setup(a.saved);assert.equal(b.q('[data-eva-toggle-folder=""]').getAttribute('aria-expanded'),'true');
@@ -33,7 +33,7 @@ test('默认也是可折叠分类，历史会话稳定 ID 全部保留，个人�
 
 test('创建、移动、重命名在刷新后保留，重名和空名被拒绝',()=>{
  const a=setup();const id=a.store.createFolder('本周工作');
- assert.throws(()=>a.store.createFolder(' 默认 '));assert.throws(()=>a.store.createFolder('本周工作'));assert.throws(()=>a.store.createFolder('  '));
+ assert.throws(()=>a.store.createFolder(' 最近 '));assert.throws(()=>a.store.createFolder('本周工作'));assert.throws(()=>a.store.createFolder('  '));
  a.store.moveConversation('personal-api-regression',id);a.store.renameConversation('personal-api-regression','回归验收');
  const b=setup(a.saved,'#/conversation/personal-api-regression');const c=b.store.getSnapshot().conversations.find(c=>c.id==='personal-api-regression');
  assert.equal(c.folderId,id);assert.equal(c.title,'回归验收');assert.match(b.q('.eva-history-flow').textContent,/高风险/);
@@ -99,17 +99,17 @@ test('目录与分组独立：组内发送保留目录，移动和删除分组�
  a.q('[data-eva-new-folder-chat=""]').click();
  assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'本地材料');
  const picker=a.q('[data-eva-composer-directory]');Object.defineProperty(picker,'value',{value:''});picker.dispatchEvent(new a.window.Event('change',{bubbles:true}));
- assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'默认');
+ assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'本地目录');
  assert.equal(a.store.getSnapshot().conversations.find(x=>x.id===c.id).workingDirectory,'本地材料');
 });
 
 test('从加号创建分组，支持校验、取消与刷新，不干扰输入和目录',()=>{
  const a=setup();a.input('正在编辑的草稿');const textarea=a.q('.eva-composer-prompt');
- a.q('[data-eva-create-folder]').click();a.q('[name="name"]').value='默认';a.submit();
+ a.q('[data-eva-create-folder]').click();a.q('[name="name"]').value='最近';a.submit();
  assert.match(a.q('[data-eva-rail-error]').textContent,/同名分组/);
  a.q('[name="name"]').value='本周工作';a.submit();
  assert.equal(a.q('[data-eva-rail-form]'),null);assert.equal(a.q('.eva-composer-prompt'),textarea);
- assert.equal(textarea.value,'正在编辑的草稿');assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'默认');
+ assert.equal(textarea.value,'正在编辑的草稿');assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'本地目录');
  assert.ok(setup(a.saved).store.getSnapshot().folders.some(f=>f.name==='本周工作'));
  a.q('[data-eva-create-folder]').click();a.q('[data-eva-cancel-rail]').click();
  assert.equal(a.q('[data-eva-rail-form]'),null);assert.equal(a.store.getSnapshot().folders.length,2);
@@ -121,5 +121,5 @@ test('取消本地目录选择保留分组、草稿和默认目录',async()=>{
  const picker=a.q('[data-eva-composer-directory]');Object.defineProperty(picker,'value',{configurable:true,writable:true,value:'__browse_local__'});
  picker.dispatchEvent(new a.window.Event('change',{bubbles:true}));await new Promise(resolve=>setImmediate(resolve));
  assert.equal(JSON.stringify(a.store.getSnapshot()),before);assert.equal(a.q('.eva-composer-prompt').value,'草稿');
- assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'默认');
+ assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'本地目录');
 });
