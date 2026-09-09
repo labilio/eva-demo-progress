@@ -43,14 +43,13 @@
   --eva-rail-identity-height: 32px;
   --eva-rail-session-height: 28px;
   --eva-rail-level-indent: 12px;
-  /* Group chevrons use a 22px slot for a centered 12px icon. Keep an
-     identity avatar's visible left edge aligned to that icon. */
-  --eva-rail-identity-content-inset: 13px;
+  /* Nested icons sit one 12px hierarchy step to the right of a top-level
+     team avatar. The team disclosure slot is 22px + 16px wide. */
+  --eva-rail-identity-content-inset: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-4) + var(--eva-rail-level-indent));
   box-sizing: border-box;
-  /* Group title → assistant label → session label advances by 12px.
-     The session has no leading avatar, so its start includes the 22px avatar
-     and 8px icon/text gap that precede an assistant label. */
-  --eva-rail-session-indent: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-2) + var(--eva-rail-level-indent));
+  /* An assistant session has no leading avatar, so its label starts one
+     hierarchy step beyond the assistant label. */
+  --eva-rail-session-indent: calc(var(--eva-rail-identity-content-inset) + var(--eva-rail-identity-avatar-size) + var(--gds-space-2) + var(--eva-rail-level-indent));
   position: relative;
   flex: 0 0 var(--eva-conversation-rail-current);
   width: var(--eva-conversation-rail-current);
@@ -152,7 +151,7 @@
 .eva-ai-team__team-heading:hover .eva-ai-team__team-menu,
 .eva-ai-team__team-heading:focus-within .eva-ai-team__team-menu { opacity: 1; pointer-events: auto; }
 .eva-ai-team__team-menu .semi-button { width: 28px; height: 28px; min-height: 28px; padding: 0; }
-.eva-ai-team__team-threads .wk-conv-compact-item--thread { padding-left: calc(var(--eva-rail-identity-content-inset) + var(--eva-rail-level-indent)); min-height: var(--eva-rail-identity-height); }
+.eva-ai-team__team-threads .wk-conv-compact-item--thread { padding-left: var(--eva-rail-identity-content-inset); min-height: var(--eva-rail-identity-height); }
 .eva-ai-team__direct-groups { margin-top: var(--gds-space-1); }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
   /* Match adjacent project groups: whitespace separates sections; a divider
@@ -580,7 +579,7 @@
    Anchor at the parent group avatar's left edge, then advance one shared 12px
    hierarchy level so the nested relationship is visible at a glance. */
 .eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread {
-  padding-left: calc(var(--eva-rail-identity-content-inset) + var(--eva-rail-level-indent));
+  padding-left: var(--eva-rail-identity-content-inset);
   min-height: var(--eva-rail-identity-height);
 }
 .eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread .wk-conv-compact-name { font-weight: var(--gds-font-weight-regular); }

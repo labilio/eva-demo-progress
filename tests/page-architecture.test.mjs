@@ -228,11 +228,11 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(aiTeamCss, /eva-ai-team__group-title\s*\{[^}]*font-size:\s*13px[^}]*line-height:\s*1\.5[^}]*font-weight:\s*var\(--gds-font-weight-semibold\)/s);
   assert.match(aiTeamCss, /eva-ai-team__session-title\s*\{[^}]*font-size:\s*var\(--eva-rail-label-size\)[^}]*font-weight:\s*var\(--gds-font-weight-regular\)/s);
   assert.match(aiTeamCss, /--eva-rail-level-indent:\s*12px/);
-  assert.match(aiTeamCss, /--eva-rail-identity-content-inset:\s*13px/);
+  assert.match(aiTeamCss, /--eva-rail-identity-content-inset:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--gds-space-4\) \+ var\(--eva-rail-level-indent\)\)/);
   assert.match(aiTeamCss, /eva-ai-team__identity-button\s*\{[^}]*padding:\s*0 0 0 var\(--eva-rail-identity-content-inset\)/s);
-  assert.match(aiTeamCss, /eva-ai-team__team-threads \.wk-conv-compact-item--thread\s*\{[^}]*padding-left:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--eva-rail-level-indent\)\)/s);
+  assert.match(aiTeamCss, /eva-ai-team__team-threads \.wk-conv-compact-item--thread\s*\{[^}]*padding-left:\s*var\(--eva-rail-identity-content-inset\)/s);
   assert.match(aiTeamCss, /--eva-rail-identity-avatar-size:\s*22px/);
-  assert.match(aiTeamCss, /--eva-rail-session-indent:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--gds-space-2\) \+ var\(--eva-rail-level-indent\)\)/);
+  assert.match(aiTeamCss, /--eva-rail-session-indent:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--eva-rail-identity-avatar-size\) \+ var\(--gds-space-2\) \+ var\(--eva-rail-level-indent\)\)/);
   assert.match(aiTeamCss, /--eva-rail-secondary:\s*var\(--gds-color-text-secondary\)/);
   assert.match(aiTeamCss, /--eva-rail-hover:\s*var\(--gds-color-overlay-hover\)/);
   assert.match(aiTeamCss, /--eva-rail-selected:\s*var\(--gds-color-surface-hover\)/);
