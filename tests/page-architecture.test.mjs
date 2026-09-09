@@ -98,7 +98,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /roleGroup\('assistant','个人助理'/);
   assert.match(imPatch, /roleGroup\('persona','云端分身',personas\)/);
   assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
-  assert.match(imPatch, /className:'eva-ai-team__sidebar-header'.+h\('h1',null,'我的 AI'\)/s);
+  assert.match(imPatch, /className:'eva-ai-team__sidebar-header eva-rail-header'.+h\('h1',null,'我的 Agent'\)/s);
   assert.match(imPatch, /'新建 AI 团队'.+'新建个人助理'/s);
   assert.match(imPatch, /sectionTitle\('teams','AI 团队'.+sectionTitle\('assistants','AI 助理'/s);
   assert.match(imPatch, /sectionTitle\('teams','AI 团队'.+Users\)/s);
@@ -140,7 +140,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(workspace, /#\/conversation\//);
   assert.match(convergenceCss, /--eva-conversation-rail-width:\s*260px/);
   assert.match(convergenceCss, /width:\s*var\(--eva-conversation-rail-current\)/);
-  assert.match(convergenceCss, /\.eva-msg \.ch-list,\s*\n\s*\.eva-personal-sider-panel/);
+  assert.match(convergenceCss, /\.eva-msg \.ch-list,\s*\.collab-body > \.ch-layout > \.ch-list,\s*\.eva-personal-sider-panel/);
   assert.match(convergenceCss, /background:\s*var\(--eva-conversation-rail-bg\)/);
   assert.match(workspace, /data-eva-conversation-rail-resizer/);
   assert.match(imPatch, /className:'eva-ai-team__sidebar'/);
@@ -213,7 +213,7 @@ test('点击群聊内容区会关闭已打开的子区、聊天信息或文件�
 
 test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', () => {
   const hierarchyCss = read('prototype/016-message-hierarchy.css');
-  const aiTeamCss = read('prototype/046-ai-team.css');
+  const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
   const messageSwitcherCss = read('prototype/039-team-message-project-recent.css');
   const imPatch = read('prototype/009-5-patch-im.js');
 
@@ -261,20 +261,20 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(aiTeamCss, /eva-ai-team__identity-heading > \.eva-ai-team__new-session-anchor,[^}]*right:\s*8px/s);
   assert.match(aiTeamCss, /eva-ai-team__identity-heading > \.eva-ai-team__menu-anchor\s*\{[^}]*right:\s*40px/s);
   assert.match(aiTeamCss, /eva-ai-team__role-group \+ \.eva-ai-team__role-group\s*\{[^}]*margin-top:\s*6px[^}]*\}/s);
-  assert.match(aiTeamCss, /eva-ai-team__sidebar-header\s*\{[^}]*padding:\s*var\(--gds-space-2\) var\(--gds-space-3\)/s);
+  assert.match(aiTeamCss, /eva-rail-header\s*\{[^}]*padding:\s*var\(--gds-space-2\) var\(--gds-space-4\)/s);
   assert.match(aiTeamCss, /eva-ai-team__roles\s*\{[^}]*padding:\s*var\(--gds-space-2\) var\(--gds-space-2-5\) var\(--gds-space-3\)/s);
   assert.match(aiTeamCss, /eva-ai-team__sidebar-header \.semi-button\s*\{[^}]*height:\s*34px/s);
   assert.match(messageSwitcherCss, /wk-sidebar-tabbar\[data-eva-project-recent-switcher="true"\]\s*\{[^}]*padding:\s*var\(--gds-space-3\)/s);
   assert.match(messageSwitcherCss, /wk-sidebar-tabbar__container\s*\{[^}]*height:\s*34px[^}]*padding:\s*0/s);
   assert.match(messageSwitcherCss, /wk-sidebar-tabbar__btn\s*\{[^}]*min-height:\s*34px/s);
-  assert.match(messageSwitcherCss, /eva-msg \.ch-list__top\s*\{[^}]*display:\s*none/s);
+  assert.match(aiTeamCss, /eva-rail-header\s*\{[^}]*display:\s*flex/s);
   assert.match(imPatch, /EvaAIIdentityAvatar,\{appearance:evaIdentityAppearance\(i\),size:22\}/);
   assert.match(imPatch, /EvaAIIdentity\.avatar\(digitalStore\.appearance\(item\),22,h\)/);
 });
 
 test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分组', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
-  const aiTeamCss = read('prototype/046-ai-team.css');
+  const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
   const sectionTitleRule = aiTeamCss.match(/\.eva-ai-team__section-title\s*\{[^}]*\}/s)?.[0]||'';
   const sectionTitleStart = imPatch.indexOf('function sectionTitle(');
   const sectionTitleEnd = imPatch.indexOf('function teamGroupItem(', sectionTitleStart);
@@ -305,7 +305,7 @@ test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分�
 
 test('我的 AI 团队父群将子区展开与进入会话拆分为两个键盘按钮', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
-  const aiTeamCss = read('prototype/046-ai-team.css');
+  const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
   const start = imPatch.indexOf('function teamGroupItem(group)');
   const end = imPatch.indexOf('const personas=', start);
   const teamGroupItem = imPatch.slice(start, end);
@@ -331,7 +331,7 @@ test('我的 AI 团队父群将子区展开与进入会话拆分为两个键盘�
 
 test('我的 AI 首次进入仅展开默认团队并将其子区限制为最新三条', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
-  const aiTeamCss = read('prototype/046-ai-team.css');
+  const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
 
   assert.match(imPatch, /Object\.fromEntries\(\[\.\.\.teamGroups\.map\(group=>\[group\.id,!group\.system\]\),\.\.\.availableIdentities\.map\(item=>\[item\.id,true\]\)/);
   assert.match(imPatch, /const \[showAllTeamThreads,setShowAllTeamThreads\]=reactExports\.useState\(\(\)=>requestedIdentity&&groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\?\{\[requestedIdentity\.id\]:true\}:\{\}\)/);
@@ -383,7 +383,7 @@ test('我的 AI 位于个人导航并复用个人助理创建流程', () => {
   assert.match(sider, /label:rt\.collapsed\?"自动化":"自动化任务"/);
   assert.match(sider, /label:rt\.collapsed\?"数字员工":"数字员工市场"/);
   assert.doesNotMatch(sider, /label:"我的 AI"/);
-  assert.match(imPatch, /className:'eva-ai-team__sidebar-header'.+h\('h1',null,'我的 AI'\)/s);
+  assert.match(imPatch, /className:'eva-ai-team__sidebar-header eva-rail-header'.+h\('h1',null,'我的 Agent'\)/s);
   assert.match(imPatch, /evaReturn=%2Fmessages%3FevaIM%3Dmy-ai/);
   assert.match(sider, /returnTo=evaCreatorParams\.get\("evaReturn"\)/);
   assert.match(creator, /returnTo\?navigate\(returnTo\):navigatePersonal/);
