@@ -7,35 +7,9 @@
     background: #f6f7f8;
   }
 
-  body.eva-message-hierarchy-ready .eva-msg .ch-list__top { display: none; padding: 0; }
 
-  /* Static message title shares the existing toolbar with the create button. */
-  body.eva-message-hierarchy-ready .eva-msg[data-eva-channel-surface="global"] .ch-list__top {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 12px 0;
-  }
-  body.eva-message-hierarchy-ready .eva-msg .eva-message-list-title {
-    flex: 1;
-    min-width: 0;
-    margin: 0;
-    color: var(--gds-color-text-primary);
-    font-size: var(--gds-type-header-font-size);
-    line-height: var(--gds-type-header-line-height);
-    font-weight: var(--gds-font-weight-semibold);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  body.eva-message-hierarchy-ready .eva-msg .ch-list__top .eva-message-invite {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-  }
+
+
 
 
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container {
