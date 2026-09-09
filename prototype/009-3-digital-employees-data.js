@@ -97,6 +97,49 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
       "ownership": "organization"
     },
     {
+      "id": "a_hr_onboarding",
+      "one": "陪新员工走完入职第一周：办手续、开权限、找对人",
+      "name": "HR 助手",
+      "kind": "staff",
+      "emoji": "🧭",
+      "color": "#3FB27F",
+      "tagline": "人力域 · 入职服务",
+      "market": "domain",
+      "domain": "人力域",
+      "tier": "small",
+      "runtime": "dify",
+      "scope": "org",
+      "presence": "online",
+      "skills": [
+        "入职引导",
+        "权限清单",
+        "制度问答"
+      ],
+      "desc": "面向新员工提供入职后的流程引导，按岗位梳理待办、系统权限与关键联系人。",
+      "deptFull": "吉利汽车集团/人力资源部/人力数字化部",
+      "path": [
+        "吉利汽车集团",
+        "人力资源部",
+        "人力数字化部"
+      ],
+      "dept": "人力数字化部",
+      "canOffline": false,
+      "systems": [
+        "eHR 人力系统",
+        "IT 服务台",
+        "企业知识库"
+      ],
+      "cases": [
+        {
+          "title": "研发新员工入职引导",
+          "at": "今天",
+          "result": "生成首周日程与权限清单"
+        }
+      ],
+      "no": "AS00533",
+      "ownership": "organization"
+    },
+    {
       "id": "a_ppt",
       "one": "把结论做成汇报页，第一页固定是 ID → to B 对比表",
       "name": "PPT 专家",
@@ -11882,6 +11925,70 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
 };
 
 window.__EVA_DIGITAL_EMPLOYEES_DATA.demoConversations = {
+  "a_hr_onboarding": [
+    {
+      "title": "入职第一周 onboarding",
+      "updatedAt": "2026-09-09T09:19:00+08:00",
+      "messages": [
+        {
+          "id": "hr-onboarding-user-1",
+          "kind": "text",
+          "from": "user",
+          "time": "09:08",
+          "text": "你好，我今天刚入职研发效能组，电脑已经领到了。接下来要先做什么？"
+        },
+        {
+          "id": "hr-onboarding-ai-1",
+          "kind": "text",
+          "from": "ai",
+          "time": "09:09",
+          "text": "## 欢迎加入研发效能组\n\n今天先完成这 **4 项**，我会陪你逐项确认：\n\n- [x] 领取办公电脑与门禁卡\n- [ ] 登录 eHR，补齐紧急联系人\n- [ ] 在 IT 服务台申请 GitLab 与研发环境权限\n- [ ] 参加 10:30 的团队见面会\n\n| 时间 | 安排 | 需要准备 |\n| --- | --- | --- |\n| 10:30 | 团队见面会 | 1 分钟自我介绍 |\n| 14:00 | 安全与合规学习 | 工号登录 |\n| 16:30 | 与入职伙伴碰面 | 记录本周目标 |\n\n> 不要在聊天中发送身份证号、银行卡号等敏感信息；个人资料请只在 eHR 中填写。"
+        },
+        {
+          "id": "hr-onboarding-user-2",
+          "kind": "text",
+          "from": "user",
+          "time": "09:13",
+          "text": "eHR 已经填好了，但 GitLab 和研发环境还没开通。能帮我整理成一份清单吗？"
+        },
+        {
+          "id": "hr-onboarding-ai-2",
+          "kind": "text",
+          "from": "ai",
+          "time": "09:14",
+          "text": "可以。我已按“**今天必须完成 / 本周内完成**”整理，并把未完成的权限项放在最前面。\n\n### 今天必须完成\n\n1. 在 IT 服务台提交 **GitLab** 权限申请。\n2. 选择“研发效能组”并注明直属主管。\n3. 申请提交后，把工单号发给入职伙伴跟进。\n\n### 本周内完成\n\n- 阅读信息安全与数据合规制度\n- 完成研发环境登录验证\n- 与直属主管确认试用期目标\n\n下面的文件可以直接作为你的 onboarding 清单使用。"
+        },
+        {
+          "id": "hr-onboarding-file-1",
+          "kind": "file",
+          "from": "ai",
+          "time": "09:15",
+          "file": {
+            "id": "attachment:hr-onboarding:first-week-checklist:v1",
+            "name": "新员工入职清单-研发效能组.md",
+            "size": 1268,
+            "extension": "md",
+            "version": 1,
+            "previewUrl": "prototype/assets/file-samples/新员工入职清单-研发效能组.md"
+          }
+        },
+        {
+          "id": "hr-onboarding-user-3",
+          "kind": "text",
+          "from": "user",
+          "time": "09:18",
+          "text": "收到。下周一前最重要的是哪几件事？"
+        },
+        {
+          "id": "hr-onboarding-ai-3",
+          "kind": "text",
+          "from": "ai",
+          "time": "09:19",
+          "text": "### 下周一前的 3 个优先项\n\n- [ ] **权限可用**：GitLab 与研发环境都能正常登录\n- [ ] **目标对齐**：和直属主管确认试用期目标与第一项任务\n- [ ] **制度完成**：安全与合规学习状态显示“已完成”\n\n完成一项就告诉我，我会继续帮你更新清单。"
+        }
+      ]
+    }
+  ],
   "a_supply": [
     [
       "A-2409 保供风险与恢复方案",
