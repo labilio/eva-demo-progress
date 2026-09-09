@@ -26,3 +26,11 @@ test('CLI can fetch selected IDs and claim without changing approval itself',asy
  let captured;await runCommentsCommand(['list','--ids',id],{store:{list:async(...args)=>{captured=args;return[];}},write:()=>{}});assert.deepEqual(captured,[undefined,[id]]);
  await runCommentsCommand(['claim','--ids',id,'--author','甲'],{store:{claim:async(...args)=>{captured=args;return[];}},write:()=>{}});assert.deepEqual(captured,[[id],'甲',false]);
 });
+test('column filters intersect exact names and kind while preserving incoming order',()=>{
+ const rows=[{...row,id:'c',author_name:'甲',claimed_by:'乙'}, {...row,id:'b',author_name:'甲乙',claimed_by:'乙'}, {...row,id:'a',author_name:'甲',claimed_by:null}, {...row,id:'d',author_name:'甲',claimed_by:'乙',kind:'ui'}];
+ assert.deepEqual(filterRows(rows,{kind:'function',author:'name:甲',claim:'name:乙'}).map(r=>r.id),['c']);
+ assert.deepEqual(filterRows(rows,{author:'name:甲',claim:'unclaimed'}).map(r=>r.id),['a']);
+ assert.deepEqual(filterRows(rows,{claim:'claimed'}).map(r=>r.id),['c','b','d']);
+ assert.deepEqual(filterRows(rows,{author:'name:不存在'}),[]);
+ assert.deepEqual(filterRows(rows).map(r=>r.id),['c','b','a','d']);
+});

@@ -26,11 +26,13 @@ const SOURCES = {
   workboard: ['prototype/049-loop-task-create.js', 'prototype/009-6-patch-general.js'],
 };
 export function sourceHints(row) { return SOURCES[menuOf(row.page_path)] || ['prototype-manifest.json']; }
-export function filterRows(rows, { menu = 'all', status = 'all', claim = 'all', search = '' } = {}) {
+export function filterRows(rows, { menu = 'all', status = 'all', claim = 'all', kind = 'all', author = 'all', search = '' } = {}) {
   const needle = search.trim().toLocaleLowerCase();
   return rows.filter(row => (menu === 'all' || menuOf(row.page_path) === menu)
     && (status === 'all' || row.status === status)
-    && (claim === 'all' || (claim === 'unclaimed' ? !row.claimed_by : !!row.claimed_by))
+    && (kind === 'all' || row.kind === kind)
+    && (author === 'all' || row.author_name === author.slice(5))
+    && (claim === 'all' || (claim === 'unclaimed' ? !row.claimed_by : claim === 'claimed' ? !!row.claimed_by : row.claimed_by === claim.slice(5)))
     && (!needle || [row.seq, row.id, row.body, row.author_name, row.claimed_by, row.anchor?.quote, ...(row.replies || []).map(r => r.body)].join(' ').toLocaleLowerCase().includes(needle)));
 }
 export function prototypeLink(row, origin) {

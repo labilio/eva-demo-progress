@@ -33,3 +33,15 @@
 .developer-workbench select.status-label{width:100%;min-height:28px;padding:3px 4px;border:1px solid transparent;border-radius:5px;font-size:11px;cursor:pointer}.developer-workbench .status-label.open{background:#fff4e5;color:#925600}.developer-workbench .status-label.approved{background:#eaf6ee;color:#176b3a}.developer-workbench .status-label.doing{background:#eef1ff;color:#404dcc}.developer-workbench .status-label.done{background:#f0f1f3;color:#606773}.developer-workbench select.status-label:hover{border-color:currentColor}.developer-workbench select.status-label:disabled{opacity:.55;cursor:wait}.developer-workbench select.status-label option{background:var(--eva-review-bg);color:var(--eva-review-text)}
 
 .developer-workbench .anchor-card{display:flex;align-items:center;gap:5px;margin-top:6px;padding:3px 6px;border:1px solid var(--wb-line);border-radius:6px;background:var(--eva-review-fill);color:var(--wb-muted);text-decoration:none}.anchor-card>.lucide{width:14px;height:14px}.anchor-card>span{min-width:0}.developer-workbench .anchor-card:hover{border-color:var(--eva-review-primary);color:var(--eva-review-primary);text-decoration:none}.anchor-card .anchor-text{color:inherit;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Native column menus keep keyboard and touch interaction without a second filter state. */
+.column-heading{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.column-filter{position:relative;display:inline-flex;width:18px;height:18px;border-radius:4px;color:var(--wb-muted)}
+.filter-arrow{display:flex;align-items:center;justify-content:center;width:100%;opacity:.55}
+.developer-workbench .filter-arrow .lucide{width:12px;height:12px}
+.developer-workbench .column-filter select{position:absolute;inset:0;width:100%;height:100%;min-height:0;padding:0;border:0;opacity:0;cursor:pointer}
+th:hover .filter-arrow,.column-filter:focus-within .filter-arrow,.column-filter.is-active .filter-arrow{opacity:1}
+.column-filter:hover,.column-filter:focus-within{background:var(--wb-line)}
+.column-filter:focus-within{outline:2px solid var(--eva-review-primary);outline-offset:2px}
+.column-filter.is-active{color:var(--eva-review-primary);background:color-mix(in srgb,var(--eva-review-primary) 8%,transparent)}
+@media(hover:none){.filter-arrow{opacity:1}}

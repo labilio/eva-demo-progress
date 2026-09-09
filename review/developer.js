@@ -18,10 +18,31 @@ let saved = {}, selectedIds = [];
 try { saved = JSON.parse(localStorage.getItem('eva-developer-filters') || '{}') || {}; } catch {}
 try { const value = JSON.parse(sessionStorage.getItem('eva-developer-selected') || '[]'); if(Array.isArray(value))selectedIds=value; } catch {}
 const state = { rows: [], loaded:false, pending:null, checking:false, busy:false, selected:new Set(selectedIds), revision:0, detailId:null, context:{},
-  filters:{ menu:params.get('menu') || saved.menu || 'all', status:saved.status || 'approved', claim:saved.claim || 'unclaimed', search:saved.search || '' } };
+  filters:{ menu:params.get('menu') || saved.menu || 'all', status:saved.status || 'approved', claim:saved.claim || 'unclaimed', kind:saved.kind || 'all', author:saved.author || 'all', search:saved.search || '' } };
 if (!MENUS.some(([id]) => id === state.filters.menu)) state.filters.menu = 'all';
 if (!['all', ...Object.keys(STATUS_LABELS)].includes(state.filters.status)) state.filters.status = 'approved';
-if (!['all','claimed','unclaimed'].includes(state.filters.claim)) state.filters.claim = 'unclaimed';
+if (!['all','claimed','unclaimed'].includes(state.filters.claim) && !String(state.filters.claim).startsWith('name:')) state.filters.claim = 'unclaimed';
+if (!['all', ...Object.keys(KIND_LABELS)].includes(state.filters.kind)) state.filters.kind = 'all';
+if (typeof state.filters.author !== 'string' || (state.filters.author !== 'all' && !state.filters.author.startsWith('name:'))) state.filters.author = 'all';
+function renderColumnFilters() {
+  const names = field => [...new Set(state.rows.map(row=>row[field]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-CN')).map(name=>['name:'+name,name]);
+  const options = {
+    kind:[['all','全部类型'],...Object.entries(KIND_LABELS)],
+    status:[['all','全部状态'],...Object.entries(STATUS_LABELS)],
+    author:[['all','全部提出者'],...names('author_name')],
+    claim:[['all','全部认领者'],['unclaimed','未认领（-）'],['claimed','已认领'],...names('claimed_by')],
+  };
+  for (const [key, entries] of Object.entries(options)) {
+    const value=state.filters[key];
+    if (!entries.some(([id])=>id===value)) entries.push([value,value.slice(5)]);
+    const select=$(`[data-filter="${key}"]`), wrapper=select.parentElement;
+    select.innerHTML=entries.map(([id,label])=>`<option value="${escape(id)}">${escape(label)}</option>`).join('');
+    select.value=value;
+    wrapper.classList.toggle('is-active',value!=='all');
+    wrapper.title=entries.find(([id])=>id===value)[1];
+    wrapper.querySelector('.filter-arrow').innerHTML=icon('chevron-down');
+  }
+}
 const date = value => value ? new Date(value).toLocaleString('zh-CN', { month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false }) : '—';
 const message = (value, error = false) => { $('#notice').textContent = value; $('#notice').classList.toggle('is-error', error); };
 function saveFilters() {
@@ -43,6 +64,7 @@ function updateSelection() {
   $('#clear-selection').disabled = state.busy || !selected.length;
 }
 function render() {
+  renderColumnFilters();
   document.querySelectorAll('[data-status]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.status===state.filters.status)));
   const scroll = $('.table-scroll'); const top = scroll.scrollTop; const left = scroll.scrollLeft;
   const menuButton = id => {
@@ -88,13 +110,13 @@ async function refresh(background=false) {
 }
 $('#refresh').onclick=()=>{if(state.busy)return;if(state.pending){applyRows(state.pending);message('已加载更新，保留筛选和勾选');}else refresh();};
 $('#menus').onclick=event=>{const button=event.target.closest('[data-menu]');if(!button)return;state.filters.menu=button.dataset.menu;saveFilters();render();};
-for(const [id,key] of [['claim-filter','claim']]){
-  $('#'+id).value=state.filters[key];$('#'+id).onchange=event=>{state.filters[key]=event.target.value;saveFilters();render();};
-}
+document.querySelectorAll('[data-filter]').forEach(select=>{
+  select.onchange=()=>{state.filters[select.dataset.filter]=select.value;saveFilters();render();};
+});
 $('#status').onclick=event=>{const button=event.target.closest('[data-status]');if(!button)return;state.filters.status=button.dataset.status;saveFilters();render();};
 $('#reset-filters').onclick=()=>{
-  state.filters={menu:'all',status:'approved',claim:'unclaimed',search:''};
-  $('#claim-filter').value=state.filters.claim;$('#search').value='';$('#clear-search').hidden=true;
+  state.filters={menu:'all',status:'approved',claim:'unclaimed',kind:'all',author:'all',search:''};
+  $('#search').value='';$('#clear-search').hidden=true;
   saveFilters();render();message('已恢复默认筛选，保留已勾选的批注');
 };
 $('#search').value=state.filters.search;
