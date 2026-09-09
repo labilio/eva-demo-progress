@@ -260,6 +260,32 @@ test('我的 AI 顶层分区标题与角色分组使用不同视觉层级', () =
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-heading:has\([^)]*\)[^{]*\.eva-ai-team__group-count/);
 });
 
+test('我的 AI 团队父群将子区展开与进入会话拆分为两个键盘按钮', () => {
+  const imPatch = read('prototype/009-5-patch-im.js');
+  const aiTeamCss = read('prototype/046-ai-team.css');
+  const start = imPatch.indexOf('function teamGroupItem(group)');
+  const end = imPatch.indexOf('const personas=', start);
+  const teamGroupItem = imPatch.slice(start, end);
+  const toggleStart = teamGroupItem.indexOf("h('button',{type:'button',className:'eva-ai-team__team-toggle'");
+  const conversationStart = teamGroupItem.indexOf("h('button',{type:'button',className:'eva-ai-team__team-button'");
+  const toggleButton = teamGroupItem.slice(toggleStart, conversationStart);
+  const conversationButton = teamGroupItem.slice(conversationStart, teamGroupItem.indexOf("h('img'", conversationStart));
+
+  assert.ok(start >= 0 && end > start, '未找到 AI 团队父群渲染函数');
+  assert.ok(toggleStart >= 0 && conversationStart > toggleStart, '展开按钮与父群会话按钮未独立渲染');
+  assert.match(toggleButton, /'aria-label':\(expanded\?'收起':'展开'\)\+' '\+group\.name\+' 子区'/);
+  assert.match(toggleButton, /'aria-expanded':expanded/);
+  assert.match(toggleButton, /'aria-controls':threadsId/);
+  assert.match(toggleButton, /onClick:\(\)=>setCollapsed/);
+  assert.doesNotMatch(toggleButton, /choose\(/);
+  assert.match(conversationButton, /'aria-label':'进入团队会话 '\+group\.name/);
+  assert.match(conversationButton, /'aria-current':selected&&!selection\.sessionId\?'true':undefined/);
+  assert.match(conversationButton, /onClick:\(\)=>choose\(group\.id,null\)/);
+  assert.doesNotMatch(conversationButton, /'aria-expanded'|setCollapsed/);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-toggle\s*\{[^}]*min-height:\s*var\(--eva-rail-identity-height\)[^}]*cursor:\s*pointer/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-toggle:focus-visible,[\s\S]*\.eva-ai-team__team-button:focus-visible\s*\{[^}]*outline:/s);
+});
+
 test('个人文件夹与对话使用统一 Hover、选中及公共 Lucide 图标', () => {
   const workspace = read('prototype/052-personal-eva-gds.js');
   const convergence = read('prototype/043-final-layout-convergence.css');
