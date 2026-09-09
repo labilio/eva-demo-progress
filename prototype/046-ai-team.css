@@ -43,12 +43,11 @@
      subzones keep their own deeper inset relative to the team avatar. */
   --eva-rail-identity-content-inset: calc(var(--eva-rail-identity-avatar-size) + var(--eva-rail-level-indent));
   --eva-rail-team-thread-inset: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-4) + var(--eva-rail-level-indent));
-  --eva-rail-team-thread-icon-size: 14px;
-  --eva-rail-team-thread-label-inset: calc(var(--eva-rail-team-thread-inset) + var(--eva-rail-team-thread-icon-size) + var(--gds-space-1-5));
+  --eva-rail-identity-avatar-trailing: 2px;
   box-sizing: border-box;
-  /* Assistant sessions have no leading icon, so their labels reuse the team
-     subzone label column instead of adding another hierarchy step. */
-  --eva-rail-session-indent: var(--eva-rail-team-thread-label-inset);
+  /* Assistant sessions have no leading avatar, so their labels reuse the
+     assistant-name column, including the avatar's trailing margin. */
+  --eva-rail-session-indent: calc(var(--eva-rail-identity-content-inset) + var(--eva-rail-identity-avatar-size) + var(--gds-space-2) + var(--eva-rail-identity-avatar-trailing));
   position: relative;
   flex: 0 0 var(--eva-conversation-rail-current);
   width: var(--eva-conversation-rail-current);
@@ -151,7 +150,6 @@
 .eva-ai-team__team-heading:focus-within .eva-ai-team__team-menu { opacity: 1; pointer-events: auto; }
 .eva-ai-team__team-menu .semi-button { width: 28px; height: 28px; min-height: 28px; padding: 0; }
 .eva-ai-team__team-threads .wk-conv-compact-item--thread { padding-left: var(--eva-rail-team-thread-inset); min-height: var(--eva-rail-identity-height); }
-.eva-ai-team__team-threads .wk-conv-compact-item--thread .wk-conv-compact-icon { width: var(--eva-rail-team-thread-icon-size); flex: 0 0 var(--eva-rail-team-thread-icon-size); }
 .eva-ai-team__direct-groups { margin-top: var(--gds-space-1); }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
   /* Match adjacent project groups: whitespace separates sections; a divider
@@ -551,7 +549,7 @@
 .eva-ai-team__source-options .eva-ai-team__connection-option:has(input:focus-visible) { outline: 2px solid var(--semi-color-text-2); outline-offset: -2px; }
 
 /* One avatar/text grid and one trailing disclosure column for all identities. */
-.eva-ai-team__identity-button > .eva-identity-avatar { margin-right: 2px; }
+.eva-ai-team__identity-button > .eva-identity-avatar { margin-right: var(--eva-rail-identity-avatar-trailing); }
 .eva-ai-team__identity-heading > .eva-ai-team__new-session-anchor,
 .eva-ai-team__identity-heading > .eva-ai-team__menu-anchor {
   position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
