@@ -363,9 +363,7 @@
     if (!detail) return '';
     return '<section class="eva-personal-workspace__conversation eva-personal-workspace__history">'
       + '<header class="eva-topbar eva-personal-workspace__topbar">'
-      + '<span class="eva-personal-topbar__mark">' + icon('brain', 18, 'eva-i-nav') + '</span>'
       + '<span class="ttl eva-t-header">' + escapeHTML(detail.title) + '</span>'
-      + '<span class="eva-history-header__assistant eva-t-label">' + escapeHTML(personalAssistantName()) + '</span>'
       + '<span style="flex:1 1 auto"></span>'
       + '</header>'
       + '<div class="eva-personal-workspace__stream"><div class="eva-flow eva-history-flow">'

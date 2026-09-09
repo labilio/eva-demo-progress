@@ -324,13 +324,6 @@
    history：复用会话主列，只按用户请求、Eva 结论、待确认项与附件组织。
    它是工作上下文，不重造团队 IM 气泡；所有颜色和边界均取 GDS 语义 token。
    ============================================================ */
-.eva-history-header__assistant {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--eva-text-secondary);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .eva-history-flow {
   display: flex;
   flex-direction: column;
