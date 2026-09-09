@@ -8,6 +8,29 @@ test('转存形成项目共享版本，项目成员能读文件但不能读来�
 test('不在来源群或目标项目不能转存，移出项目后失去共享文件访问',()=>{const {members,files}=setup();const file={name:'报告.pdf'};assert.throws(()=>files.transfer('b','p',file,{groupId:'g'}));members.createProject('other','另一个项目','c',[]);assert.throws(()=>files.transfer('a','other',file,{groupId:'g'}));files.transfer('a','p',file,{groupId:'g'});members.remove('p','a','b');assert.equal(files.list('p','b').length,0);});
 test('项目文件列表适配保留结构化来源与共享版本',async()=>{const {createPatchedRuntime}=await import('../tools/build-runtime.mjs');const {source}=createPatchedRuntime();const start=source.indexOf('toEntry=rt=>('),end=source.indexOf(',FilesView=',start);assert.ok(start>=0&&end>start);const adapt=vm.runInNewContext('('+source.slice(start+'toEntry='.length,end)+')');const entry=adapt({id:'shared-1',name:'报告.pdf',source:{groupId:'g',groupName:'质量群'},sourceVersion:2,sharedVersion:true});assert.equal(entry.source.groupName,'质量群');assert.equal(entry.sourceVersion,2);assert.equal(entry.sharedVersion,true);});
 test('项目团队文件复用文件库组件并移除旧筛选和旧上传文案',async()=>{const {createPatchedRuntime}=await import('../tools/build-runtime.mjs');const {source}=createPatchedRuntime();assert.match(source,/FilesView=\(\)=>window\.EvaProjectFilesUI\.render/);const ui=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');assert.match(ui,/搜索当前项目/);assert.match(ui,/上传本地文件/);assert.match(ui,/eva-file-detail-dialog/);assert.match(ui,/'aria-labelledby':titleId/);assert.doesNotMatch(ui,/eva-project-files__inspector|TYPE_PILLS|搜索云盘文件|Owner · 项目负责人/);const entry=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.ok(entry.indexOf('prototype\/009-1-project-files-ui.js')<entry.indexOf('vendor\/eva-runtime.module.js'));});
+test('文件库在当前空间新建文件夹时不再选择所属空间',()=>{
+  const source=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
+  const dialogStart=source.indexOf('  function dialogHTML()'),dialogEnd=source.indexOf('  function filePreviewFixture(',dialogStart);
+  const state={dialog:{type:'new-folder',spaceId:'p'},parentId:'folder-a',selectedId:null};
+  const sandbox={state,fileActor:()=> 'a',fileContext:()=>({files:{snapshot:()=>[]}})};
+  const html=vm.runInNewContext(source.slice(dialogStart,dialogEnd)+';dialogHTML();',sandbox);
+  assert.match(html,/文件夹名称/);
+  assert.doesNotMatch(html,/所属空间|eva-drive-dialog-space/);
+
+  const confirmStart=source.indexOf('  function confirmDialog()'),confirmEnd=source.indexOf('  function bridgeSelectedResource()',confirmStart);
+  let created;
+  vm.runInNewContext(source.slice(confirmStart,confirmEnd)+';confirmDialog();',{
+    state,
+    fileActor:()=> 'a',
+    scopeSpaceId:()=> 'p',
+    fileContext:()=>({files:{snapshot:()=>[],createFolder:(...args)=>{created=args;return 'folder-new';}}}),
+    document:{getElementById:id=>id==='eva-drive-dialog-name'?{value:'项目资料'}:id==='eva-drive-dialog-space'?{value:'other'}:null},
+    renderDrive:()=>{},
+    showToast:()=>{}
+  });
+  assert.deepEqual(created,['a','p','项目资料','folder-a']);
+  assert.equal(state.selectedId,'folder-new');
+});
 test('Editor 可整理和上传项目文件，但不能删除、查看或恢复回收站',()=>{const {members,files}=setup();files.createFolder('b','p','成员资料');files.upload('b','p',{name:'本地清单.xlsx',size:2048});const uploaded=files.list('p','b').find(item=>item.name==='本地清单.xlsx');files.rename('b',uploaded.id,'本地清单-更新.xlsx');files.copy('b',uploaded.id);assert.equal(files.role('p','b'),'editor');assert.equal(files.can('move','p','b'),true);assert.equal(files.can('trash','p','b'),false);assert.equal(files.can('view-trash','p','b'),false);assert.throws(()=>files.trash('b',uploaded.id));assert.throws(()=>files.trashList('p','b'));});
 test('Owner 与 Manager 可管理回收站，只有 Owner 可转移空间所有权',()=>{const {members,files}=setup();members.addMember('p','a','c');members.setAdmin('p','a','c',true);files.upload('c','p',{name:'管理员上传.pdf',size:1024});const item=files.list('p','c').find(entry=>entry.name==='管理员上传.pdf');files.trash('c',item.id);assert.equal(files.trashList('p','c').length,1);files.restore('c',item.id);assert.equal(files.list('p','c').some(entry=>entry.id===item.id),true);assert.equal(files.can('manage-members','p','c'),true);assert.equal(files.can('transfer-ownership','p','c'),false);assert.equal(files.can('transfer-ownership','p','a'),true);});
 test('Editor 即使知道回收站记录 ID 也不能直接恢复或永久删除',()=>{

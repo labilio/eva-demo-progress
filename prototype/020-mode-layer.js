@@ -656,7 +656,7 @@
     var type = state.dialog.type, resource = state.dialog.id ? fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === state.dialog.id; }) : null;
     var title = type === 'new-folder' ? '新建文件夹' : type === 'add-external-link' ? '添加外部链接' : type === 'edit-external-link' ? '编辑外部链接' : type === 'target-upload' ? '选择上传位置' : type === 'create-shortcut' ? '创建快捷方式' : type === 'tags' ? '编辑标签' : type === 'rename' ? '重命名' : type === 'move' ? '移动到' : type === 'trash' ? '移至回收站' : '永久删除';
     var content = '';
-    if (type === 'new-folder') content = '<label class="eva-drive-dialog__field"><span>文件夹名称</span><input id="eva-drive-dialog-name" value="" placeholder="请输入文件夹名称" autofocus></label><label class="eva-drive-dialog__field"><span>所属空间</span><select id="eva-drive-dialog-space">' + targetOptionsHTML(state.dialog.spaceId || scopeSpaceId() || personalSpaceId()) + '</select></label>';
+    if (type === 'new-folder') content = '<label class="eva-drive-dialog__field"><span>文件夹名称</span><input id="eva-drive-dialog-name" value="" placeholder="请输入文件夹名称" autofocus></label>';
     if (type === 'add-external-link' || type === 'edit-external-link') {
       var linkInfo = resource ? fileContext().files.externalLinkInfo(resource, fileActor()) : null;
       var externalName = state.dialog.name == null ? resource ? resource.name : '' : state.dialog.name;
@@ -983,7 +983,7 @@
       if (externalURLInput) { if (dialog.url !== externalURLInput.value) dialog.confirmHostChange = false; dialog.url = externalURLInput.value; }
       state.dialog = null;
       if (dialog.type === 'new-folder') {
-        var targetSpace = spaceInput ? spaceInput.value : dialog.spaceId || scopeSpaceId();
+        var targetSpace = dialog.spaceId || scopeSpaceId();
         state.selectedId = context.files.createFolder(actor, targetSpace, nameInput ? nameInput.value : '', targetSpace === scopeSpaceId() ? state.parentId : 0);
       }
       if (dialog.type === 'target-upload') {
