@@ -279,7 +279,7 @@
     if (!value) return '—';
     var date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    return new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(date).replace('/', '-');
+    return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(date).replace(/\//g, '-');
   }
 
   function scopeSpaceId() {
@@ -812,7 +812,6 @@
     return [
       '<aside class="eva-drive__side" aria-label="文件导航">',
       '<div class="eva-drive__side-head">' + icon('drive') + '<strong>文件库</strong></div>',
-      '<label class="eva-drive__side-search">' + icon('search') + '<input type="search" data-drive-search="side" value="' + escapeHTML(state.query) + '" placeholder="搜索当前范围"></label>',
       '<nav class="eva-drive__tree">',
       '<div class="eva-drive__tree-group">文件空间</div>',
       treeButton('personal', '个人空间', 'file', false),
