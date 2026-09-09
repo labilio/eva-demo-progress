@@ -316,6 +316,21 @@ test('我的 AI 团队父群将子区展开与进入会话拆分为两个键盘�
   assert.match(aiTeamCss, /\.eva-ai-team__team-toggle:focus-visible,[\s\S]*\.eva-ai-team__team-button:focus-visible\s*\{[^}]*outline:/s);
 });
 
+test('我的 AI 首次进入仅展开默认团队并将其子区限制为最新三条', () => {
+  const imPatch = read('prototype/009-5-patch-im.js');
+  const aiTeamCss = read('prototype/046-ai-team.css');
+
+  assert.match(imPatch, /Object\.fromEntries\(\[\.\.\.teamGroups\.map\(group=>\[group\.id,!group\.system\]\),\.\.\.availableIdentities\.map\(item=>\[item\.id,true\]\)/);
+  assert.match(imPatch, /const \[showAllTeamThreads,setShowAllTeamThreads\]=reactExports\.useState\(\(\)=>requestedIdentity&&groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\?\{\[requestedIdentity\.id\]:true\}:\{\}\)/);
+  assert.match(imPatch, /if\(groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\)setShowAllTeamThreads\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:true\}\)\)/);
+  assert.match(imPatch, /orderedTeamThreads=items=>\[\.\.\.items\]\.filter\(item=>item\.status!==2\)\.sort\(\(a,b\)=>teamThreadTime\(b\)\.localeCompare\(teamThreadTime\(a\)\)\)/);
+  assert.match(imPatch, /visibleThreads=group\.system&&!showAll\?threads\.slice\(0,3\):threads,hasMore=group\.system&&threads\.length>3/);
+  assert.match(imPatch, /className:'eva-ai-team__team-threads-more','aria-expanded':showAll/);
+  assert.match(imPatch, /showAll\?'收起':'展开查看（'\+\(threads\.length-3\)\+'）'/);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-threads-more\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-rail-team-thread-label-inset\)[^}]*background:\s*transparent/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-threads-more:focus-visible\s*\{[^}]*outline:/s);
+});
+
 test('个人文件夹与对话使用统一 Hover、选中及公共 Lucide 图标', () => {
   const workspace = read('prototype/052-personal-eva-gds.js');
   const convergence = read('prototype/043-final-layout-convergence.css');
