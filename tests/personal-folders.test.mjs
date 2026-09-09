@@ -123,3 +123,35 @@ test('取消本地目录选择保留分组、草稿和默认目录',async()=>{
  assert.equal(JSON.stringify(a.store.getSnapshot()),before);assert.equal(a.q('.eva-composer-prompt').value,'草稿');
  assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'本地目录');
 });
+
+function drag(a, source, target, drop=true) {
+ const transfer={setData(){},effectAllowed:'',dropEffect:''};
+ const dispatch=(element,type)=>{const e=new a.window.Event(type,{bubbles:true,cancelable:true});Object.defineProperty(e,'dataTransfer',{value:transfer});element.dispatchEvent(e);return e;};
+ dispatch(source,'dragstart');dispatch(target,'dragover');
+ if(drop) dispatch(target,'drop'); else dispatch(source,'dragend');
+}
+
+test('拖拽移动当前会话到折叠分组，保存归属且保留正文、路由和草稿',()=>{
+ const a=setup(undefined,'#/conversation/personal-api-regression');a.input('正在编辑');
+ const textarea=a.q('.eva-composer-prompt'),flow=a.q('.eva-history-flow');
+ a.q('[data-eva-toggle-folder="personal-supply"]').click();
+ drag(a,a.q('[data-eva-personal-conversation-id="personal-api-regression"]'),a.q('[data-eva-drop-folder="personal-supply"]'));
+ assert.equal(a.store.getSnapshot().conversations.find(c=>c.id==='personal-api-regression').folderId,'personal-supply');
+ assert.equal(a.q('.eva-composer-prompt'),textarea);assert.equal(textarea.value,'正在编辑');assert.equal(a.q('.eva-history-flow'),flow);
+ assert.equal(a.q('[data-eva-toggle-folder="personal-supply"]').getAttribute('aria-expanded'),'true');
+ assert.ok(a.q('[data-eva-drop-folder="personal-supply"] [aria-current="page"]'));
+ const savedAfterMove=new Map(a.saved);
+ drag(a,a.q('[data-eva-personal-conversation-id="personal-api-regression"]'),a.q('[data-eva-drop-folder=""]'));
+ assert.equal(a.store.getSnapshot().conversations.find(c=>c.id==='personal-api-regression').folderId,'');
+ const b=setup(savedAfterMove);assert.equal(b.store.getSnapshot().conversations.find(c=>c.id==='personal-api-regression').folderId,'personal-supply');
+});
+
+test('取消拖动、拖到原组和外部拖放不改变会话归属',()=>{
+ const a=setup(),before=JSON.stringify(a.store.getSnapshot());
+ const source=a.q('[data-eva-personal-conversation-id="personal-api-regression"]');
+ drag(a,source,a.q('[data-eva-drop-folder="personal-supply"]'),false);
+ assert.equal(a.q('.is-drop-target'),null);assert.equal(a.q('.is-dragging'),null);
+ drag(a,source,a.q('[data-eva-drop-folder=""]'));
+ a.q('[data-eva-drop-folder="personal-supply"]').dispatchEvent(new a.window.Event('drop',{bubbles:true,cancelable:true}));
+ assert.equal(JSON.stringify(a.store.getSnapshot()),before);
+});
