@@ -751,7 +751,7 @@ function EvaAITeamPage() {
     cut('React.createElement("span",{className:"ops"},!fa&&!Sa.id.startsWith("dm-")',
       'React.createElement("span",{className:"ops"},evaCanOpenProjectTasks&&React.createElement("span",{className:"op",role:"button",tabIndex:0,onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.currentTarget.click();}},title:"聊天任务","aria-label":"查看聊天任务",onClick:()=>{if(evaMemberStore.canRead(evaTaskGroupId,evaActorId)&&evaMemberStore.canRead(evaTaskProjectId,evaActorId))Dt(Mt==="tasks"?"none":"tasks")}},React.createElement(ClipboardList,{size:20,color:"currentColor"})),evaCanOpenProjectTasks&&evaTaskContext?.channelId===Sa.id&&React.createElement(CreateIssueModal,{key:Sa.id,visible:true,projectId:evaTaskContext.projectId,conversationId:evaTaskContext.conversationId,canCreate:()=>evaMemberStore.canRead(evaTaskContext.groupId,evaActorId)&&evaMemberStore.canRead(evaTaskContext.projectId,evaActorId),onClose:()=>setEvaTaskContext(null),onCreated:issue=>{setEvaTaskContext(null);Toast.success("任务 "+issue.identifier+" 已创建");}}),!fa&&!Sa.id.startsWith("dm-")', 'IM shared project Loop task entry');
     cut('fa=Pt?Sa.threads.find(ci=>ci.id===Pt)??null:null',
-      'fa=(ct?.selectedThreadId??Pt)?Sa.threads.find(ci=>ci.id===(ct?.selectedThreadId??Pt))??null:null', 'AI selected topic uses Octo thread state');
+      'fa=(ct?.selectedThreadId??Pt)?Sa.threads.find(ci=>ci.id===(ct?.selectedThreadId??Pt))??null:null,evaCanOpenGroupInfo=!fa&&!Sa.id.startsWith("dm-")&&Sa.chatType!=="direct"&&ct?.presentation!=="ai-direct",evaToggleChatInfo=()=>Dt(evaPanel=>evaPanel==="info"?"none":"info")', 'AI selected topic uses Octo thread state');
     cut('fa?React.createElement("div",{className:"wk-chat-conversation-header-channel-thread-icon"}',
       'fa&&ct?.presentation!=="ai-direct"?React.createElement("div",{className:"wk-chat-conversation-header-channel-thread-icon"}', 'AI topic keeps identity avatar');
     cut('fa?React.createElement("span",{className:"wk-chat-conversation-header-channel-info-name wk-chat-conversation-header-channel-info-name--thread"}',
@@ -761,6 +761,10 @@ function EvaAITeamPage() {
       'className:"ch-right-panel ch-right-panel--overlay"},fa&&ct?.presentation!=="ai-direct"?React.createElement', 'AI topics reuse direct chat settings');
     cut('channel:Sa,sessionInfoOnly:!!ct?.conversationOnly',
       'channel:ct?.presentation==="ai-direct"?{...Sa,id:va,chatType:"direct"}:Sa,conversationActions:ct?.conversationActions,sessionInfoOnly:!!ct?.conversationOnly', 'AI settings topic identity and actions');
+    cut('React.createElement("div",{className:"wk-chat-conversation-header-channel-avatar"},fa&&ct?.presentation!=="ai-direct"?',
+      'React.createElement(evaCanOpenGroupInfo?"button":"div",{className:"wk-chat-conversation-header-channel-avatar"+(evaCanOpenGroupInfo?" wk-chat-conversation-header-channel-avatar--info-trigger":""),...(evaCanOpenGroupInfo?{type:"button",title:"聊天信息","aria-label":"打开聊天信息","aria-expanded":Mt==="info",onClick:evaToggleChatInfo}:{})},fa&&ct?.presentation!=="ai-direct"?', '群聊头像打开聊天信息');
+    cut('title:fa&&ct?.presentation!=="ai-direct"?"子区信息":"聊天信息",onClick:()=>Dt(ci=>ci==="info"?"none":"info")',
+      'title:fa&&ct?.presentation!=="ai-direct"?"子区信息":"聊天信息",onClick:evaToggleChatInfo', '头像与更多按钮共用聊天信息控制器');
     // Octo directWithName copy applies to every IM target; AI topics display the AI identity.
     cut('placeholder:ct?.composerDisabled?"本地助理离线":Sa.chatType==="direct"?`发送给 ${Sa.name}…`:`在 ${fa?fa.name:Sa.name} 中回复…`',
       'placeholder:evaIMPlaceholder(ct?.presentation==="ai-direct"?Sa.name:(fa?.name??Sa.name))', 'Unified recipient placeholder');

@@ -230,6 +230,33 @@ body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-a
   line-height: 0;
 }
 
+body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-avatar--info-trigger {
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
+  margin: -4px;
+  padding: 4px;
+  appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-avatar--info-trigger:hover {
+  background: var(--eva-overlay-hover);
+}
+
+body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-avatar--info-trigger:active {
+  background: var(--eva-overlay-pressed);
+}
+
+body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-avatar--info-trigger:focus-visible {
+  outline: 2px solid var(--eva-border-focus);
+  outline-offset: 1px;
+}
+
 body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-info {
   min-width: 0;
   overflow: hidden;

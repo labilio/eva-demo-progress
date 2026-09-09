@@ -211,6 +211,17 @@ test('点击群聊内容区会关闭已打开的子区、聊天信息或文件�
   assert.match(imPatch, /ch-main__stream",onClick:ci=>\{\(Mt===\"threads\"\|\|Mt===\"info\"\|\|Mt===\"file\"\)&&!ci\.target\.closest\?\.\(\"\.wk-messageinput-box, \.wk-contextmenus, \.wk-message-file\"\)/);
 });
 
+test('我的 Agent 与我的消息仅让父群头像复用聊天信息面板控制器', () => {
+  const { source } = createPatchedRuntime();
+  const hierarchyCss = read('prototype/016-message-hierarchy.css');
+
+  assert.match(source, /evaCanOpenGroupInfo=!fa&&!Sa\.id\.startsWith\("dm-"\)&&Sa\.chatType!=="direct"&&ct\?\.presentation!=="ai-direct"/);
+  assert.match(source, /React\.createElement\(evaCanOpenGroupInfo\?"button":"div",\{className:"wk-chat-conversation-header-channel-avatar"\+\(evaCanOpenGroupInfo\?" wk-chat-conversation-header-channel-avatar--info-trigger":""\).+onClick:evaToggleChatInfo/s);
+  assert.equal((source.match(/onClick:evaToggleChatInfo/g) || []).length, 2, '群头像与更多按钮没有共用唯一聊天信息控制器');
+  assert.match(hierarchyCss, /wk-chat-conversation-header-channel-avatar--info-trigger:hover/);
+  assert.match(hierarchyCss, /wk-chat-conversation-header-channel-avatar--info-trigger:focus-visible/);
+});
+
 test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', () => {
   const hierarchyCss = read('prototype/016-message-hierarchy.css');
   const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
