@@ -554,16 +554,16 @@
 .eva-ai-team__identity-button > .eva-identity-avatar { margin-right: var(--eva-rail-identity-avatar-trailing); }
 .eva-ai-team__identity-heading > .eva-ai-team__new-session-anchor,
 .eva-ai-team__identity-heading > .eva-ai-team__menu-anchor {
-  position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
 }
-.eva-ai-team__identity-heading > .eva-ai-team__menu-anchor { right: 60px; opacity: 0; pointer-events: none; }
+.eva-ai-team__identity-heading > .eva-ai-team__menu-anchor { right: 40px; opacity: 0; pointer-events: none; }
 .eva-ai-team__identity-heading:hover > .eva-ai-team__menu-anchor,
 .eva-ai-team__identity-heading:focus-within > .eva-ai-team__menu-anchor { opacity: 1; pointer-events: auto; }
 .eva-ai-team__identity-heading:hover .eva-ai-team__identity-button,
 .eva-ai-team__identity-heading:focus-within .eva-ai-team__identity-button,
-.eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__identity-button { padding-right: 60px; }
+.eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__identity-button { padding-right: 40px; }
 .eva-ai-team__identity-heading:has(> .eva-ai-team__menu-anchor):hover .eva-ai-team__identity-button,
-.eva-ai-team__identity-heading:has(> .eva-ai-team__menu-anchor):focus-within .eva-ai-team__identity-button { padding-right: 86px; }
+.eva-ai-team__identity-heading:has(> .eva-ai-team__menu-anchor):focus-within .eva-ai-team__identity-button { padding-right: 68px; }
 .eva-ai-team__identity-heading .eva-ai-team__more { width: 32px; min-height: 32px; height: 32px; padding: 0; }
 .eva-ai-team__fixed-group-tree { margin-bottom: 16px; }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) {
