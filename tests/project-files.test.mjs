@@ -39,6 +39,7 @@ test('文件库内容区使用简洁标题、顶部展示项目简介且搜索�
   assert.equal(personalCopy.title,'个人空间');
   assert.equal(personalCopy.section,'文件');
   assert.equal(personalCopy.subtitle,'仅你可访问，可统一整理本地文件与外部链接');
+  assert.match(styles,/\.eva-drive__section-head h1 \{[^}]*font-size:\s*calc\(var\(--gds-type-header-font-size, 16px\) \+ 4px\);[^}]*line-height:\s*calc\(var\(--gds-type-header-line-height, 24px\) \+ 4px\);/s);
   assert.match(styles,/\.eva-drive__section-head \.eva-drive__side-search \{[^}]*margin:\s*0 0 0 auto;/s);
   assert.match(styles,/\.eva-drive__table \{[^}]*margin:\s*0 24px 24px;/s);
 });

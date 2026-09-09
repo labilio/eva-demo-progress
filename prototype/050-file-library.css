@@ -260,8 +260,8 @@ body.eva-message-hierarchy-ready .eva-drive__action--primary:hover {
 }
 
 .eva-drive__section-head h1 {
-  font-size: var(--gds-type-header-font-size, 16px);
-  line-height: var(--gds-type-header-line-height, 24px);
+  font-size: calc(var(--gds-type-header-font-size, 16px) + 4px);
+  line-height: calc(var(--gds-type-header-line-height, 24px) + 4px);
 }
 
 .eva-drive__section-head p {
