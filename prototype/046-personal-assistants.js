@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  /* 个人 Eva 只有一个助理；文件夹与对话归个人数据仓所有，
+  /* 个人 Eva 只有一个助理；分组与对话归个人数据仓所有，
      不代表 AI 身份、团队项目或电脑目录。旧会话稳定 ID 保持不变。 */
   /* 会话内容与会话树分开保存：树只负责列表顺序和时间，详情是
      `/conversation/:id` 的唯一内容源。每段保留用户请求、Eva 的可追问结论，
@@ -75,7 +75,7 @@
   }
   var deleted = saved && Array.isArray(saved.deleted) ? saved.deleted : [];
   conversations = conversations.filter(function (c) { return !deleted.includes(c.id); });
-  var collapsed = []; // 每次打开个人 Eva 默认展开全部文件夹，当前页面仍可手动收起。
+  var collapsed = []; // 每次打开个人 Eva 默认展开全部分组，当前页面仍可手动收起。
   var folderPins = saved && Array.isArray(saved.folderPins) ? saved.folderPins : [];
   var listeners = new Set();
   function snapshot() { return JSON.parse(JSON.stringify({folders:folders, conversations:conversations, collapsed:collapsed, deleted:deleted, folderPins:folderPins})); }
@@ -93,32 +93,32 @@
     subscribe: function (fn) { listeners.add(fn); return function () { listeners.delete(fn); }; },
     createFolder: function (name) {
       name = String(name || '').trim();
-      if (!name || name.length > 60) throw new Error('请输入 1–60 字的文件夹名称');
-      if (name === '默认' || folders.some(function (f) { return f.name === name; })) throw new Error('已有同名文件夹');
+      if (!name || name.length > 60) throw new Error('请输入 1–60 字的分组名称');
+      if (name === '默认' || folders.some(function (f) { return f.name === name; })) throw new Error('已有同名分组');
       var f = {id:'folder-' + crypto.randomUUID(), name:name}; folders.push(f); persist(); return f.id;
     },
     renameFolder: function (id, name) {
       var f = folders.find(function (f) { return f.id === id; }); name = String(name || '').trim();
-      if (!f) throw new Error('默认文件夹不能重命名');
-      if (!name || name.length > 60) throw new Error('请输入 1–60 字的文件夹名称');
-      if (name === '默认' || folders.some(function (f) { return f.id !== id && f.name === name; })) throw new Error('已有同名文件夹');
+      if (!f) throw new Error('默认分组不能重命名');
+      if (!name || name.length > 60) throw new Error('请输入 1–60 字的分组名称');
+      if (name === '默认' || folders.some(function (f) { return f.id !== id && f.name === name; })) throw new Error('已有同名分组');
       f.name = name; persist();
     },
     deleteFolder: function (id) {
-      if (!id) throw new Error('默认文件夹不能删除');
+      if (!id) throw new Error('默认分组不能删除');
       folders = folders.filter(function (f) { return f.id !== id; });
       conversations.forEach(function (c) { if (c.folderId === id) c.folderId = ''; });
       collapsed = collapsed.filter(function (x) { return x !== id; }); persist();
     },
-    toggleFolderPin: function (id) { if (!folderExists(id)) throw new Error('文件夹不存在'); folderPins = folderPins.includes(id) ? folderPins.filter(function (x) { return x !== id; }) : folderPins.concat(id); persist(); },
+    toggleFolderPin: function (id) { if (!folderExists(id)) throw new Error('分组不存在'); folderPins = folderPins.includes(id) ? folderPins.filter(function (x) { return x !== id; }) : folderPins.concat(id); persist(); },
     togglePin: function (id) { var c = conversation(id); c.pinned = !c.pinned; persist(); },
     deleteConversation: function (id) { conversation(id); deleted.push(id); conversations = conversations.filter(function (c) { return c.id !== id; }); persist(); },
     toggleFolder: function (id) { collapsed = collapsed.includes(id) ? collapsed.filter(function (x) { return x !== id; }) : collapsed.concat(id); persist(); },
-    moveConversation: function (id, folderId) { if (!folderExists(folderId)) throw new Error('文件夹不存在'); conversation(id).folderId = folderId; persist(); },
+    moveConversation: function (id, folderId) { if (!folderExists(folderId)) throw new Error('分组不存在'); conversation(id).folderId = folderId; persist(); },
     renameConversation: function (id, title) { title = String(title || '').trim(); if (!title || title.length > 120) throw new Error('请输入 1–120 字的对话名称'); conversation(id).title = title; persist(); },
-    createConversation: function (folderId, text) {
-      if (!folderExists(folderId)) throw new Error('文件夹不存在');
-      var c = {id:'personal-' + crypto.randomUUID(), title:text.slice(0,120), folderId:folderId || '', assistantId:'assistant-general', assistant:'Eva 同学', time:'刚刚', messages:[{role:'user', text:text}]};
+    createConversation: function (folderId, text, workingDirectory) {
+      if (!folderExists(folderId)) throw new Error('分组不存在');
+      var c = {id:'personal-' + crypto.randomUUID(), title:text.slice(0,120), folderId:folderId || '', workingDirectory:typeof workingDirectory === 'string' ? workingDirectory : '', assistantId:'assistant-general', assistant:'Eva 同学', time:'刚刚', messages:[{role:'user', text:text}]};
       conversations.unshift(c); persist(); return c.id;
     },
     appendMessage: function (id, message) { conversation(id).messages.push(message); conversation(id).time = '刚刚'; persist(); }

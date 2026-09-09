@@ -40,12 +40,13 @@ test('创建、移动、重命名在刷新后保留，重名和空名被拒绝',
  b.store.moveConversation(c.id,'');assert.equal(b.store.getSnapshot().conversations.find(x=>x.id===c.id).folderId,'');
 });
 
-test('浏览本地目录和折叠不重建输入框，目录名保存为文件夹',async()=>{
+test('浏览本地目录和折叠不重建输入框，也不创建分组',async()=>{
  const a=setup();a.input('草稿不丢');const input=a.q('.eva-composer-prompt');
  a.window.showDirectoryPicker=async()=>({name:'供应链材料'});
- const picker=a.q('[data-eva-composer-folder]');Object.defineProperty(picker,'value',{configurable:true,writable:true,value:'__browse_local__'});picker.dispatchEvent(new a.window.Event('change',{bubbles:true}));await new Promise(resolve=>setImmediate(resolve));
- assert.equal(a.q('[data-eva-create-folder]'),null);
- assert.equal(a.q('.eva-composer-prompt'),input);assert.equal(input.value,'草稿不丢');assert.ok(a.store.getSnapshot().folders.some(f=>f.name==='供应链材料'));
+ const picker=a.q('[data-eva-composer-directory]');Object.defineProperty(picker,'value',{configurable:true,writable:true,value:'__browse_local__'});picker.dispatchEvent(new a.window.Event('change',{bubbles:true}));await new Promise(resolve=>setImmediate(resolve));
+ assert.ok(a.q('[data-eva-create-folder]'));
+ assert.equal(a.q('.eva-composer-prompt'),input);assert.equal(input.value,'草稿不丢');assert.ok(!a.store.getSnapshot().folders.some(f=>f.name==='供应链材料'));
+ assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'供应链材料');
  a.q('[data-eva-toggle-folder=""]').click();assert.equal(a.q('.eva-composer-prompt'),input);
 });
 
@@ -81,13 +82,44 @@ test('个人 Eva 不暴露助理创建，但我的 AI 可复用个人助理创�
 });
 
 
-test('输入框下拉可选择默认或本地目录，不丢失草稿，发送归属选择的文件夹',async()=>{
- const a=setup();a.input('保留这段中文输入');const textarea=a.q('.eva-composer-prompt');
- a.window.showDirectoryPicker=async()=>({name:'下拉新文件夹'});
- const browse=a.q('[data-eva-composer-folder]');assert.equal(browse.lastElementChild.textContent,'浏览本地目录...');Object.defineProperty(browse,'value',{configurable:true,writable:true,value:'__browse_local__'});browse.dispatchEvent(new a.window.Event('change',{bubbles:true}));await new Promise(resolve=>setImmediate(resolve));
- const folder=a.store.getSnapshot().folders.find(f=>f.name==='下拉新文件夹');
- const picker=a.q('[data-eva-composer-folder]');assert.ok([...picker.querySelectorAll('option')].some(o=>o.textContent==='下拉新文件夹'));
- Object.defineProperty(picker,'value',{configurable:true,value:folder.id});picker.dispatchEvent(new a.window.Event('change',{bubbles:true}));
+test('目录与分组独立：组内发送保留目录，移动和删除分组不改变目录',async()=>{
+ const a=setup();a.q('[data-eva-new-folder-chat="personal-supply"]').click();a.input('保留这段中文输入');const textarea=a.q('.eva-composer-prompt');
+ a.window.showDirectoryPicker=async()=>({name:'本地材料'});
+ const browse=a.q('[data-eva-composer-directory]');
+ Object.defineProperty(browse,'value',{configurable:true,writable:true,value:'__browse_local__'});browse.dispatchEvent(new a.window.Event('change',{bubbles:true}));await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(a.store.getSnapshot().folders.length,1);
  assert.equal(a.q('.eva-composer-prompt'),textarea);assert.equal(textarea.value,'保留这段中文输入');
- a.q('[data-eva-personal-send]').click();assert.equal(a.store.getSnapshot().conversations.find(c=>c.title==='保留这段中文输入').folderId,folder.id);
+ assert.ok(![...a.q('[data-eva-composer-directory]').querySelectorAll('option')].some(o=>o.textContent==='供应链运营协同'));
+ a.q('[data-eva-personal-send]').click();
+ const c=a.store.getSnapshot().conversations.find(c=>c.title==='保留这段中文输入');
+ assert.equal(c.folderId,'personal-supply');assert.equal(c.workingDirectory,'本地材料');
+ a.store.moveConversation(c.id,'');assert.equal(a.store.getSnapshot().conversations.find(x=>x.id===c.id).workingDirectory,'本地材料');
+ const b=setup(a.saved);assert.equal(b.store.getSnapshot().conversations.find(x=>x.id===c.id).workingDirectory,'本地材料');
+ a.store.deleteFolder('personal-supply');
+ a.q('[data-eva-new-folder-chat=""]').click();
+ assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'本地材料');
+ const picker=a.q('[data-eva-composer-directory]');Object.defineProperty(picker,'value',{value:''});picker.dispatchEvent(new a.window.Event('change',{bubbles:true}));
+ assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'默认');
+ assert.equal(a.store.getSnapshot().conversations.find(x=>x.id===c.id).workingDirectory,'本地材料');
+});
+
+test('从加号创建分组，支持校验、取消与刷新，不干扰输入和目录',()=>{
+ const a=setup();a.input('正在编辑的草稿');const textarea=a.q('.eva-composer-prompt');
+ a.q('[data-eva-create-folder]').click();a.q('[name="name"]').value='默认';a.submit();
+ assert.match(a.q('[data-eva-rail-error]').textContent,/同名分组/);
+ a.q('[name="name"]').value='本周工作';a.submit();
+ assert.equal(a.q('[data-eva-rail-form]'),null);assert.equal(a.q('.eva-composer-prompt'),textarea);
+ assert.equal(textarea.value,'正在编辑的草稿');assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'默认');
+ assert.ok(setup(a.saved).store.getSnapshot().folders.some(f=>f.name==='本周工作'));
+ a.q('[data-eva-create-folder]').click();a.q('[data-eva-cancel-rail]').click();
+ assert.equal(a.q('[data-eva-rail-form]'),null);assert.equal(a.store.getSnapshot().folders.length,2);
+});
+
+test('取消本地目录选择保留分组、草稿和默认目录',async()=>{
+ const a=setup();a.input('草稿');a.window.showDirectoryPicker=async()=>{throw Object.assign(new Error(),{name:'AbortError'});};
+ const before=JSON.stringify(a.store.getSnapshot());
+ const picker=a.q('[data-eva-composer-directory]');Object.defineProperty(picker,'value',{configurable:true,writable:true,value:'__browse_local__'});
+ picker.dispatchEvent(new a.window.Event('change',{bubbles:true}));await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(JSON.stringify(a.store.getSnapshot()),before);assert.equal(a.q('.eva-composer-prompt').value,'草稿');
+ assert.equal(a.q('.eva-personal-directory-picker__label').textContent,'默认');
 });

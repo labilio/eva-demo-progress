@@ -472,8 +472,8 @@
 }
 
 /* Selected text sizes the control; native select covers the same hit area without contributing its longest-option width. */
-.eva-personal-folder-picker { position: relative; flex: 0 1 auto; min-width: 0; max-width: min(240px, 45%); cursor: pointer; }
-.eva-personal-folder-picker > svg { flex: none; pointer-events: none; }
-.eva-personal-folder-picker__label { min-width: 0; flex: 0 1 auto; pointer-events: none; }
-.eva-personal-folder-picker select { position: absolute; inset: 0; box-sizing: border-box; width: 100%; height: 100%; opacity: 0; border: 0; cursor: pointer; font: inherit; }
-.eva-personal-folder-picker:focus-within { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
+.eva-personal-directory-picker { position: relative; flex: 0 1 auto; min-width: 0; max-width: min(240px, 45%); cursor: pointer; }
+.eva-personal-directory-picker > svg { flex: none; pointer-events: none; }
+.eva-personal-directory-picker__label { min-width: 0; flex: 0 1 auto; pointer-events: none; }
+.eva-personal-directory-picker select { position: absolute; inset: 0; box-sizing: border-box; width: 100%; height: 100%; opacity: 0; border: 0; cursor: pointer; font: inherit; }
+.eva-personal-directory-picker:focus-within { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
