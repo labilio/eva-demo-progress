@@ -1,7 +1,7 @@
 import { getReviewAuthor, setReviewAuthor, subscribeReviewAuthor } from './review-identity.mjs';
 import { COMMENTS_CONFIG } from './comments-config.mjs';
 import { createCommentsStore } from './comments-store.mjs';
-import { MENUS, STATUS_LABELS, KIND_LABELS, menuOf, filterRows, sourceHints, prototypeLink, buildDeveloperPrompt } from './developer-domain.mjs';
+import { MENUS, STATUS_LABELS, KIND_LABELS, menuOf, visibleDeveloperRows, sourceHints, prototypeLink, buildDeveloperPrompt } from './developer-domain.mjs';
 
 const store = createCommentsStore(COMMENTS_CONFIG);
 const $ = selector => document.querySelector(selector);
@@ -17,11 +17,13 @@ const params = new URLSearchParams(location.search);
 let saved = {}, selectedIds = [];
 try { saved = JSON.parse(localStorage.getItem('eva-developer-filters') || '{}') || {}; } catch {}
 try { const value = JSON.parse(sessionStorage.getItem('eva-developer-selected') || '[]'); if(Array.isArray(value))selectedIds=value; } catch {}
-const state = { rows: [], loaded:false, pending:null, checking:false, busy:false, selected:new Set(selectedIds), revision:0, detailId:null, context:{},
-  filters:{ menu:params.get('menu') || saved.menu || 'all', status:saved.status || 'approved', claim:saved.claim || 'unclaimed', kind:saved.kind || 'all', author:saved.author || 'all', search:saved.search || '' } };
+// Remove the old implicit approved/unclaimed defaults once; later choices persist.
+if (saved.filterVersion !== 2) saved = {...saved, status:'all', claim:'all'};
+const state = { retainedIds:new Set(), rows: [], loaded:false, pending:null, checking:false, busy:false, selected:new Set(selectedIds), revision:0, detailId:null, context:{},
+  filters:{ menu:params.get('menu') || saved.menu || 'all', filterVersion:2, status:saved.status || 'all', claim:saved.claim || 'all', kind:saved.kind || 'all', author:saved.author || 'all', search:saved.search || '' } };
 if (!MENUS.some(([id]) => id === state.filters.menu)) state.filters.menu = 'all';
-if (!['all', ...Object.keys(STATUS_LABELS)].includes(state.filters.status)) state.filters.status = 'approved';
-if (!['all','claimed','unclaimed'].includes(state.filters.claim) && !String(state.filters.claim).startsWith('name:')) state.filters.claim = 'unclaimed';
+if (!['all', ...Object.keys(STATUS_LABELS)].includes(state.filters.status)) state.filters.status = 'all';
+if (!['all','claimed','unclaimed'].includes(state.filters.claim) && !String(state.filters.claim).startsWith('name:')) state.filters.claim = 'all';
 if (!['all', ...Object.keys(KIND_LABELS)].includes(state.filters.kind)) state.filters.kind = 'all';
 if (typeof state.filters.author !== 'string' || (state.filters.author !== 'all' && !state.filters.author.startsWith('name:'))) state.filters.author = 'all';
 function renderColumnFilters() {
@@ -52,7 +54,7 @@ function saveFilters() {
 function updateSelection() {
   if (state.loaded) sessionStorage.setItem('eva-developer-selected', JSON.stringify([...state.selected]));
   const selected = state.rows.filter(row => state.selected.has(row.id));
-  const visible = filterRows(state.rows,state.filters);
+  const visible = visibleDeveloperRows(state.rows,state.filters,state.retainedIds);
   $('#selection-count').textContent = `已选 ${selected.length} 条${selected.some(r => !visible.includes(r)) ? '（含其他筛选下的批注）' : ''}`;
   $('#copy').disabled = state.busy || !selected.length;
   $('#claim-copy').disabled = state.busy || !selected.length || selected.some(r => r.status !== 'approved' || r.claimed_by);
@@ -74,7 +76,7 @@ function render() {
   const groups=[['个人',['personal','workboard','automation','skills']],['团队协作',['messages','my-ai','projects','contacts','drive','sites']],['其他',['employees','agent-create','other']]];
   $('#menus').innerHTML=menuButton('all')+groups.map(([label,ids])=>`<section class="menu-group" aria-label="${label}"><h3>${label}</h3>${ids.map(menuButton).join('')}</section>`).join('');
   $('#menu-title').textContent = MENUS.find(([id]) => id===state.filters.menu)[1];
-  const visible = filterRows(state.rows,state.filters);
+  const visible = visibleDeveloperRows(state.rows,state.filters,state.retainedIds);
   $('#counts').textContent = `${visible.length} 条批注 / 共 ${state.rows.length} 条`;
   $('#rows').innerHTML = visible.map(row => `<tr data-id="${escape(row.id)}" class="${state.selected.has(row.id)?'is-selected':''}">
     <td><input type="checkbox" data-select="${escape(row.id)}" aria-label="选择批注 ${escape(row.seq)}" ${state.selected.has(row.id)?'checked':''}></td>
@@ -89,6 +91,7 @@ function render() {
   updateSelection();
 }
 function applyRows(rows) {
+  state.retainedIds.clear();
   state.rows=rows; state.loaded=true; state.pending=null;
   const ids=new Set(rows.map(r=>r.id)); state.selected.forEach(id=>{if(!ids.has(id))state.selected.delete(id);});
   render(); updateNotice();
@@ -109,18 +112,19 @@ async function refresh(background=false) {
   finally{state.checking=false;$('#refresh').disabled=false;}
 }
 $('#refresh').onclick=()=>{if(state.busy)return;if(state.pending){applyRows(state.pending);message('已加载更新，保留筛选和勾选');}else refresh();};
-$('#menus').onclick=event=>{const button=event.target.closest('[data-menu]');if(!button)return;state.filters.menu=button.dataset.menu;saveFilters();render();};
+$('#menus').onclick=event=>{const button=event.target.closest('[data-menu]');if(!button)return;state.retainedIds.clear();state.filters.menu=button.dataset.menu;saveFilters();render();};
 document.querySelectorAll('[data-filter]').forEach(select=>{
-  select.onchange=()=>{state.filters[select.dataset.filter]=select.value;saveFilters();render();};
+  select.onchange=()=>{state.retainedIds.clear();state.filters[select.dataset.filter]=select.value;saveFilters();render();};
 });
-$('#status').onclick=event=>{const button=event.target.closest('[data-status]');if(!button)return;state.filters.status=button.dataset.status;saveFilters();render();};
+$('#status').onclick=event=>{const button=event.target.closest('[data-status]');if(!button)return;state.retainedIds.clear();state.filters.status=button.dataset.status;saveFilters();render();};
 $('#reset-filters').onclick=()=>{
-  state.filters={menu:'all',status:'approved',claim:'unclaimed',kind:'all',author:'all',search:''};
+  state.retainedIds.clear();
+  state.filters={filterVersion:2,menu:'all',status:'all',claim:'all',kind:'all',author:'all',search:''};
   $('#search').value='';$('#clear-search').hidden=true;
-  saveFilters();render();message('已恢复默认筛选，保留已勾选的批注');
+  saveFilters();render();message('已清空筛选，显示全部批注，保留勾选');
 };
 $('#search').value=state.filters.search;
-function search(){state.filters.search=$('#search').value;$('#clear-search').hidden=!state.filters.search;saveFilters();render();}
+function search(){state.retainedIds.clear();state.filters.search=$('#search').value;$('#clear-search').hidden=!state.filters.search;saveFilters();render();}
 $('#search').oninput=event=>{if(!event.isComposing)search();};$('#search').oncompositionend=search;
 $('#clear-search').hidden=!state.filters.search;
 $('#clear-search').onclick=()=>{$('#search').value='';search();$('#search').focus();};
@@ -134,7 +138,8 @@ $('#rows').onchange=async event=>{
     try{
       const updated=await store.updateStatus(statusId,status,getReviewAuthor());
       state.rows=state.rows.map(r=>r.id===statusId?{...r,...updated,replies:r.replies}:r);
-      state.pending=null;updateNotice();message(`批注 #${row.seq} 已设为“${STATUS_LABELS[status]}”`);
+      state.retainedIds.add(statusId);
+      state.pending=null;updateNotice();message(`批注 #${row.seq} 已设为“${STATUS_LABELS[status]}”，保留原位；重新筛选或加载更新时再按条件显示`);
     }catch(error){select.value=row.status;message(`状态修改失败：${error.message}`,true);}
     finally{state.busy=false;render();}
     return;
@@ -142,7 +147,7 @@ $('#rows').onchange=async event=>{
   const id=select.dataset.select;if(!id)return;
   select.checked?state.selected.add(id):state.selected.delete(id);select.closest('tr').classList.toggle('is-selected',select.checked);updateSelection();
 };
-$('#select-all').onchange=event=>{filterRows(state.rows,state.filters).forEach(r=>event.target.checked?state.selected.add(r.id):state.selected.delete(r.id));render();};
+$('#select-all').onchange=event=>{visibleDeveloperRows(state.rows,state.filters,state.retainedIds).forEach(r=>event.target.checked?state.selected.add(r.id):state.selected.delete(r.id));render();};
 $('#clear-selection').onclick=()=>{state.selected.clear();render();};
 $('#assignee').value=getReviewAuthor();
 subscribeReviewAuthor(author=>{if(document.activeElement!==$('#assignee'))$('#assignee').value=author;});
@@ -197,7 +202,7 @@ $('#reply-form').onsubmit=async event=>{
   try{const reply=await store.addReply(id,{body,author_name:author});state.revision++;sessionStorage.removeItem('eva-developer-draft:'+id);state.rows=state.rows.map(r=>r.id===id?{...r,replies:[...(r.replies||[]),reply]}:r);render();if(state.detailId===id)$('#detail').close();message('开发结果已回填到原批注');}
   catch(error){$('#reply-error').textContent=error.message;}finally{button.disabled=false;}
 };
-render(); updateNotice();
+saveFilters();render(); updateNotice();
 try{const response=await fetch('./build-context.json',{cache:'no-store'});if(!response.ok)throw new Error();state.context=await response.json();$('#build-info').textContent=`${state.context.branch} / ${state.context.commit?.slice(0,8)} / ${state.context.version}`;}
 catch{$('#build-info').textContent='构建版本不可用';message('构建信息暂不可用，提示词会明确标注未知。',true);}
 await refresh();

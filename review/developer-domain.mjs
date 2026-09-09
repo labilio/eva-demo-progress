@@ -64,3 +64,9 @@ export function buildDeveloperPrompt(rows, context, origin) {
     JSON.stringify(details, null, 2),
   ].join('\n\n');
 }
+
+// Locally edited rows stay in their original order until an explicit filter/load.
+export function visibleDeveloperRows(rows, filters, retainedIds = new Set()) {
+  const matching = new Set(filterRows(rows, filters).map(row => row.id));
+  return rows.filter(row => matching.has(row.id) || retainedIds.has(row.id));
+}

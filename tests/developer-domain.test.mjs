@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {menuOf, filterRows, buildDeveloperPrompt, prototypeLink} from '../review/developer-domain.mjs';
+import {menuOf, filterRows, visibleDeveloperRows, buildDeveloperPrompt, prototypeLink} from '../review/developer-domain.mjs';
 import {createCommentsStore} from '../review/comments-store.mjs';
 import {runCommentsCommand} from '../tools/comments-cli.mjs';
 const id='aaaaaaaa-1111-4111-8111-111111111111';
@@ -33,4 +33,13 @@ test('column filters intersect exact names and kind while preserving incoming or
  assert.deepEqual(filterRows(rows,{claim:'claimed'}).map(r=>r.id),['c','b','d']);
  assert.deepEqual(filterRows(rows,{author:'name:不存在'}),[]);
  assert.deepEqual(filterRows(rows).map(r=>r.id),['c','b','a','d']);
+});
+
+test('status changes retain the edited row at its original position until explicit filtering',()=>{
+ const rows=[{...row,id:'before'}, {...row,id:'edited',status:'done',claimed_by:'Codex'}, {...row,id:'after'}];
+ const filters={status:'approved',claim:'unclaimed'};
+ assert.deepEqual(visibleDeveloperRows(rows,filters,new Set(['edited'])).map(r=>r.id),['before','edited','after']);
+ assert.deepEqual(visibleDeveloperRows(rows,filters).map(r=>r.id),['before','after']);
+ assert.deepEqual(visibleDeveloperRows(rows,{status:'done',claim:'all'}).map(r=>r.id),['edited']);
+ assert.deepEqual(visibleDeveloperRows(rows,{}).map(r=>r.id),['before','edited','after']);
 });
