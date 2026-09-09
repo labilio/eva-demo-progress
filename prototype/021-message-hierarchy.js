@@ -138,11 +138,6 @@
       if (tabbar.getAttribute('aria-hidden') !== 'true') tabbar.setAttribute('aria-hidden', 'true');
     });
 
-    document.querySelectorAll('.eva-msg input[placeholder="搜索"]').forEach(function (input) {
-      input.placeholder = '搜索群聊、子区或联系人';
-      input.setAttribute('aria-label', '搜索群聊、子区或联系人');
-    });
-
     document.querySelectorAll('.wk-category-section').forEach(function (section) {
       var header = section.querySelector(':scope > .wk-category-header');
       var nameNode = header && header.querySelector('.wk-category-header__name');

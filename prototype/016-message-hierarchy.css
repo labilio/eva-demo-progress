@@ -74,8 +74,6 @@ body.eva-message-hierarchy-ready .eva-msg .ch-list__top {
   background: #f6f7f8;
 }
 
-body.eva-message-hierarchy-ready .eva-msg .ch-list-search { width: 100%; }
-
 body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar {
   display: none;
   margin: 0 10px 8px;

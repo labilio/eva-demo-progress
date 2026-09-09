@@ -41,7 +41,6 @@ async function appearance(field) {
 for (const [name, route, selector] of [
   ['项目', '/collab', '.eva-project-directory-search'],
   ['通讯录', '/contacts', '.eva-contacts__search'],
-  ['消息', '/messages', '.ch-list-search'],
   ['文件库', '/drive', '.eva-drive__section-head .eva-drive__side-search'],
   ['连接中心', '/eva-stub/技能', '.eva-connection-search'],
   ['数字员工', '/eva-stub/数字员工', '.semi-input-wrapper:has(input[placeholder="搜索数字员工"])'],
@@ -162,4 +161,26 @@ test('图标按钮样式夹具：保留按钮形态、悬停、键盘焦点和�
   } finally {
     await page.locator('#search-button-fixture').evaluate(el=>el.remove());
   }
+});
+
+
+test('老版我的消息使用静态标题，关注最近与新建菜单保持可用', async () => {
+  const title = await open('/messages', '.eva-message-list-title');
+  assert.equal(await title.innerText(), '我的消息');
+  assert.equal(await page.locator('.ch-list__top input').count(), 0);
+  assert.equal(await title.evaluate(el => el.tabIndex), -1);
+  const before = page.url();
+  await title.click();
+  assert.equal(page.url(), before);
+  const create = page.locator('.ch-list__top button[title="新建"]');
+  const [tr, br] = await Promise.all([title.boundingBox(), create.boundingBox()]);
+  assert.ok(Math.abs(tr.y + tr.height / 2 - br.y - br.height / 2) < 1);
+  await create.click();
+  await page.getByText('新建群聊', {exact:true}).waitFor({state:'visible'});
+  await page.keyboard.press('Escape');
+  await page.locator('[data-eva-project-recent-switcher] button').filter({hasText:'最近'}).click();
+  await page.locator('[data-eva-project-recent-switcher] button').filter({hasText:'关注'}).click();
+  await open('/contacts', '.eva-contacts__search');
+  await open('/messages', '.eva-message-list-title');
+  assert.equal(await page.locator('.ch-list__top input').count(), 0);
 });
