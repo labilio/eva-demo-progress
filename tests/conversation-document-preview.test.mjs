@@ -51,3 +51,10 @@ test('预览样式保持右栏推开布局', async () => {
   assert.match(css, /flex:\s*0 0 664px/);
   assert.doesNotMatch(css, /backdrop-filter/);
 });
+
+test('文档预览令牌只作用于预览右栏，不覆盖全局 Octo 表面令牌', async () => {
+  const tokens = await read('prototype/document-preview/tokens.css');
+  assert.match(tokens, /^\.eva-msg \.ch-right-panel--preview\s*\{/);
+  assert.doesNotMatch(tokens, /:root\s*\{/);
+  assert.match(tokens, /--wk-bg-surface:\s*var\(--semi-color-bg-0\)/);
+});
