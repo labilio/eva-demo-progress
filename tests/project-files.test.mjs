@@ -31,6 +31,20 @@ test('文件库在当前空间新建文件夹时不再选择所属空间',()=>{
   assert.deepEqual(created,['a','p','项目资料','folder-a']);
   assert.equal(state.selectedId,'folder-new');
 });
+test('文件库移除左侧搜索并在两个入口展示完整创建时间',()=>{
+  const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
+  const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');
+  const driveHTMLStart=drive.indexOf('  function driveHTML('),driveHTMLEnd=drive.indexOf('  function renderDrive()',driveHTMLStart);
+  const driveHTML=drive.slice(driveHTMLStart,driveHTMLEnd);
+  assert.doesNotMatch(driveHTML,/data-drive-search="side"|搜索当前范围/);
+  assert.match(driveHTML,/data-drive-search="main"[^>]*placeholder="搜索当前位置"/);
+
+  const driveTimeStart=drive.indexOf('  function formatDriveTime('),driveTimeEnd=drive.indexOf('  function scopeSpaceId()',driveTimeStart);
+  const projectTimeStart=project.indexOf('    const time=value=>'),projectTimeEnd=project.indexOf('\n\n    function Dialog',projectTimeStart);
+  const value='2026-09-07T17:35:00';
+  assert.equal(vm.runInNewContext(drive.slice(driveTimeStart,driveTimeEnd)+';formatDriveTime("'+value+'")'),'2026-09-07 17:35');
+  assert.equal(vm.runInNewContext(project.slice(projectTimeStart,projectTimeEnd)+';time("'+value+'")'),'2026-09-07 17:35');
+});
 test('Editor 可整理和上传项目文件，但不能删除、查看或恢复回收站',()=>{const {members,files}=setup();files.createFolder('b','p','成员资料');files.upload('b','p',{name:'本地清单.xlsx',size:2048});const uploaded=files.list('p','b').find(item=>item.name==='本地清单.xlsx');files.rename('b',uploaded.id,'本地清单-更新.xlsx');files.copy('b',uploaded.id);assert.equal(files.role('p','b'),'editor');assert.equal(files.can('move','p','b'),true);assert.equal(files.can('trash','p','b'),false);assert.equal(files.can('view-trash','p','b'),false);assert.throws(()=>files.trash('b',uploaded.id));assert.throws(()=>files.trashList('p','b'));});
 test('Owner 与 Manager 可管理回收站，只有 Owner 可转移空间所有权',()=>{const {members,files}=setup();members.addMember('p','a','c');members.setAdmin('p','a','c',true);files.upload('c','p',{name:'管理员上传.pdf',size:1024});const item=files.list('p','c').find(entry=>entry.name==='管理员上传.pdf');files.trash('c',item.id);assert.equal(files.trashList('p','c').length,1);files.restore('c',item.id);assert.equal(files.list('p','c').some(entry=>entry.id===item.id),true);assert.equal(files.can('manage-members','p','c'),true);assert.equal(files.can('transfer-ownership','p','c'),false);assert.equal(files.can('transfer-ownership','p','a'),true);});
 test('Editor 即使知道回收站记录 ID 也不能直接恢复或永久删除',()=>{
