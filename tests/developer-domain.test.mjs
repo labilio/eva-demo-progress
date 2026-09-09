@@ -43,3 +43,10 @@ test('status changes retain the edited row at its original position until explic
  assert.deepEqual(visibleDeveloperRows(rows,{status:'done',claim:'all'}).map(r=>r.id),['edited']);
  assert.deepEqual(visibleDeveloperRows(rows,{}).map(r=>r.id),['before','edited','after']);
 });
+
+test('personal menus use exact shared signature and include completed records',()=>{
+ const rows=[{...row,id:'a',claimed_by:'Alice',author_name:'Bob',status:'done'},{...row,id:'b',claimed_by:'Bob',author_name:'Alice'}];
+ assert.deepEqual(filterRows(rows,{menu:'mine-claimed',actor:'Alice'}).map(r=>r.id),['a']);
+ assert.deepEqual(filterRows(rows,{menu:'mine-authored',actor:'Alice'}).map(r=>r.id),['b']);
+ assert.deepEqual(filterRows(rows,{menu:'mine-claimed',actor:''}),[]);
+});

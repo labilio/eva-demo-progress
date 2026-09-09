@@ -86,12 +86,19 @@ export function createCommentsStore({ url, key, fetchImpl = fetch }) {
     async updateStatus(id, status, author) {
       if (!STATUSES.has(status)) throw new Error('不支持的批注状态');
       const name = String(author || '').trim();
-      if (!name || name === DEFAULT_AUTHOR || name.length > 40) throw new Error('请先填写 1–40 字的操作人姓名，修改状态将同时认领');
+      if (!name || name === DEFAULT_AUTHOR || name.length > 40) throw new Error('请先填写 1–40 字的操作人姓名');
+      if (status === 'doing') {
+        const current = (await this.list(undefined, [id]))[0];
+        if (!current) throw new Error('批注不存在或不可访问');
+        if (!current.claimed_by) return (await this.claim([id], name))[0];
+        if (current.claimed_by !== name) throw new Error('该批注已由其他人认领，请先核对负责人');
+      }
       const query = new URLSearchParams({ id: `eq.${validId(id)}` });
+      if (status === 'doing') query.set('claimed_by', `eq.${name}`);
       const rows = await request(`${endpoint}?${query}`, {
         method: 'PATCH',
         headers: { Prefer: 'return=representation' },
-        body: JSON.stringify({ status, claimed_by: name, claimed_at: new Date().toISOString() }),
+        body: JSON.stringify({ status }),
       });
       if (!rows[0]) throw new Error('批注不存在或没有更新权限');
       return rows[0];

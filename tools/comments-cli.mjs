@@ -18,7 +18,7 @@ const HELP = `Eva 云端批注命令
 
 定位参数：--selector、--anchor-id、--quote 至少提供一个。
 署名：默认 Codex；可用 --author 或 EVA_REVIEW_AUTHOR 覆盖。
-已确认状态或“已基本定稿”类型必须额外提供 --confirmed-by-user。
+“已基本定稿”类型必须额外提供 --confirmed-by-user。
 `;
 
 function parseFlags(argv) {
@@ -65,7 +65,7 @@ export async function runCommentsCommand(argv, dependencies = {}) {
     const page = required(flags, 'page');
     const status = String(flags.status || 'open');
     const kind = String(flags.kind || 'function');
-    if ((status === 'approved' || kind === 'ready') && !flags['confirmed-by-user']) {
+    if ((kind === 'ready') && !flags['confirmed-by-user']) {
       throw new Error(`设置${kind === 'ready' ? '已基本定稿类型' : '已确认状态'}必须提供 --confirmed-by-user，表示已取得人工确认`);
     }
     if (![flags.selector, flags['anchor-id'], flags.quote].some(value => String(value || '').trim())) {
@@ -119,9 +119,6 @@ export async function runCommentsCommand(argv, dependencies = {}) {
 
   if (command === 'status') {
     const status = required(flags, 'status');
-    if (status === 'approved' && !flags['confirmed-by-user']) {
-      throw new Error('设置已确认状态必须提供 --confirmed-by-user，表示已取得人工确认');
-    }
     const row = await store.updateStatus(required(flags, 'id'), status, author);
     printJson(write, row);
     return row;

@@ -77,16 +77,10 @@ test('AI 可以删除共享批注', async () => {
   assert.deepEqual(row, { id: 'comment-1' });
 });
 
-test('AI 不能在没有人工确认标志时将批注改为已确认', async () => {
-  const harness = createHarness();
-  await assert.rejects(
-    runCommentsCommand(['status', '--id', 'comment-1', '--status', 'approved'], harness),
-    /--confirmed-by-user/,
-  );
-  await runCommentsCommand([
-    'status', '--id', 'comment-1', '--status', 'approved', '--confirmed-by-user',
-  ], harness);
-  assert.deepEqual(harness.calls, [['status', 'comment-1', 'approved', 'Codex']]);
+test('Pending retains approved storage value without an approval gate', async () => {
+ const harness=createHarness();
+ await runCommentsCommand(['status','--id','comment-1','--status','approved'],harness);
+ assert.deepEqual(harness.calls,[['status','comment-1','approved','Codex']]);
 });
 
 test('AI 只有得到人工确认后才能创建已基本定稿类型的批注', async () => {

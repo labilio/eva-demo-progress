@@ -1,13 +1,13 @@
 import { getReviewAuthor, setReviewAuthor, subscribeReviewAuthor } from './review-identity.mjs';
 import { COMMENTS_CONFIG } from './comments-config.mjs';
 import { createCommentsStore } from './comments-store.mjs';
-import { MENUS, STATUS_LABELS, KIND_LABELS, menuOf, visibleDeveloperRows, sourceHints, prototypeLink, buildDeveloperPrompt } from './developer-domain.mjs';
+import { MENUS, STATUS_LABELS, KIND_LABELS, menuOf, filterRows, visibleDeveloperRows, sourceHints, prototypeLink, buildDeveloperPrompt } from './developer-domain.mjs';
 
 const store = createCommentsStore(COMMENTS_CONFIG);
 const $ = selector => document.querySelector(selector);
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 const icon = name => window.__evaLucide(name, {size:16, strokeWidth:1.8});
-const menuIcons = {all:'layout-grid',personal:'sparkles',messages:'message-square',projects:'layout-grid',contacts:'book-user',drive:'hard-drive',workboard:'list-checks',employees:'bot',skills:'unplug',automation:'clock',sites:'globe','agent-create':'sparkles',other:'ellipsis'};
+const menuIcons = {'mine-claimed':'check','mine-authored':'file-text',all:'layout-grid',personal:'sparkles',messages:'message-square',projects:'layout-grid',contacts:'book-user',drive:'hard-drive',workboard:'list-checks',employees:'bot',skills:'unplug',automation:'clock',sites:'globe','agent-create':'sparkles',other:'ellipsis'};
 const menuIcon = id => id === 'my-ai' ? '<img class="menu-icon" src="../prototype/assets/my-ai-collaboration.svg" alt="">' : icon(menuIcons[id]);
 for (const [selector,name] of [['.head-links a','arrow-left'],['#copy','copy'],['#claim-copy','check'],['#retry-copy','copy'],['#reset-filters','rotate-ccw'],['#reply-form button','send']]) {
   const button=$(selector); button.insertAdjacentHTML('afterbegin',icon(name === 'send' ? 'arrow-up' : name));
@@ -54,11 +54,11 @@ function saveFilters() {
 function updateSelection() {
   if (state.loaded) sessionStorage.setItem('eva-developer-selected', JSON.stringify([...state.selected]));
   const selected = state.rows.filter(row => state.selected.has(row.id));
-  const visible = visibleDeveloperRows(state.rows,state.filters,state.retainedIds);
+  const visible = visibleDeveloperRows(state.rows,{...state.filters,actor:getReviewAuthor()},state.retainedIds);
   $('#selection-count').textContent = `已选 ${selected.length} 条${selected.some(r => !visible.includes(r)) ? '（含其他筛选下的批注）' : ''}`;
   $('#copy').disabled = state.busy || !selected.length;
-  $('#claim-copy').disabled = state.busy || !selected.length || selected.some(r => r.status !== 'approved' || r.claimed_by);
-  $('#claim-copy').title = selected.some(r => r.status !== 'approved' || r.claimed_by) ? '只能认领已确认且未认领的批注；其他批注仍可复制' : '';
+  $('#claim-copy').disabled = state.busy || !selected.length || selected.some(r => r.claimed_by);
+  $('#claim-copy').title = selected.some(r => r.claimed_by) ? '只能认领尚未认领的批注；已有认领请先核对负责人' : '';
   const checkbox = $('#select-all');
   checkbox.checked = visible.length > 0 && visible.every(r => state.selected.has(r.id));
   checkbox.indeterminate = !checkbox.checked && visible.some(r => state.selected.has(r.id));
@@ -71,22 +71,22 @@ function render() {
   const scroll = $('.table-scroll'); const top = scroll.scrollTop; const left = scroll.scrollLeft;
   const menuButton = id => {
     const label=MENUS.find(menu=>menu[0]===id)[1];
-    return `<button type="button" data-menu="${id}" aria-current="${state.filters.menu===id}"><span class="menu-label">${menuIcon(id)}<span>${label}</span></span><small>${state.rows.filter(r=>id==='all'||menuOf(r.page_path)===id).length}</small></button>`;
+    return `<button type="button" data-menu="${id}" aria-current="${state.filters.menu===id}"><span class="menu-label">${menuIcon(id)}<span>${label}</span></span><small>${filterRows(state.rows,{menu:id,actor:getReviewAuthor()}).length}</small></button>`;
   };
-  const groups=[['个人',['personal','workboard','automation','skills']],['团队协作',['messages','my-ai','projects','contacts','drive','sites']],['其他',['employees','agent-create','other']]];
+  const groups=[['个人',['personal','workboard','automation','skills']],['团队协作',['messages','my-ai','projects','contacts','drive','sites']],['其他',['employees','agent-create','other']],['与我相关',['mine-claimed','mine-authored']]];
   $('#menus').innerHTML=menuButton('all')+groups.map(([label,ids])=>`<section class="menu-group" aria-label="${label}"><h3>${label}</h3>${ids.map(menuButton).join('')}</section>`).join('');
   $('#menu-title').textContent = MENUS.find(([id]) => id===state.filters.menu)[1];
-  const visible = visibleDeveloperRows(state.rows,state.filters,state.retainedIds);
+  const visible = visibleDeveloperRows(state.rows,{...state.filters,actor:getReviewAuthor()},state.retainedIds);
   $('#counts').textContent = `${visible.length} 条批注 / 共 ${state.rows.length} 条`;
   $('#rows').innerHTML = visible.map(row => `<tr data-id="${escape(row.id)}" class="${state.selected.has(row.id)?'is-selected':''}">
     <td><input type="checkbox" data-select="${escape(row.id)}" aria-label="选择批注 ${escape(row.seq)}" ${state.selected.has(row.id)?'checked':''}></td>
     <td>#${escape(row.seq)}</td><td>${escape(MENUS.find(([id])=>id===menuOf(row.page_path))[1])}</td>
     <td><p class="body-text">${escape(row.body)}</p><a class="anchor-card" href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener" title="${escape(row.anchor?.quote || row.page_path)}">${icon('crosshair')}<span class="anchor-text">${escape(row.anchor?.quote || row.page_path)}</span></a></td>
-    <td>${escape(KIND_LABELS[row.kind]||row.kind)}</td><td><select class="status-label ${escape(row.status)}" data-row-status="${escape(row.id)}" title="修改状态会将操作人设为认领者" aria-label="批注 ${escape(row.seq)} 状态" ${state.busy?'disabled':''}>${Object.entries(STATUS_LABELS).map(([value,label])=>`<option value="${value}"${row.status===value?' selected':''}>${label}</option>`).join('')}</select></td>
+    <td>${escape(KIND_LABELS[row.kind]||row.kind)}</td><td><select class="status-label ${escape(row.status)}" data-row-status="${escape(row.id)}" title="进入修改中时认领；其他状态保留原认领者" aria-label="批注 ${escape(row.seq)} 状态" ${state.busy?'disabled':''}>${Object.entries(STATUS_LABELS).map(([value,label])=>`<option value="${value}"${row.status===value?' selected':''}>${label}</option>`).join('')}</select></td>
     <td>${escape(row.author_name)}</td><td>${escape(row.claimed_by||'-')}</td><td>${date(row.updated_at||row.created_at)}</td>
     <td><div class="cell-actions"><button type="button" data-detail="${escape(row.id)}">${icon('file-text')}详情${row.replies?.length?' · '+row.replies.length:''}</button><a href="${escape(prototypeLink(row,location.origin))}" target="eva-prototype" rel="noopener">${icon('external-link')}查看原型</a></div></td></tr>`).join('');
   $('#empty').hidden = !!visible.length;
-  $('#empty').textContent = state.loaded ? '当前筛选没有批注，可切换状态或功能菜单。' : '正在读取共享批注…';
+  $('#empty').textContent = state.loaded ? (state.filters.menu.startsWith('mine-')&&!getReviewAuthor()?'请在下方填写操作人姓名，查看与你相关的批注。':'当前筛选没有批注，可清空筛选或切换功能菜单。') : '正在读取共享批注…';
   scroll.scrollTop = top; scroll.scrollLeft = left;
   updateSelection();
 }
@@ -147,10 +147,10 @@ $('#rows').onchange=async event=>{
   const id=select.dataset.select;if(!id)return;
   select.checked?state.selected.add(id):state.selected.delete(id);select.closest('tr').classList.toggle('is-selected',select.checked);updateSelection();
 };
-$('#select-all').onchange=event=>{visibleDeveloperRows(state.rows,state.filters,state.retainedIds).forEach(r=>event.target.checked?state.selected.add(r.id):state.selected.delete(r.id));render();};
+$('#select-all').onchange=event=>{visibleDeveloperRows(state.rows,{...state.filters,actor:getReviewAuthor()},state.retainedIds).forEach(r=>event.target.checked?state.selected.add(r.id):state.selected.delete(r.id));render();};
 $('#clear-selection').onclick=()=>{state.selected.clear();render();};
 $('#assignee').value=getReviewAuthor();
-subscribeReviewAuthor(author=>{if(document.activeElement!==$('#assignee'))$('#assignee').value=author;});
+subscribeReviewAuthor(author=>{if(document.activeElement!==$('#assignee'))$('#assignee').value=author;state.retainedIds.clear();render();});
 $('#assignee').oninput=event=>{if(!event.isComposing)setReviewAuthor(event.target.value);};
 $('#assignee').oncompositionend=()=>setReviewAuthor($('#assignee').value);
 let lastFocus;

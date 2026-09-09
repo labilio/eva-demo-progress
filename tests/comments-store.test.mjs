@@ -47,16 +47,16 @@ test('comments store can list the complete shared review feed without a page fil
   assert.doesNotMatch(calls[0].url, /page_path=/);
 });
 
-test('status and actor claim update atomically; missing actor never writes', async () => {
+test('non-execution status changes preserve ownership; missing actor never writes', async () => {
   const calls=[];
   const store=createCommentsStore({url:'https://example.supabase.co',key:'public-key',fetchImpl:async(url,options)=>{
     calls.push({url,options});return new Response(JSON.stringify([{id:'c1',...JSON.parse(options.body)}]));
   }});
   const id='11111111-1111-4111-8111-111111111111';
-  for(const status of ['open','approved','doing','done']){
+  for(const status of ['open','approved','done']){
     const row=await store.updateStatus(id,status,' Alice ');
-    assert.equal(row.status,status);assert.equal(row.claimed_by,'Alice');
-    assert.ok(Number.isFinite(Date.parse(row.claimed_at)));
+    assert.equal(row.status,status);assert.equal(row.claimed_by,undefined);
+    assert.deepEqual(JSON.parse(calls.at(-1).options.body),{status});
     assert.equal(calls.at(-1).options.method,'PATCH');
   }
   const count=calls.length;
@@ -111,4 +111,12 @@ test('comments store deletes a shared comment and returns the removed row', asyn
   assert.match(calls[0].url, /id=eq\.c1/);
   assert.equal(calls[0].options.method, 'DELETE');
   assert.equal(calls[0].options.headers.Prefer, 'return=representation');
+});
+
+test('entering doing claims unclaimed rows and rejects another owner',async()=>{
+ const id='11111111-1111-4111-8111-111111111111';let owner=null;const calls=[];
+ const store=createCommentsStore({url:'https://example.com',key:'public',fetchImpl:async(url,options)=>{calls.push({url,options});return new Response(JSON.stringify([{id,status:'doing',claimed_by:owner}]));}});
+ await store.updateStatus(id,'doing','Alice');assert.match(calls.at(-1).url,/rpc\/eva_claim_comments$/);
+ owner='Bob';await assert.rejects(store.updateStatus(id,'doing','Alice'),/其他人/);assert.equal(calls.at(-1).options.method,'GET');
+ owner='Alice';await store.updateStatus(id,'doing','Alice');assert.equal(calls.at(-1).options.method,'PATCH');assert.match(calls.at(-1).url,/claimed_by=eq.Alice/);
 });
