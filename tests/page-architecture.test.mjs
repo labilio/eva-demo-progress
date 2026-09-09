@@ -256,10 +256,13 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(imPatch, /EvaAIIdentity\.avatar\(digitalStore\.appearance\(item\),22,h\)/);
 });
 
-test('我的 AI 顶层分区标题与角色分组使用不同视觉层级', () => {
+test('我的 AI 顶层分区使用浅灰色带并与透明角色分组形成不同视觉层级', () => {
   const aiTeamCss = read('prototype/046-ai-team.css');
-  assert.match(aiTeamCss, /\.eva-ai-team__section-title\s*\{[^}]*min-height:\s*40px[^}]*background:\s*transparent/s);
-  assert.doesNotMatch(aiTeamCss.match(/\.eva-ai-team__section-title\s*\{[^}]*\}/s)?.[0]||'', /box-shadow|border-radius/);
+  const sectionTitleRule = aiTeamCss.match(/\.eva-ai-team__section-title\s*\{[^}]*\}/s)?.[0]||'';
+  assert.match(sectionTitleRule, /min-height:\s*40px/);
+  assert.match(sectionTitleRule, /border-radius:\s*var\(--gds-radius-key\)/);
+  assert.match(sectionTitleRule, /background:\s*var\(--gds-color-surface-subtle\)/);
+  assert.doesNotMatch(sectionTitleRule, /box-shadow/);
   assert.match(aiTeamCss, /\.eva-ai-team__section-icon\s*\{[^}]*width:\s*20px[^}]*color:\s*var\(--gds-color-text-secondary\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__section-count\s*\{[^}]*color:\s*var\(--eva-rail-time\)[^}]*text-align:\s*right/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*min-height:\s*32px[^}]*background:\s*transparent/s);
