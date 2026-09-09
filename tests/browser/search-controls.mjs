@@ -114,6 +114,15 @@ test('搜索框键盘焦点遵循相同蓝色边框合同', async () => {
   assert.equal(await field.locator('input').evaluate(el => el === document.activeElement), true);
   assert.equal((await appearance(field)).color, 'rgb(21, 99, 235)');
 });
+test('文件库搜索框右侧与文件表格右侧对齐', async () => {
+  const field = await open('/drive', '.eva-drive__section-head .eva-drive__side-search');
+  const table = page.locator('.eva-drive__table');
+  const [searchRight, tableRight] = await Promise.all([
+    field.evaluate(element => element.getBoundingClientRect().right),
+    table.evaluate(element => element.getBoundingClientRect().right),
+  ]);
+  assert.equal(searchRight, tableRight);
+});
 test('中文输入法组合与提交保持同一搜索输入节点', async () => {
   const field = await open('/contacts', '.eva-contacts__search');
   const input = field.locator('input');

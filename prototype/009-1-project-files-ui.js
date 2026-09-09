@@ -400,7 +400,7 @@
 
       return h('section',{className:'eva-project-files'},
         h('header',{className:'eva-project-files__header'},
-          h('div',null,h('h1',null,trashMode?'回收站':'团队文件'),h('p',null,trashMode?'仅 Owner、Manager 可以恢复或永久删除当前项目文件':'任务产出、群文件与外部协作入口在这里统一沉淀')),
+          h('div',null,h('h1',null,trashMode?'回收站':'团队文件'),trashMode?h('p',null,'仅 Owner、Manager 可以恢复或永久删除当前项目文件'):null),
           h('span',{className:'eva-file-role-badge',title:'当前项目文件角色'},roleLabel(role)),
           trashMode?h('button',{className:'eva-drive__text-button',type:'button',onClick:()=>{setTrashMode(false);setSelectedId(null);}},'返回团队文件'):canViewTrash?h('button',{className:'eva-drive__text-button',type:'button',onClick:()=>{setTrashMode(true);setParentId(0);setCrumbs([]);setSelectedId(null);}},'回收站'):null
         ),

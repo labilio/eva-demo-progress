@@ -8,6 +8,53 @@ test('转存形成项目共享版本，项目成员能读文件但不能读来�
 test('不在来源群或目标项目不能转存，移出项目后失去共享文件访问',()=>{const {members,files}=setup();const file={name:'报告.pdf'};assert.throws(()=>files.transfer('b','p',file,{groupId:'g'}));members.createProject('other','另一个项目','c',[]);assert.throws(()=>files.transfer('a','other',file,{groupId:'g'}));files.transfer('a','p',file,{groupId:'g'});members.remove('p','a','b');assert.equal(files.list('p','b').length,0);});
 test('项目文件列表适配保留结构化来源与共享版本',async()=>{const {createPatchedRuntime}=await import('../tools/build-runtime.mjs');const {source}=createPatchedRuntime();const start=source.indexOf('toEntry=rt=>('),end=source.indexOf(',FilesView=',start);assert.ok(start>=0&&end>start);const adapt=vm.runInNewContext('('+source.slice(start+'toEntry='.length,end)+')');const entry=adapt({id:'shared-1',name:'报告.pdf',source:{groupId:'g',groupName:'质量群'},sourceVersion:2,sharedVersion:true});assert.equal(entry.source.groupName,'质量群');assert.equal(entry.sourceVersion,2);assert.equal(entry.sharedVersion,true);});
 test('项目团队文件复用文件库组件并移除旧筛选和旧上传文案',async()=>{const {createPatchedRuntime}=await import('../tools/build-runtime.mjs');const {source}=createPatchedRuntime();assert.match(source,/FilesView=\(\)=>window\.EvaProjectFilesUI\.render/);const ui=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');assert.match(ui,/搜索当前项目/);assert.match(ui,/上传本地文件/);assert.match(ui,/eva-file-detail-dialog/);assert.match(ui,/'aria-labelledby':titleId/);assert.doesNotMatch(ui,/eva-project-files__inspector|TYPE_PILLS|搜索云盘文件|Owner · 项目负责人/);const entry=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.ok(entry.indexOf('prototype\/009-1-project-files-ui.js')<entry.indexOf('vendor\/eva-runtime.module.js'));});
+test('文件库内容区使用简洁标题、顶部展示项目简介且搜索框与表格右对齐',()=>{
+  const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
+  const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');
+  const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');
+  const sectionStart=drive.indexOf("'<div class=\"eva-drive__section-head\"");
+  const sectionEnd=drive.indexOf("state.driveScope === 'projects'",sectionStart);
+  const section=drive.slice(sectionStart,sectionEnd);
+  const scopeStart=drive.indexOf('  function scopeCopy()');
+  const scopeEnd=drive.indexOf('  function ensureDriveRoot',scopeStart);
+  assert.ok(sectionStart>=0&&sectionEnd>sectionStart);
+  assert.ok(scopeStart>=0&&scopeEnd>scopeStart);
+  assert.match(section,/state\.driveScope === 'personal' \|\| state\.driveScope === 'workspace'/);
+  assert.doesNotMatch(project,/任务产出、群文件与外部协作入口在这里统一沉淀/);
+  assert.match(project,/仅 Owner、Manager 可以恢复或永久删除当前项目文件/);
+  assert.match(drive,/选择一个已加入的项目后浏览和整理团队文件/);
+  assert.doesNotMatch(drive,/权限继承项目角色，任务产出、群文件与外部链接归属项目空间/);
+  const copy=vm.runInNewContext(drive.slice(scopeStart,scopeEnd)+';scopeCopy();',{
+    state:{driveScope:'workspace',workspaceId:'official'},
+    workspaceName:()=> 'EVA Official Space',
+    workspaceById:()=>({description:'官方公告、产品交流与反馈入口'})
+  });
+  assert.equal(copy.title,'EVA Official Space');
+  assert.equal(copy.subtitle,'官方公告、产品交流与反馈入口');
+  const personalCopy=vm.runInNewContext(drive.slice(scopeStart,scopeEnd)+';scopeCopy();',{
+    state:{driveScope:'personal'},
+    workspaceName:()=> '项目',
+    workspaceById:()=>({description:''})
+  });
+  assert.equal(personalCopy.title,'个人空间');
+  assert.equal(personalCopy.section,'文件');
+  assert.equal(personalCopy.subtitle,'仅你可访问，可统一整理本地文件与外部链接');
+  assert.match(styles,/\.eva-drive__section-head \.eva-drive__side-search \{[^}]*margin:\s*0 0 0 auto;/s);
+  assert.match(styles,/\.eva-drive__table \{[^}]*margin:\s*0 24px 24px;/s);
+});
+test('文件库项目空间读取最新保存的项目名称和简介',()=>{
+  const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
+  const workspaceStart=drive.indexOf('  function currentProjectById');
+  const workspaceEnd=drive.indexOf('  function driveScopeForMode',workspaceStart);
+  assert.ok(workspaceStart>=0&&workspaceEnd>workspaceStart);
+  const workspace=vm.runInNewContext(
+    'var WORKSPACES=[{id:"official",name:"旧项目名",mark:"旧",description:"旧简介"}];'+drive.slice(workspaceStart,workspaceEnd)+';workspaceById("official");',
+    {window:{__EVA_PROJECTS:[{id:'official',name:'默认项目名',short:'默',desc:'默认简介'}],localStorage:{getItem:key=>key==='eva-collab-spaces'?JSON.stringify([{id:'official',name:'最新项目名',short:'新',desc:'最新项目简介'}]):null}}}
+  );
+  assert.equal(workspace.name,'最新项目名');
+  assert.equal(workspace.mark,'新');
+  assert.equal(workspace.description,'最新项目简介');
+});
 test('文件库在当前空间新建文件夹时不再选择所属空间',()=>{
   const source=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
   const dialogStart=source.indexOf('  function dialogHTML()'),dialogEnd=source.indexOf('  function filePreviewFixture(',dialogStart);

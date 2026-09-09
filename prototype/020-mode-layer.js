@@ -42,8 +42,30 @@
   var frameQueued = false;
   var internalMutation = false;
 
+  function currentProjectById(id) {
+    try {
+      var saved = JSON.parse(window.localStorage.getItem('eva-collab-spaces') || 'null');
+      if (Array.isArray(saved)) {
+        var current = saved.find(function (project) { return project.id === id; });
+        if (current) return current;
+      }
+    } catch (error) {}
+    return (window.__EVA_PROJECTS || []).find(function (project) { return project.id === id; });
+  }
+
   function workspaceById(id) {
-    return WORKSPACES.find(function (workspace) { return workspace.id === id; }) || WORKSPACES[0];
+    var workspace = WORKSPACES.find(function (item) { return item.id === id; }) || WORKSPACES[0];
+    var project = currentProjectById(id);
+    if (!workspace || !project) return workspace;
+    return Object.assign({}, workspace, {
+      name: project.name || workspace.name,
+      mark: project.short || String(project.name || workspace.name).slice(0, 1),
+      description: Object.prototype.hasOwnProperty.call(project, 'desc') ? project.desc : workspace.description
+    });
+  }
+
+  function currentWorkspaces() {
+    return WORKSPACES.map(function (workspace) { return workspaceById(workspace.id); });
   }
 
   function driveScopeForMode(mode) {
@@ -170,7 +192,7 @@
   function currentWorkspaceIdFromUI() {
     var chip = document.querySelector('.collab-sp-chip .nm');
     if (chip) {
-      var match = WORKSPACES.find(function (workspace) { return workspace.name === chip.textContent.trim(); });
+      var match = currentWorkspaces().find(function (workspace) { return workspace.name === chip.textContent.trim(); });
       if (match) return match.id;
     }
     return state.workspaceId || 'prod';
@@ -258,7 +280,7 @@
   }
 
   function workspaceName(id) {
-    var workspace = WORKSPACES.find(function (item) { return item.id === id; });
+    var workspace = workspaceById(id);
     return workspace ? workspace.name : '项目';
   }
 
@@ -329,9 +351,9 @@
   }
 
   function scopeCopy() {
-    if (state.driveScope === 'personal') return { title: '个人空间', section: '个人文件', subtitle: '仅你可访问，可统一整理本地文件与外部链接' };
+    if (state.driveScope === 'personal') return { title: '个人空间', section: '文件', subtitle: '仅你可访问，可统一整理本地文件与外部链接' };
     if (state.driveScope === 'projects') return { title: '项目空间', section: '我的项目空间', subtitle: '选择一个已加入的项目后浏览和整理团队文件' };
-    if (state.driveScope === 'workspace') return { title: workspaceName(state.workspaceId), section: '团队文件', subtitle: '权限继承项目角色，任务产出、群文件与外部链接归属项目空间' };
+    if (state.driveScope === 'workspace') return { title: workspaceName(state.workspaceId), section: '团队文件', subtitle: workspaceById(state.workspaceId).description || '暂无项目简介' };
     if (state.driveScope === 'trash') return { title: '回收站', section: '回收站', subtitle: '仅显示你有管理权限的空间中已删除的文件' };
     return { title: '个人空间', section: '个人文件', subtitle: '仅你可访问，可用于上传和整理个人资料' };
   }
@@ -585,7 +607,7 @@
     var context = fileContext(), actor = fileActor();
     var personal = [{ id: personalSpaceId(), label: '个人空间' }];
     var projects = [];
-    WORKSPACES.forEach(function (workspace) {
+    currentWorkspaces().forEach(function (workspace) {
       var role = context.files.role(workspace.id, actor);
       if (role) projects.push({ id: workspace.id, label: workspace.name });
     });
@@ -790,7 +812,7 @@
 
   function projectSpacesHTML() {
     var context = fileContext(), actor = fileActor(), all = context.files.all(actor);
-    var projects = WORKSPACES.map(function (workspace) {
+    var projects = currentWorkspaces().map(function (workspace) {
       var role = context.files.role(workspace.id, actor);
       if (!role) return null;
       var records = all.filter(function (resource) { return resource.projectId === workspace.id; });
@@ -816,7 +838,7 @@
       '<div class="eva-drive__tree-group">文件空间</div>',
       treeButton('personal', '个人空间', 'file', false),
       treeButton('projects', '项目空间', 'workspace', false),
-      WORKSPACES.map(function (item) { return treeButton('workspace', item.name, 'workspace', true, item.id); }).join(''),
+      currentWorkspaces().map(function (item) { return treeButton('workspace', item.name, 'workspace', true, item.id); }).join(''),
       '<div class="eva-drive__tree-spacer"></div>',
       '<div class="eva-drive__tree-group">管理</div>',
       treeButton('trash', '回收站', 'folder', false),
@@ -831,7 +853,7 @@
       currentSpace && state.driveScope !== 'trash' ? '<div class="eva-drive__actions"><button class="eva-drive__action" type="button" data-drive-action="new-folder">' + icon('plus') + '<span>新建文件夹</span></button><button class="eva-drive__action" type="button" data-drive-action="add-external-link">' + icon('link') + '<span>添加外部链接</span></button><button class="eva-drive__action eva-drive__action--primary" type="button" data-drive-action="upload-file">' + icon('upload') + '<span>上传本地文件</span></button></div>' : '',
       crumbs.length ? '<div class="eva-drive__pathbar"><button class="eva-drive__back-button" type="button" data-drive-action="up-folder">' + icon('chevron') + '<span>返回上一级</span></button><nav class="eva-drive__breadcrumbs" aria-label="文件路径">' + crumbs.map(function (crumb, index) { return '<button type="button" data-drive-action="breadcrumb" data-breadcrumb-index="' + index + '"' + (index === crumbs.length - 1 ? ' aria-current="page"' : '') + '>' + escapeHTML(crumb.name) + '</button>'; }).join('<span>/</span>') + '</nav></div>' : '',
       '</div>',
-      '<div class="eva-drive__section-head"><div><h1>' + escapeHTML(copy.section) + '</h1><p>' + escapeHTML(copy.subtitle) + '</p></div><label class="eva-drive__side-search">' + icon('search') + '<input type="search" data-drive-search="main" value="' + escapeHTML(state.query) + '" placeholder="搜索当前位置"></label></div>',
+      '<div class="eva-drive__section-head"><div><h1>' + escapeHTML(copy.section) + '</h1>' + (state.driveScope === 'personal' || state.driveScope === 'workspace' ? '' : '<p>' + escapeHTML(copy.subtitle) + '</p>') + '</div><label class="eva-drive__side-search">' + icon('search') + '<input type="search" data-drive-search="main" value="' + escapeHTML(state.query) + '" placeholder="搜索当前位置"></label></div>',
       state.driveScope === 'projects' ? projectSpacesHTML() : tableHTML(list),
       '</div>',
       '<input id="eva-file-upload" type="file" multiple hidden>',
