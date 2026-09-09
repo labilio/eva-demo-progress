@@ -164,7 +164,7 @@
   function assistantRailHTML() {
     var snapshot = personalSnapshot();
     return '<aside class="eva-personal-sider-panel" aria-label="Eva 分组与对话">'
-      + '<div class="eva-personal-rail-top"><span class="eva-personal-rail-title">新建对话</span><button type="button" class="eva-personal-rail-new" data-eva-new-folder-chat="" aria-label="新建对话" title="新建对话">' + icon('pencil',18,'eva-i') + '</button></div>'
+      + '<div class="eva-personal-rail-top"><span class="eva-personal-rail-title">新建会话</span><button type="button" class="eva-personal-rail-new" data-eva-new-folder-chat="" aria-label="新建会话" title="新建会话">' + icon('pencil',18,'eva-i') + '</button></div>'
       + '<div class="eva-personal-sider-panel__body"><div class="eva-personal-rail-section"><span>分组</span><button type="button" class="eva-personal-rail-icon" data-eva-create-folder aria-label="创建分组" title="创建分组">' + icon('plus',18,'eva-i') + '</button></div>'
       + railFormHTML()
       + [{id:'',name:'最近'}].concat(snapshot.folders).sort(function (a,b) { var pins = snapshot.folderPins || []; return Number(pins.includes(b.id)) - Number(pins.includes(a.id)); }).map(function (folder) {
@@ -173,7 +173,7 @@
         return '<section class="eva-personal-folder"><div class="eva-personal-folder__row">'
           + '<button type="button" class="eva-personal-folder__main" data-eva-toggle-folder="' + escapeHTML(folder.id) + '" aria-expanded="' + !collapsed + '" title="' + escapeHTML(folder.name) + '">' + icon(collapsed ? 'chevron-right' : 'chevron-down',16,'eva-i') + '<span>' + escapeHTML(folder.name) + '</span>' + '</button>'
           + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__more" data-eva-folder-menu="' + escapeHTML(folder.id) + '" aria-label="设置分组：' + escapeHTML(folder.name) + '" aria-haspopup="menu" aria-expanded="' + (folderMenu === folder.id) + '" title="分组设置">' + icon('ellipsis',16,'eva-i') + '</button>'
-          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__new" data-eva-new-folder-chat="' + escapeHTML(folder.id) + '" aria-label="在' + escapeHTML(folder.name) + '中新建对话" title="新建对话">' + icon('plus',16,'eva-i') + '</button></div>'
+          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__new" data-eva-new-folder-chat="' + escapeHTML(folder.id) + '" aria-label="在' + escapeHTML(folder.name) + '中新建会话" title="新建会话">' + icon('plus',16,'eva-i') + '</button></div>'
           + (folderMenu === folder.id ? folderMenuHTML(folder) : '')
           + (!collapsed ? '<div class="eva-personal-folder__threads">' + conversationRowsHTML(items,folder.id) + '</div>' : '') + '</section>';
       }).join('')
