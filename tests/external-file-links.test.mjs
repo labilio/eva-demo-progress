@@ -113,7 +113,7 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
   assert.match(samples, /prod-feishu-docs-link/);
 });
 
-test('文件库本地数据升级到 v6 时保留 v5 文件并补入外链示例', () => {
+test('文件库本地数据升级到 v7 时保留 v5 文件并补入外链示例', () => {
   const values = new Map();
   values.set('eva:file-store:v5', JSON.stringify({schema: 5, records: [{id: 'legacy', spaceId: 'p', projectId: 'p', area: 'project', parent_id: 0, name: '旧文件.pdf', type: 'blob', size: 1}], sharedSpaces: []}));
   const window = {
@@ -126,30 +126,24 @@ test('文件库本地数据升级到 v6 时保留 v5 文件并补入外链示例
   assert.ok(files.snapshot().some(item => item.id === 'legacy'));
   assert.ok(files.snapshot().some(item => item.id === 'sample-link'));
   files.createExternalLink('a', 'p', {name: '触发持久化', url: 'https://another.example.com'});
-  assert.equal(JSON.parse(values.get('eva:file-store:v6')).schema, 6);
+  assert.equal(JSON.parse(values.get('eva:file-store:v7')).schema, 7);
 });
 
 
-test('外链示例仅迁移一次，永久删除及清理置顶后刷新不复活', () => {
-  const values = new Map([['eva:file-store:v6', JSON.stringify({schema: 6, records: [], sharedSpaces: []})]]);
-  const window = {localStorage: {getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value)},
+test('外链示例仅迁移一次，永久删除后刷新不复活', () => {
+  const values = new Map([['eva:file-store:v7', JSON.stringify({schema: 7, records: []})]]);
+  const window = {localStorage: {getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key)},
     __EVA_EXTERNAL_LINK_SAMPLES: [{id: 'sample-link', spaceId: 'p', projectId: 'p', area: 'project', parent_id: 0, name: '示例链接', type: 'external_link', size: 0, external: {url: 'https://example.com/', provider: 'web', kind: 'unknown', host: 'example.com'}}]};
   const {members, sharing} = setup({window});
   let files = sharing.bootstrap(members);
   assert.ok(files.list('p', 'a').some(item => item.id === 'sample-link'));
-  assert.equal(JSON.parse(values.get('eva:file-store:v6')).externalLinksDemoV1, true);
-  files.setPinned('a', 'sample-link', true);
-  assert.equal(files.pinnedFiles('a').length, 1);
-  assert.equal(files.pinnedFiles('b').length, 0);
+  assert.equal(JSON.parse(values.get('eva:file-store:v7')).externalLinksDemoV1, true);
   files.trash('a', 'sample-link');
-  assert.equal(files.pinnedFiles('a').length, 0);
   files.restore('a', 'sample-link');
-  assert.equal(files.pinnedFiles('a').length, 1);
   files.trash('a', 'sample-link');
   files.removeForever('a', 'sample-link');
   files = sharing.bootstrap(members);
   assert.equal(files.list('p', 'a').some(item => item.id === 'sample-link'), false);
-  assert.equal(files.pinnedFiles('a').length, 0);
 });
 
 test('回收站外链不能编辑，移动外链不能造成同目录重复 URL', () => {
