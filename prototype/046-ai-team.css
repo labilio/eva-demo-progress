@@ -117,7 +117,7 @@
 .eva-ai-team__section-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
 .eva-ai-team__section-chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__section-icon { display: grid; width: 20px; height: 20px; flex: 0 0 20px; place-items: center; color: var(--gds-color-text-secondary); }
-.eva-ai-team__section-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-ai-team__section-label { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-ai-team__teams { display: flex; flex-direction: column; }
 .eva-ai-team__team-heading { position: relative; display: flex; min-height: var(--eva-rail-identity-height); align-items: center; border-radius: var(--eva-rail-primary-row-radius); }
 .eva-ai-team__team-heading:hover,
