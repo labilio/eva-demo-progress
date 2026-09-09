@@ -10,6 +10,17 @@
    ============================================================ */
 
 :root {
+  --eva-im-tint-25: color-mix(in srgb, var(--eva-im-accent) 25%, transparent);
+  --eva-im-tint-12: color-mix(in srgb, var(--eva-im-accent) 12%, transparent);
+  --eva-im-tint-10: color-mix(in srgb, var(--eva-im-accent) 10%, transparent);
+  --eva-im-tint-08: color-mix(in srgb, var(--eva-im-accent) 8%, transparent);
+  --eva-im-tint-06: color-mix(in srgb, var(--eva-im-accent) 6%, transparent);
+  --eva-im-tint-03: color-mix(in srgb, var(--eva-im-accent) 3%, transparent);
+  --eva-im-accent: var(--eva-action-primary);
+  --eva-unread-text: #4f5b64;
+  --eva-unread-surface: #eef0f2;
+  --eva-mention-hover: color-mix(in srgb, var(--eva-action-primary) 12%, transparent);
+  --eva-mention-background: color-mix(in srgb, var(--eva-action-primary) 8%, transparent);
   /* ---- color · primitive (token layer only) ---------------- */
   --eva-c-white: #ffffff;
   --eva-c-paper: #fefefe;
