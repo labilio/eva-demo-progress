@@ -29,7 +29,7 @@ test('personal assistants automatically join IM once without a manual connection
  assert.equal(saved.messages[0].text,'IM 专属消息'); assert.equal(restored.drafts[thread],'IM 草稿');
 });
 test('multiple personas have distinct names and failed creation leaves no records',async()=>{
- const s=make(); const [a,b]=await Promise.all([s.createPersona('assistant-general'),s.createPersona('assistant-general')]); assert.notEqual(a.id,b.id); assert.notEqual(a.name,b.name); assert.equal(a.role,'persona'); const f=make({adapter:{createPersona:()=>Promise.reject(Error('fail'))}}); await assert.rejects(f.createPersona('assistant-general')); assert.equal(f.getSnapshot().identities.length,4);
+ const s=make(); const [a,b]=await Promise.all([s.createPersona('assistant-general'),s.createPersona('assistant-general')]); assert.notEqual(a.id,b.id); assert.notEqual(a.name,b.name); assert.equal(a.role,'persona'); const f=make({adapter:{createPersona:()=>Promise.reject(Error('fail'))}}); await assert.rejects(f.createPersona('assistant-general')); assert.equal(f.getSnapshot().identities.length,3);
 });
 test('send creates only nonempty sessions, isolates drafts, and refuses offline assistant',()=>{
  const s=make(); const n=s.getSnapshot().sessions.length; assert.equal(s.sendMessage('ai-general',null,'  '),null); assert.equal(s.getSnapshot().sessions.length,n); s.setDraft('draft:ai-general','send'); s.setDraft('draft:persona-initial','keep'); const id=s.sendMessage('ai-general',null,'  hello world  '); const session=s.getSnapshot().sessions.find(x=>x.id===id); assert.equal(session.title,'hello world'); assert.equal(session.messages[0].text,'hello world'); assert.equal(session.messages[1].text,'收到，我会协助你整理。'); assert.equal(s.getSnapshot().drafts['draft:ai-general'],undefined); assert.equal(s.getSnapshot().drafts['draft:persona-initial'],'keep'); assert.throws(()=>s.sendMessage('persona-initial',id,'wrong identity')); s.setLocalOnline('assistant-general',false); assert.throws(()=>s.sendMessage('ai-general',id,'offline')); assert.ok(s.sendMessage('persona-initial',null,'route'));
@@ -41,7 +41,7 @@ test('storage failure remains usable with visible warning',()=>{
  const s=make({storage:{getItem(){throw Error('denied');},setItem(){throw Error('denied');}}}); assert.ok(s.getSnapshot().storageWarning); assert.ok(s.sendMessage('ai-general',null,'works'));
 });
 test('local edits sanitize configuration, update assistant names, and one-way sync personas',async()=>{
- const s=make(); const persona=s.getSnapshot().identities.find(x=>x.role==='persona'); const l=s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration:{identity:'测试',personality:'简洁',skills:['文档'],privateContext:'secret'}}); assert.equal(l.version,2); assert.equal(l.configuration.privateContext,undefined); await tick(); const snap=s.getSnapshot(); assert.equal(snap.identities.find(x=>x.id==='ai-general').name,'通用助理'); const p=snap.identities.find(x=>x.id===persona.id); assert.equal(p.name,persona.name); assert.equal(p.configVersion,2); assert.equal(p.configuration.identity,'测试'); assert.equal(p.syncStatus,'synced'); const created=s.saveLocalAssistant({mode:'create',name:'新本地'}); assert.ok(created.id); assert.equal(s.getSnapshot().identities.length,5);
+ const s=make(); const persona=s.getSnapshot().identities.find(x=>x.role==='persona'); const l=s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration:{identity:'测试',personality:'简洁',skills:['文档'],privateContext:'secret'}}); assert.equal(l.version,2); assert.equal(l.configuration.privateContext,undefined); await tick(); const snap=s.getSnapshot(); assert.equal(snap.identities.find(x=>x.id==='ai-general').name,'通用助理'); const p=snap.identities.find(x=>x.id===persona.id); assert.equal(p.name,persona.name); assert.equal(p.configVersion,2); assert.equal(p.configuration.identity,'测试'); assert.equal(p.syncStatus,'synced'); const created=s.saveLocalAssistant({mode:'create',name:'新本地'}); assert.ok(created.id); assert.equal(s.getSnapshot().identities.length,4);
 });
 test('offline updates wait and reconnect synchronizes latest configuration',async()=>{
  const s=make(); s.setLocalOnline('assistant-general',false); s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理'}); assert.equal(s.getSnapshot().identities.find(x=>x.id==='persona-initial').syncStatus,'waiting'); s.setLocalOnline('assistant-general',true); await tick(); assert.equal(s.getSnapshot().identities.find(x=>x.id==='persona-initial').configVersion,2);
@@ -115,9 +115,26 @@ test('new users receive one protected named assistant and no personas',()=>{
  assert.throws(()=>s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'改名'}),/不可改名/);
  assert.equal(s.getSnapshot().identities[0].name,'林晓的通用助理');
 });
-test('review account has two assistants and two independently renameable personas',()=>{
- const s=make();assert.equal(s.getSnapshot().identities.filter(i=>i.role==='assistant').length,2);assert.equal(s.getSnapshot().identities.filter(i=>i.role==='persona').length,2);
+test('review account has two assistants and one default renameable persona',()=>{
+ const s=make();assert.equal(s.getSnapshot().identities.filter(i=>i.role==='assistant').length,2);assert.equal(s.getSnapshot().identities.filter(i=>i.role==='persona').length,1);
+ assert.equal(s.getSnapshot().identities.find(i=>i.role==='persona').name,'王宜林的云端分身');
  s.savePersona({id:'persona-initial',name:'新分身名字'});assert.equal(s.getSnapshot().identities.find(i=>i.id==='persona-initial').name,'新分身名字');
+});
+
+test('persisted review seed retires the second built-in persona and migrates the old default name',()=>{
+ const storage=memory();make({storage});const saved=JSON.parse(storage.getItem());
+ delete saved.singleDefaultPersonaV1;
+ const primary=saved.identities.find(i=>i.id==='persona-initial');primary.name='执剑人';
+ saved.sessions.filter(session=>session.identityId===primary.id).forEach(session=>session.messages.forEach(message=>{if(message.sender.uid===primary.id)message.sender.name='执剑人';}));
+ saved.identities.push({...primary,id:'persona-pilot',name:'飞行员E号',sourceAssistantId:'assistant-rd'});
+ saved.sessions.push({...saved.sessions.find(session=>session.identityId===primary.id),id:'team-pilot-night',identityId:'persona-pilot'});
+ saved.drafts['team-pilot-night']='待移除草稿';
+ storage.setItem('',JSON.stringify(saved));
+ const snapshot=make({storage}).getSnapshot();
+ assert.deepEqual(Array.from(snapshot.identities.filter(i=>i.role==='persona'),i=>[i.id,i.name]),[['persona-initial','王宜林的云端分身']]);
+ assert.equal(snapshot.sessions.some(session=>session.identityId==='persona-pilot'),false);
+ assert.equal(snapshot.drafts['team-pilot-night'],undefined);
+ assert.ok(snapshot.sessions.filter(session=>session.identityId==='persona-initial').flatMap(session=>session.messages).filter(message=>message.sender.uid==='persona-initial').every(message=>message.sender.name==='王宜林的云端分身'));
 });
 
 test('AI 团队文件先留在会话中，不会由会话数据层直接写入文件库',()=>{

@@ -3,6 +3,9 @@
   const seed=root.__EVA_DIGITAL_EMPLOYEES_DATA, key='eva:digital-employees:v1';
   let saved;try{saved=JSON.parse(root.localStorage.getItem(key));}catch{}
   let state={agents:seed.agents, drafts:{}, personaRequests:[], chats:{}, teamIds:[],...saved};
+  // Add newly shipped organization employees without replacing local creations or edits.
+  const hrOnboardingSeed=seed.agents.find(a=>a.id==='a_hr_onboarding');
+  if(hrOnboardingSeed&&!state.agents.some(a=>a.id===hrOnboardingSeed.id))state.agents=[...state.agents,{...hrOnboardingSeed}];
   // Remove the retired employee from existing local demo state as well as the seed.
   state.agents=state.agents.filter(a=>a.id!=='s_AS00139');
   state.teamIds=state.teamIds.filter(id=>id!=='s_AS00139');
@@ -43,23 +46,47 @@
     session.draft='';session.updatedAt=now();publish();return true;
   };
   const appearance=a=>({name:a.name,sourceName:'Eva',avatar:a.avatar||root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT});
+  const demoSession=(id,a,story,index)=>{
+    const title=Array.isArray(story)?story[0]:story.title;
+    const updatedAt=Array.isArray(story)?'2026-09-06T'+String(9+index).padStart(2,'0')+':10:00Z':story.updatedAt;
+    const messages=Array.isArray(story)?[
+      {kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time:'17:00',text:story[1]},
+      {kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time:'17:01',text:story[2]}
+    ]:(story.messages||[]).map((message,messageIndex)=>{
+      const {from,...content}=message;
+      const sender=from==='user'
+        ? {uid:'u-wangyilin',name:'王宜林'}
+        : {uid:id,name:a.name,ai:true,identityAppearance:appearance(a)};
+      return {id:content.id||'digital-demo:'+id+':'+index+':'+messageIndex,...content,sender};
+    });
+    return {id:'digital-session:'+id+':professional-v1:'+index,title,updatedAt:updatedAt||now(),pinned:false,draft:'',messages};
+  };
   // One-time additive demo migration; never overwrite edits or restore deleted sessions.
   if(!state.professionalDemoV1){
     Object.entries(seed.demoConversations||{}).forEach(([id,stories])=>{
       const a=get(id);if(!a)return;
       state.chats[id]||={sessions:[]};
       const room=Math.max(0,3-state.chats[id].sessions.length);
-      stories.slice(0,room).forEach(([title,question,answer],index)=>{
-        const sessionId='digital-session:'+id+':professional-v1:'+index;
-        if(state.chats[id].sessions.some(s=>s.id===sessionId))return;
-        state.chats[id].sessions.push({id:sessionId,title,updatedAt:'2026-09-06T'+String(9+index).padStart(2,'0')+':10:00Z',pinned:false,draft:'',messages:[
-          {kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time:'17:00',text:question},
-          {kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time:'17:01',text:answer}
-        ]});
+      stories.slice(0,room).forEach((story,index)=>{
+        const session=demoSession(id,a,story,index);
+        if(state.chats[id].sessions.some(s=>s.id===session.id))return;
+        state.chats[id].sessions.push(session);
       });
       if(!state.teamIds.includes(id))state.teamIds.push(id);
     });
     state.professionalDemoV1=true;publish();
+  }
+  // Existing installations may already have completed the generic demo migration.
+  // Seed this scenario once, then preserve subsequent removal and conversation edits.
+  if(!state.hrOnboardingDemoV1&&hrOnboardingSeed){
+    const id=hrOnboardingSeed.id,stories=seed.demoConversations?.[id]||[];
+    state.chats[id]||={sessions:[]};
+    stories.forEach((story,index)=>{
+      const session=demoSession(id,hrOnboardingSeed,story,index);
+      if(!state.chats[id].sessions.some(s=>s.id===session.id))state.chats[id].sessions.push(session);
+    });
+    state.teamIds=[id,...state.teamIds.filter(value=>value!==id)];
+    state.hrOnboardingDemoV1=true;publish();
   }
   if(!state.compactDemoV1){Object.values(state.chats).forEach(chat=>chat.sessions.forEach(session=>session.messages.forEach(m=>{if(m.sender?.ai&&Object.hasOwn(seed.compactCopy||{},m.text))m.text=seed.compactCopy[m.text];})));state.compactDemoV1=true;publish();}
   // Include newly seeded records in the same persisted Octo topic contract.

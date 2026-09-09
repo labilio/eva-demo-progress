@@ -5,10 +5,11 @@ import {readFileSync} from 'node:fs';
 import {webcrypto} from 'node:crypto';
 const source=readFileSync(new URL('../prototype/009-3-digital-employees-store.js',import.meta.url),'utf8');
 const aiTeamSource=readFileSync(new URL('../prototype/009-3-ai-team-store.js',import.meta.url),'utf8');
-function load(saved){
+function load(saved,seedOverrides={}){
   let persisted=saved?JSON.stringify(saved):null;
   class FixedDate extends Date {constructor(...args){super(...(args.length?args:['2026-09-06T12:00:00.000Z']));}}
-  const window={crypto:webcrypto,__EVA_DIGITAL_EMPLOYEES_DATA:{businessDomains:['供应链','研发域'],agents:[{id:'staff-1',kind:'staff',name:'专家',ownership:'organization'},{id:'project-1',kind:'team',name:'项目助手'}],runtimes:[{key:'dify'}]},localStorage:{getItem:key=>key==='eva:digital-employees:v1'?persisted:null,setItem:(key,value)=>{if(key==='eva:digital-employees:v1')persisted=value;}}};
+  const defaultSeed={businessDomains:['供应链','研发域'],agents:[{id:'staff-1',kind:'staff',name:'专家',ownership:'organization'},{id:'project-1',kind:'team',name:'项目助手'}],runtimes:[{key:'dify'}]};
+  const window={crypto:webcrypto,__EVA_DIGITAL_EMPLOYEES_DATA:{...defaultSeed,...seedOverrides},localStorage:{getItem:key=>key==='eva:digital-employees:v1'?persisted:null,setItem:(key,value)=>{if(key==='eva:digital-employees:v1')persisted=value;}}};
   const context=vm.createContext({window,structuredClone,Date:FixedDate});
   vm.runInContext(aiTeamSource,context);
   vm.runInContext(source,context);
@@ -50,6 +51,32 @@ test('creation preserves configuration and draft data without aliasing caller ob
   store.saveDraft('dify',draft);draft.skills.push('后续修改');assert.equal(store.draft('dify').skills.length,1);
   const created=store.create('dify',draft);draft.name='外部更改';
   const restored=load(saved()).store;assert.equal(restored.get(created.id).name,'接入专家');assert.equal(restored.get(created.id).scope,'org');assert.equal(restored.get(created.id).configuration.conn[0],'mcp-1');assert.equal(restored.draft('dify'),undefined);
+});
+
+test('HR onboarding employee and rich file conversation migrate once for existing users',()=>{
+  const baseAgents=[{id:'staff-1',kind:'staff',name:'专家',ownership:'organization'},{id:'project-1',kind:'team',name:'项目助手'}];
+  const hr={id:'a_hr_onboarding',kind:'staff',name:'HR 助手',ownership:'organization',presence:'online'};
+  const story={title:'入职第一周 onboarding',updatedAt:'2026-09-09T09:19:00+08:00',messages:[
+    {id:'hr-user',kind:'text',from:'user',time:'09:08',text:'我今天刚入职，接下来要做什么？'},
+    {id:'hr-ai',kind:'text',from:'ai',time:'09:09',text:'## 欢迎加入\n\n- [ ] 开通权限'},
+    {id:'hr-file',kind:'file',from:'ai',time:'09:10',file:{id:'attachment:hr',name:'新员工入职清单.md',size:1271,extension:'md',previewUrl:'prototype/assets/file-samples/新员工入职清单-研发效能组.md'}}
+  ]};
+  const oldState={agents:baseAgents,drafts:{},personaRequests:[],chats:{},teamIds:[],professionalDemoV1:true,compactDemoV1:true};
+  const overrides={agents:[...baseAgents,hr],demoConversations:{a_hr_onboarding:[story]}};
+  const {store,saved}=load(oldState,overrides);
+  assert.equal(store.get(hr.id).name,'HR 助手');
+  assert.equal(store.teamIds()[0],hr.id);
+  const sessions=store.sessions(hr.id);
+  assert.equal(sessions.length,1);
+  assert.equal(sessions[0].title,story.title);
+  const source=store.conversationSource(hr.id,sessions[0].id);
+  const messages=source.threadMessages[source.selectedThreadId];
+  assert.match(messages[1].text,/## 欢迎加入/);
+  assert.equal(messages[2].kind,'file');
+  assert.equal(messages[2].sender.uid,hr.id);
+  assert.equal(messages[2].file.extension,'md');
+  const restored=load(saved(),overrides).store;
+  assert.equal(restored.sessions(hr.id).length,1);
 });
 
 test('cloud persona application remains pending and private after reload without activating an agent',()=>{

@@ -62,11 +62,12 @@
   function seed(time, options = {}) {
     const ownerName=options.ownerName||window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName||'王宜林';
     const defaultName=options.profile==='review'?'通用助理':ownerName+'的通用助理';
+    const defaultPersonaName=window.__EVA_MY_ASSISTANT_IDENTITY?.name||ownerName+'的云端分身';
     const localAssistants = [
       { id: 'assistant-general', name: defaultName, isDefault:true, version: 1, online: true, configuration: configuration({ identity: defaultName, skills: ['沟通', '文档整理'] }) },
       { id: 'assistant-rd', name: 'Eva研发助理', version: 1, online: true, configuration: configuration({ identity: 'Eva研发助理', skills: ['研发资料整理'] }) }
     ];
-    const identities = [makeIdentity('ai-general', 'assistant', defaultName, localAssistants[0], time), makeIdentity('persona-initial', 'persona', '执剑人', localAssistants[0], time)];
+    const identities = [makeIdentity('ai-general', 'assistant', defaultName, localAssistants[0], time), makeIdentity('persona-initial', 'persona', defaultPersonaName, localAssistants[0], time)];
     const sessions = identities.map((identity, i) => ({
       id: i ? 'team-persona-welcome' : 'team-assistant-welcome', identityId: identity.id,
       title: i ? '团队沟通接待' : '整理工作安排', updatedAt: time,
@@ -74,7 +75,7 @@
         text: i ? '你好，我可以替你接收协作请求并跟进进展。' : '把需要整理的事项发给我，我们一起安排。' }]
     }));
     if(options.profile==='review') {
-      identities.push(makeIdentity('ai-rd','assistant',localAssistants[1].name,localAssistants[1],time),makeIdentity('persona-pilot','persona','飞行员E号',localAssistants[1],time));
+      identities.push(makeIdentity('ai-rd','assistant',localAssistants[1].name,localAssistants[1],time));
     } else {localAssistants.splice(1);identities.splice(1);sessions.splice(1);}
     return { schemaVersion: 1, localAssistants, identities, sessions, drafts: {}, storageWarning: null };
   }
@@ -139,6 +140,28 @@
         });
       }
     } catch (_) { warning = '无法读取已保存的数据，已恢复初始内容。'; }
+    // The review profile now ships one cloud persona. Remove only the retired
+    // built-in persona and migrate the old built-in name; user-created personas
+    // and user-authored names remain untouched.
+    if (options.profile === 'review' && !state.singleDefaultPersonaV1) {
+      const retiredIdentityIds = new Set(['persona-pilot']);
+      const retiredSessionIds = new Set(state.sessions.filter(session => retiredIdentityIds.has(session.identityId)).map(session => session.id));
+      state.identities = state.identities.filter(identity => !retiredIdentityIds.has(identity.id));
+      state.sessions = state.sessions.filter(session => !retiredSessionIds.has(session.id));
+      Object.keys(state.drafts).forEach(key => {
+        if (retiredSessionIds.has(key) || key === 'draft:persona-pilot') delete state.drafts[key];
+      });
+      const persona = state.identities.find(identity => identity.id === 'persona-initial' && identity.role === 'persona');
+      if (persona && ['执剑人', '王宜林的分身'].includes(persona.name)) {
+        const previousName = persona.name;
+        persona.name = window.__EVA_MY_ASSISTANT_IDENTITY?.name || '王宜林的云端分身';
+        state.sessions.forEach(session => session.messages.forEach(message => {
+          if (message.sender?.uid === persona.id && message.sender.name === previousName) message.sender.name = persona.name;
+        }));
+      }
+      state.singleDefaultPersonaV1 = true;
+      try { storage?.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { warning = '本地存储不可用，刷新后数据可能丢失。'; }
+    }
     // 早期“我的 AI”页面隐藏了本地助理入口，导致已经保存的演示状态
     // 可能保留来源助理却没有可选的 AI 身份。恢复缺失身份与其首个会话，
     // 但绝不改写仍存在的身份、会话或草稿。
