@@ -12,6 +12,7 @@ test('文件库内容区使用简洁标题、顶部展示项目简介且搜索�
   const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
   const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');
   const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');
+  const headingStyles=fs.readFileSync(new URL('../prototype/056-heading-system.css',import.meta.url),'utf8');
   const sectionStart=drive.indexOf("'<div class=\"eva-drive__section-head\"");
   const sectionEnd=drive.indexOf("state.driveScope === 'projects'",sectionStart);
   const section=drive.slice(sectionStart,sectionEnd);
@@ -40,6 +41,7 @@ test('文件库内容区使用简洁标题、顶部展示项目简介且搜索�
   assert.equal(personalCopy.section,'文件');
   assert.equal(personalCopy.subtitle,'仅你可访问，可统一整理本地文件与外部链接');
   assert.match(styles,/\.eva-drive__section-head h1 \{[^}]*font-size:\s*20px;[^}]*line-height:\s*28px;/s);
+  assert.doesNotMatch(headingStyles,/\.eva-drive__section-head h1/);
   assert.match(styles,/\.eva-drive__section-head \.eva-drive__side-search \{[^}]*margin:\s*0 0 0 auto;/s);
   assert.match(styles,/\.eva-drive__table \{[^}]*margin:\s*0 24px 24px;/s);
 });

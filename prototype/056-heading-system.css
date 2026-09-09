@@ -66,7 +66,7 @@
   gap: var(--gds-space-4);
 }
 :is(.eva-contacts__title strong, .eva-connection-center__head h1,
-.eva-feature-head h1, .eva-drive__header strong, .eva-drive__section-head h1,
+.eva-feature-head h1, .eva-drive__header strong,
 .eva-digital-center__head h1) {
   margin: 0;
   color: var(--gds-color-text-primary);
