@@ -81,7 +81,19 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /className:'eva-ai-team__identity-action eva-ai-team__edit-config'/);
   assert.match(imPatch, /target\.isConnected&&target\.focus\(\)/);
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
-  assert.match(imPatch, /if\(identity\?\.id!==i\.id\)choose\(i\.id,sessions\[0\]\?\.id\|\|null\)/);
+  const identityItemStart = imPatch.indexOf('function identityItem(i)');
+  const employeeItemStart = imPatch.indexOf('function employeeItem(item)');
+  const roleGroupStart = imPatch.indexOf('function roleGroup(role,label,items)');
+  const identityItem = imPatch.slice(identityItemStart, employeeItemStart);
+  const employeeItem = imPatch.slice(employeeItemStart, roleGroupStart);
+  const identityButton = identityItem.slice(identityItem.indexOf("h('button',{type:'button',className:'eva-ai-team__identity-button'"), identityItem.indexOf("h(TooltipComponent,{content:'新建会话'"));
+  const employeeButton = employeeItem.slice(employeeItem.indexOf("h('button',{type:'button',className:'eva-ai-team__identity-button'"), employeeItem.indexOf("h(TooltipComponent,{content:'新建会话'"));
+  for (const disclosureButton of [identityButton, employeeButton]) {
+    assert.match(disclosureButton, /'aria-expanded':expanded/);
+    assert.match(disclosureButton, /onClick:\(\)=>setCollapsed/);
+    assert.doesNotMatch(disclosureButton, /choose\(/);
+    assert.doesNotMatch(disclosureButton, /ChevronRight|eva-ai-team__chevron/);
+  }
   assert.match(imPatch, /collapsedGroups/);
   assert.match(imPatch, /roleGroup\('assistant','个人助理'/);
   assert.match(imPatch, /roleGroup\('persona','云端分身',personas\)/);
@@ -103,10 +115,10 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /className:'eva-ai-team__team-default'\},'默认'/);
   assert.match(imPatch, /className:'eva-ai-team__group-count'/);
   assert.doesNotMatch(imPatch, /Math\.max\(0,channel\.members-1\)/);
-  assert.match(imPatch, /EvaAIIdentityAvatar.+eva-ai-team__identity-name.+AiBadge.+eva-ai-team__chevron/s);
+  assert.match(imPatch, /EvaAIIdentityAvatar.+eva-ai-team__identity-name.+AiBadge/s);
   assert.match(imPatch, /EvaAIIdentityAvatar,\{appearance:evaIdentityAppearance\(i\),size:22\}/);
   assert.match(imPatch, /EvaAIIdentity\.avatar\(digitalStore\.appearance\(item\),22,h\)/);
-  assert.match(imPatch, /h\(ChevronRight,\{size:12,className:'eva-ai-team__chevron'/);
+  assert.doesNotMatch(imPatch, /className:'eva-ai-team__chevron'/);
   assert.match(imPatch, /Sa\.identityId\?React.createElement\("span",\{className:"eva-identity-name-row"\}.+Sa\.name.+AiBadge/);
   assert.doesNotMatch(imPatch, /className:"wk-chat-conversation-header-thread-name",title:Sa\.sessionTitle/);
   assert.match(imPatch, /AI topic keeps direct title/);
@@ -245,8 +257,7 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(aiTeamCss, /--eva-rail-nested-row-radius:\s*var\(--wk-r-xs, 3px\)/);
   assert.match(aiTeamCss, /eva-ai-team__identity-heading:hover,[^}]*eva-ai-team__identity-heading:focus-within\s*\{\s*background:\s*var\(--eva-rail-hover\)/s);
   assert.match(aiTeamCss, /eva-ai-team__session-row\.is-selected,[^}]*eva-ai-team__session-row\.is-selected:hover\s*\{[^}]*background:\s*var\(--eva-rail-selected\)[^}]*box-shadow:\s*none/s);
-  assert.match(aiTeamCss, /eva-ai-team__chevron\s*\{[^}]*flex:\s*0 0 12px/s);
-  assert.match(aiTeamCss, /eva-ai-team__chevron\.is-expanded\s*\{\s*transform:\s*rotate\(90deg\)/);
+  assert.doesNotMatch(aiTeamCss, /eva-ai-team__chevron/);
   assert.match(aiTeamCss, /eva-ai-team__role-group \+ \.eva-ai-team__role-group\s*\{[^}]*margin-top:\s*6px[^}]*\}/s);
   assert.match(aiTeamCss, /eva-ai-team__sidebar-header\s*\{[^}]*padding:\s*var\(--gds-space-2\) var\(--gds-space-3\)/s);
   assert.match(aiTeamCss, /eva-ai-team__roles\s*\{[^}]*padding:\s*var\(--gds-space-2\) var\(--gds-space-2-5\) var\(--gds-space-3\)/s);

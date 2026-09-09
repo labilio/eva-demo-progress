@@ -221,10 +221,6 @@
 .eva-ai-team__identity-button > .ai-badge,
 .eva-ai-team__identity-button > .eva-identity-avatar { flex-shrink: 0; }
 .eva-ai-team__identity-button > .eva-identity-name-row { flex: 1; }
-/* The assistant disclosure is a prototype-specific 12px right-chevron;
-   it is not the group-chat subzone toggle. */
-.eva-ai-team__chevron { flex: 0 0 12px; color: var(--gds-color-text-secondary); transition: transform 120ms ease; }
-.eva-ai-team__chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__role-label { flex-shrink: 0; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); color: var(--gds-color-text-secondary); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__identity-status { margin: 0 0 var(--gds-space-2) var(--gds-space-8); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); }
 .eva-ai-team__session {
@@ -554,7 +550,7 @@
 .eva-ai-team__source-options input[type="radio"] { flex-shrink: 0; width: 16px; height: 16px; margin: 0; accent-color: var(--semi-color-text-1); cursor: inherit; }
 .eva-ai-team__source-options .eva-ai-team__connection-option:has(input:focus-visible) { outline: 2px solid var(--semi-color-text-2); outline-offset: -2px; }
 
-/* One avatar/text grid and one trailing disclosure column for all identities. */
+/* One avatar/text grid for all identities; the whole row controls disclosure. */
 .eva-ai-team__identity-button > .eva-identity-avatar { margin-right: var(--eva-rail-identity-avatar-trailing); }
 .eva-ai-team__identity-heading > .eva-ai-team__new-session-anchor,
 .eva-ai-team__identity-heading > .eva-ai-team__menu-anchor {
@@ -589,5 +585,3 @@
 .eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread .wk-conv-compact-name { font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread):hover { background: var(--eva-rail-hover); }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread).wk-conv-compact-item--selected { background: var(--eva-rail-selected); }
-
-.eva-ai-team__identity-heading .eva-ai-team__chevron { position:absolute;right:8px;top:10px; }
