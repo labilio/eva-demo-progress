@@ -58,6 +58,19 @@ test('文件库项目空间读取最新保存的项目名称和简介',()=>{
   assert.equal(workspace.mark,'新');
   assert.equal(workspace.description,'最新项目简介');
 });
+test('文件库项目空间复用我的项目的 AllApplication 图标字形',()=>{
+  const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
+  const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');
+  assert.match(drive,/<symbol id="eva-i-workspace" viewBox="0 0 48 48">/);
+  for(const path of [
+    'M18 6H8C6.89543 6 6 6.89543 6 8V18C6 19.1046 6.89543 20 8 20H18C19.1046 20 20 19.1046 20 18V8C20 6.89543 19.1046 6 18 6Z',
+    'M18 28H8C6.89543 28 6 28.8954 6 30V40C6 41.1046 6.89543 42 8 42H18C19.1046 42 20 41.1046 20 40V30C20 28.8954 19.1046 28 18 28Z',
+    'M40 6H30C28.8954 6 28 6.89543 28 8V18C28 19.1046 28.8954 20 30 20H40C41.1046 20 42 19.1046 42 18V8C42 6.89543 41.1046 6 40 6Z',
+    'M40 28H30C28.8954 28 28 28.8954 28 30V40C28 41.1046 28.8954 42 30 42H40C41.1046 42 42 41.1046 42 40V30C42 28.8954 41.1046 28 40 28Z'
+  ]) assert.ok(drive.includes(path));
+  assert.match(drive,/iconName === 'workspace' \? 'eva-drive-icon--project'/);
+  assert.match(styles,/\.eva-drive__tree \.eva-drive-icon--project\s*\{[^}]*width:\s*16px;[^}]*height:\s*16px;[^}]*stroke-width:\s*3;/s);
+});
 test('文件库在当前空间新建文件夹时不再选择所属空间',()=>{
   const source=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
   const dialogStart=source.indexOf('  function dialogHTML()'),dialogEnd=source.indexOf('  function filePreviewFixture(',dialogStart);

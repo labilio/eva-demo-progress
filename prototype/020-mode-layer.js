@@ -100,7 +100,7 @@
       '<symbol id="eva-i-file" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z"></path><path d="M14 2v5h5"></path></symbol>',
       '<symbol id="eva-i-sheet" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z"></path><path d="M14 2v5h5M8 11h8v8H8zM12 11v8M8 15h8"></path></symbol>',
       '<symbol id="eva-i-drive" viewBox="0 0 24 24"><path d="M4 4h16v6H4zM4 14h16v6H4z"></path><path d="M16 7h1M16 17h1"></path></symbol>',
-      '<symbol id="eva-i-workspace" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"></rect><rect x="13" y="3" width="8" height="8" rx="1"></rect><rect x="3" y="13" width="8" height="8" rx="1"></rect><rect x="13" y="13" width="8" height="8" rx="1"></rect></symbol>',
+      '<symbol id="eva-i-workspace" viewBox="0 0 48 48"><path d="M18 6H8C6.89543 6 6 6.89543 6 8V18C6 19.1046 6.89543 20 8 20H18C19.1046 20 20 19.1046 20 18V8C20 6.89543 19.1046 6 18 6Z"></path><path d="M18 28H8C6.89543 28 6 28.8954 6 30V40C6 41.1046 6.89543 42 8 42H18C19.1046 42 20 41.1046 20 40V30C20 28.8954 19.1046 28 18 28Z"></path><path d="M40 6H30C28.8954 6 28 6.89543 28 8V18C28 19.1046 28.8954 20 30 20H40C41.1046 20 42 19.1046 42 18V8C42 6.89543 41.1046 6 40 6Z"></path><path d="M40 28H30C28.8954 28 28 28.8954 28 30V40C28 41.1046 28.8954 42 30 42H40C41.1046 42 42 41.1046 42 40V30C42 28.8954 41.1046 28 40 28Z"></path></symbol>',
       '<symbol id="eva-i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-2a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v2M17 4a4 4 0 0 1 0 8M18 14a5 5 0 0 1 4 5v2"></path></symbol>',
       '<symbol id="eva-i-task" viewBox="0 0 24 24"><path d="M9 5h11M9 12h11M9 19h11"></path><path d="m3 5 1.5 1.5L7 3.5M3 12l1.5 1.5L7 10.5M3 19l1.5 1.5L7 17.5"></path></symbol>',
       '<symbol id="eva-i-automation" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="3"></rect><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3M10 10h4v4h-4z"></path></symbol>',
@@ -600,7 +600,8 @@
   function treeButton(scope, label, iconName, child, spaceId) {
     var current = state.driveScope === scope && (!spaceId || state.workspaceId === spaceId);
     var spaceAttribute = !spaceId ? '' : ' data-workspace-id="' + escapeHTML(spaceId) + '"';
-    return '<button type="button" class="' + (child ? 'is-child' : '') + '" data-drive-scope="' + scope + '"' + spaceAttribute + ' aria-current="' + (current ? 'page' : 'false') + '">' + icon(iconName, 'eva-drive-icon ' + (iconName === 'folder' ? 'is-folder' : '')) + '<span>' + escapeHTML(label) + '</span></button>';
+    var iconClass = 'eva-drive-icon ' + (iconName === 'folder' ? 'is-folder' : iconName === 'workspace' ? 'eva-drive-icon--project' : '');
+    return '<button type="button" class="' + (child ? 'is-child' : '') + '" data-drive-scope="' + scope + '"' + spaceAttribute + ' aria-current="' + (current ? 'page' : 'false') + '">' + icon(iconName, iconClass) + '<span>' + escapeHTML(label) + '</span></button>';
   }
 
   function targetOptionsHTML(selectedSpaceId) {
