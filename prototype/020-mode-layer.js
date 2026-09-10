@@ -82,35 +82,12 @@
   }
 
   function icon(name, className) {
-    return '<svg class="' + (className || 'eva-drive-icon') + '" aria-hidden="true"><use href="#eva-i-' + name + '"></use></svg>';
-  }
-
-  function installSprite() {
-    if (document.getElementById('eva-mode-icon-sprite')) return;
-    var sprite = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    sprite.setAttribute('id', 'eva-mode-icon-sprite');
-    sprite.setAttribute('aria-hidden', 'true');
-    sprite.style.display = 'none';
-    sprite.innerHTML = [
-      '<symbol id="eva-i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></symbol>',
-      '<symbol id="eva-i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol>',
-      '<symbol id="eva-i-upload" viewBox="0 0 24 24"><path d="M12 16V3M7 8l5-5 5 5M4 16v4h16v-4"></path></symbol>',
-      '<symbol id="eva-i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"></path></symbol>',
-      '<symbol id="eva-i-folder" viewBox="0 0 24 24"><path d="M3 6h7l2 3h9v11H3z"></path></symbol>',
-      '<symbol id="eva-i-file" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z"></path><path d="M14 2v5h5"></path></symbol>',
-      '<symbol id="eva-i-sheet" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z"></path><path d="M14 2v5h5M8 11h8v8H8zM12 11v8M8 15h8"></path></symbol>',
-      '<symbol id="eva-i-drive" viewBox="0 0 24 24"><path d="M4 4h16v6H4zM4 14h16v6H4z"></path><path d="M16 7h1M16 17h1"></path></symbol>',
-      '<symbol id="eva-i-workspace" viewBox="0 0 48 48"><path d="M18 6H8C6.89543 6 6 6.89543 6 8V18C6 19.1046 6.89543 20 8 20H18C19.1046 20 20 19.1046 20 18V8C20 6.89543 19.1046 6 18 6Z"></path><path d="M18 28H8C6.89543 28 6 28.8954 6 30V40C6 41.1046 6.89543 42 8 42H18C19.1046 42 20 41.1046 20 40V30C20 28.8954 19.1046 28 18 28Z"></path><path d="M40 6H30C28.8954 6 28 6.89543 28 8V18C28 19.1046 28.8954 20 30 20H40C41.1046 20 42 19.1046 42 18V8C42 6.89543 41.1046 6 40 6Z"></path><path d="M40 28H30C28.8954 28 28 28.8954 28 30V40C28 41.1046 28.8954 42 30 42H40C41.1046 42 42 41.1046 42 40V30C42 28.8954 41.1046 28 40 28Z"></path></symbol>',
-      '<symbol id="eva-i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-2a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v2M17 4a4 4 0 0 1 0 8M18 14a5 5 0 0 1 4 5v2"></path></symbol>',
-      '<symbol id="eva-i-task" viewBox="0 0 24 24"><path d="M9 5h11M9 12h11M9 19h11"></path><path d="m3 5 1.5 1.5L7 3.5M3 12l1.5 1.5L7 10.5M3 19l1.5 1.5L7 17.5"></path></symbol>',
-      '<symbol id="eva-i-automation" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="3"></rect><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3M10 10h4v4h-4z"></path></symbol>',
-      '<symbol id="eva-i-bolt" viewBox="0 0 24 24"><path d="m13 2-8 12h7l-1 8 8-12h-7z"></path></symbol>',
-      '<symbol id="eva-i-arrow" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></symbol>',
-      '<symbol id="eva-i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"></path></symbol>',
-      '<symbol id="eva-i-external" viewBox="0 0 24 24"><path d="M14 3h7v7M21 3l-9 9"></path><path d="M18 13v7H4V6h7"></path></symbol>',
-      '<symbol id="eva-i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></symbol>'
-    ].join('');
-    document.body.prepend(sprite);
+    var aliases = {
+      link: 'link-2', file: 'file-text', sheet: 'file-spreadsheet', drive: 'hard-drive',
+      workspace: 'layout-grid', task: 'list-checks', automation: 'cpu', bolt: 'sparkles',
+      arrow: 'chevron-down', chevron: 'chevron-right', external: 'external-link', more: 'ellipsis'
+    };
+    return window.__evaLucide(aliases[name] || name, { className: className || 'eva-drive-icon' });
   }
 
   function sidebar() {
@@ -350,6 +327,11 @@
     return '';
   }
 
+  function fileMarkIconHTML(resource) {
+    return icon(fileIconName(resource))
+      + (resource.type === 'shortcut' ? '<span class="eva-drive__shortcut-badge">' + icon('external') + '</span>' : '');
+  }
+
   function scopeCopy() {
     if (state.driveScope === 'personal') return { title: '个人空间', section: '文件', subtitle: '仅你可访问，可统一整理本地文件与外部链接' };
     if (state.driveScope === 'projects') return { title: '项目空间', section: '我的项目空间', subtitle: '选择一个已加入的项目后浏览和整理团队文件' };
@@ -385,7 +367,7 @@
     var isExternal = Boolean(externalInfo);
     var canDownload = resource.type !== 'folder' && !isExternal && !isTrash && canOpen && context.files.can('download', resource.spaceId, actor);
     return [
-      '<div class="eva-file-detail__identity' + (!isTrash ? ' eva-file-detail__identity--with-action' : '') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-file-detail__identity-content"><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(resourceFileType(resource) + (resource.type === 'folder' ? (isTrash && resource.trashedItemCount ? ' · 包含 ' + resource.trashedItemCount + ' 项' : '') : isExternal ? ' · ' + externalInfo.host : ' · ' + formatDriveBytes(resource.size))) + '</small></span>' + (!isTrash ? '<button class="eva-file-detail__copy-link" type="button" data-drive-action="copy-link" aria-label="复制内部链接" title="复制内部链接">' + icon('link') + '</button>' : '') + '</div>',
+      '<div class="eva-file-detail__identity' + (!isTrash ? ' eva-file-detail__identity--with-action' : '') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + fileMarkIconHTML(resource) + '</span><span class="eva-file-detail__identity-content"><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(resourceFileType(resource) + (resource.type === 'folder' ? (isTrash && resource.trashedItemCount ? ' · 包含 ' + resource.trashedItemCount + ' 项' : '') : isExternal ? ' · ' + externalInfo.host : ' · ' + formatDriveBytes(resource.size))) + '</small></span>' + (!isTrash ? '<button class="eva-file-detail__copy-link" type="button" data-drive-action="copy-link" aria-label="复制内部链接" title="复制内部链接">' + icon('link') + '</button>' : '') + '</div>',
       !isTrash && (resource.projectId || canDownload || isExternal) ? '<div class="eva-drive__inspector-actions">' + (resource.projectId ? '<button class="eva-drive__text-button" type="button" data-drive-action="open-project">' + icon('external') + '在项目中打开</button>' : '') + (isExternal ? '<button class="eva-drive__ghost-button" type="button" data-drive-action="open-external">打开原链接</button><button class="eva-drive__ghost-button" type="button" data-drive-action="copy-external-link">复制外部链接</button>' : canDownload ? '<button class="eva-drive__ghost-button" type="button" data-drive-action="download">下载</button>' : '') + '</div>' : '',
       isTrash && (canRestore || canDeleteForever) ? '<div class="eva-drive__management-actions">' + (canRestore ? '<button type="button" data-drive-action="restore">恢复</button>' : '') + (canDeleteForever ? '<button class="is-danger" type="button" data-drive-action="delete-forever">永久删除</button>' : '') + '</div>' : '',
       !isTrash && canEdit ? '<div class="eva-drive__management-actions"><button type="button" data-drive-action="rename">重命名</button>' + (resource.type === 'external_link' ? '<button type="button" data-drive-action="edit-external-link">编辑链接</button>' : '') + '<button type="button" data-drive-action="move">移动</button>' + (resource.type !== 'shortcut' && !isExternal ? '<button type="button" data-drive-action="copy">创建副本</button>' : '') + (resource.type !== 'shortcut' && resource.type !== 'folder' ? '<button type="button" data-drive-action="create-shortcut">创建快捷方式</button>' : '') + (canTrash ? '<button class="is-danger" type="button" data-drive-action="trash">移至回收站</button>' : '') + '</div>' : '',
@@ -406,7 +388,7 @@
 
   function detailHTML(resource) {
     if (!resource) return '';
-    return '<div class="eva-drive-dialog eva-file-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-file-detail-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="detail-close" aria-label="关闭文件详情"></button><section class="eva-drive-dialog__panel eva-file-detail-dialog__panel"><header><h2 id="eva-file-detail-title">文件详情</h2><button type="button" data-drive-action="detail-close" aria-label="关闭文件详情">×</button></header><div class="eva-drive-dialog__body"><div class="eva-file-detail-dialog__content">' + detailContentHTML(resource) + '</div></div></section></div>';
+    return '<div class="eva-drive-dialog eva-file-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-file-detail-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="detail-close" aria-label="关闭文件详情"></button><section class="eva-drive-dialog__panel eva-file-detail-dialog__panel"><header><h2 id="eva-file-detail-title">文件详情</h2><button type="button" data-drive-action="detail-close" aria-label="关闭文件详情">' + icon('x') + '</button></header><div class="eva-drive-dialog__body"><div class="eva-file-detail-dialog__content">' + detailContentHTML(resource) + '</div></div></section></div>';
   }
 
   function resourceSourceLabel(resource) {
@@ -584,7 +566,7 @@
       list.map(function (resource) {
         var common = [
           '<div class="eva-drive__row" role="row" data-resource-id="' + resource.id + '" aria-selected="' + (resource.id === state.selectedId ? 'true' : 'false') + '">',
-          '<button class="eva-drive__name-cell" type="button" data-drive-action="' + (resource.type === 'folder' ? (state.driveScope === 'trash' ? 'noop' : 'open-folder') : state.driveScope === 'trash' ? 'noop' : resource.type === 'external_link' ? 'open-external' : 'preview') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + icon(fileIconName(resource)) + '</span><span class="eva-drive__name-copy"><strong>' + escapeHTML(resource.name) + '</strong>' + tagsHTML(resource) + '</span></button>',
+          '<button class="eva-drive__name-cell" type="button" data-drive-action="' + (resource.type === 'folder' ? (state.driveScope === 'trash' ? 'noop' : 'open-folder') : state.driveScope === 'trash' ? 'noop' : resource.type === 'external_link' ? 'open-external' : 'preview') + '"><span class="eva-drive__file-mark ' + fileMarkClass(resource) + '">' + fileMarkIconHTML(resource) + '</span><span class="eva-drive__name-copy"><strong>' + escapeHTML(resource.name) + '</strong>' + tagsHTML(resource) + '</span></button>',
         ];
         common.push('<span><span class="eva-file-type">' + escapeHTML(resourceFileType(resource)) + '</span></span>');
         common.push(state.driveScope === 'trash' ? '<span class="eva-file-location-cell">' + escapeHTML(originalLocationLabel(resource)) + '</span>' : relationCellHTML(resource));
@@ -600,7 +582,7 @@
   function treeButton(scope, label, iconName, child, spaceId) {
     var current = state.driveScope === scope && (!spaceId || state.workspaceId === spaceId);
     var spaceAttribute = !spaceId ? '' : ' data-workspace-id="' + escapeHTML(spaceId) + '"';
-    var iconClass = 'eva-drive-icon ' + (iconName === 'folder' ? 'is-folder' : iconName === 'workspace' ? 'eva-drive-icon--project' : '');
+    var iconClass = 'eva-drive-icon ' + (iconName === 'folder' ? 'is-folder' : '');
     return '<button type="button" class="' + (child ? 'is-child' : '') + '" data-drive-scope="' + scope + '"' + spaceAttribute + ' aria-current="' + (current ? 'page' : 'false') + '">' + icon(iconName, iconClass) + '<span>' + escapeHTML(label) + '</span></button>';
   }
 
@@ -649,7 +631,7 @@
     var query = String(state.dialog.tagInput || '').trim().toLowerCase();
     var suggestions = tagSuggestions(resource).filter(function (tag) { return !query || tag.toLowerCase().includes(query); });
     var selected = tags.length ? tags.map(function (tag) {
-      return '<span class="eva-tag-editor__chip"><span>' + escapeHTML(tag) + '</span><button type="button" data-drive-action="tag-remove" data-drive-tag-value="' + escapeHTML(tag) + '" aria-label="移除标签 ' + escapeHTML(tag) + '">×</button></span>';
+      return '<span class="eva-tag-editor__chip"><span>' + escapeHTML(tag) + '</span><button type="button" data-drive-action="tag-remove" data-drive-tag-value="' + escapeHTML(tag) + '" aria-label="移除标签 ' + escapeHTML(tag) + '">' + icon('x') + '</button></span>';
     }).join('') : '<span class="eva-tag-editor__empty">暂未选择标签</span>';
     var options = suggestions.length ? suggestions.map(function (tag) {
       return '<button class="eva-tag-editor__option" type="button" role="option" data-drive-action="tag-option" data-drive-tag-value="' + escapeHTML(tag) + '">' + escapeHTML(tag) + '</button>';
@@ -702,7 +684,7 @@
     var confirmLabel = type === 'add-external-link' ? '添加链接' : type === 'edit-external-link' ? (state.dialog.confirmHostChange ? '确认更换并保存' : '保存') : type === 'target-upload' ? '选择文件' : type === 'create-shortcut' ? '创建快捷方式' : type === 'tags' ? '保存' : type === 'trash' ? '移至回收站' : type === 'delete-forever' ? '永久删除' : '确认';
     var noShortcutTarget = type === 'create-shortcut' && !fileContext().files.writableSpaces(fileActor(), resource.spaceId).length;
     var confirm = noShortcutTarget ? '' : '<button class="' + (type === 'delete-forever' || type === 'trash' ? 'is-danger' : 'is-primary') + '" type="button" data-drive-action="dialog-confirm">' + confirmLabel + '</button>';
-    return '<div class="eva-drive-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-drive-dialog-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="dialog-close" aria-label="关闭"></button><section class="eva-drive-dialog__panel"><header><h2 id="eva-drive-dialog-title">' + title + '</h2><button type="button" data-drive-action="dialog-close" aria-label="关闭">×</button></header><div class="eva-drive-dialog__body">' + content + '</div><footer><button type="button" data-drive-action="dialog-close">' + (confirm ? '取消' : '关闭') + '</button>' + confirm + '</footer></section></div>';
+    return '<div class="eva-drive-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-drive-dialog-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="dialog-close" aria-label="关闭"></button><section class="eva-drive-dialog__panel"><header><h2 id="eva-drive-dialog-title">' + title + '</h2><button type="button" data-drive-action="dialog-close" aria-label="关闭">' + icon('x') + '</button></header><div class="eva-drive-dialog__body">' + content + '</div><footer><button type="button" data-drive-action="dialog-close">' + (confirm ? '取消' : '关闭') + '</button>' + confirm + '</footer></section></div>';
   }
 
   function filePreviewFixture(resource) {
@@ -767,8 +749,8 @@
     else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) content = archivePreviewHTML(target);
     else if (sampleURL && extension === 'pdf') content = '<iframe class="eva-file-preview-sidebar__frame" src="' + escapeHTML(sampleURL) + '" title="' + escapeHTML(target.name + '预览') + '"></iframe>';
     else if (sampleURL && ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) content = '<img class="eva-file-preview-sidebar__image" src="' + escapeHTML(sampleURL) + '" alt="' + escapeHTML(target.name) + '">';
-    else content = '<div class="eva-file-preview-sidebar__empty"><span class="eva-drive__file-mark ' + fileMarkClass(target) + '">' + icon(fileIconName(target)) + '</span><strong>' + escapeHTML(target.name) + '</strong><span>' + escapeHTML(context.files.fileTypeFor(target, actor) + ' · ' + formatDriveBytes(target.size)) + '</span><p>当前格式暂不支持在线阅读，可下载后打开。</p></div>';
-    return '<aside class="eva-file-preview-sidebar eva-drive-preview-sidebar" aria-label="文件预览"><header class="eva-file-preview-sidebar__head"><h2>' + escapeHTML(resource.name) + '</h2><button type="button" data-drive-action="preview-close" aria-label="关闭预览">×</button></header><div class="eva-file-preview-sidebar__body">' + content + '</div></aside>';
+    else content = '<div class="eva-file-preview-sidebar__empty"><span class="eva-drive__file-mark ' + fileMarkClass(target) + '">' + fileMarkIconHTML(target) + '</span><strong>' + escapeHTML(target.name) + '</strong><span>' + escapeHTML(context.files.fileTypeFor(target, actor) + ' · ' + formatDriveBytes(target.size)) + '</span><p>当前格式暂不支持在线阅读，可下载后打开。</p></div>';
+    return '<aside class="eva-file-preview-sidebar eva-drive-preview-sidebar" aria-label="文件预览"><header class="eva-file-preview-sidebar__head"><h2>' + escapeHTML(resource.name) + '</h2><button type="button" data-drive-action="preview-close" aria-label="关闭预览">' + icon('x') + '</button></header><div class="eva-file-preview-sidebar__body">' + content + '</div></aside>';
   }
 
   function downloadDriveFile(resource) {
@@ -1405,7 +1387,6 @@
   }
 
   function initialize() {
-    installSprite();
     installEvents();
     window.__evaOpenDrive = openDrive;
     window.__evaOpenDriveFile = openDriveFile;
