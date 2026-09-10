@@ -144,11 +144,24 @@
 .eva-ai-team__team-avatar { width: var(--eva-rail-identity-avatar-size); height: var(--eva-rail-identity-avatar-size); flex: 0 0 var(--eva-rail-identity-avatar-size); border-radius: 50%; object-fit: cover; }
 .eva-ai-team__team-name { min-width: 0; flex: 1; overflow: hidden; color: var(--eva-rail-primary); font-size: var(--eva-rail-name-size); font-weight: var(--gds-font-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
 .eva-ai-team__team-default { flex-shrink: 0; padding: 0 var(--gds-space-1); border: var(--gds-border-standard) solid var(--gds-color-border-default); border-radius: var(--gds-radius-control); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); }
-.eva-ai-team__team-menu { display: inline-flex; flex: 0 0 28px; opacity: 0; pointer-events: none; }
+.eva-ai-team__team-button > .eva-ai-team__unread-dot { margin-left: auto; }
+.eva-ai-team__team-menu { position: absolute; z-index: 1; right: 4px; top: 50%; transform: translateY(-50%); display: inline-flex; opacity: 0; pointer-events: none; }
 .eva-ai-team__team-heading:hover .eva-ai-team__team-menu,
 .eva-ai-team__team-heading:focus-within .eva-ai-team__team-menu { opacity: 1; pointer-events: auto; }
+.eva-ai-team__team-heading:has(> .eva-ai-team__team-menu):hover .eva-ai-team__team-button,
+.eva-ai-team__team-heading:has(> .eva-ai-team__team-menu):focus-within .eva-ai-team__team-button { padding-right: 36px; }
+.eva-ai-team__team-heading:has(> .eva-ai-team__team-menu):hover .eva-ai-team__unread-dot,
+.eva-ai-team__team-heading:has(> .eva-ai-team__team-menu):focus-within .eva-ai-team__unread-dot { opacity: 0; }
 .eva-ai-team__team-menu .semi-button { width: 28px; height: 28px; min-height: 28px; padding: 0; }
-.eva-ai-team__team-threads .wk-conv-compact-item--thread { padding-left: var(--eva-rail-team-thread-inset); min-height: var(--eva-rail-identity-height); }
+.eva-ai-team__team-thread-row { position: relative; min-height: var(--eva-rail-identity-height); border-radius: var(--eva-rail-nested-row-radius); }
+.eva-ai-team__team-threads .wk-conv-compact-item--thread { width: 100%; padding-left: var(--eva-rail-team-thread-inset); padding-right: var(--gds-space-2); min-height: var(--eva-rail-identity-height); }
+.eva-ai-team__team-thread-row .wk-conv-compact-badges { margin-left: auto; margin-right: 0; transition: opacity 120ms ease; }
+.eva-ai-team__team-thread-row:hover .eva-ai-team__session-actions,
+.eva-ai-team__team-thread-row:focus-within .eva-ai-team__session-actions { opacity: 1; pointer-events: auto; }
+.eva-ai-team__team-thread-row:hover .wk-conv-compact-badges,
+.eva-ai-team__team-thread-row:focus-within .wk-conv-compact-badges { opacity: 0; }
+.eva-ai-team__team-thread-row:not(:has(.wk-conv-compact-badges)):hover .wk-conv-compact-item--thread,
+.eva-ai-team__team-thread-row:not(:has(.wk-conv-compact-badges)):focus-within .wk-conv-compact-item--thread { padding-right: 36px; }
 .eva-ai-team__team-threads-more { display: flex; width: 100%; min-height: var(--eva-rail-session-height); align-items: center; gap: var(--gds-space-1); padding: 0 var(--gds-space-2) 0 var(--eva-rail-team-thread-label-inset); border: 0; border-radius: var(--eva-rail-nested-row-radius); background: transparent; color: var(--eva-rail-time); font: inherit; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); cursor: pointer; }
 .eva-ai-team__team-threads-more:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
 .eva-ai-team__team-threads-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }

@@ -526,6 +526,8 @@
       memberIds:record.system === false ? [...new Set((record.memberIds || []).filter(Boolean))] : null,
       messages:Array.isArray(record.messages) ? record.messages : [], draft:typeof record.draft === 'string' ? record.draft : '',
       threads:Array.isArray(record.threads) ? record.threads : [], collaborationStoriesV1:!!record.collaborationStoriesV1,
+      readAiMessageCount:Number.isInteger(record.readAiMessageCount) ? record.readAiMessageCount : undefined,
+      teamUnreadNotificationsV1:!!record.teamUnreadNotificationsV1,
       createdAt:record.createdAt || new Date().toISOString(), updatedAt:record.updatedAt || record.createdAt || new Date().toISOString()});
     let storage, state = {schemaVersion:2, groups:[blankGroup()]}, revision = 0, serial = 0;
     const listeners = new Set();
@@ -593,7 +595,7 @@
         const channelId = group.id + '____' + shortId;
         if (group.threads.some(item => item.id === channelId)) throw new Error('子区已存在');
         group.threads.push({...record, id:channelId, short_id:shortId, group_no:group.id, channel_id:channelId,
-          channel_type:5, name, status:1, created_at:new Date().toISOString(), updated_at:new Date().toISOString(), messages:[], draft:''});
+          channel_type:5, name, status:1, created_at:new Date().toISOString(), updated_at:new Date().toISOString(), messages:[], draft:'', readAiMessageCount:0});
         group.updatedAt=new Date().toISOString();publish(); return channelId;
       },
       updateThread(groupOrChannelId, channelOrPatch, patchMaybe) {
@@ -607,6 +609,16 @@
         }
         for (const field of ['status','deleted','joined','is_joined','member_count']) if (patch[field] !== undefined) thread[field] = patch[field];
         thread.updated_at = new Date().toISOString();group.updatedAt=thread.updated_at;publish();
+      },
+      unreadCount(groupId, channelId) { return unreadCountOf(target(groupId,channelId)); },
+      hasUnread(groupId) {
+        const groups=groupId?[groupById(groupId)]:state.groups;
+        return groups.some(group=>unreadCountOf(group)>0||group.threads.some(thread=>!thread.deleted&&unreadCountOf(thread)>0));
+      },
+      markRead(groupId, channelId) {
+        const current=target(groupId,channelId),total=incomingMessageCount(current);
+        if(current.readAiMessageCount===total)return false;
+        current.readAiMessageCount=total;publish();return true;
       },
       source(groupOrMembers, membersOrThread, threadMaybe) {
         const {groupId,members,selectedThreadId}=argsForSource(groupOrMembers,membersOrThread,threadMaybe),group=groupById(groupId),all=normalizeMembers(members);
@@ -623,6 +635,12 @@
           const member=ai[0];group.messages.unshift({id:group.id+':demo-start',kind:'text',sender:human,time:'08:55',text:'今天围绕供应链运营协同推进三件事：保供晨会、供应商整改、合同评审。各项材料放到对应子区。\n@'+member.name+' 请帮我整理协作安排。'},{id:group.id+':demo-plan',kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time:'08:56',text:'## 今日协作安排\n\n- **保供晨会**：风险排序和行动清单。\n- **供应商整改**：核对证据，保留待确认项。\n- **合同评审**：整理条款差异与人工决策事项。\n\n各子区已准备讨论材料和文件示例，业务结论由你确认。'});
           group.collaborationStoriesV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
         }
+        if(!group.teamUnreadNotificationsV1&&(!group.system||group.collaborationStoriesV1)){
+          [group,...group.threads].forEach(item=>normalizeReadState(item,true));
+          if(group.system){const sample=group.threads.find((item,index)=>index>0&&incomingMessageCount(item)>0)||group.threads.find(item=>incomingMessageCount(item)>0),total=incomingMessageCount(sample);if(sample&&total)sample.readAiMessageCount=total-1;}
+          group.teamUnreadNotificationsV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
+          Promise.resolve().then(publish);
+        }
         // Convert text mentions to the shared IM identity contract, including saved demo history.
         const mentionCandidates=[{uid:'all',name:'@所有人'},{uid:'all',name:'@全体成员'},...unique.map(member=>({uid:member.id,name:'@'+member.name}))];
         const historicalNames=new Map();
@@ -637,9 +655,10 @@
           if(message.mentions)message.mentions=message.mentions.map(mention=>{const current=all.find(m=>m.id===canonicalIdentity(mention.uid));return current?{...mention,uid:current.id,name:'@'+current.name}:mention;});
           return message;
         }).map(message=>({...message,mentions:[...(message.mentions||[]),...mentionCandidates.filter(candidate=>message.text?.includes(candidate.name)&&!message.mentions?.some(item=>item.uid===candidate.uid&&item.name===candidate.name))]}));
+        const threads=group.threads.filter(item=>!item.deleted).map(item=>{const {messages,draft,readAiMessageCount,...thread}=item;return {...thread,created_at:thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:thread.updated_at||thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name,unread:unreadCountOf(item)};});
         const channel = {id:group.id, name:group.name, identityAvatarUrl:group.avatar||undefined, chatType:'group', channel_type:2,
           ownerId:'u-wangyilin', memberIds:unique.map(member=>member.id), members:unique.length, fixedMembers:unique,
-          threads:group.threads.filter(item=>!item.deleted).map(({messages,draft,...thread})=>({...thread,created_at:thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:thread.updated_at||thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name})), unread:0, replyPolicy:'mention-only'};
+          threads, unread:unreadCountOf(group), replyPolicy:'mention-only'};
         return {conversationOnly:true, sidebarVariant:'ai-team-group', selectedThreadId, channels:[channel], cats:[],
           messages:{[group.id]:renderMessages(group.messages)},threadMessages:Object.fromEntries(group.threads.filter(item=>!item.deleted).map(item=>[item.id,renderMessages(item.messages)])),scopeNameOf:{},
           initialDraft:target(group.id,selectedThreadId).draft,
@@ -649,7 +668,7 @@
             const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),messageId='team-group:'+Date.now()+':'+current.messages.length;
             current.messages.push({id:messageId,kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text});
             unique.filter(member=>member.kind!=='human'&&(text.includes('@'+member.name+' ')||text.endsWith('@'+member.name))).forEach(member=>current.messages.push({id:messageId+':'+member.id,kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time,text:'【原型】已收到你的请求，当前未调用真实服务。'}));
-            current.draft='';current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;}
+            current.readAiMessageCount=incomingMessageCount(current);current.draft='';current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;}
         };
       }
     });

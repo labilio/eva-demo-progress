@@ -304,15 +304,16 @@ test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分�
   const sectionIcon = sectionTitle.indexOf("className:'eva-ai-team__section-icon'");
   const sectionLabel = sectionTitle.indexOf("className:'eva-ai-team__section-label'");
   const sectionCount = sectionTitle.indexOf("className:'eva-ai-team__section-count'");
+  const sectionUnread = sectionTitle.indexOf("unreadDot(label+'有未读消息')");
   const sectionChevron = sectionTitle.indexOf("className:'eva-ai-team__section-chevron'");
 
   assert.ok(sectionTitleStart >= 0 && sectionTitleEnd > sectionTitleStart, '未找到我的 AI 顶层分区标题渲染函数');
-  assert.ok(sectionIcon < sectionLabel && sectionLabel < sectionCount && sectionCount < sectionChevron, '顶层分区应按图标、标题、可选数量、右侧箭头排列');
+  assert.ok(sectionIcon < sectionLabel && sectionLabel < sectionCount && sectionCount < sectionUnread && sectionUnread < sectionChevron, '顶层分区应按图标、标题、可选数量、未读提示、右侧箭头排列');
   assert.match(sectionTitle, /className:'eva-ai-team__section-toggle','aria-label':label,'aria-expanded':!collapsed/);
   assert.match(sectionTitle, /className:'eva-ai-team__section-count','aria-hidden':true/);
-  assert.doesNotMatch(sectionTitle, /unreadDot/);
-  assert.match(imPatch, /sectionTitle\('teams','AI 团队',teamGroups\.length/);
-  assert.match(imPatch, /sectionTitle\('assistants','AI 助理',null/);
+  assert.match(sectionTitle, /hasUnread&&unreadDot\(label\+'有未读消息'\)/);
+  assert.match(imPatch, /sectionTitle\('teams','AI 团队',null,groupStore\.hasUnread\(\)/);
+  assert.match(imPatch, /sectionTitle\('assistants','AI 助理',null,false/);
   assert.doesNotMatch(imPatch, /sectionTitle\('assistants','AI 助理',availableIdentities\.length/);
   assert.doesNotMatch(imPatch, /hasDirectUnread/);
   assert.match(imPatch, /hasUnread=role==='digital'&&items\.some/);
@@ -331,6 +332,9 @@ test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分�
   assert.match(aiTeamCss, /\.eva-ai-team__session-actions\s*\{[^}]*position:\s*absolute[^}]*right:\s*4px/s);
   assert.match(aiTeamCss, /\.eva-ai-team__session-row:hover \.eva-ai-team__session-unread,[^}]*focus-within \.eva-ai-team__session-unread\s*\{\s*opacity:\s*0/s);
   assert.match(aiTeamCss, /\.eva-ai-team__session-row \.eva-ai-team__session\s*\{[^}]*width:\s*100%[^}]*padding-right:\s*var\(--gds-space-2\)/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-button > \.eva-ai-team__unread-dot\s*\{\s*margin-left:\s*auto/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-thread-row \.wk-conv-compact-badges\s*\{[^}]*margin-left:\s*auto[^}]*margin-right:\s*0/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-thread-row:hover \.wk-conv-compact-badges,[^}]*focus-within \.wk-conv-compact-badges\s*\{\s*opacity:\s*0/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-identity-name-row > \.eva-ai-team__unread-dot\s*\{\s*margin-left:\s*auto/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-ai-team__identity-button\s*\{[^}]*padding-right:\s*var\(--gds-space-2\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:hover \.eva-ai-team__identity-button,[^}]*focus-within \.eva-ai-team__identity-button,[^}]*is-active\) \.eva-ai-team__identity-button\s*\{\s*padding-right:\s*40px/s);
@@ -367,6 +371,11 @@ test('我的 AI 团队父群将子区展开与进入会话拆分为两个键盘�
   assert.match(conversationButton, /'aria-current':selected&&!selection\.sessionId\?'true':undefined/);
   assert.match(conversationButton, /onClick:\(\)=>choose\(group\.id,null\)/);
   assert.doesNotMatch(conversationButton, /'aria-expanded'|setCollapsed/);
+  assert.match(teamGroupItem, /hasUnread=groupStore\.hasUnread\(group\.id\)/);
+  assert.match(teamGroupItem, /hasUnread&&unreadDot\(group\.name\+'有未读消息'\)/);
+  assert.match(teamGroupItem, /className:'eva-ai-team__team-thread-row'/);
+  assert.match(teamGroupItem, /h\(ConvCompactItem,\{isThread:true,name:item\.name,unread:item\.unread/);
+  assert.match(teamGroupItem, /teamThreadMenu\(group,item\)/);
   assert.match(aiTeamCss, /\.eva-ai-team__team-toggle\s*\{[^}]*min-height:\s*var\(--eva-rail-identity-height\)[^}]*cursor:\s*pointer/s);
   assert.match(aiTeamCss, /\.eva-ai-team__team-toggle:focus-visible,[\s\S]*\.eva-ai-team__team-button:focus-visible\s*\{[^}]*outline:/s);
 });
@@ -420,7 +429,7 @@ test('我的 AI 位于个人导航并以共享编辑弹窗创建个人助理', (
   assert.match(sider, /rt==="\/messages"&&ut\.get\("evaIM"\)==="my-ai"\)return"personal"/);
   assert.match(runtime, /LABEL\$1="我的消息",SiderMessagesEntry=/);
   assert.match(sider, /case"my-ai":return.+SiderEvaStub,\{label:rt\.collapsed\?"Agent":"我的 Agent"/);
-  assert.match(sider, /EvaMyAiCollaborationIcon=\(\)=>.+rt\.hasUnread\(\)\|\|ct\.hasUnread\(\).+eva-my-ai-collaboration-icon__unread/s);
+  assert.match(sider, /EvaMyAiCollaborationIcon=\(\)=>.+window\.EvaMyAITeamGroup.+rt\.hasUnread\(\)\|\|ct\.hasUnread\(\)\|\|pt\.hasUnread\(\).+eva-my-ai-collaboration-icon__unread/s);
   assert.match(runtime, /LABEL\$2="我的项目",SiderCollabEntry=/);
   assert.doesNotMatch(sider, /我的Agent|React\.cloneElement/);
   assert.match(sider, /label:rt\.collapsed\?"自动化":"自动化任务"/);
