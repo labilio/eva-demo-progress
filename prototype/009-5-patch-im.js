@@ -136,8 +136,8 @@ function EvaAssistantEditor({request,host,onClose}) {
   const role=persona?'分身':'助理';
   const editorTitle=(editing?'编辑':'创建')+(persona?'云端分身':'本地助理');
   const syncLabel=editing?({synced:'已同步',syncing:'正在同步',waiting:'等待记忆同步',error:'同步失败'}[existing?.syncStatus]||'等待记忆同步'):'创建后同步';
-  const tabs=[['identity',role+'身份',persona?'分身名称与 Eva 头像固定，可配置角色定位和能力范围。':'定义'+role+'是谁，包括名字、头像、角色定位和能力范围。'],['personality',role+'性格','描述表达方式、判断风格和协作习惯。'],['about','关于你','补充需要了解的个人背景与偏好。'],['skills','技能','配置可以使用的技能，每行一个。'],['collaboration','协作','设置参与协作时的职责和规则。']];
-  if(persona)tabs.push(['source','来源与同步','选择来源助理后，配置与已授权记忆将自动同步到云端分身。']);
+  const tabs=[['identity',role+'身份',persona?'分身名称与 Eva 头像固定，可配置角色定位和能力范围。':'定义'+role+'是谁，包括名字、头像、角色定位和能力范围。'],['personality',role+'性格','描述表达方式、判断风格和协作习惯。'],['about','关于你','补充需要了解的个人背景与偏好。'],['skills','技能','配置可以使用的技能，每行一个。']];
+  if(persona)tabs.push(['collaboration','协作','设置参与协作时的职责和规则。'],['source','来源与同步','选择来源助理后，配置与已授权记忆将自动同步到云端分身。']);
   function changeSource(value){const next=value==='__independent__'?null:value;setSourceAssistantId(next);const selected=snapshot.localAssistants.find(i=>i.id===next);if(selected)setDraft(d=>({...d,...selected.configuration,...(persona?{name:store.personaName(),avatar:''}:{}),skills:(selected.configuration.skills||[]).join('\n')}));setError('');}
   function applyTemplate(item){setDraft(d=>({...d,name:d.name||item.name, ...item.configuration,...(persona?{name:store.personaName(),avatar:''}:{}),skills:item.configuration.skills.join('\n')}));setError('');}
   function quickCreate(){if(!draft.name.trim()){setError('请先填写'+role+'名称');return;}setDraft(d=>({...d,identity:d.identity||('你是'+d.name+'，协助主人处理工作事项。'),personality:d.personality||'清晰、友善；关键决策由主人确认。'}));}

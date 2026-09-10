@@ -33,6 +33,7 @@ test('个人助理在我的 Agent 内用共享弹窗新建，并通过点击头�
     await editor.locator('.eva-create-assistant-modal').waitFor();
     assert.equal(await page.evaluate(() => location.hash), '#/messages?evaIM=my-ai');
     assert.equal(await editor.getByLabel('头像图片地址').count(), 0);
+    assert.equal(await editor.getByRole('tab', { name: '协作', exact: true }).count(), 0);
     await editor.getByLabel('助理名称').fill(name);
     const upload = editor.getByLabel('选择助理头像图片');
     await editor.getByRole('button', { name: '上传助理头像' }).click();
@@ -54,6 +55,7 @@ test('个人助理在我的 Agent 内用共享弹窗新建，并通过点击头�
     await createdIdentity.locator('.eva-ai-team__identity-heading').hover();
     await createdIdentity.getByRole('button', { name: `编辑配置 ${name}` }).click();
     await editor.locator('.eva-create-assistant-modal').waitFor();
+    assert.equal(await editor.getByRole('tab', { name: '协作', exact: true }).count(), 0);
     await editor.getByRole('button', { name: '更换助理头像' }).click();
     await editor.getByLabel('选择助理头像图片').setInputFiles({ name: 'avatar-next.png', mimeType: 'image/png', buffer: secondAvatar });
     await editor.getByRole('button', { name: '保存', exact: true }).click();

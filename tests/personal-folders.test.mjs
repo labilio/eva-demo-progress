@@ -84,6 +84,8 @@ test('个人 Eva 不暴露助理创建，但我的 AI 使用共享编辑弹窗�
  assert.doesNotMatch(imPatch,/evaCreate=mine&evaReturn=/);
  assert.match(imPatch,/'aria-label':draft\.avatar\?'更换助理头像':'上传助理头像'/);
  assert.doesNotMatch(imPatch,/头像图片地址/);
+ assert.match(imPatch,/if\(persona\)tabs\.push\(\['collaboration','协作'/);
+ assert.doesNotMatch(imPatch,/\['skills','技能'.+\],\['collaboration','协作'/);
 });
 
 

@@ -113,6 +113,8 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /'aria-label':draft\.avatar\?'更换助理头像':'上传助理头像'/);
   assert.match(imPatch, /className:'eva-editor-avatar-button'.+avatarInput\.current\?\.click\(\)/s);
   assert.doesNotMatch(imPatch, /头像图片地址|粘贴头像图片地址/);
+  assert.match(imPatch, /if\(persona\)tabs\.push\(\['collaboration','协作'/);
+  assert.doesNotMatch(imPatch, /\['skills','技能'.+\],\['collaboration','协作'/);
   assert.match(imPatch, /className:'eva-ai-team-editor__selected-avatar'.+EvaAIIdentity\.avatar\(item\.appearance,28,h\).+className:'eva-ai-team-editor__selected-name'/s);
   assert.doesNotMatch(read('prototype/046-ai-team.css'), /\.eva-ai-team-editor__selected-item\s*>\s*span/);
   assert.match(imPatch, /teamGroups\.map\(teamGroupItem\)/);
