@@ -119,7 +119,10 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(read('prototype/046-ai-team.css'), /\.eva-ai-team-editor__selected-item\s*>\s*span/);
   assert.match(imPatch, /teamGroups\.map\(teamGroupItem\)/);
   assert.match(imPatch, /className:'eva-ai-team__team-default'\},'默认'/);
-  assert.match(imPatch, /className:'eva-ai-team__group-count'/);
+  assert.doesNotMatch(imPatch, /className:'eva-ai-team__group-count'/);
+  assert.match(imPatch, /className:'eva-ai-team__session-unread'/);
+  assert.match(imPatch, /className:'eva-ai-team__unread-dot'/);
+  assert.doesNotMatch(imPatch, /className:'eva-ai-team__session-time'/);
   assert.doesNotMatch(imPatch, /Math\.max\(0,channel\.members-1\)/);
   assert.match(imPatch, /EvaAIIdentityAvatar.+eva-ai-team__identity-name.+AiBadge/s);
   assert.match(imPatch, /EvaAIIdentityAvatar,\{appearance:evaIdentityAppearance\(i\),size:22\}/);
@@ -299,12 +302,16 @@ test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分�
   const sectionIcon = sectionTitle.indexOf("className:'eva-ai-team__section-icon'");
   const sectionLabel = sectionTitle.indexOf("className:'eva-ai-team__section-label'");
   const sectionCount = sectionTitle.indexOf("className:'eva-ai-team__section-count'");
+  const sectionUnread = sectionTitle.indexOf("unreadDot(label+'有未读消息')");
   const sectionChevron = sectionTitle.indexOf("className:'eva-ai-team__section-chevron'");
 
   assert.ok(sectionTitleStart >= 0 && sectionTitleEnd > sectionTitleStart, '未找到我的 AI 顶层分区标题渲染函数');
-  assert.ok(sectionIcon < sectionLabel && sectionLabel < sectionCount && sectionCount < sectionChevron, '顶层分区应按图标、标题、数量、右侧箭头排列');
+  assert.ok(sectionIcon < sectionLabel && sectionLabel < sectionCount && sectionCount < sectionUnread && sectionUnread < sectionChevron, '顶层分区应按图标、标题、数量或未读提示、右侧箭头排列');
   assert.match(sectionTitle, /className:'eva-ai-team__section-toggle','aria-label':label,'aria-expanded':!collapsed/);
   assert.match(sectionTitle, /className:'eva-ai-team__section-count','aria-hidden':true/);
+  assert.match(imPatch, /sectionTitle\('teams','AI 团队',teamGroups\.length/);
+  assert.match(imPatch, /sectionTitle\('assistants','AI 助理',hasDirectUnread/);
+  assert.doesNotMatch(imPatch, /sectionTitle\('assistants','AI 助理',availableIdentities\.length/);
   assert.match(sectionTitleRule, /min-height:\s*40px/);
   assert.match(sectionTitleRule, /border-radius:\s*var\(--gds-radius-key\)/);
   assert.doesNotMatch(aiTeamCss, /--eva-ai-section-(?:bg|meta)/);
@@ -314,6 +321,8 @@ test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分�
   assert.doesNotMatch(sectionTitleRule, /box-shadow/);
   assert.match(aiTeamCss, /\.eva-ai-team__section-icon\s*\{[^}]*width:\s*20px[^}]*color:\s*var\(--gds-color-text-secondary\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__section-count\s*\{[^}]*color:\s*var\(--eva-rail-time\)[^}]*text-align:\s*right/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__unread-dot\s*\{[^}]*width:\s*6px[^}]*background:\s*var\(--eva-unread-text\)/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__session-unread\s*\{[^}]*background:\s*var\(--eva-unread-surface\)[^}]*color:\s*var\(--eva-unread-text\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__section-chevron\s*\{[^}]*color:\s*var\(--gds-color-text-secondary\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__section-label\s*\{[^}]*flex:\s*1[^}]*text-overflow:\s*ellipsis/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*min-height:\s*32px[^}]*background:\s*transparent/s);
@@ -395,6 +404,7 @@ test('我的 AI 位于个人导航并以共享编辑弹窗创建个人助理', (
   assert.match(sider, /rt==="\/messages"&&ut\.get\("evaIM"\)==="my-ai"\)return"personal"/);
   assert.match(runtime, /LABEL\$1="我的消息",SiderMessagesEntry=/);
   assert.match(sider, /case"my-ai":return.+SiderEvaStub,\{label:rt\.collapsed\?"Agent":"我的 Agent"/);
+  assert.match(sider, /EvaMyAiCollaborationIcon=\(\)=>.+rt\.hasUnread\(\)\|\|ct\.hasUnread\(\).+eva-my-ai-collaboration-icon__unread/s);
   assert.match(runtime, /LABEL\$2="我的项目",SiderCollabEntry=/);
   assert.doesNotMatch(sider, /我的Agent|React\.cloneElement/);
   assert.match(sider, /label:rt\.collapsed\?"自动化":"自动化任务"/);

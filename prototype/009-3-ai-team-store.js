@@ -34,6 +34,14 @@
   window.EvaAIPrivateConversations = Object.freeze({group: privateGroup, threadRecord, source: threadSource});
   const STORAGE_KEY = 'eva:ai-team:v2';
   const copy = value => JSON.parse(JSON.stringify(value));
+  const incomingMessageCount = session => Array.isArray(session?.messages) ? session.messages.filter(message => message?.sender?.ai === true).length : 0;
+  const normalizeReadState = (session, markExistingRead = false) => {
+    const total = incomingMessageCount(session);
+    if (!Number.isInteger(session.readAiMessageCount) || session.readAiMessageCount < 0) session.readAiMessageCount = markExistingRead ? total : 0;
+    session.readAiMessageCount = Math.min(session.readAiMessageCount, total);
+    return session;
+  };
+  const unreadCountOf = session => Math.max(0, incomingMessageCount(session) - (Number.isInteger(session?.readAiMessageCount) ? session.readAiMessageCount : 0));
   function freeze(value) {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) {
       Object.values(value).forEach(freeze);
@@ -70,7 +78,7 @@
     const identities = [makeIdentity('ai-general', 'assistant', defaultName, localAssistants[0], time), makeIdentity('persona-initial', 'persona', defaultPersonaName, localAssistants[0], time)];
     const sessions = identities.map((identity, i) => ({
       id: i ? 'team-persona-welcome' : 'team-assistant-welcome', identityId: identity.id,
-      title: i ? '团队沟通接待' : '整理工作安排', updatedAt: time,
+      title: i ? '团队沟通接待' : '整理工作安排', updatedAt: time, readAiMessageCount: 0,
       messages: [{ id: 'team-seed-' + i, kind: 'text', sender: { uid: identity.id, name: identity.name, color: '#1563EB', ai: true }, time,
         text: i ? '你好，我可以替你接收协作请求并跟进进展。' : '把需要整理的事项发给我，我们一起安排。' }]
     }));
@@ -92,7 +100,7 @@
     if (!record(state) || state.schemaVersion !== 1 || !Array.isArray(state.localAssistants) || !Array.isArray(state.identities) || !Array.isArray(state.sessions) || !record(state.drafts)) return false;
     if (!state.localAssistants.every(x => record(x) && str(x.id) && str(x.name) && Number.isInteger(x.version) && x.version > 0 && typeof x.online === 'boolean' && config(x.configuration))) return false;
     if (!state.identities.every(x => record(x) && str(x.id) && str(x.name) && ['assistant', 'persona'].includes(x.role) && ['ready', 'offline'].includes(x.status) && ['synced', 'syncing', 'waiting', 'error'].includes(x.syncStatus) && str(x.lastSyncedAt) && Number.isInteger(x.configVersion) && x.configVersion > 0 && config(x.configuration) && ((x.role === 'persona' && x.sourceAssistantId === null && x.syncStatus === 'synced') || state.localAssistants.some(l => l.id === x.sourceAssistantId && x.configVersion <= l.version)))) return false;
-    if (!state.sessions.every(x => record(x) && str(x.id) && str(x.title) && str(x.updatedAt) && (x.pinned === undefined || typeof x.pinned === 'boolean') && state.identities.some(i => i.id === x.identityId) && Array.isArray(x.messages) && x.messages.every(message))) return false;
+    if (!state.sessions.every(x => record(x) && str(x.id) && str(x.title) && str(x.updatedAt) && (x.pinned === undefined || typeof x.pinned === 'boolean') && Number.isInteger(x.readAiMessageCount) && x.readAiMessageCount >= 0 && x.readAiMessageCount <= incomingMessageCount(x) && state.identities.some(i => i.id === x.identityId) && Array.isArray(x.messages) && x.messages.every(message))) return false;
     return unique(state.localAssistants) && unique(state.identities) && unique(state.sessions) && Object.entries(state.drafts).every(([key, value]) => str(value) && (state.sessions.some(s => s.id === key) || state.identities.some(i => 'draft:' + i.id === key))) && new Set(state.identities.filter(i => i.role === 'assistant').map(i => i.sourceAssistantId)).size === state.identities.filter(i => i.role === 'assistant').length;
   }
   // Migrate only known generated copy; never rewrite user-authored messages.
@@ -127,6 +135,8 @@
             session.messages.forEach(message => {
               if (message?.sender && typeof message.sender === 'object' && message.sender.color === undefined) message.sender.color = '#1563EB';
             });
+            // Existing histories predate unread tracking and must stay read after upgrade.
+            normalizeReadState(session, true);
           });
         }
         if (!valid(parsed)) throw new Error('Invalid demo state');
@@ -158,7 +168,7 @@
         if (state.drafts[key]) {
           let topicId = 'migrated-draft:' + previous.id;
           while (state.sessions.some(session => session.id === topicId)) topicId += ':saved';
-          state.sessions.push({id:topicId,identityId:primary.id,title:'未发送草稿',updatedAt:now(),messages:[]});
+          state.sessions.push({id:topicId,identityId:primary.id,title:'未发送草稿',updatedAt:now(),readAiMessageCount:0,messages:[]});
           state.drafts[topicId] = state.drafts[key];
         }
         delete state.drafts[key];
@@ -189,7 +199,7 @@
           id: identityId === 'ai-general' ? 'team-assistant-welcome' : 'team-assistant-' + local.id + '-welcome',
           identityId: identity.id,
           title: identityId === 'ai-general' ? '整理工作安排' : '开始新对话',
-          updatedAt: now(),
+          updatedAt: now(), readAiMessageCount: 0,
           messages: [{id: 'restored-' + identity.id, kind: 'text', sender: {uid: identity.id, name: identity.name, color: '#1563EB', ai: true}, time: now(), text: identityId === 'ai-general' ? '把需要整理的事项发给我，我们一起安排。' : '你好，我可以协助你整理研发资料和评审要点。'}]
         });
       });
@@ -293,18 +303,35 @@
       }
       identity.name = local.name;
     });
+    // Initialize unread tracking without turning historical conversations into unread.
+    state.sessions.forEach(session => normalizeReadState(session, true));
+    // The review profile ships two controlled unread examples so notification states
+    // remain visible without reclassifying user-authored history.
+    if (options.profile === 'review' && !state.unreadNotificationsV1) {
+      ['team-assistant-welcome', 'team-persona-welcome'].forEach(baseId => {
+        const session = state.sessions.find(item => item.id === baseId + '-example') || state.sessions.find(item => item.id === baseId);
+        const total = incomingMessageCount(session);
+        if (session && total) session.readAiMessageCount = total - 1;
+      });
+      state.unreadNotificationsV1 = true;
+    }
     // Add the Octo parent/topic relationship without changing local IDs or user content.
     state.sessions = state.sessions.map(record => ['persona', 'assistant'].includes(state.identities.find(i => i.id === record.identityId)?.role)
       ? threadRecord(record.identityId, record) : record);
     try { storage?.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { warning = '本地存储不可用，刷新后数据可能丢失。'; }
     state.storageWarning = warning;
-    let snapshot = freeze(copy(state));
+    const makeSnapshot = () => {
+      const value = copy(state);
+      value.sessions.forEach(session => { session.unreadCount = unreadCountOf(session); });
+      return freeze(value);
+    };
+    let snapshot = makeSnapshot();
     const listeners = new Set(), connections = new Map(), syncTokens = new Map();
     let serial = 0;
     const id = prefix => { let value; do { value = prefix + '-' + (++serial); } while ([...state.localAssistants, ...state.identities, ...state.sessions].some(x => x.id === value)); return value; };
     function publish() {
       try { storage?.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { state.storageWarning = '本地存储不可用，刷新后数据可能丢失。'; }
-      snapshot = freeze(copy(state));
+      snapshot = makeSnapshot();
       [...listeners].forEach(listener => listener());
     }
     const localById = key => { const local = state.localAssistants.find(l => l.id === key); if (!local) throw new Error('找不到本地助理'); return local; };
@@ -434,6 +461,21 @@
       delete state.drafts[sessionId];
       publish();
     }
+    function markRead(sessionId) {
+      const session = state.sessions.find(item => item.id === sessionId);
+      if (!session) return false;
+      const total = incomingMessageCount(session);
+      if (session.readAiMessageCount === total) return false;
+      session.readAiMessageCount = total;
+      publish();
+      return true;
+    }
+    function unreadCount(sessionId) {
+      return unreadCountOf(state.sessions.find(item => item.id === sessionId));
+    }
+    function hasUnread(identityId) {
+      return state.sessions.some(session => (!identityId || session.identityId === identityId) && unreadCountOf(session) > 0);
+    }
     function createThread(identityId) {
       const identity = identityById(identityId);
       if (!['persona', 'assistant'].includes(identity.role)) throw new Error('请选择云端分身或个人助理');
@@ -441,7 +483,7 @@
       let title = '新对话', number = 2;
       while (records.some(s => s.title === title)) title = '新对话 ' + number++;
       const base = {id: id((identity.role === 'persona' ? 'team-thread-' : 'team-session-') + (window.crypto?.randomUUID?.() || Date.now())), identityId, title,
-        autoTitle: true, messages: [], updatedAt: now()};
+        autoTitle: true, messages: [], updatedAt: now(), readAiMessageCount: 0};
       // 云端分身使用团队私聊中的 topic 记录；本地助理保留自己的本地会话记录。
       const record = identity.role === 'persona' ? threadRecord(identityId, base) : base;
       state.sessions.push(record);
@@ -464,7 +506,7 @@
       const time = now(), body = text.trim();
       if (!session) {
         session = {id: id(identity.role === 'persona' ? 'team-thread' : 'team-session'), identityId,
-          title: Array.from(body).slice(0, 20).join(''), messages: [], updatedAt: time};
+          title: Array.from(body).slice(0, 20).join(''), messages: [], updatedAt: time, readAiMessageCount: 0};
         session = threadRecord(identityId, session);
         state.sessions.push(session);
       }
@@ -475,7 +517,7 @@
       session.updatedAt = time;
       delete state.drafts[sessionId || 'draft:' + identityId]; publish(); return session.id;
     }
-    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, setSessionFlag, deleteSession });
+    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, markRead, unreadCount, hasUnread, setSessionFlag, deleteSession });
   }
   // “我的 AI”中的默认群“我的 OPT”动态包含所有 AI；自定义团队保存创建时的成员快照。
   function createTeamGroupStore(options = {}) {

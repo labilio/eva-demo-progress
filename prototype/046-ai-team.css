@@ -105,6 +105,13 @@
 .eva-ai-team__section-title:has(.eva-ai-team__section-toggle:active) { background: var(--eva-rail-selected); }
 .eva-ai-team__section-title h2 { min-width: 0; flex: 1; margin: 0; color: inherit; font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--gds-font-weight-semibold); }
 .eva-ai-team__section-count { min-width: 18px; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-medium); text-align: right; }
+.eva-ai-team__unread-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: var(--eva-unread-text);
+}
 .eva-ai-team__section-toggle { display: flex; width: 100%; min-height: 40px; align-items: center; gap: var(--gds-space-2); padding: 0 var(--gds-space-1); border: 0; border-radius: var(--gds-radius-key); background: transparent; color: inherit; text-align: left; font: inherit; cursor: pointer; }
 .eva-ai-team__section-toggle:hover { background: transparent; }
 .eva-ai-team__section-toggle:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
@@ -177,7 +184,6 @@
   line-height: 1.5;
   font-weight: var(--gds-font-weight-semibold);
 }
-.eva-ai-team__group-count { min-width: 18px; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); text-align: right; }
 .eva-ai-team__group-chevron { flex: 0 0 22px; transition: transform 120ms ease; }
 .eva-ai-team__group-chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__group-content { margin-top: 0; }
@@ -223,7 +229,7 @@
   padding: 2px var(--gds-space-2) 2px var(--eva-rail-session-indent);
   border-radius: var(--eva-rail-nested-row-radius);
 }
-/* Actions share the time slot; sibling buttons avoid nested interactive elements. */
+/* Actions keep their own slot so the unread badge remains visible on hover. */
 .eva-ai-team__session-row { position: relative; min-height: var(--eva-rail-session-height); border-radius: var(--eva-rail-nested-row-radius); transition: background-color 120ms ease; }
 .eva-ai-team__session-row:hover { background: var(--eva-rail-hover); }
 .eva-ai-team__session-row.is-selected,
@@ -234,15 +240,28 @@
 .eva-ai-team__session-actions .semi-button[aria-pressed="true"] { color: var(--eva-rail-primary); background: var(--eva-rail-selected); }
 .eva-ai-team__session-row:hover .eva-ai-team__session-actions,
 .eva-ai-team__session-row:focus-within .eva-ai-team__session-actions { opacity: 1; pointer-events: auto; }
-.eva-ai-team__session-row:hover .eva-ai-team__session-time,
-.eva-ai-team__session-row:focus-within .eva-ai-team__session-time { visibility: hidden; }
-.eva-ai-team__session-row .eva-ai-team__session { grid-template-columns: minmax(0, 1fr) 50px; }
-.eva-ai-team__session-row .eva-ai-team__session-time { justify-self: end; }
+.eva-ai-team__session-row .eva-ai-team__session { grid-template-columns: minmax(0, 1fr) auto; padding-right: 36px; }
 .eva-ai-team__session-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-ai-team__session-title { grid-column: 1; font-size: var(--eva-rail-label-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-regular); color: var(--eva-rail-secondary); }
 .eva-ai-team__session.is-selected .eva-ai-team__session-title,
 .eva-ai-team__session-row.is-selected .eva-ai-team__session-title { color: var(--eva-rail-primary); font-weight: var(--gds-font-weight-regular); }
-.eva-ai-team__session-time { grid-column: 2; grid-row: 1; align-self: center; white-space: nowrap; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); }
+.eva-ai-team__session-unread {
+  grid-column: 2;
+  grid-row: 1;
+  display: inline-flex;
+  min-width: 18px;
+  height: 16px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: var(--eva-unread-surface);
+  color: var(--eva-unread-text);
+  font: 500 11px/16px var(--eva-font-sans);
+  white-space: nowrap;
+}
 .eva-ai-team__session:hover,
 .eva-ai-team__digital-button:hover { background: var(--eva-rail-hover); }
 .eva-ai-team__identity-heading .eva-ai-team__identity-button:hover,
