@@ -312,7 +312,7 @@ test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分�
   assert.match(sectionTitle, /className:'eva-ai-team__section-toggle','aria-label':label,'aria-expanded':!collapsed/);
   assert.match(sectionTitle, /className:'eva-ai-team__section-count','aria-hidden':true/);
   assert.match(sectionTitle, /hasUnread&&unreadDot\(label\+'有未读消息'\)/);
-  assert.match(imPatch, /sectionTitle\('teams','AI 团队',null,groupStore\.hasUnread\(\)/);
+  assert.match(imPatch, /sectionTitle\('teams','AI 团队',null,false/);
   assert.match(imPatch, /sectionTitle\('assistants','AI 助理',null,false/);
   assert.doesNotMatch(imPatch, /sectionTitle\('assistants','AI 助理',availableIdentities\.length/);
   assert.doesNotMatch(imPatch, /hasDirectUnread/);
