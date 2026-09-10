@@ -334,6 +334,7 @@ test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分�
   assert.match(aiTeamCss, /\.eva-ai-team__session-row \.eva-ai-team__session\s*\{[^}]*width:\s*100%[^}]*padding-right:\s*var\(--gds-space-2\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__team-button > \.eva-ai-team__unread-dot\s*\{\s*margin-left:\s*auto/s);
   assert.match(aiTeamCss, /\.eva-ai-team__team-thread-row \.wk-conv-compact-badges\s*\{[^}]*margin-left:\s*auto[^}]*margin-right:\s*0/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-thread-row \.wk-conv-compact-badge\s*\{[^}]*background:\s*var\(--eva-unread-surface\)[^}]*color:\s*var\(--eva-unread-text\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__team-thread-row:hover \.wk-conv-compact-badges,[^}]*focus-within \.wk-conv-compact-badges\s*\{\s*opacity:\s*0/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-identity-name-row > \.eva-ai-team__unread-dot\s*\{\s*margin-left:\s*auto/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-ai-team__identity-button\s*\{[^}]*padding-right:\s*var\(--gds-space-2\)/s);
