@@ -407,7 +407,7 @@ test('我的 AI 位于个人导航并以共享编辑弹窗创建个人助理', (
   assert.match(creator, /returnTo\?navigate\(returnTo\):navigatePersonal/);
 });
 
-test('Agent 创建中心不显示为一级导航但保留我的 Agent 创建流程', () => {
+test('Agent 创建中心不显示为一级导航且我的 Agent 使用共享编辑弹窗', () => {
   const sider = read('prototype/009-7-patch-sider.js');
   const imPatch = read('prototype/009-5-patch-im.js');
   const creator = read('prototype/047-digital-employees.js');
@@ -415,7 +415,8 @@ test('Agent 创建中心不显示为一级导航但保留我的 Agent 创建流�
   assert.match(sider, /EVA_COMMON_NAV=Object\.freeze\(\["digital-employees"\]\)/);
   assert.doesNotMatch(sider, /EVA_COMMON_NAV=Object\.freeze\([^;]*agent-create/);
   assert.match(sider, /if\(ct==="Agent创建中心"\)return React\.createElement\(EvaDigitalEmployeesPage,\{view:"create"\}\)/);
-  assert.match(imPatch, /navigate\('\/eva-stub\/Agent创建中心\?evaCreate=mine&evaReturn=/);
+  assert.match(imPatch, /const openPersonalAssistant=\(\)=>window\.__evaOpenAssistantEditor\?\.\(\{mode:'create',role:'assistant'/);
+  assert.doesNotMatch(imPatch, /evaCreate=mine&evaReturn=/);
   assert.match(creator, /h\('h1',null,'Agent 创建中心'\)/);
 });
 
