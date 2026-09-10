@@ -79,7 +79,10 @@ test('Eva DOM 页面统一通过 Lucide 渲染器输出功能图标', () => {
   assert.match(modeLayer, /treeButton\('personal', '个人空间', 'file'/, '个人空间保留既定文件图标语义');
   assert.match(modeLayer, /treeButton\('trash', '回收站', 'folder'/, '回收站保留既定文件夹图标语义');
   assert.match(modeLayer, /workspace: 'layout-grid'/, '项目空间应使用项目网格语义图标');
-  assert.doesNotMatch(read('prototype/050-file-library.css'), /content\s*:\s*["']↗/);
+  assert.doesNotMatch(modeLayer, /eva-drive-icon--project/, '项目图标不得附加旧版专用描边类');
+  const fileLibraryStyles = read('prototype/050-file-library.css');
+  assert.doesNotMatch(fileLibraryStyles, /eva-drive-icon--project/, '项目图标应沿用文件树统一尺寸与 Lucide 描边');
+  assert.doesNotMatch(fileLibraryStyles, /content\s*:\s*["']↗/);
 });
 
 test('IM 构建产物不再输出 Eva 手绘文件与更多操作图标', () => {

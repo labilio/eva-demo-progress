@@ -65,8 +65,8 @@ test('文件库项目空间复用标准 Lucide LayoutGrid 图标',()=>{
   assert.match(drive,/workspace: 'layout-grid'/);
   assert.match(lucide,/'layout-grid': \[\["rect"/);
   assert.doesNotMatch(drive,/<symbol id="eva-i-workspace"/);
-  assert.match(drive,/iconName === 'workspace' \? 'eva-drive-icon--project'/);
-  assert.match(styles,/\.eva-drive__tree \.eva-drive-icon--project\s*\{[^}]*width:\s*16px;[^}]*height:\s*16px;[^}]*stroke-width:\s*3;/s);
+  assert.doesNotMatch(drive,/eva-drive-icon--project/);
+  assert.doesNotMatch(styles,/eva-drive-icon--project/);
 });
 test('文件库在当前空间新建文件夹时不再选择所属空间',()=>{
   const source=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');

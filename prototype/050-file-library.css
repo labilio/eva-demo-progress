@@ -72,12 +72,6 @@ body.eva-message-hierarchy-ready .eva-native-page-host > .eva-drive .eva-drive__
   font-size: 13px;
 }
 
-.eva-drive__tree .eva-drive-icon--project {
-  width: 16px;
-  height: 16px;
-  stroke-width: 3;
-}
-
 .eva-drive__tree-spacer {
   flex: 1;
 }

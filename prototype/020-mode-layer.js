@@ -582,7 +582,7 @@
   function treeButton(scope, label, iconName, child, spaceId) {
     var current = state.driveScope === scope && (!spaceId || state.workspaceId === spaceId);
     var spaceAttribute = !spaceId ? '' : ' data-workspace-id="' + escapeHTML(spaceId) + '"';
-    var iconClass = 'eva-drive-icon ' + (iconName === 'folder' ? 'is-folder' : iconName === 'workspace' ? 'eva-drive-icon--project' : '');
+    var iconClass = 'eva-drive-icon ' + (iconName === 'folder' ? 'is-folder' : '');
     return '<button type="button" class="' + (child ? 'is-child' : '') + '" data-drive-scope="' + scope + '"' + spaceAttribute + ' aria-current="' + (current ? 'page' : 'false') + '">' + icon(iconName, iconClass) + '<span>' + escapeHTML(label) + '</span></button>';
   }
 
