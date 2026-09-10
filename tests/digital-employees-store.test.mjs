@@ -60,6 +60,7 @@ test('all digital employee names use the expert suffix for seeds, saved state an
   assert.equal(store.get('old-copy').name,'数据提取专家');
   const created=store.create('dify',{name:'会议纪要清洗'});
   assert.equal(created.name,'会议纪要专家');
+  assert.equal(store.appearance(created).avatar,'prototype/assets/project-agent-bot.svg');
 });
 
 test('HR onboarding employee and rich file conversation migrate once for existing users',()=>{
