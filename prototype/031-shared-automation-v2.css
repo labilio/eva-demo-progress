@@ -73,95 +73,22 @@
   .semi-modal:has(.eva-auto-settings) .arco-btn-primary { background: var(--eva-action-primary); border-color: var(--eva-action-primary); }
   .semi-modal:has(.eva-auto-settings) .arco-btn-primary[disabled] { background: var(--eva-action-disabled-fill); border-color: transparent; color: var(--eva-text-muted); }
 
-/* Project automation keeps Loop's original card behavior with Eva's visual language. */
-.collab-body > .loop-page{
-  height:100%;
-  min-height:0;
-  overflow:auto;
-  box-sizing:border-box;
-  padding:var(--eva-space-6) max(var(--eva-space-6),calc((100% - 1084px)/2)) var(--eva-space-12);
-  background:var(--eva-surface-primary);
-  color:var(--eva-text-primary);
-  font-family:var(--eva-font-sans);
-}
-.collab-body > .loop-page .loop-page__head{min-height:40px;margin-bottom:var(--eva-space-6)}
-.collab-body > .loop-page .loop-automation-cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:var(--eva-space-3);
-}
-.collab-body > .loop-page .loop-automation-card{
-  position:relative;
-  display:flex;
-  min-height:154px;
-  flex-direction:column;
-  gap:var(--eva-space-2);
-  box-sizing:border-box;
-  padding:var(--eva-space-4);
-  border:var(--eva-border-standard-w) solid var(--eva-border-subtle);
-  border-radius:var(--eva-radius-chip);
-  background:var(--eva-surface-primary);
-  box-shadow:none;
-  color:var(--eva-text-primary);
-  cursor:pointer;
-  transition:border-color .15s ease,background-color .15s ease,box-shadow .15s ease;
-}
-.collab-body > .loop-page .loop-automation-card:hover{
-  border-color:var(--eva-border-focus);
-  background:var(--eva-surface-primary);
-  box-shadow:var(--eva-shadow-hairline);
-}
-.collab-body > .loop-page .loop-automation-card:focus-visible{
-  outline:var(--eva-border-focus-w) solid var(--eva-border-focus);
-  outline-offset:2px;
-}
-.collab-body > .loop-page .loop-automation-card__head{gap:var(--eva-space-2)}
-.collab-body > .loop-page .loop-automation-card__title{
-  color:var(--eva-text-primary);
-  font:var(--eva-fw-medium) 15px/24px var(--eva-font-sans);
-}
-.collab-body > .loop-page .loop-automation-card__desc{
-  min-height:44px;
-  color:var(--eva-text-secondary-accessible);
-  font:var(--eva-fw-regular) 14px/22px var(--eva-font-sans);
-}
-.collab-body > .loop-page .loop-automation-card__meta{
-  color:var(--eva-text-secondary-accessible);
-  font:var(--eva-fw-regular) 12px/16px var(--eva-font-sans);
-}
-.collab-body > .loop-page .loop-automation-card__paused{color:var(--eva-text-secondary-accessible)}
-.collab-body > .loop-page .loop-automation-card__foot{
-  margin-top:auto;
-  padding-top:var(--eva-space-3);
-  border-top:var(--eva-border-standard-w) solid var(--eva-border-faint);
-}
-.collab-body > .loop-page .loop-automation-card__assignee-name{
-  color:var(--eva-text-secondary);
-  font:var(--eva-fw-regular) 12px/16px var(--eva-font-sans);
-}
-.collab-body > .loop-page .loop-automation-card__assignee .eva-identity-name-row{min-width:0}
-.collab-body > .loop-page .loop-automation-card__dot{width:8px;height:8px}
-.collab-body > .loop-page .loop-automation-card__more{
-  right:var(--eva-space-2);
-  bottom:var(--eva-space-2);
-  border-radius:var(--eva-radius-control);
-  background:var(--eva-surface-primary);
-}
-.collab-body > .loop-page .loop-automation-card__more .arco-btn,
-.collab-body > .loop-page .loop-automation-card__more .semi-button{
-  width:32px;
-  height:32px;
-  border-radius:var(--eva-radius-control);
-  color:var(--eva-text-secondary);
-}
-.collab-body > .loop-page .loop-automation-card__more :is(.arco-btn,.semi-button):hover{
-  background:var(--eva-overlay-hover);
-  color:var(--eva-text-primary);
-}
-@media (max-width:900px){
-  .collab-body > .loop-page{padding:var(--eva-space-3-5) var(--eva-space-4) var(--eva-space-8)}
-  .collab-body > .loop-page .loop-automation-cards{grid-template-columns:1fr}
-}
-@media (prefers-reduced-motion:reduce){
-  .collab-body > .loop-page .loop-automation-card{transition:none}
-}
+/* Run details have their own compact content layout, separate from settings forms. */
+.eva-auto-run-modal .semi-modal-body{max-height:calc(100dvh - 220px);overflow-y:auto}
+.eva-auto-run-detail{color:var(--semi-color-text-0);padding:4px 0 0}
+.eva-auto-run-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.eva-auto-run-heading h3{margin:0;font-size:18px;line-height:26px;font-weight:600;overflow-wrap:anywhere}
+.eva-auto-run-status{flex:none;padding:2px 9px;border-radius:var(--gds-radius-control);font-size:12px;line-height:20px;color:var(--semi-color-success);background:var(--semi-color-success-light-default)}
+.eva-auto-run-status.is-failed{color:var(--semi-color-danger);background:var(--semi-color-danger-light-default)}
+.eva-auto-run-time{margin:8px 0 24px;font-size:12px;line-height:20px;color:var(--semi-color-text-2)}
+.eva-auto-run-detail h4{margin:0 0 8px;font-size:12px;line-height:20px;font-weight:500;color:var(--semi-color-text-2)}
+.eva-auto-run-result{padding:16px;background:var(--semi-color-fill-0);border-radius:var(--gds-radius-control)}
+.eva-auto-run-result p{margin:0;font-size:14px;line-height:24px;white-space:pre-wrap;overflow-wrap:anywhere}
+.eva-auto-run-related{margin-top:20px}
+.eva-auto-run-related button{display:flex;align-items:center;gap:10px;width:100%;padding:12px;border:1px solid var(--semi-color-border);border-radius:var(--gds-radius-control);background:var(--semi-color-bg-0);color:var(--semi-color-text-0);text-align:left;cursor:pointer;font:inherit}
+.eva-auto-run-related button:hover{background:var(--semi-color-fill-0)}
+.eva-auto-run-related button:focus-visible{outline:2px solid var(--semi-color-primary);outline-offset:2px}
+.eva-auto-run-task-id{flex:none;font-size:12px;color:var(--semi-color-text-2)}
+.eva-auto-run-task-name{flex:1;font-size:14px;line-height:22px;overflow-wrap:anywhere}
+.eva-auto-run-related svg{flex:none;color:var(--semi-color-text-2)}
+.eva-auto-run-demo{display:inline-block;margin-top:16px;font-size:12px;line-height:20px;color:var(--semi-color-text-2);cursor:help}
