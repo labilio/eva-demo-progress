@@ -327,16 +327,21 @@ test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分�
   assert.match(aiTeamCss, /\.eva-ai-team__section-count\s*\{[^}]*color:\s*var\(--eva-rail-time\)[^}]*text-align:\s*right/s);
   assert.match(aiTeamCss, /\.eva-ai-team__unread-dot\s*\{[^}]*width:\s*6px[^}]*background:\s*var\(--eva-unread-indicator\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__session-unread\s*\{[^}]*background:\s*var\(--eva-unread-surface\)[^}]*color:\s*var\(--eva-unread-text\)/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__session-row\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*minmax\(0, 1fr\) 28px/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__session-actions\s*\{[^}]*grid-column:\s*2[^}]*grid-row:\s*1/s);
-  assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__session-actions\s*\{[^}]*position:\s*absolute/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-ai-team__identity-button\s*\{[^}]*padding-right:\s*40px/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:has\(> \.eva-ai-team__menu-anchor\) \.eva-ai-team__identity-button\s*\{[^}]*padding-right:\s*68px/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__session-unread\s*\{[^}]*justify-self:\s*end/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__session-actions\s*\{[^}]*position:\s*absolute[^}]*right:\s*4px/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__session-row:hover \.eva-ai-team__session-unread,[^}]*focus-within \.eva-ai-team__session-unread\s*\{\s*opacity:\s*0/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__session-row \.eva-ai-team__session\s*\{[^}]*width:\s*100%[^}]*padding-right:\s*var\(--gds-space-2\)/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-identity-name-row > \.eva-ai-team__unread-dot\s*\{\s*margin-left:\s*auto/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-ai-team__identity-button\s*\{[^}]*padding-right:\s*var\(--gds-space-2\)/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:hover \.eva-ai-team__identity-button,[^}]*focus-within \.eva-ai-team__identity-button,[^}]*is-active\) \.eva-ai-team__identity-button\s*\{\s*padding-right:\s*40px/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:has\(> \.eva-ai-team__menu-anchor\):hover \.eva-ai-team__identity-button,[^}]*focus-within \.eva-ai-team__identity-button\s*\{\s*padding-right:\s*68px/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:hover \.eva-ai-team__unread-dot,[^}]*focus-within \.eva-ai-team__unread-dot,[^}]*is-active\) \.eva-ai-team__unread-dot\s*\{\s*opacity:\s*0/s);
   assert.match(tokens, /--eva-unread-indicator:\s*var\(--eva-c-mac-red\)/);
   assert.match(modeCss, /\.eva-my-ai-collaboration-icon__unread\s*\{[^}]*background:\s*var\(--eva-unread-indicator\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__section-chevron\s*\{[^}]*color:\s*var\(--gds-color-text-secondary\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__section-label\s*\{[^}]*flex:\s*1[^}]*text-overflow:\s*ellipsis/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*min-height:\s*32px[^}]*background:\s*transparent/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__group-title\s*\{[^}]*flex:\s*1/s);
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-heading:has\([^)]*\)[^{]*\.eva-ai-team__group-count/);
 });
 
