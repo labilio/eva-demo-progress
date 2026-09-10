@@ -400,6 +400,18 @@ test('我的 AI 位于个人导航并复用个人助理创建流程', () => {
   assert.match(creator, /returnTo\?navigate\(returnTo\):navigatePersonal/);
 });
 
+test('Agent 创建中心不显示为一级导航但保留我的 Agent 创建流程', () => {
+  const sider = read('prototype/009-7-patch-sider.js');
+  const imPatch = read('prototype/009-5-patch-im.js');
+  const creator = read('prototype/047-digital-employees.js');
+
+  assert.match(sider, /EVA_COMMON_NAV=Object\.freeze\(\["digital-employees"\]\)/);
+  assert.doesNotMatch(sider, /EVA_COMMON_NAV=Object\.freeze\([^;]*agent-create/);
+  assert.match(sider, /if\(ct==="Agent创建中心"\)return React\.createElement\(EvaDigitalEmployeesPage,\{view:"create"\}\)/);
+  assert.match(imPatch, /navigate\('\/eva-stub\/Agent创建中心\?evaCreate=mine&evaReturn=/);
+  assert.match(creator, /h\('h1',null,'Agent 创建中心'\)/);
+});
+
 test('一级页面只挂入路由宿主，不再追加到 document.body', () => {
   const files = [
     'prototype/020-mode-layer.js',
@@ -529,8 +541,7 @@ test('侧栏展开默认宽度为 180、折叠宽度为 80 且不渲染广告栏
 test('折叠侧栏只承载一级导航并保持可滚动', () => {
   const { source } = createPatchedRuntime();
 
-  // vendor 宿主 .flex-1.min-h-0.overflow-hidden 会裁掉一切溢出，而三段导航都是
-  // shrink-0：折叠态 11 个 entry 各 56px + 3 个分组标题实测 700px > 宿主 662px。
+  // vendor 宿主 .flex-1.min-h-0.overflow-hidden 会裁掉窄视口中的导航溢出，
   // 所以注入内容必须自己套一层 flex-1 min-h-0 overflow-y-auto 的滚动容器。
   assert.match(
     source,
