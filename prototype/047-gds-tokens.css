@@ -19,6 +19,7 @@
   --eva-im-accent: var(--eva-action-primary);
   --eva-unread-text: #4f5b64;
   --eva-unread-surface: #eef0f2;
+  --eva-unread-indicator: var(--eva-c-mac-red);
   --eva-mention-hover: color-mix(in srgb, var(--eva-action-primary) 12%, transparent);
   --eva-mention-background: color-mix(in srgb, var(--eva-action-primary) 8%, transparent);
   /* ---- color · primitive (token layer only) ---------------- */

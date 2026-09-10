@@ -517,7 +517,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--eva-unread-text);
+  background: var(--eva-unread-indicator);
   box-shadow: 0 0 0 2px var(--eva-surface-primary);
 }
 
